@@ -24,10 +24,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |
 */
 
-$protocole = $_SERVER['REQUEST_SCHEME'].'://';
-$host = $_SERVER['HTTP_HOST'] . '/';
-$project = explode('/', $_SERVER['REQUEST_URI'])[1];
-$config['base_url'] = $protocole . $host . $project;
+$protocol = (isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http')) . '://';
+$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost') . '/';
+$project = isset($_SERVER['REQUEST_URI']) ? explode('/', $_SERVER['REQUEST_URI'])[1] : '';
+$config['base_url'] = $protocol . $host . $project;
 
 /*
 |--------------------------------------------------------------------------
