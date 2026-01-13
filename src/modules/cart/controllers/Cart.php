@@ -1,0 +1,367 @@
+<?php
+defined('BASEPATH') or exit('No direct script access allowed');
+
+class Cart extends WHMAZ_Controller
+{
+
+	function __construct()
+	{
+		parent::__construct();
+		$this->load->model('Common_model');
+		$this->load->model('Cart_model');
+		$this->load->model('Order_model');
+	}
+
+	public function view()
+	{
+		$type = NULL;
+		$data['currency'] = $this->Cart_model->getCurrencies();
+		$data['dom_prices'] = $this->Cart_model->getDomPricing();
+		$data['services'] = $this->Cart_model->getServiceGroups();
+		$data['currency'] = $this->Cart_model->getCurrencies();
+		$data['cart_list'] = $this->Cart_model->getCartListData();
+		$data['payment_gateway_list'] = $this->Common_model->get_data("payment_gateway");
+		$data['type'] = $type;
+		$this->load->view('view_card', $data);
+
+	}
+
+	function delete($id)
+	{
+		//delete employee record
+		$this->db->where('id', $id);
+		$this->db->delete('add_to_carts');
+		echo json_encode("OK");
+	}
+
+	function delete_all()
+	{
+		$userId = getCustomerId();
+		$sessionId = getCustomerSessionId();
+
+		$this->Cart_model->deleteAllCarts($userId, $sessionId);
+
+		echo json_encode("OK");
+	}
+
+
+	function checkout()
+	{
+		$userId = getCustomerId();
+		if( $userId > 0 ){
+
+			$type = NULL;
+			$data['currency'] = $this->Cart_model->getCurrencies();
+			$data['dom_prices'] = $this->Cart_model->getDomPricing();
+			$data['services'] = $this->Cart_model->getServiceGroups();
+			$data['currency'] = $this->Cart_model->getCurrencies();
+			$data['cart_list'] = $this->Cart_model->getCartListData();
+			$data['type'] = $type;
+			$this->load->view('view_checkout', $data);
+
+		} else{
+			redirect( base_url()."auth/login?redirect-url=".base_url()."cart/checkout");
+		}
+	}
+
+
+	function checkoutSubmit()
+	{
+		$userId = getCustomerId();
+		$companyId = getCompanyId();
+		$sessionId = getCustomerSessionId();
+
+		if( $userId > 0 ){
+			$this->processRestCall();
+			$postData = $this->input->post();
+
+			$cartList = $this->Cart_model->getCartListData();
+
+			if( !empty($cartList) ){
+
+				$vatAmount = 0.0;
+				$taxAmount = 0.0;
+				$totalAmount = 0.0;
+
+				foreach ($cartList as $key => $row) {
+					$vatAmount += $row['tax'];
+					$taxAmount += $row['vat'];
+					$totalAmount += $row['total'];
+				}
+
+				$grandTotal = $totalAmount + $vatAmount + $taxAmount;
+
+				$order['order_uuid'] = gen_uuid();
+				$order['order_no'] = $this->Order_model->generateNumber('ORDER');
+				$order['company_id'] = $companyId;
+				$order['currency_id'] = getCurrencyId();
+				$order['currency_code'] = getCurrencyCode();
+				$order['order_date'] = getDateAddDay(0);
+				$order['amount'] = $totalAmount;
+				$order['vat_amount'] = $vatAmount;
+				$order['tax_amount'] = $taxAmount;
+				$order['coupon_code'] = $postData['promo_code'];
+				$order['coupon_amount'] = 0.0;
+				$order['discount_amount'] = 0.0;
+				$order['total_amount'] = $grandTotal;
+				$order['payment_gateway_id'] = $postData['payment_gateway'];
+				$order['remarks'] = '';
+				$order['instructions'] = $postData['instructions'];
+				$order['inserted_on'] = getDateTime();
+				$order['inserted_by'] = $userId;
+
+				$orderId = $this->Order_model->saveOrder($order);
+
+				$invoice['invoice_uuid'] = gen_uuid();
+				$invoice['company_id'] = $companyId;
+				$invoice['order_id'] = $orderId;
+				$invoice['currency_id'] = $order['currency_id'];
+				$invoice['currency_code'] = $order['currency_code'];
+				$invoice['invoice_no'] = $this->Order_model->generateNumber('INVOICE');
+				$invoice['sub_total'] = $totalAmount;
+				$invoice['tax'] = $taxAmount;
+				$invoice['vat'] = $vatAmount;
+				$invoice['total'] = $grandTotal;
+				$invoice['order_date'] = getDateAddDay(0);
+				$invoice['due_date'] = getDateAddDay(0);
+				$invoice['status'] = 1;
+				$invoice['pay_status'] = 'DUE';
+				$invoice['inserted_on'] = getDateTime();
+				$invoice['inserted_by'] = $userId;
+
+				$invoiceId = $this->Order_model->saveInvoice($invoice);
+				$invoice['id'] = $invoiceId;
+
+				foreach ($cartList as $key => $row) {
+					$billingCycle = $this->Common_model->get_data_by_id("billing_cycle", $row['billing_cycle_id']);
+
+					$item['order_id'] = $orderId;
+					$item['company_id'] = $userId;
+					$item['first_pay_amount'] = $row['total'];
+					$item['recurring_amount'] = $row['total'];
+					$item['is_synced'] = 1;
+					$item['remarks'] = "";
+					$item['reg_date'] = getDateAddDay(0);
+					$item['exp_date'] = getDateAddDay($billingCycle->cycle_days);
+					$item['next_due_date'] = getDateAddDay($billingCycle->cycle_days);
+					$item['inserted_on'] = getDateTime();
+					$item['inserted_by'] = $userId;
+
+					$invoiceItem['invoice_id'] = $invoiceId;
+					$invoiceItem['item'] = $row['note'];
+					$invoiceItem['item_desc'] = $row['note'].' - '.$row['hosting_domain'];
+					$invoiceItem['tax'] = $row['tax'];
+					$invoiceItem['vat'] = $row['vat'];
+					$invoiceItem['sub_total'] = $row['sub_total'];
+					$invoiceItem['total'] = $row['total'];
+					$invoiceItem['item_type'] = $row['item_type'];
+					$invoiceItem['inserted_on'] = getDateTime();
+					$invoiceItem['inserted_by'] = $userId;
+
+					if( $row['item_type'] == 1 ){ // 1=domain, 2=product_service
+						$item['dom_pricing_id'] = $row['dom_pricing_id'];
+						$item['reg_period'] = 1; // 1 year by default
+						$item['status'] = 0; // 0=pending reg, 1=active, 2=expired, 3=grace, 4=cancelled, 5=pending transfer
+
+						$this->Order_model->saveOrderDomain($item);
+
+					} else {
+						$item['billing_cycle_id'] = $row['billing_cycle_id'];
+						$item['status'] = 0; // 0=pending, 1=active, 2=expired, 3=suspended, 4=terminated
+						$item['hosting_domain'] = $row['hosting_domain'];
+						$item['description'] = $row['note'];
+						$item['product_service_pricing_id'] = $row['product_service_pricing_id'];
+						$item['product_service_pricing_id'] = $row['product_service_pricing_id'];
+
+						$this->Order_model->saveOrderService($item);
+					}
+
+					$this->Order_model->saveInvoiceItem($invoiceItem);
+
+				}
+
+				$this->Cart_model->deleteAllCarts($userId, $sessionId);
+
+				echo json_encode(buildSuccessResponse($invoice, "Order has been placed successfully"));
+
+			} else {
+				echo json_encode(buildFailedResponse("Cart data is not available!"));
+			}
+
+		} else{
+			echo json_encode(buildFailedResponse("Please login first to proceed the checkout!"));
+		}
+	}
+
+
+
+	public function domain($type = NULL, $domkeyword = NULL) // type = register, transfer
+	{
+		$data['services'] = $this->Cart_model->getServiceGroups();
+		$data['dom_prices'] = $this->Cart_model->getDomPricing();
+		$data['currency'] = $this->Cart_model->getCurrencies();
+		$data['domkeyword'] = $domkeyword;
+		$data['type'] = $type;
+		$this->load->view('cart_regnewdomain', $data);
+	}
+
+	public function domain_search($type = NULL, $domkeyword = NULL) // type = register, transfer
+	{
+		$resp_data = array();
+		$resp_data['status'] = 0;
+
+		if (!empty($domkeyword)) {
+			$domArr = explode(".", $domkeyword);
+
+			$keywrd = $domArr[0];
+			$extension = "com";
+			$len = count($domArr);
+			if ($len > 1) {
+				$extension = $domArr[$len - 1];
+			}
+
+			$regVendor = $this->Cart_model->getDomRegister(".com");
+			$priceList = $this->Cart_model->getDomPricing();
+
+			$url = $regVendor['domain_check_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
+			$checkurl = $url . '&domain-name=' . $keywrd . '&tlds=' . $extension;
+
+			$resp = $this->curlGetRequest($checkurl);
+
+			$tmp = array();
+			foreach( $resp as $key => $row ){
+				if( $row->status == "available" ){
+					$extArr = explode(".", $key);
+					$cnt = count($extArr);
+					$ext = $extArr[$cnt - 1];
+					$domPriceObject = $this->getDomainPrice($priceList, ".".$ext);
+
+					$tmp["name"] = $key;
+					$tmp["price"] = !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0;
+					$tmp["domPriceId"] = !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0;
+				}
+			}
+
+			if( !empty($tmp) ) {
+				$resp_data['status'] = 1;
+			}
+			$resp_data['info'] = $tmp;
+		}
+
+		echo json_encode($resp_data);
+
+		//echo json_encode(json_decode("{\"status\":1,\"info\":{\"name\":\"mdshahadatsarker.com\",\"price\":\"12.99\", \"domPriceId\":1}}"));
+	}
+
+
+	public function get_domain_suggestions($domkeyword = NULL)
+	{
+		$resp_data = $this->domainLiveSuggestions($domkeyword);
+		echo json_encode($resp_data);
+		// [{"name":"testx.domains","price":0,"domPriceId":0},{"name":"testx-domain.com","price":"1460","domPriceId":"2"},{"name":"testx-domain.store","price":"7560","domPriceId":"12"},{"name":"testx-site.com","price":"1460","domPriceId":"2"},{"name":"testxdomain.online","price":"4660","domPriceId":"10"},{"name":"toptestxdomain.com","price":"1460","domPriceId":"2"},{"name":"testxdomainllc.com","price":"1460","domPriceId":"2"},{"name":"testxdomain.store","price":"7560","domPriceId":"12"},{"name":"testx-domain.online","price":"4660","domPriceId":"10"},{"name":"testxbrand.com","price":"1460","domPriceId":"2"},{"name":"toptestx-domain.com","price":"1460","domPriceId":"2"},{"name":"testx-domainllc.com","price":"1460","domPriceId":"2"},{"name":"testxdomain.site","price":0,"domPriceId":0},{"name":"testxdomain.org","price":"1580","domPriceId":"6"},{"name":"testx-domain.host","price":0,"domPriceId":0},{"name":"testx-domain.space","price":0,"domPriceId":0},{"name":"testx-brand.com","price":"1460","domPriceId":"2"},{"name":"testx-domain.site","price":0,"domPriceId":0},{"name":"toptestxsite.com","price":"1460","domPriceId":"2"},{"name":"testxsitellc.com","price":"1460","domPriceId":"2"},{"name":"testx-domain.website","price":0,"domPriceId":0},{"name":"testx-domain.shop","price":0,"domPriceId":0},{"name":"testx-domain.org","price":"1580","domPriceId":"6"},{"name":"testxsite.store","price":"7560","domPriceId":"12"},{"name":"testx-domain.tech","price":0,"domPriceId":0},{"name":"testx-domain.net","price":"1510","domPriceId":"4"},{"name":"testx-site.online","price":"4660","domPriceId":"10"},{"name":"testxname.com","price":"1460","domPriceId":"2"},{"name":"toptestx-site.com","price":"1460","domPriceId":"2"},{"name":"testx-sitellc.com","price":"1460","domPriceId":"2"},{"name":"toptestxdomain.online","price":"4660","domPriceId":"10"},{"name":"testx-domain.club","price":0,"domPriceId":0},{"name":"webtestxdomain.com","price":"1460","domPriceId":"2"},{"name":"testxdomainllc.online","price":"4660","domPriceId":"10"},{"name":"toptestxdomainllc.com","price":"1460","domPriceId":"2"},{"name":"testxdomaininc.com","price":"1460","domPriceId":"2"},{"name":"testx-domain.scot","price":0,"domPriceId":0},{"name":"testx-site.store","price":"7560","domPriceId":"12"},{"name":"testxsite.org","price":"1580","domPriceId":"6"},{"name":"toptestxdomain.store","price":"7560","domPriceId":"12"},{"name":"testxdomainllc.store","price":"7560","domPriceId":"12"},{"name":"testx-name.com","price":"1460","domPriceId":"2"},{"name":"testxbrand.online","price":"4660","domPriceId":"10"},{"name":"toptestx-domain.online","price":"4660","domPriceId":"10"},{"name":"toptestxbrand.com","price":"1460","domPriceId":"2"},{"name":"webtestx-domain.com","price":"1460","domPriceId":"2"},{"name":"testx-domainllc.online","price":"4660","domPriceId":"10"},{"name":"testxbrandllc.com","price":"1460","domPriceId":"2"},{"name":"toptestx-domainllc.com","price":"1460","domPriceId":"2"},{"name":"testx-domaininc.com","price":"1460","domPriceId":"2"}]
+	}
+
+	private function domainLiveSuggestions($domkeyword = NULL){
+
+		if (!empty($domkeyword)) {
+			$domArr = explode(".", $domkeyword);
+
+			$keywrd = $domArr[0];
+			$extension = "com";
+			$len = count($domArr);
+			if ($len > 1) {
+				$extension = $domArr[$len - 1];
+			}
+
+			$regVendor = $this->Cart_model->getDomRegister("." . $extension);
+			$priceList = $this->Cart_model->getDomPricing();
+
+			$url = $regVendor['suggestion_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
+			$suggsurl = $url . '&keyword=' . $keywrd;
+
+			$list = $this->curlGetRequest($suggsurl);
+
+			$tmp = array(array());
+			$idx=0;
+			foreach( $list as $key => $row ){
+				if( $row->status == "available" ){
+
+					$extArr = explode(".", $key);
+					$cnt = count($extArr);
+					$ext = $extArr[$cnt - 1];
+					$domPriceObject = $this->getDomainPrice($priceList, ".".$ext);
+
+					$tmp[$idx]["name"] = $key;
+					$tmp[$idx]["price"] = !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0;
+					$tmp[$idx]["domPriceId"] = !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0;
+
+					$idx++;
+				}
+			}
+
+			return $tmp;
+		}
+
+		return array();
+	}
+
+	private function getDomainPrice($priceList, $domainExt){
+		foreach ($priceList as $row){
+			if( $row["extension"] == $domainExt && $row["currency_id"] == getCurrencyId() ){
+				return $row;
+			}
+		}
+		return array();
+	}
+
+	public function services($type, $title = NULL)
+	{
+
+		$data['currency'] = $this->Cart_model->getCurrencies();
+		$data['services'] = $this->Cart_model->getServiceGroups();
+		$data['items'] = $this->Cart_model->getProductServiceItems($type);
+		$data['query_title'] = $title;
+		$data['type'] = $type;
+		$this->load->view('cart_services', $data);
+	}
+
+	public function addToCartAjax($type, $orderId)
+	{
+		$this->processRestCall();
+		$postData = $this->input->post();
+
+		$cartArr = array();
+		$cartArr['customer_session_id'] = getCustomerSessionId();
+		$cartArr['user_id'] = getCustomerId();
+		$cartArr['item_type'] = $type;
+
+		if ($type == 2) {
+			$cartArr['product_service_pricing_id'] = $orderId;
+			$itemPrice = $this->Cart_model->getCartServicePrice($orderId);
+		} else {
+			$cartArr['dom_pricing_id'] = $orderId;
+			$itemPrice = $this->Cart_model->getCartDomainPrice($orderId);
+		}
+
+		$cartArr['note'] = $postData['item'];
+		$cartArr['hosting_domain_type'] = $postData['hosting_domain_type'];
+		$cartArr['hosting_domain'] = $postData['hosting_domain'];
+		$cartArr['sub_total'] = $itemPrice['item_price'];
+		$cartArr['billing_cycle_id'] = $itemPrice['billing_cycle_id'];
+		$cartArr['billing_cycle'] = $itemPrice['cycle_name'];
+		$cartArr['currency_id'] = $itemPrice['currency_id'];
+		$cartArr['currency_code'] = getCurrencyCode();
+		$cartArr['tax'] = 0;
+		$cartArr['vat'] = 0;
+		$cartArr['inserted_on'] = getDateTime();
+		$cartArr['inserted_by'] = getCustomerId();
+		$cartArr['total'] = $itemPrice['item_price'];
+
+		if ($this->Cart_model->saveCart($cartArr)) {
+			echo $this->AppResponse(1, "Cart item has been added successfully");
+		} else {
+			echo $this->AppResponse(0, "Cart item cannot add!");
+		}
+	}
+
+}

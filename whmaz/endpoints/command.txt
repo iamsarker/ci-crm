@@ -1,0 +1,6 @@
+/opt/lampp/bin/php Invoicegenerator.php
+
+
+php /path_to_index/index.php Cronpicture getcronjob
+
+

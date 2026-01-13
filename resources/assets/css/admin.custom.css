@@ -1,0 +1,108 @@
+.list-group{
+	display: block;
+	position: relative;
+}
+
+.list-group > li.list-group-item{
+	padding: 10px;
+}
+
+.float-right{
+	float: right !important;
+}
+
+.error{
+	color: #aa4e01;
+}
+
+.domain-search-panel{
+	background-color: #9fcdff;
+	padding: 50px;
+	border-radius: 8px;
+}
+.domain-search-box{
+	background-color: white;
+	margin: 10px;
+	padding: 10px;
+	border-radius: 8px;
+}
+
+select.fontawesome {
+	font-family: 'Font Awesome 5 Free', 'Roboto', 'Helvetica Neue', 'sans-serif';
+}
+
+.selected-li{
+	background-color: #d1ecf1;
+	color: black;
+}
+
+.pdfViewContainer{
+	background-color: #cacaca !important;
+	height: 700px !important;
+	overflow: auto !important;
+}
+
+.pdfViewBox{
+	background-color: white !important;
+	width: auto !important;
+	height: auto !important;
+	padding: 5px !important;
+}
+
+body {
+	height: 100vh;
+}
+
+.content-wrapper {
+	display: flex;
+	flex-direction: column;
+	min-height: 890px;
+}
+
+footer {
+	margin-top: auto;
+}
+
+.line-height-0{
+	line-height: 0 !important;
+}
+
+.mt-1px{
+	margin-top: 1px;
+}
+.mt-2px{
+	margin-top: 2px;
+}
+.mt-3px{
+	margin-top: 3px;
+}
+.mt-4px{
+	margin-top: 4px;
+}
+.mt-5px{
+	margin-top: 5px;
+}
+
+.mb-1px{
+	margin-bottom: 1px;
+}
+.mb-2px{
+	margin-bottom: 2px;
+}
+.mb-3px{
+	margin-bottom: 3px;
+}
+.mb-4px{
+	margin-bottom: 4px;
+}
+.mb-5px{
+	margin-bottom: 5px;
+}
+
+.disabled{
+	pointer-events: none;
+	background: #f5f6fa;
+}
+
+.swal2-title { font-size: 1.375em; }
+

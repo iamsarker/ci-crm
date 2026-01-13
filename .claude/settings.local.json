@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed:*)",
+      "Bash(sed 's/` (//g')",
+      "Bash(grep:*)"
+    ]
+  }
+}
