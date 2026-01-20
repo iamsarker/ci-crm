@@ -25,9 +25,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 
 $protocol = (isset($_SERVER['REQUEST_SCHEME']) ? $_SERVER['REQUEST_SCHEME'] : ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http')) . '://';
-$host = (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost') . '/';
-$project = isset($_SERVER['REQUEST_URI']) ? explode('/', $_SERVER['REQUEST_URI'])[1] : '';
-$config['base_url'] = $protocol . $host . $project;
+$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+
+// Detect base path from SCRIPT_NAME
+$script_name = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '';
+$base_path = str_replace('\\', '/', dirname($script_name));
+$base_path = ($base_path === '/') ? '' : $base_path;
+
+$config['base_url'] = $protocol . $host . $base_path . '/';
 
 /*
 |--------------------------------------------------------------------------
@@ -384,7 +389,7 @@ $config['encryption_key'] = '';
 $config['sess_driver'] = 'files';
 $config['sess_cookie_name'] = 'whmaz_session';
 $config['sess_expiration'] = 7200;
-$config['sess_save_path'] = NULL;
+$config['sess_save_path'] = APPPATH . 'sessions';
 $config['sess_match_ip'] = FALSE;
 $config['sess_time_to_update'] = 300;
 $config['sess_regenerate_destroy'] = FALSE;

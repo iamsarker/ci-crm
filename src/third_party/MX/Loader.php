@@ -39,6 +39,7 @@ class MX_Loader extends CI_Loader
 
 	public $_ci_plugins = array();
 	public $_ci_cached_vars = array();
+	public $controller;
 
 	/** Initialize the loader variables **/
 	public function initialize($controller = NULL)
@@ -157,7 +158,7 @@ class MX_Loader extends CI_Loader
 		if (isset($this->_ci_classes[$class]) && $_alias = $this->_ci_classes[$class])
 			return $this;
 
-		($_alias = strtolower($object_name)) OR $_alias = $class;
+		$_alias = ($object_name !== NULL && $object_name !== '') ? strtolower($object_name) : $class;
 
 		list($path, $_library) = Modules::find($library, $this->_module, 'libraries/');
 
