@@ -3,7 +3,11 @@
     "allow": [
       "Bash(sed:*)",
       "Bash(sed 's/` (//g')",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(for file in announcement_list.php company_list.php currency_list.php expense_category_list.php expense_list.php expense_vendor_list.php kb_category_list.php kb_list.php order_list.php server_list.php service_category_list.php service_group_list.php service_module_list.php ticket_department_list.php ticket_list.php)",
+      "Bash(do if ! grep -q \"alert_success\" \"$file\")",
+      "Bash(fi)",
+      "Bash(done)"
     ]
   }
 }

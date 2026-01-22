@@ -43,7 +43,30 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ## Documentation Structure
 
-### 1. [WHMCS_FEATURE_COMPARISON.md](WHMCS_FEATURE_COMPARISON.md) ⭐ NEW
+### 1. [PHP82_UPGRADE_AND_TROUBLESHOOTING.md](PHP82_UPGRADE_AND_TROUBLESHOOTING.md) ⭐ NEW
+**Purpose:** PHP 8.2+ upgrade fixes and comprehensive troubleshooting guide
+**Best for:** Resolving PHP 8.2+ compatibility issues, debugging common problems
+
+**Contents:**
+- PHP 8.2+ compatibility fixes (deprecation warnings)
+- Base URL configuration fixes
+- Domain search functionality setup
+- Resources loading troubleshooting
+- Common issues and solutions
+- Development tips and debugging
+- Upgrade checklist
+
+**When to use:**
+- Upgrading to PHP 8.2+
+- Fixing deprecation warnings
+- Troubleshooting resource loading issues
+- Setting up domain registrar integration
+- Debugging base URL problems
+- General troubleshooting
+
+---
+
+### 2. [WHMCS_FEATURE_COMPARISON.md](WHMCS_FEATURE_COMPARISON.md)
 **Purpose:** WHMCS feature parity tracking and development roadmap
 **Best for:** Understanding project goals, feature priorities, and development timeline
 
@@ -64,7 +87,7 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ---
 
-### 2. [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md)
+### 3. [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md)
 **Purpose:** Complete technical reference for the entire project
 **Best for:** Understanding the system architecture, features, and database structure
 
@@ -87,7 +110,7 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ---
 
-### 2. [PORTAL_STRUCTURE_GUIDE.md](PORTAL_STRUCTURE_GUIDE.md)
+### 4. [PORTAL_STRUCTURE_GUIDE.md](PORTAL_STRUCTURE_GUIDE.md)
 **Purpose:** Quick reference for the dual portal architecture
 **Best for:** Understanding the separation between client and admin portals
 
@@ -109,7 +132,7 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ---
 
-### 4. [CODING_STANDARDS_AND_PATTERNS.md](CODING_STANDARDS_AND_PATTERNS.md)
+### 5. [CODING_STANDARDS_AND_PATTERNS.md](CODING_STANDARDS_AND_PATTERNS.md)
 **Purpose:** Comprehensive coding guidelines and best practices
 **Best for:** Developers writing new code or maintaining existing code
 
@@ -137,6 +160,19 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ## Common Tasks & Where to Find Help
 
+### Fixing PHP 8.2+ Issues
+1. Check **PHP 8.2+ Compatibility Fixes** in [PHP82_UPGRADE_AND_TROUBLESHOOTING.md](PHP82_UPGRADE_AND_TROUBLESHOOTING.md#php-82-compatibility-fixes)
+2. Review **Common Issues & Solutions** in [PHP82_UPGRADE_AND_TROUBLESHOOTING.md](PHP82_UPGRADE_AND_TROUBLESHOOTING.md#common-issues--solutions)
+3. Follow **Upgrade Checklist** in [PHP82_UPGRADE_AND_TROUBLESHOOTING.md](PHP82_UPGRADE_AND_TROUBLESHOOTING.md#upgrade-checklist)
+
+### Troubleshooting Resources Loading
+1. Review **Base URL Configuration Fix** in [PHP82_UPGRADE_AND_TROUBLESHOOTING.md](PHP82_UPGRADE_AND_TROUBLESHOOTING.md#base-url-configuration-fix)
+2. Check **Resources Loading Issues** in [PHP82_UPGRADE_AND_TROUBLESHOOTING.md](PHP82_UPGRADE_AND_TROUBLESHOOTING.md#resources-loading-issues)
+
+### Setting Up Domain Search
+1. Check **Domain Search Functionality** in [PHP82_UPGRADE_AND_TROUBLESHOOTING.md](PHP82_UPGRADE_AND_TROUBLESHOOTING.md#domain-search-functionality)
+2. Follow **Domain Registrar Configuration** steps in [PHP82_UPGRADE_AND_TROUBLESHOOTING.md](PHP82_UPGRADE_AND_TROUBLESHOOTING.md#domain-registrar-configuration)
+
 ### Adding a New Admin Feature
 1. Review **Admin Portal Features** in [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md#admin-portal-features)
 2. Follow **Controller Patterns** in [CODING_STANDARDS_AND_PATTERNS.md](CODING_STANDARDS_AND_PATTERNS.md#controller-patterns)
@@ -160,7 +196,8 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ### Implementing DataTables
 1. Check **DataTable Patterns** in [CODING_STANDARDS_AND_PATTERNS.md](CODING_STANDARDS_AND_PATTERNS.md#datatable-patterns)
-2. Review **DataTable UI Patterns** in [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md#datatable-ui-patterns)
+2. For server-side with JOINs, see **Pattern 3: Package Pricing Example** in [CODING_STANDARDS_AND_PATTERNS.md](CODING_STANDARDS_AND_PATTERNS.md#pattern-3-server-side-datatable-with-joins-package-pricing-example)
+3. Review **DataTable UI Patterns** in [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md#datatable-ui-patterns)
 
 ### Security Implementation
 1. Review **Security Best Practices** in [CODING_STANDARDS_AND_PATTERNS.md](CODING_STANDARDS_AND_PATTERNS.md#security-best-practices)
@@ -197,7 +234,7 @@ CI-CRM is a complete business management system designed for hosting and service
 ### Backend
 - **Framework:** CodeIgniter 3.x
 - **Architecture:** HMVC (Wiredesignz Modular Extensions)
-- **PHP Version:** 7.4+
+- **PHP Version:** 8.2+ (7.4+ minimum)
 - **Database:** MySQL/MariaDB
 
 ### Frontend
@@ -264,12 +301,13 @@ CI-CRM is a complete business management system designed for hosting and service
 ## Development Workflow
 
 ### Setting Up Development Environment
-1. Install PHP 7.4+ and MySQL/MariaDB
+1. Install PHP 8.2+ and MySQL/MariaDB (see [PHP82_UPGRADE_AND_TROUBLESHOOTING.md](PHP82_UPGRADE_AND_TROUBLESHOOTING.md))
 2. Configure database connection in `src/config/database.php`
-3. Set base URL in `src/config/config.php`
+3. Set base URL in `src/config/config.php` (see [Base URL Configuration](PHP82_UPGRADE_AND_TROUBLESHOOTING.md#base-url-configuration-fix))
 4. Configure encryption key in `src/config/config.php`
 5. Set up .htaccess for clean URLs
 6. Import database schema
+7. Create sessions directory: `mkdir -p src/sessions && chmod 777 src/sessions`
 
 ### Creating a New Feature
 1. **Plan the feature** - Determine which portal (Admin/Client)
@@ -313,16 +351,22 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ## Version Information
 
-- **Documentation Version:** 1.0
-- **Last Updated:** 2026-01-13
+- **Documentation Version:** 1.1
+- **Last Updated:** 2026-01-22
 - **Project Status:** Active Development
 - **Maintained By:** TongBari (https://tongbari.com/)
+
+### Recent Updates (v1.1 - 2026-01-22)
+- Added **Pattern 3: Server-Side DataTable with JOINs** (Package Pricing Example) to CODING_STANDARDS_AND_PATTERNS.md
+- Updated Package Pricing feature documentation in PROJECT_DOCUMENTATION.md
+- Complete CRUD implementation with server-side pagination example
 
 ---
 
 ## Quick Links
 
-- **[WHMCS Feature Comparison & Roadmap](WHMCS_FEATURE_COMPARISON.md)** ⭐ NEW
+- **[PHP 8.2+ Upgrade & Troubleshooting Guide](PHP82_UPGRADE_AND_TROUBLESHOOTING.md)** ⭐ NEW
+- **[WHMCS Feature Comparison & Roadmap](WHMCS_FEATURE_COMPARISON.md)**
 - [Full Project Documentation](PROJECT_DOCUMENTATION.md)
 - [Portal Structure Guide](PORTAL_STRUCTURE_GUIDE.md)
 - [Coding Standards](CODING_STANDARDS_AND_PATTERNS.md)
@@ -334,6 +378,7 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ## Need Help?
 
+**For troubleshooting & PHP 8.2+ issues:** Check [PHP82_UPGRADE_AND_TROUBLESHOOTING.md](PHP82_UPGRADE_AND_TROUBLESHOOTING.md)
 **For feature documentation:** Check [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md)
 **For architecture questions:** Check [PORTAL_STRUCTURE_GUIDE.md](PORTAL_STRUCTURE_GUIDE.md)
 **For coding examples:** Check [CODING_STANDARDS_AND_PATTERNS.md](CODING_STANDARDS_AND_PATTERNS.md)

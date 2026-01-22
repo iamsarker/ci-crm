@@ -394,6 +394,512 @@ public function ssp_list_api()
 }
 ```
 
+#### Pattern 3: Server-Side DataTable with JOINs (Package Pricing Example)
+
+**Use Case:** When you need server-side pagination with multiple table JOINs and custom column rendering.
+
+**Complete Implementation:**
+
+##### 1. Controller (Package.php)
+```php
+<?php
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Package extends WHMAZADMIN_Controller {
+
+    function __construct(){
+        parent::__construct();
+        $this->load->model('Package_model');
+        $this->load->model('Common_model');
+        if (!$this->isLogin()) {
+            redirect('/whmazadmin/authenticate/login', 'refresh');
+        }
+    }
+
+    public function index()
+    {
+        $data['results'] = array();
+        $this->load->view('whmazadmin/package_list', $data);
+    }
+
+    public function ssp_list_api()
+    {
+        $this->processRestCall();
+        $params = $this->input->get();
+
+        $bindings = array();
+        $where = '';
+
+        try {
+            $sqlQuery = $this->Package_model->buildDataTableQuery($params, $bindings, $where);
+            $data = $this->Package_model->getDataTableRecords($sqlQuery, $bindings);
+
+            $response = array(
+                "draw"            => !empty($params['draw']) ? intval($params['draw']) : 0,
+                "recordsTotal"    => intval($this->Package_model->countDataTableTotalRecords()),
+                "recordsFiltered" => intval($this->Package_model->countDataTableFilterRecords($where, $bindings)),
+                "data"            => $data
+            );
+
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            exit;
+        } catch (Exception $e) {
+            header('Content-Type: application/json');
+            echo json_encode(array("error" => $e->getMessage()));
+            exit;
+        }
+    }
+
+    public function manage($id_val = null)
+    {
+        if( $this->input->post() ){
+            $this->form_validation->set_rules('product_service_id', 'Product Service', 'required|trim');
+            $this->form_validation->set_rules('currency_id', 'Currency', 'required|trim');
+            $this->form_validation->set_rules('billing_cycle_id', 'Billing Cycle', 'required|trim');
+            $this->form_validation->set_rules('price', 'Price', 'required|trim|numeric');
+
+            if ($this->form_validation->run() == true){
+                $form_data = array(
+                    'id'                => safe_decode($this->input->post('id')),
+                    'product_service_id'=> $this->input->post('product_service_id'),
+                    'currency_id'       => $this->input->post('currency_id'),
+                    'billing_cycle_id'  => $this->input->post('billing_cycle_id'),
+                    'price'             => $this->input->post('price'),
+                    'status'            => 1
+                );
+
+                if( intval($form_data['id']) > 0 ){
+                    $oldEntity = $this->Package_model->getPricingDetail(safe_decode($id_val));
+                    $form_data['updated_on'] = getDateTime();
+                    $form_data['updated_by'] = getAdminId();
+                    $form_data['inserted_on'] = $oldEntity['inserted_on'];
+                    $form_data['inserted_by'] = $oldEntity['inserted_by'];
+                } else {
+                    $form_data['inserted_on'] = getDateTime();
+                    $form_data['inserted_by'] = getAdminId();
+                }
+
+                if($this->Package_model->savePricingData($form_data)){
+                    $this->session->set_flashdata('alert', successAlert('Package pricing has been saved successfully.'));
+                    redirect("whmazadmin/package/index");
+                }else {
+                    $this->session->set_flashdata('alert', errorAlert('Something went wrong. Try again'));
+                }
+            }
+        }
+
+        if( !empty($id_val) ){
+            $data['detail'] = $this->Package_model->getPricingDetail(safe_decode($id_val));
+        } else {
+            $data['detail'] = array();
+        }
+
+        // Load dropdown data
+        $data['services'] = $this->Package_model->getAllServices();
+        $data['currencies'] = $this->Package_model->getAllCurrencies();
+        $data['billing_cycles'] = $this->Package_model->getAllBillingCycles();
+
+        $this->load->view('whmazadmin/package_manage', $data);
+    }
+
+    public function delete_records($id_val)
+    {
+        $entity = $this->Package_model->getPricingDetail(safe_decode($id_val));
+        $entity["status"] = 0;
+        $entity["deleted_on"] = getDateTime();
+        $entity["deleted_by"] = getAdminId();
+
+        $this->Package_model->savePricingData($entity);
+        $this->session->set_flashdata('alert', successAlert('Package pricing has been deleted successfully.'));
+
+        redirect('whmazadmin/package/index');
+    }
+}
+```
+
+##### 2. Model (Package_model.php)
+```php
+<?php
+class Package_model extends CI_Model{
+    var $table;
+    var $pricing_table;
+
+    function __construct(){
+        parent::__construct();
+        $this->load->database();
+        $this->table = "product_services";
+        $this->pricing_table = "product_service_pricing";
+    }
+
+    // CRUD operations for product_service_pricing table
+    function loadAllPricingData() {
+        $sql = "SELECT psp.*, ps.product_name, c.code as currency_code, c.symbol as currency_symbol, bc.cycle_name
+                FROM product_service_pricing psp
+                LEFT JOIN product_services ps ON psp.product_service_id = ps.id
+                LEFT JOIN currencies c ON psp.currency_id = c.id
+                LEFT JOIN billing_cycle bc ON psp.billing_cycle_id = bc.id
+                WHERE psp.status=1
+                ORDER BY psp.id DESC";
+        $data = $this->db->query($sql)->result_array();
+        return $data;
+    }
+
+    function getPricingDetail($id) {
+        $sql = "SELECT * FROM product_service_pricing WHERE id=? and status=1 ";
+        $data = $this->db->query($sql, array($id))->result_array();
+        return !empty($data) ? $data[0] : array();
+    }
+
+    function savePricingData($data) {
+        $return = array();
+        if ($this->db->replace('product_service_pricing', $data)) {
+            $return['success'] = 1;
+        } else {
+            $return['success'] = 0;
+        }
+        return $return;
+    }
+
+    // Server-side pagination methods
+    function getDataTableRecords($sqlQuery, $bindings) {
+        $data = $this->db->query($sqlQuery, $bindings)->result_array();
+
+        // Add encoded ID to each row for URL-safe links
+        foreach ($data as &$row) {
+            $row['encoded_id'] = safe_encode($row['id']);
+        }
+
+        return $data;
+    }
+
+    function countDataTableTotalRecords() {
+        $sql = "SELECT COUNT(psp.id) as cnt
+                FROM product_service_pricing psp
+                WHERE psp.status=1";
+        $query = $this->db->query($sql);
+        $data = $query->result_array();
+        return !empty($data) ? $data[0]['cnt'] : 0;
+    }
+
+    function countDataTableFilterRecords($where, $bindings) {
+        $sql = "SELECT COUNT(psp.id) as cnt
+                FROM product_service_pricing psp
+                LEFT JOIN product_services ps ON psp.product_service_id = ps.id
+                LEFT JOIN currencies c ON psp.currency_id = c.id
+                LEFT JOIN billing_cycle bc ON psp.billing_cycle_id = bc.id
+                $where";
+        $query = $this->db->query($sql, $bindings);
+        $data = $query->result_array();
+        return !empty($data) ? $data[0]['cnt'] : 0;
+    }
+
+    function buildDataTableQuery($request, &$bindings, &$where) {
+        // Build the SQL query with proper joins
+        $limit = ssp_limit($request);
+        $order = ssp_order($request);
+        $where = ssp_filter($request, $bindings);
+
+        // Add wildcards to bindings for LIKE clauses
+        for ($i = 0; $i < count($bindings); $i++) {
+            $bindings[$i] = '%' . $bindings[$i] . '%';
+        }
+
+        // Replace table alias for WHERE clause
+        $where = str_replace('`id`', '`psp`.`id`', $where);
+        $where = str_replace('`product_name`', '`ps`.`product_name`', $where);
+        $where = str_replace('`currency_code`', '`c`.`code`', $where);
+        $where = str_replace('`cycle_name`', '`bc`.`cycle_name`', $where);
+        $where = str_replace('`price`', 'CAST(`psp`.`price` AS CHAR)', $where);
+        $where = str_replace('`updated_on`', '`psp`.`updated_on`', $where);
+
+        // Add status condition
+        if (!empty($where)) {
+            $where .= " AND psp.status=1";
+        } else {
+            $where = "WHERE psp.status=1";
+        }
+
+        // Replace column names in ORDER BY clause
+        $order = str_replace('`id`', '`psp`.`id`', $order);
+        $order = str_replace('`product_name`', '`ps`.`product_name`', $order);
+        $order = str_replace('`currency_code`', '`c`.`code`', $order);
+        $order = str_replace('`cycle_name`', '`bc`.`cycle_name`', $order);
+        $order = str_replace('`price`', '`psp`.`price`', $order);
+        $order = str_replace('`updated_on`', '`psp`.`updated_on`', $order);
+
+        // Main query to get the data
+        $sql = "SELECT psp.id, psp.product_service_id, psp.currency_id, psp.billing_cycle_id,
+                       psp.price, psp.status, psp.updated_on,
+                       ps.product_name, c.code as currency_code, c.symbol as currency_symbol,
+                       bc.cycle_name
+                FROM product_service_pricing psp
+                LEFT JOIN product_services ps ON psp.product_service_id = ps.id
+                LEFT JOIN currencies c ON psp.currency_id = c.id
+                LEFT JOIN billing_cycle bc ON psp.billing_cycle_id = bc.id
+                $where $order $limit";
+
+        return $sql;
+    }
+
+    // Get all active product services for dropdown
+    function getAllServices() {
+        $sql = "SELECT id, product_name FROM product_services WHERE status=1 ORDER BY product_name";
+        return $this->db->query($sql)->result_array();
+    }
+
+    // Get all active currencies for dropdown
+    function getAllCurrencies() {
+        $sql = "SELECT id, code, symbol FROM currencies WHERE status=1 ORDER BY code";
+        return $this->db->query($sql)->result_array();
+    }
+
+    // Get all active billing cycles for dropdown
+    function getAllBillingCycles() {
+        $sql = "SELECT id, cycle_name FROM billing_cycle WHERE status=1 ORDER BY id";
+        return $this->db->query($sql)->result_array();
+    }
+}
+```
+
+##### 3. List View (package_list.php)
+```php
+<?php $this->load->view('whmazadmin/include/header');?>
+
+<div class="content content-fluid content-wrapper">
+    <div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
+        <div class="row mt-5">
+            <div class="col-md-12 col-sm-12">
+                <h3 class="d-flex justify-content-between">
+                    <span>Package Pricing</span>
+                    <a href="<?=base_url()?>whmazadmin/package/manage" class="btn btn-sm btn-secondary">
+                        <i class="fa fa-plus-square"></i>&nbsp;Add
+                    </a>
+                </h3>
+                <hr class="mg-5" />
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-style1 mg-b-0">
+                        <li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Portal home</a></li>
+                        <li class="breadcrumb-item active"><a href="#">Package Pricing</a></li>
+                    </ol>
+                </nav>
+                <?php if ($this->session->flashdata('alert')) { ?>
+                    <?= $this->session->flashdata('alert') ?>
+                <?php } ?>
+            </div>
+
+            <div class="col-md-12 col-sm-12 mt-5">
+                <table id="listDataTable" class="table table-striped table-hover"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php $this->load->view('whmazadmin/include/footer_script');?>
+<script>
+// Helper function to escape HTML
+function escapeHtml(text) {
+    var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+$(function(){
+    'use strict'
+
+    $('#listDataTable').DataTable({
+        "responsive": true,
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "<?=base_url()?>whmazadmin/package/ssp_list_api/",
+        },
+        order: [[0, 'desc']],
+        "columns": [
+            { "title": "ID", "data": "id", "width": "5%" },
+            { "title": "Product Service", "data": "product_name", "width": "20%" },
+            {
+                "title": "Currency", "data": "currency_code", "width": "10%",
+                "orderable": false,
+                "render": function (data, type, row) {
+                    return row.currency_symbol + ' (' + row.currency_code + ')';
+                }
+            },
+            { "title": "Billing Cycle", "data": "cycle_name", "width": "15%" },
+            {
+                "title": "Price", "data": "price", "width": "10%",
+                "className": "text-right",
+                "render": function (data, type) {
+                    return parseFloat(data).toFixed(2);
+                }
+            },
+            {
+                "title": "Active?", "data": "status", "width": "10%",
+                "className": "text-center",
+                "orderable": false,
+                "searchable": false,
+                "render": function (data, type) {
+                    if (data == 1) {
+                        return '<span class="badge bg-primary">Yes</span>';
+                    } else {
+                        return '<span class="badge bg-danger">No</span>';
+                    }
+                }
+            },
+            { "title": "Last Updated", "data": "updated_on", "width": "15%" },
+            { "title": "encoded_id", "data": "encoded_id", "visible": false, "orderable": false, "searchable": false },
+            {
+                "title": "Action",
+                "data": "encoded_id",
+                "width": "15%",
+                "className": "text-center",
+                "orderable": false,
+                "searchable": false,
+                "render": function (data, type, row) {
+                    return '<button type="button" class="btn btn-xs btn-secondary" onclick="openManage(\'' + data + '\')" title="Manage"><i class="fa fa-wrench"></i></button> ' +
+                           '<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow(\'' + data + '\', \'' + escapeHtml(row.product_name) + '\')" title="Delete"><i class="fa fa-trash"></i></button>';
+                }
+            }
+        ]
+    });
+});
+
+function openManage(id) {
+    window.location = "<?=base_url()?>whmazadmin/package/manage/"+id;
+}
+
+function deleteRow(id, title) {
+    Swal.fire({
+        title: 'Do you want to delete the (<b>'+title+'</b>) pricing record?',
+        showDenyButton: true,
+        icon: 'question',
+        confirmButtonText: 'Yes, delete',
+        denyButtonText: 'No, cancel',
+        customClass: {
+            actions: 'my-actions',
+            denyButton: 'order-1 right-gap',
+            confirmButton: 'order-2',
+        },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location = "<?=base_url()?>whmazadmin/package/delete_records/"+id;
+        }
+    });
+}
+</script>
+<?php $this->load->view('whmazadmin/include/footer');?>
+```
+
+##### 4. Manage View (package_manage.php)
+```php
+<?php $this->load->view('whmazadmin/include/header');?>
+
+<div class="content content-fluid content-wrapper">
+    <div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
+        <div class="row mt-5">
+            <div class="col-md-12 col-sm-12">
+                <h3 class="d-flex justify-content-between">
+                    <span>Package Pricing</span>
+                    <a href="<?=base_url()?>whmazadmin/package/index" class="btn btn-sm btn-secondary">
+                        <i class="fa fa-arrow-left"></i>&nbsp;Back
+                    </a>
+                </h3>
+                <hr class="mg-5" />
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb breadcrumb-style1 mg-b-0">
+                        <li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Portal home</a></li>
+                        <li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/package/index">Package Pricing</a></li>
+                        <li class="breadcrumb-item active"><a href="#">Manage package pricing</a></li>
+                    </ol>
+                </nav>
+                <?php if ($this->session->flashdata('alert')) { ?>
+                    <?= $this->session->flashdata('alert') ?>
+                <?php } ?>
+            </div>
+
+            <div class="col-md-12 col-sm-12 mt-5">
+                <form method="post" name="entityManageForm" id="entityManageForm"
+                      action="<?=base_url()?>whmazadmin/package/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
+                    <input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
+
+                    <div class="form-group">
+                        <label for="product_service_id">Product Service <span class="text-danger">*</span></label>
+                        <select name="product_service_id" class="form-control" id="product_service_id">
+                            <option value="">Select Product Service</option>
+                            <?php foreach($services as $service){ ?>
+                                <option value="<?= $service['id']?>"
+                                        <?= (!empty($detail['product_service_id']) && $detail['product_service_id'] == $service['id']) ? 'selected' : ''?>>
+                                    <?= $service['product_name']?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                        <?php echo form_error('product_service_id', '<div class="error">', '</div>'); ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="currency_id">Currency <span class="text-danger">*</span></label>
+                        <select name="currency_id" class="form-control" id="currency_id">
+                            <option value="">Select Currency</option>
+                            <?php foreach($currencies as $currency){ ?>
+                                <option value="<?= $currency['id']?>"
+                                        <?= (!empty($detail['currency_id']) && $detail['currency_id'] == $currency['id']) ? 'selected' : ''?>>
+                                    <?= $currency['symbol'] . ' (' . $currency['code'] . ')'?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                        <?php echo form_error('currency_id', '<div class="error">', '</div>'); ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="billing_cycle_id">Billing Cycle <span class="text-danger">*</span></label>
+                        <select name="billing_cycle_id" class="form-control" id="billing_cycle_id">
+                            <option value="">Select Billing Cycle</option>
+                            <?php foreach($billing_cycles as $cycle){ ?>
+                                <option value="<?= $cycle['id']?>"
+                                        <?= (!empty($detail['billing_cycle_id']) && $detail['billing_cycle_id'] == $cycle['id']) ? 'selected' : ''?>>
+                                    <?= $cycle['cycle_name']?>
+                                </option>
+                            <?php } ?>
+                        </select>
+                        <?php echo form_error('billing_cycle_id', '<div class="error">', '</div>'); ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">Price <span class="text-danger">*</span></label>
+                        <input name="price" type="text" class="form-control" id="price"
+                               value="<?= !empty($detail['price']) ? $detail['price'] : ''?>" placeholder="0.00"/>
+                        <?php echo form_error('price', '<div class="error">', '</div>'); ?>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="fa fa-check-circle"></i>&nbsp;Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php $this->load->view('whmazadmin/include/footer_script');?>
+<?php $this->load->view('whmazadmin/include/footer');?>
+```
+
+**Key Points:**
+1. **Server-Side Encoding:** IDs are encoded on the server using `safe_encode()` to avoid "disallowed characters" errors
+2. **Custom Column Rendering:** Combines multiple fields (currency symbol + code) in render functions
+3. **Proper JOINs:** Uses `buildDataTableQuery()` to handle complex JOINs with column aliasing
+4. **Wildcard Bindings:** Adds `%` wildcards for LIKE clause searches
+5. **Status Filtering:** Always filters by `status=1` to show only active records
+6. **Error Handling:** Try-catch block with proper JSON response headers
+7. **Security:** Uses `escapeHtml()` to prevent XSS in delete confirmations
+
 ### AngularJS Integration Pattern
 
 #### View with AngularJS

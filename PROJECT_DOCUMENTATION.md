@@ -379,32 +379,52 @@ The Admin Portal provides complete system administration capabilities through tr
 
 ### 4. Product & Service Management
 
-#### 4.1 Service Packages
+#### 4.1 Service Packages & Pricing
 **Controller:** `whmazadmin/Package.php`
-**Views:** `src/views/whmazadmin/package/`
-**Database Table:** `product_services`
+**Views:**
+- `src/views/whmazadmin/package_list.php` - Package pricing list
+- `src/views/whmazadmin/package_manage.php` - Add/edit pricing
+**Database Tables:**
+- `product_service_pricing` - Pricing per billing cycle (main)
+- `product_services` - Service packages
+- `currencies` - Currency definitions
+- `billing_cycle` - Billing cycle definitions
 
 **Features:**
-- Create/edit hosting and service packages
-- Server assignment
-- Multiple pricing tiers (billing cycles)
-- Service type categorization
-- Module integration for provisioning
-- Stock tracking
-- Setup fees configuration
+- **Package Pricing Management** (Full CRUD)
+  - Create/edit/delete pricing for service packages
+  - Multi-currency support
+  - Multiple billing cycles (monthly, yearly, etc.)
+  - Server-side DataTables pagination for large datasets
+  - Real-time search and filtering
+  - Soft delete (status-based)
+
+- **Service Packages** (Legacy features)
+  - Server assignment
+  - Service type categorization
+  - Module integration for provisioning
+
+**Implementation Details:**
+- Uses server-side DataTables with JOINs across 4 tables
+- Custom `buildDataTableQuery()` method for complex JOIN queries
+- URL-safe ID encoding using `safe_encode()`
+- Form validation for all required fields
+- Dropdown population from related tables
 
 **Related Tables:**
-- `product_service_pricing` - Pricing per billing cycle
 - `product_service_groups` - Service grouping
 - `product_service_modules` - Provisioning modules
 - `product_service_types` - Service type definitions
-- `billing_cycle` - Monthly, annually, etc.
 
 **Key URLs:**
-- `/whmazadmin/package` - Package listing
-- `/whmazadmin/package/create` - Create new package
-- `/whmazadmin/package/edit/{id}` - Edit package
-- `/whmazadmin/package/delete/{id}` - Delete package
+- `/whmazadmin/package/index` - Package pricing listing with server-side pagination
+- `/whmazadmin/package/manage` - Add new pricing
+- `/whmazadmin/package/manage/{encoded_id}` - Edit existing pricing
+- `/whmazadmin/package/delete_records/{encoded_id}` - Soft delete pricing
+- `/whmazadmin/package/ssp_list_api` - Server-side DataTables API endpoint
+
+**Code Example:**
+See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PATTERNS.md](CODING_STANDARDS_AND_PATTERNS.md#pattern-3-server-side-datatable-with-joins-package-pricing-example) for complete implementation
 
 #### 4.2 Server Management
 **Controller:** `whmazadmin/Server.php`

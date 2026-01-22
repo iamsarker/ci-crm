@@ -128,7 +128,7 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 		$scope.suggestionList = [];
 
 		document.getElementById('avail-ext-price').style.display = 'none';
-		document.getElementById('domain-suggestions').style.display = 'show';
+		document.getElementById('domain-suggestions').style.display = 'block';
 
 		let req = Communication.request("GET", BASE_URL + 'domain-suggestion/'+$scope.search_domain_name, {});
 		req.then(function (resp) {
