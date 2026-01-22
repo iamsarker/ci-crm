@@ -53,10 +53,10 @@ class Ticket_department extends WHMAZADMIN_Controller {
 				}
 
 				if($this->Ticketdepartment_model->saveData($form_data)){
-					$this->session->set_flashdata('alert', successAlert('Support dept has been saved successfully.'));
+					$this->session->set_flashdata('alert_success', 'Support dept has been saved successfully.');
 					redirect("whmazadmin/ticket_department/index");
 				}else {
-					$this->session->set_flashdata('alert', errorAlert('Something went wrong. Try again'));
+					$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
 				}
 			}
 
@@ -79,7 +79,7 @@ class Ticket_department extends WHMAZADMIN_Controller {
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Ticketdepartment_model->saveData($entity);
-		$this->session->set_flashdata('alert', successAlert('Support dept has been deleted successfully.'));
+		$this->session->set_flashdata('alert_success', 'Support dept has been deleted successfully.');
 
 		redirect('whmazadmin/ticket_department/index');
 	}

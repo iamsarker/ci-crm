@@ -275,6 +275,21 @@
   </div><!-- content -->
 
 <?php $this->load->view('whmazadmin/include/footer_script');?>
+
+<script>
+$(function(){
+	'use strict'
+
+	// Show flash messages as toast
+	<?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+	<?php } ?>
+	<?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+	<?php } ?>
+});
+</script>
+
 <script>
 	$(document).ready(function (){
 		$("input#epp_code").attr("disabled", "disabled");

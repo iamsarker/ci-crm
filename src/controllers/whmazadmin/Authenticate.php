@@ -36,11 +36,11 @@ class Authenticate extends WHMAZADMIN_Controller
 				}
 
 			} else if ($resp['status_code'] == -1) {
-				$this->session->set_flashdata('alert', errorAlert('Please check your mail. A confirmation message has been sent !!!'));
+				$this->session->set_flashdata('alert_error', 'Please check your mail. A confirmation message has been sent !!!');
 			} else if ($resp['status_code'] == -2) {
-				$this->session->set_flashdata('alert', errorAlert('Please Enter your current email address !!!'));
+				$this->session->set_flashdata('alert_error', 'Please Enter your current email address !!!');
 			} else {
-				$this->session->set_flashdata('alert', errorAlert('Invalid username/password. Try Again'));
+				$this->session->set_flashdata('alert_error', 'Invalid username/password. Try Again');
 			}
 
 		}
@@ -54,7 +54,7 @@ class Authenticate extends WHMAZADMIN_Controller
 		$this->session->unset_userdata('ADMIN', $resp);
 		$this->session->unset_userdata('ADMIN');
 		$this->session->sess_destroy();
-		$this->session->set_flashdata('alert', errorAlert('Logout success !!!'));
+		$this->session->set_flashdata('alert_error', 'Logout success !!!');
 		redirect('/whmazadmin/authenticate/login', 'refresh');
 	}
 

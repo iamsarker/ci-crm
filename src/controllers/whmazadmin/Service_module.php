@@ -45,10 +45,10 @@ class Service_module extends WHMAZADMIN_Controller {
 				}
 
 				if($this->Servicemodule_model->saveData($form_data)){
-					$this->session->set_flashdata('alert', successAlert('Service module has been saved successfully.'));
+					$this->session->set_flashdata('alert_success', 'Service module has been saved successfully.');
 					redirect("whmazadmin/Service_module/index");
 				}else {
-					$this->session->set_flashdata('alert', errorAlert('Something went wrong. Try again'));
+					$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
 				}
 			}
 
@@ -71,7 +71,7 @@ class Service_module extends WHMAZADMIN_Controller {
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Servicemodule_model->saveData($entity);
-		$this->session->set_flashdata('alert', successAlert('Service module has been deleted successfully.'));
+		$this->session->set_flashdata('alert_success', 'Service module has been deleted successfully.');
 
 		redirect('whmazadmin/Service_module/index');
 	}

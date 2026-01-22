@@ -46,10 +46,10 @@ class Expense_vendor extends WHMAZADMIN_Controller {
 				}
 
 				if($this->Expensevendor_model->saveData($form_data)){
-					$this->session->set_flashdata('alert', successAlert('Expense vendor has been saved successfully.'));
+					$this->session->set_flashdata('alert_success', 'Expense vendor has been saved successfully.');
 					redirect("whmazadmin/Expense_vendor/index");
 				}else {
-					$this->session->set_flashdata('alert', errorAlert('Something went wrong. Try again'));
+					$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
 				}
 			}
 
@@ -72,7 +72,7 @@ class Expense_vendor extends WHMAZADMIN_Controller {
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Expensevendor_model->saveData($entity);
-		$this->session->set_flashdata('alert', successAlert('Expense vendor has been deleted successfully.'));
+		$this->session->set_flashdata('alert_success', 'Expense vendor has been deleted successfully.');
 
 		redirect('whmazadmin/Expense_vendor/index');
 	}

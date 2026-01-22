@@ -56,10 +56,10 @@ class Ticket extends WHMAZADMIN_Controller {
                     );
 
                     if($this->Common_model->save('tickets', $form_data)){
-                            $this->session->set_flashdata('alert', successAlert('Support ticket has been placed successfully.'));
+                            $this->session->set_flashdata('alert_success', 'Support ticket has been placed successfully.');
                             redirect("tickets/index");
                     }else {
-                            $this->session->set_flashdata('alert', errorAlert('Something went wrong. Try again'));
+                            $this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
                     }
             }
 
@@ -100,9 +100,9 @@ class Ticket extends WHMAZADMIN_Controller {
             $res = $this->Common_model->update('ticket_replies', $tdata, $trid);
             
             if($res){
-                $this->session->set_flashdata('alert', successAlert('Like/dislike has been placed successfully on the reply.'));
+                $this->session->set_flashdata('alert_success', 'Like/dislike has been placed successfully on the reply.');
             } else {
-                $this->session->set_flashdata('alert', errorAlert('Something went wrong. Try again'));
+                $this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
             }
             redirect("tickets/viewticket/".$tid);
 	}
@@ -111,7 +111,7 @@ class Ticket extends WHMAZADMIN_Controller {
             
             $isValid = $this->Common_model->validateUserData("tickets", "id", $ticket_id);
             if( $isValid < 1 ){
-                $this->session->set_flashdata('alert', errorAlert('You are trying operation over wrong data!!'));
+                $this->session->set_flashdata('alert_error', 'You are trying operation over wrong data!!');
                 redirect("tickets/viewticket/".$ticket_id);
             }
 
@@ -140,10 +140,10 @@ class Ticket extends WHMAZADMIN_Controller {
                         $tdata['flag'] = 3;
                         $this->Common_model->update('tickets', $tdata, $ticket_id);
                                 
-                        $this->session->set_flashdata('alert', successAlert('Ticket reply has been placed successfully.'));
+                        $this->session->set_flashdata('alert_success', 'Ticket reply has been placed successfully.');
                         redirect("tickets/viewticket/".$ticket_id);
                     } else {
-                        $this->session->set_flashdata('alert', errorAlert('Something went wrong. Try again'));
+                        $this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
                     }
             }
 

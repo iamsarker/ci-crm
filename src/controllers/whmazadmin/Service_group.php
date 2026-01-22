@@ -54,10 +54,10 @@ class Service_group extends WHMAZADMIN_Controller {
 				}
 
 				if($this->Servicegroup_model->saveData($form_data)){
-					$this->session->set_flashdata('alert', successAlert('Service group has been saved successfully.'));
+					$this->session->set_flashdata('alert_success', 'Service group has been saved successfully.');
 					redirect("whmazadmin/Service_group/index");
 				}else {
-					$this->session->set_flashdata('alert', errorAlert('Something went wrong. Try again'));
+					$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
 				}
 			}
 
@@ -82,7 +82,7 @@ class Service_group extends WHMAZADMIN_Controller {
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Servicegroup_model->saveData($entity);
-		$this->session->set_flashdata('alert', successAlert('Service group has been deleted successfully.'));
+		$this->session->set_flashdata('alert_success', 'Service group has been deleted successfully.');
 
 		redirect('whmazadmin/Service_group/index');
 	}

@@ -95,10 +95,10 @@ class Company extends WHMAZADMIN_Controller {
 						$this->Common_model->save("users", $user);
 					}
 
-					$this->session->set_flashdata('alert', successAlert('Customer has been saved successfully.'));
+					$this->session->set_flashdata('alert_success', 'Customer has been saved successfully.');
 					redirect("whmazadmin/company/index");
 				}else {
-					$this->session->set_flashdata('alert', errorAlert('Something went wrong. Try again'));
+					$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
 				}
 			}
 
@@ -123,7 +123,7 @@ class Company extends WHMAZADMIN_Controller {
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Company_model->saveData($entity);
-		$this->session->set_flashdata('alert', successAlert('Customer has been deleted successfully.'));
+		$this->session->set_flashdata('alert_success', 'Customer has been deleted successfully.');
 
 		redirect('whmazadmin/company/index');
 	}

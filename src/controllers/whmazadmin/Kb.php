@@ -67,11 +67,11 @@ class Kb extends WHMAZADMIN_Controller {
 						$this->Kb_model->saveMappingData($cat_data);
 					}
 
-					$this->session->set_flashdata('alert', successAlert('KB has been saved successfully.'));
+					$this->session->set_flashdata('alert_success', 'KB has been saved successfully.');
 					redirect("whmazadmin/kb/index");
 				}
 			} else {
-				$this->session->set_flashdata('alert', errorAlert('Validation error. Try again'));
+				$this->session->set_flashdata('alert_error', 'Validation error. Try again');
 			}
 
 		}
@@ -94,7 +94,7 @@ class Kb extends WHMAZADMIN_Controller {
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Kb_model->saveData($entity);
-		$this->session->set_flashdata('alert', successAlert('KB has been deleted successfully.'));
+		$this->session->set_flashdata('alert_success', 'KB has been deleted successfully.');
 
 		redirect('whmazadmin/kb/index');
 	}
