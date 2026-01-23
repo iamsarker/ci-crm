@@ -36,13 +36,13 @@ class Support_model extends CI_Model{
 	}
 
 	function countDataTableTotalRecords() {
-		$query = $this->db->query("select count(id) as cnt from tickets where status=1");
+		$query = $this->db->query("select count(id) as cnt from ticket_view where status=1");
 		$data = $query->result_array();
 		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
 
 	function countDataTableFilterRecords($where, $bindings) {
-		$query = $this->db->query("select count(id) as cnt from tickets $where", $bindings);
+		$query = $this->db->query("select count(id) as cnt from ticket_view $where", $bindings);
 		$data = $query->result_array();
 		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
@@ -63,6 +63,28 @@ class Support_model extends CI_Model{
 			LEFT JOIN order_services os on tk.order_service_id=os.id 
 			LEFT JOIN order_domains od on tk.order_domain_id=od.id 
 			WHERE $tkCondition tk.company_id=$companyId AND tk.status=1 ";
+
+		$data = $this->db->query($sql)->result_array();
+
+		return !empty($data) ? $data[0] : array();
+	}
+
+	function getTicketDetail($tId) {
+
+		if( is_numeric($tId) && $tId > 0 ){
+			$tkCondition = " tk.id=$tId AND ";
+		} else{
+			return array();
+		}
+
+		$sql = "SELECT tk.id, tk.title, tk.company_id, tk.message, tk.priority, tk.attachment, tk.flag, tk.ticket_dept_id, td.name dept_name, tk.order_service_id, os.description, tk.order_domain_id, od.domain, tk.updated_on, tk.inserted_on, 
+			concat(u.first_name, ' ', u.last_name) as user_name
+			FROM tickets tk 
+			JOIN ticket_depts td on tk.ticket_dept_id=td.id 
+			INNER JOIN users u on tk.inserted_by=u.id
+			LEFT JOIN order_services os on tk.order_service_id=os.id 
+			LEFT JOIN order_domains od on tk.order_domain_id=od.id 
+			WHERE $tkCondition tk.status=1 ";
 
 		$data = $this->db->query($sql)->result_array();
 

@@ -47,10 +47,14 @@
 				"ajax": {
 					"url": "<?=base_url()?>" + "whmazadmin/ticket/ssp_list_api",
 				},
+				order: [[0, 'desc']],
 				"columns": [
 					{ "title": "Ticket#", "data": "id" },
 					{ "title": "Title", "data": "title" },
-					{ "title": "priority", "data": "priority",
+					{ "title": "Company", "data": "company_name" },
+					{ "title": "Department", "data": "dept_name" },
+					{ "title": "User", "data": "user_name" },
+					{ "title": "Priority", "data": "priority",
 						render: function (data) {
 							if( data == 1 ){
 								return '<span class="badge rounded-pill bg-secondary">Low</span>';
@@ -63,7 +67,7 @@
 							}
 						}
 					},
-					{ "title": "flag", "data": "flag",
+					{ "title": "Status", "data": "flag",
 						render: function (data) {
 							if( data == 1 ){
 								return '<span class="badge rounded-pill bg-success">Opened</span>';
@@ -78,7 +82,7 @@
 							}
 						}
 					},
-					{ "title": "Date time", "data": "inserted_on", "searchable": false },
+					{ "title": "Date", "data": "inserted_on", "searchable": true },
 					{
 						"title": "Active?", "data": "status", "orderable": false, "searchable": false,
 						render: function (data, type) {
@@ -95,8 +99,7 @@
 						"orderable": false,
 						"searchable": false,
 						"render": function (data) {
-							return '<a href="/locations/area/edit/' + data + '" class="btn btn-sm btn-outline-secondary edit-button" data-id="'+data+'" type="button" title="Edit"><i class="fa fa-pencil-alt"></i></a>'
-								+ '&nbsp;<button class="btn btn-sm btn-outline-danger delete-button" data-id="'+data+'" type="button" title="Delete"><i class="fa fa-trash"></i></button>';
+							return '<button type="button" class="btn btn-sm btn-outline-info" onclick="viewMyTicket('+data+')" title="View"><i class="fa fa-eye"></i></button>';
 						}
 					}
 				]
