@@ -27,7 +27,7 @@
 								<button type="button" class="btn btn-outline-primary w-100" onclick="downloadInvoiceDetail()"><i class="fa fa-file-pdf"></i> Download</button>
 							</li>
 							<li class="list-group-item">
-								<button type="button" class="btn btn-outline-warning w-100"><i class="fa fa-dollar-sign"></i> Paynow</button>
+								<button type="button" class="btn btn-outline-warning w-100" onclick="markAsPaid()" title="Mark as paid"><i class="fa fa-dollar-sign"></i> Mark as Paid</button>
 							</li>
 						</ul>
 					</div>
@@ -51,6 +51,46 @@
 	function downloadInvoiceDetail() {
 		console.log("downloading...")
 		window.location = "<?=base_url()?>whmazadmin/invoice/download_invoice/<?=$company_id?>/<?=$invoice_uuid?>";
+	}
+
+	function markAsPaid() {
+		if (!confirm('Are you sure you want to mark this invoice as paid?')) {
+			return;
+		}
+
+		const invoiceUuid = "<?=$invoice_uuid?>";
+
+		$.ajax({
+			url: "<?=base_url()?>whmazadmin/invoice/mark_as_paid",
+			type: "POST",
+			contentType: "application/json",
+			data: JSON.stringify({
+				invoice_uuid: invoiceUuid
+			}),
+			dataType: "json",
+			beforeSend: function() {
+				// Disable button to prevent multiple clicks
+				$('button[onclick="markAsPaid()"]').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+			},
+			success: function(response) {
+				if (response.success) {
+					toastSuccess(response.message);
+					// Reload page after 1 second to show updated status
+					setTimeout(function() {
+						location.reload();
+					}, 1000);
+				} else {
+					toastError(response.message);
+					// Re-enable button on error
+					$('button[onclick="markAsPaid()"]').prop('disabled', false).html('<i class="fa fa-dollar-sign"></i> Mark as Paid');
+				}
+			},
+			error: function(xhr, status, error) {
+				toastError('An error occurred while updating the invoice status');
+				// Re-enable button on error
+				$('button[onclick="markAsPaid()"]').prop('disabled', false).html('<i class="fa fa-dollar-sign"></i> Mark as Paid');
+			}
+		});
 	}
 </script>
 

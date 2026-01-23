@@ -10,7 +10,7 @@
 				<nav aria-label="breadcrumb">
 					<ol class="breadcrumb breadcrumb-style1 mg-b-0">
 						<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Portal home</a></li>
-						<li class="breadcrumb-item active"><a href="#">Orders</a></li>
+						<li class="breadcrumb-item active"><a href="#">Invoices</a></li>
 					</ol>
 				</nav>
 			  <?php if ($this->session->flashdata('alert')) { ?>
@@ -20,7 +20,7 @@
 			</div>
 
 			<div class="col-md-12 col-sm-12 mt-5">
-				<table id="orderListDt" class="table table-striped table-hover"></table>
+				<table id="invoiceListDt" class="table table-striped table-hover"></table>
 			</div>
       </div>
 		
@@ -40,7 +40,7 @@
 	<?php } ?>
 
 
-			$('#orderListDt').DataTable({
+			$('#invoiceListDt').DataTable({
 				"responsive": true,
 				"processing": true,
 				"serverSide": true,
@@ -86,14 +86,20 @@
 						"searchable": false,
 						"render": function (data, type, row, meta) {
 
-							return '<ul class="btn-group mb-0">'+
+							let paidButtonHtml = '';
+
+							if( row['pay_status'] != "PAID" ){
+								paidButtonHtml = '<li><hr class="dropdown-divider"></li>'+
+									'<li><a class="dropdown-item" style="cursor: pointer;" onclick="markAsPaid(\''+row['invoice_uuid']+'\')" title="Mark as Paid"><i class="fa fa-money-bill-alt text-success"></i> Mark as Paid</a></li>';
+							}
+
+							return '<div class="btn-group mb-0">'+
 								'<button class="btn btn-light btn-sm" type="button"><i class="fa fa-cog"></i></button>'+
 								'<button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false"><span class="visually-hidden">Toggle Dropdown</span></button>'+
 								'<ul class="dropdown-menu">'+
 									'<li><a class="dropdown-item" style="cursor: pointer;" onclick="viewInvoiceDetail('+row['company_id']+',\''+row['invoice_uuid']+'\')"><i class="fa fa-eye text-info"></i> View</a></li>'+
 									'<li><a class="dropdown-item" style="cursor: pointer;" onclick="downloadInvoiceDetail('+row['company_id']+',\''+row['invoice_uuid']+'\')"><i class="fa fa-file-pdf text-danger"></i> Download</a></li>'+
-									'<li><hr class="dropdown-divider"></li>'+
-									'<li><a class="dropdown-item" style="cursor: pointer;"><i class="fa fa-money-bill-alt text-success"></i> Pay now</a></li>'+
+									paidButtonHtml +
 								'</ul>'+
 							'</div>';
 						}
@@ -111,5 +117,44 @@
 		  console.log("downloading...")
 		  window.location = "<?=base_url()?>whmazadmin/invoice/download_invoice/"+company_id+"/"+invoice_uuid;
 	  }
+
+	  function markAsPaid(invoiceUuid) {
+		  if (!confirm('Are you sure you want to mark this invoice as paid?')) {
+			  return;
+		  }
+
+		  $.ajax({
+			  url: "<?=base_url()?>whmazadmin/invoice/mark_as_paid",
+			  type: "POST",
+			  contentType: "application/json",
+			  data: JSON.stringify({
+				  invoice_uuid: invoiceUuid
+			  }),
+			  dataType: "json",
+			  beforeSend: function() {
+				  // Disable button to prevent multiple clicks
+				  $('button[onclick="markAsPaid()"]').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+			  },
+			  success: function(response) {
+				  if (response.success) {
+					  toastSuccess(response.message);
+					  // Reload page after 1 second to show updated status
+					  setTimeout(function() {
+						  location.reload();
+					  }, 1000);
+				  } else {
+					  toastError(response.message);
+					  // Re-enable button on error
+					  $('button[onclick="markAsPaid()"]').prop('disabled', false).html('<i class="fa fa-dollar-sign"></i> Mark as Paid');
+				  }
+			  },
+			  error: function(xhr, status, error) {
+				  toastError('An error occurred while updating the invoice status');
+				  // Re-enable button on error
+				  $('button[onclick="markAsPaid()"]').prop('disabled', false).html('<i class="fa fa-dollar-sign"></i> Mark as Paid');
+			  }
+		  });
+	  }
+
     </script>
 <?php $this->load->view('whmazadmin/include/footer');?>

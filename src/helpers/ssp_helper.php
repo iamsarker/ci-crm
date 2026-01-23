@@ -39,7 +39,7 @@
 		$globalSearch = array();
 		$columnSearch = array();
 		if ( isset($request['search']) && $request['search']['value'] != '' ) {
-			$str = strtolower($request['search']['value']);
+			$str = '%' . $request['search']['value'] . '%';
 			$colLen=count($request['columns']);
 
 			for ( $i=0; $i<$colLen ; $i++ ) {
@@ -54,9 +54,9 @@
 			$colLen=count($request['columns']);
 			for ( $i=0; $i<$colLen ; $i++ ) {
 				$reqCol = $request['columns'][$i];
-				$str = strtolower($reqCol['search']['value']);
+				$str = $reqCol['search']['value'];
 				if ( $reqCol['searchable'] == 'true' && $str != '' ) {
-					array_push($bindings, $str);
+					array_push($bindings, '%' . $str . '%');
 					$columnSearch[] = "`".$reqCol['data']."` LIKE ? ";
 				}
 			}
@@ -82,12 +82,19 @@
 		// Build the SQL query string from the request
 		$limit = ssp_limit( $request );
 		$order = ssp_order( $request );
-		$where = ssp_filter( $request, $bindings );
+		$filterWhere = ssp_filter( $request, $bindings );
 
 		$selectCol = array();
 		$colLen=count($request['columns']);
 		for ( $i=0; $i<$colLen ; $i++ ) {
 			array_push($selectCol, $request['columns'][$i]['data']);
+		}
+
+		// Add status filter
+		if( $filterWhere !== '' ) {
+			$where = $filterWhere . " AND `status` = 1";
+		} else {
+			$where = "WHERE `status` = 1";
 		}
 
 		// Main query to actually get the data

@@ -4,6 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Order extends WHMAZADMIN_Controller
 {
 	var $img_path;
+	var $upload_dir;
 
 	function __construct()
 	{
@@ -320,32 +321,52 @@ class Order extends WHMAZADMIN_Controller
 	public function ssp_list_api($tmpCompanyId=null)
 	{
 		$this->processRestCall();
-		$params = $this->input->get();
 
-		$companyId = !empty($tmpCompanyId) ? safe_decode($tmpCompanyId) : 0;
+		// Set proper JSON headers
+		header('Content-Type: application/json');
 
-		if( $companyId > 0 ){
-			for ( $i=0 ; $i<count($params["columns"]) ; $i++){
-				if( $params["columns"][$i]['data'] == "company_id" ){
-					$params["columns"][$i]["search"]["value"] = $companyId;
-					break;
+		try {
+			$params = $this->input->get();
+
+			$companyId = !empty($tmpCompanyId) ? safe_decode($tmpCompanyId) : 0;
+
+			if( $companyId > 0 ){
+				for ( $i=0 ; $i<count($params["columns"]) ; $i++){
+					if( $params["columns"][$i]['data'] == "company_id" ){
+						$params["columns"][$i]["search"]["value"] = $companyId;
+						break;
+					}
 				}
 			}
+
+			$bindings = array();
+			$where = '';
+
+			$sqlQuery = ssp_sql_query($params, "order_view", $bindings, $where);
+
+			$data = $this->Order_model->getDataTableRecords($sqlQuery, $bindings);
+
+			$response = array(
+				"draw"            => !empty( $params['draw'] ) ? intval($params['draw']) : 0,
+				"recordsTotal"    => intval( $this->Order_model->countDataTableTotalRecords() ),
+				"recordsFiltered" => intval( $this->Order_model->countDataTableFilterRecords($where, $bindings) ),
+				"data"            => $data
+			);
+
+			echo json_encode($response);
+			exit;
+
+		} catch (Exception $e) {
+			// Return error in DataTables format
+			echo json_encode(array(
+				"draw"            => 0,
+				"recordsTotal"    => 0,
+				"recordsFiltered" => 0,
+				"data"            => array(),
+				"error"           => $e->getMessage()
+			));
+			exit;
 		}
-
-		$bindings = array();
-		$where = array();
-
-		$sqlQuery = ssp_sql_query($params, "order_view",$bindings, $where);
-
-		$data = $this->Order_model->getDataTableRecords($sqlQuery, $bindings);
-
-		echo json_encode(array(
-			"draw"            => !empty( $params['draw'] ) ? $params['draw'] : 0,
-			"recordsTotal"    => intval( $this->Order_model->countDataTableTotalRecords() ),
-			"recordsFiltered" => intval( $this->Order_model->countDataTableFilterRecords($where, $bindings) ),
-			"data"            => $data
-		));
 	}
 
 

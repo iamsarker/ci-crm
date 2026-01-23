@@ -184,5 +184,17 @@ class Order_model extends CI_Model{
 		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
 
+	function getDetail($id) {
+		$this->db->select('*');
+		$this->db->from("orders");
+		$this->db->where('id', $id);
+		$data = $this->db->get();
+		if ($data && $data->num_rows() > 0) {
+			return $data->row_array();
+		} else {
+			return array();
+		}
+	}
+
 }
 ?>
