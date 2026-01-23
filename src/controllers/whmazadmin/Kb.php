@@ -14,7 +14,7 @@ class Kb extends WHMAZADMIN_Controller {
 
 	public function index()
 	{
-		$data['results'] = $this->Kb_model->loadAllData();
+		$data['results'] = array();
 		$this->load->view('whmazadmin/kb_list', $data);
 	}
 
@@ -97,6 +97,46 @@ class Kb extends WHMAZADMIN_Controller {
 		$this->session->set_flashdata('alert_success', 'KB has been deleted successfully.');
 
 		redirect('whmazadmin/kb/index');
+	}
+
+	public function ssp_list_api()
+	{
+		$this->processRestCall();
+
+		// Set proper JSON headers
+		header('Content-Type: application/json');
+
+		try {
+			$params = $this->input->get();
+
+			$bindings = array();
+			$where = '';
+
+			$sqlQuery = ssp_sql_query($params, "kbs", $bindings, $where);
+
+			$data = $this->Kb_model->getDataTableRecords($sqlQuery, $bindings);
+
+			$response = array(
+				"draw"            => !empty( $params['draw'] ) ? intval($params['draw']) : 0,
+				"recordsTotal"    => intval( $this->Kb_model->countDataTableTotalRecords() ),
+				"recordsFiltered" => intval( $this->Kb_model->countDataTableFilterRecords($where, $bindings) ),
+				"data"            => $data
+			);
+
+			echo json_encode($response);
+			exit;
+
+		} catch (Exception $e) {
+			// Return error in DataTables format
+			echo json_encode(array(
+				"draw"            => 0,
+				"recordsTotal"    => 0,
+				"recordsFiltered" => 0,
+				"data"            => array(),
+				"error"           => $e->getMessage()
+			));
+			exit;
+		}
 	}
 
 }

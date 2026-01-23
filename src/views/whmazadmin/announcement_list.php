@@ -20,33 +20,7 @@
 			</div>
 
 			<div class="col-md-12 col-sm-12 mt-5">
-				<table id="listDataTable" class="table table-hover">
-					<thead>
-					<tr>
-						<th class="wd-50p">Title</th>
-						<th class="wd-10p text-center">Published?</th>
-						<th class="wd-10p text-center">Publish date</th>
-						<th class="wd-15p">Last updated</th>
-						<th class="wd-15p text-center">Action</th>
-					</tr>
-					</thead>
-					<tbody>
-					<?php foreach($results as $row){ ?>
-						<tr>
-							<td><?php echo $row['title']; ?></td>
-							<td class="text-center"><?= getRowStatus($row['is_published']) ?></td>
-							<td class="text-center">
-								<?= $row['publish_date'] ?>
-							</td>
-							<td><?php echo $row['updated_on']; ?></td>
-							<td class="text-center">
-								<button type="button" class="btn btn-xs btn-secondary" onclick="openManage('<?=safe_encode($row['id'])?>')" title="Manage"><i class="fa fa-wrench"></i></button>
-								<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow('<?=safe_encode($row['id'])?>', '<?= $row['title']?>')" title="Delete"><i class="fa fa-trash"></i></button>
-							</td>
-						</tr>
-					<?php } ?>
-					</tbody>
-				</table>
+				<table id="announcementListDt" class="table table-striped table-hover"></table>
 			</div>
       </div>
 		
@@ -65,7 +39,55 @@
 		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
 	<?php } ?>
 
-			$('#listDataTable').DataTable();
+			$('#announcementListDt').DataTable({
+			"responsive": true,
+			"processing": true,
+			"serverSide": true,
+			"ajax": {
+				"url": "<?=base_url()?>" + "whmazadmin/announcement/ssp_list_api/",
+			},
+			order: [[4, 'desc']],
+			"columns": [
+				{ "title": "Title", "data": "title" },
+				{
+					"title": "Published?",
+					"data": "is_published",
+					"orderable": false,
+					"searchable": false,
+					render: function (data, type) {
+						if( data == 1 ){
+							return '<span class="badge bg-success">Yes</span>';
+						} else {
+							return '<span class="badge bg-secondary">No</span>';
+						}
+					}
+				},
+				{ "title": "Publish date", "data": "publish_date", "searchable": true },
+				{ "title": "Total views", "data": "total_view", "searchable": false },
+				{ "title": "Last updated", "data": "updated_on", "searchable": false },
+				{
+					"title": "Active?", "data": "status", "orderable": false, "searchable": false,
+					render: function (data, type) {
+						if( data == 1 ){
+							return '<span class="badge bg-primary">Yes</span>';
+						} else {
+							return '<span class="badge bg-danger">No</span>';
+						}
+					}
+				},
+				{
+					"title" : 'Action',
+					"data" : "id",
+					"orderable": false,
+					"searchable": false,
+					"render": function (data, type, row, meta) {
+						let idVal = safe_encode(data);
+						return '<button type="button" class="btn btn-sm btn-outline-secondary edit-button" onclick="openManage(\''+idVal+'\')" title="Edit"><i class="fa fa-pencil-alt"></i></button>'
+							+ '&nbsp;<button class="btn btn-sm btn-outline-danger delete-button" onclick="deleteRow(\''+idVal+'\', \''+row['title']+'\')" type="button" title="Delete"><i class="fa fa-trash"></i></button>';
+					}
+				}
+			]
+		});
 
       });
 

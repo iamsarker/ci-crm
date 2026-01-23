@@ -20,37 +20,7 @@
 			</div>
 
 			<div class="col-md-12 col-sm-12 mt-5">
-				<table id="listDataTable" class="table table-hover">
-					<thead>
-					<tr>
-						<th class="wd-40p">Title</th>
-						<th class="wd-5p text-center">View</th>
-						<th class="wd-5p text-center">Useful</th>
-						<th class="wd-5p text-center">Upvote</th>
-						<th class="wd-5p text-center">DownVote</th>
-						<th class="wd-10p text-center">Hidden?</th>
-						<th class="wd-15p">Last updated</th>
-						<th class="wd-15p text-center">Action</th>
-					</tr>
-					</thead>
-					<tbody>
-					<?php foreach($results as $row){ ?>
-						<tr>
-							<td><?= $row['title']; ?></td>
-							<td><?= $row['total_view']; ?></td>
-							<td><?= $row['useful']; ?></td>
-							<td><?= $row['upvote']; ?></td>
-							<td><?= $row['downvote']; ?></td>
-							<td class="text-center"><?= getRowStatus($row['is_hidden']) ?></td>
-							<td><?php echo $row['updated_on']; ?></td>
-							<td class="text-center">
-								<button type="button" class="btn btn-xs btn-secondary" onclick="openManage('<?=safe_encode($row['id'])?>')" title="Manage"><i class="fa fa-wrench"></i></button>
-								<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow('<?=safe_encode($row['id'])?>', '<?= $row['title']?>')" title="Delete"><i class="fa fa-trash"></i></button>
-							</td>
-						</tr>
-					<?php } ?>
-					</tbody>
-				</table>
+				<table id="kbListDt" class="table table-striped table-hover"></table>
 			</div>
       </div>
 		
@@ -69,7 +39,57 @@
 		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
 	<?php } ?>
 
-			$('#listDataTable').DataTable();
+			$('#kbListDt').DataTable({
+			"responsive": true,
+			"processing": true,
+			"serverSide": true,
+			"ajax": {
+				"url": "<?=base_url()?>" + "whmazadmin/kb/ssp_list_api/",
+			},
+			order: [[6, 'desc']],
+			"columns": [
+				{ "title": "Title", "data": "title" },
+				{ "title": "Total Views", "data": "total_view", "searchable": false },
+				{ "title": "Useful", "data": "useful", "searchable": false },
+				{ "title": "Upvote", "data": "upvote", "searchable": false },
+				{ "title": "Downvote", "data": "downvote", "searchable": false },
+				{
+					"title": "Hidden?",
+					"data": "is_hidden",
+					"orderable": false,
+					"searchable": false,
+					render: function (data, type) {
+						if( data == 1 ){
+							return '<span class="badge bg-warning">Yes</span>';
+						} else {
+							return '<span class="badge bg-success">No</span>';
+						}
+					}
+				},
+				{ "title": "Last updated", "data": "updated_on", "searchable": false },
+				{
+					"title": "Active?", "data": "status", "orderable": false, "searchable": false,
+					render: function (data, type) {
+						if( data == 1 ){
+							return '<span class="badge bg-primary">Yes</span>';
+						} else {
+							return '<span class="badge bg-danger">No</span>';
+						}
+					}
+				},
+				{
+					"title" : 'Action',
+					"data" : "id",
+					"orderable": false,
+					"searchable": false,
+					"render": function (data, type, row, meta) {
+						let idVal = safe_encode(data);
+						return '<button type="button" class="btn btn-sm btn-outline-secondary edit-button" onclick="openManage(\''+idVal+'\')" title="Edit"><i class="fa fa-pencil-alt"></i></button>'
+							+ '&nbsp;<button class="btn btn-sm btn-outline-danger delete-button" onclick="deleteRow(\''+idVal+'\', \''+row['title']+'\')" type="button" title="Delete"><i class="fa fa-trash"></i></button>';
+					}
+				}
+			]
+		});
 
       });
 

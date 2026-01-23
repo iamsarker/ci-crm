@@ -16,7 +16,12 @@ class Kb_model extends CI_Model{
  	}
 
 	function getDetail($id) {
-		$sql = "SELECT k.*, group_concat(cat.kb_cat_id) kb_cat_ids FROM $this->table k left join kb_cat_mapping cat on k.id=cat.kb_id WHERE k.id=$id and k.status=1 ";
+		// Validate ID parameter
+		if (empty($id) || !is_numeric($id) || intval($id) <= 0) {
+			return array();
+		}
+
+		$sql = "SELECT k.*, group_concat(cat.kb_cat_id) kb_cat_ids FROM $this->table k left join kb_cat_mapping cat on k.id=cat.kb_id WHERE k.id=".intval($id)." and k.status=1 ";
 		$data = $this->db->query($sql)->result_array();
 
 		return !empty($data) ? $data[0] : array();
@@ -55,6 +60,30 @@ class Kb_model extends CI_Model{
 			$return['success'] = 0;
 		}
 		return $return;
+	}
+
+	function getDataTableRecords($sqlQuery, $bindings) {
+		$data = $this->db->query($sqlQuery, $bindings);
+		$results = $data->result_array();
+
+		// Add encoded ID for URLs
+		foreach ($results as &$row) {
+			$row['encoded_id'] = safe_encode($row['id']);
+		}
+
+		return $results;
+	}
+
+	function countDataTableTotalRecords() {
+		$query = $this->db->query("select count(id) as cnt from ".$this->table." where status=1");
+		$data = $query->result_array();
+		return !empty($data) ? $data[0]['cnt'] : 0;
+	}
+
+	function countDataTableFilterRecords($where, $bindings) {
+		$query = $this->db->query("select count(id) as cnt from ".$this->table." $where", $bindings);
+		$data = $query->result_array();
+		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
 }
 ?>

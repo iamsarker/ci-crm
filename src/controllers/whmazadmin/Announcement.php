@@ -13,7 +13,7 @@ class Announcement extends WHMAZADMIN_Controller {
 
 	public function index()
 	{
-		$data['results'] = $this->Announcement_model->loadAllData();
+		$data['results'] = array();
 		$this->load->view('whmazadmin/announcement_list', $data);
 	}
 
@@ -86,6 +86,46 @@ class Announcement extends WHMAZADMIN_Controller {
 		$this->session->set_flashdata('alert_success', 'Announcement has been deleted successfully.');
 
 		redirect('whmazadmin/announcement/index');
+	}
+
+	public function ssp_list_api()
+	{
+		$this->processRestCall();
+
+		// Set proper JSON headers
+		header('Content-Type: application/json');
+
+		try {
+			$params = $this->input->get();
+
+			$bindings = array();
+			$where = '';
+
+			$sqlQuery = ssp_sql_query($params, "announcements", $bindings, $where);
+
+			$data = $this->Announcement_model->getDataTableRecords($sqlQuery, $bindings);
+
+			$response = array(
+				"draw"            => !empty( $params['draw'] ) ? intval($params['draw']) : 0,
+				"recordsTotal"    => intval( $this->Announcement_model->countDataTableTotalRecords() ),
+				"recordsFiltered" => intval( $this->Announcement_model->countDataTableFilterRecords($where, $bindings) ),
+				"data"            => $data
+			);
+
+			echo json_encode($response);
+			exit;
+
+		} catch (Exception $e) {
+			// Return error in DataTables format
+			echo json_encode(array(
+				"draw"            => 0,
+				"recordsTotal"    => 0,
+				"recordsFiltered" => 0,
+				"data"            => array(),
+				"error"           => $e->getMessage()
+			));
+			exit;
+		}
 	}
 
 }
