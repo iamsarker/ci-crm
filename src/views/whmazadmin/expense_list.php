@@ -20,35 +20,7 @@
 			</div>
 
 			<div class="col-md-12 col-sm-12 mt-5">
-				<table id="listDataTable" class="table table-hover">
-					<thead>
-					<tr>
-						<th class="wd-15p">Expense type</th>
-						<th class="wd-15p">Vendor name</th>
-						<th class="wd-10p">Amount</th>
-						<th class="wd-10p">Paid</th>
-						<th class="wd-20p">Remarks</th>
-						<th class="wd-15p">Expense date</th>
-						<th class="wd-20p text-center">Action</th>
-					</tr>
-					</thead>
-					<tbody>
-					<?php foreach($results as $row){ ?>
-						<tr>
-							<td><?php echo $row['expense_type']; ?></td>
-							<td><?php echo $row['vendor_name']; ?></td>
-							<td><?php echo $row['exp_amount']; ?></td>
-							<td><?php echo $row['paid_amount']; ?></td>
-							<td><?php echo $row['remarks']; ?></td>
-							<td><?php echo $row['expense_date']; ?></td>
-							<td class="text-center">
-								<button type="button" class="btn btn-xs btn-secondary" onclick="openManage('<?=safe_encode($row['id'])?>')" title="Manage"><i class="fa fa-wrench"></i></button>
-								<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow('<?=safe_encode($row['id'])?>', '<?= $row['expense_type']?>')" title="Delete"><i class="fa fa-trash"></i></button>
-							</td>
-						</tr>
-					<?php } ?>
-					</tbody>
-				</table>
+				<table id="expenseListDt" class="table table-striped table-hover"></table>
 			</div>
       </div>
 		
@@ -67,7 +39,44 @@
 		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
 	<?php } ?>
 
-			$('#listDataTable').DataTable();
+			$('#expenseListDt').DataTable({
+			"responsive": true,
+			"processing": true,
+			"serverSide": true,
+			"ajax": {
+				"url": "<?=base_url()?>" + "whmazadmin/expense/ssp_list_api/",
+			},
+			order: [[5, 'desc']],
+			"columns": [
+				{ "title": "Expense type", "data": "expense_type" },
+				{ "title": "Vendor name", "data": "vendor_name" },
+				{ "title": "Amount", "data": "exp_amount" },
+				{ "title": "Paid", "data": "paid_amount" },
+				{ "title": "Remarks", "data": "remarks" },
+				{ "title": "Expense date", "data": "expense_date", "searchable": true },
+				{
+					"title": "Active?", "data": "status", "orderable": false, "searchable": false,
+					render: function (data, type) {
+						if( data == 1 ){
+							return '<span class="badge bg-primary">Yes</span>';
+						} else {
+							return '<span class="badge bg-danger">No</span>';
+						}
+					}
+				},
+				{
+					"title" : 'Action',
+					"data" : "id",
+					"orderable": false,
+					"searchable": false,
+					"render": function (data, type, row, meta) {
+						let id_val = safe_encode(data);
+						return '<button type="button" class="btn btn-sm btn-outline-secondary edit-button" onclick="openManage(\''+id_val+'\')" title="Edit"><i class="fa fa-pencil-alt"></i></button>'
+							+ '&nbsp;<button class="btn btn-sm btn-outline-danger delete-button" onclick="deleteRow(\''+id_val+'\', \''+row['expense_type']+'\')" type="button" title="Delete"><i class="fa fa-trash"></i></button>';
+					}
+				}
+			]
+		});
 
       });
 

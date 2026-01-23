@@ -63,4 +63,9 @@
 <link rel="stylesheet" href="<?=base_url()?>resources/assets/css/jquery.toast.css">
 <link rel="stylesheet" href="<?=base_url()?>resources/lib/sweetalert2/sweetalert2.min.css">
 <link rel="stylesheet" href="<?=base_url()?>resources/assets/css/admin.custom.css">
-<script type="text/javascript">var BASE_URL="<?=base_url()?>"; var isLoadingShown = false;</script>
+<script type="text/javascript">
+	var BASE_URL="<?=base_url()?>"; var isLoadingShown = false;
+	function safe_encode(val){
+		return encodeURIComponent(btoa(val));
+	}
+</script>

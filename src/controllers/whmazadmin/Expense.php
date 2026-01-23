@@ -18,7 +18,7 @@ class Expense extends WHMAZADMIN_Controller {
 
 	public function index()
 	{
-		$data['results'] = $this->Expense_model->loadAllData();
+		$data['results'] = array();
 		$this->load->view('whmazadmin/expense_list', $data);
 	}
 
@@ -110,6 +110,46 @@ class Expense extends WHMAZADMIN_Controller {
 		$this->session->set_flashdata('alert_success', 'Expense has been deleted successfully.');
 
 		redirect('whmazadmin/Expense/index');
+	}
+
+	public function ssp_list_api()
+	{
+		$this->processRestCall();
+
+		// Set proper JSON headers
+		header('Content-Type: application/json');
+
+		try {
+			$params = $this->input->get();
+
+			$bindings = array();
+			$where = '';
+
+			$sqlQuery = ssp_sql_query($params, "expense_view", $bindings, $where);
+
+			$data = $this->Expense_model->getDataTableRecords($sqlQuery, $bindings);
+
+			$response = array(
+				"draw"            => !empty( $params['draw'] ) ? intval($params['draw']) : 0,
+				"recordsTotal"    => intval( $this->Expense_model->countDataTableTotalRecords() ),
+				"recordsFiltered" => intval( $this->Expense_model->countDataTableFilterRecords($where, $bindings) ),
+				"data"            => $data
+			);
+
+			echo json_encode($response);
+			exit;
+
+		} catch (Exception $e) {
+			// Return error in DataTables format
+			echo json_encode(array(
+				"draw"            => 0,
+				"recordsTotal"    => 0,
+				"recordsFiltered" => 0,
+				"data"            => array(),
+				"error"           => $e->getMessage()
+			));
+			exit;
+		}
 	}
 
 }
