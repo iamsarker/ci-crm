@@ -31,12 +31,12 @@
 <script>
       $(function(){
         	'use strict'
-	// Show flash messages as toast
+	// SECURITY: Show flash messages as toast with XSS protection
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 
 
@@ -49,11 +49,11 @@
 				},
 				order: [[0, 'desc']],
 				"columns": [
-					{ "title": "Invoice#", "data": "invoice_no" },
-					{ "title": "Order#", "data": "order_no" },
-					{ "title": "Company name", "data": "company_name" },
+					{ "title": "Invoice#", "data": "invoice_no", render: function(data){return escapeXSS(data);} },
+					{ "title": "Order#", "data": "order_no", render: function(data){return escapeXSS(data);} },
+					{ "title": "Company name", "data": "company_name", render: function(data){return escapeXSS(data);} },
 					{ "title": "Total", "data": "total" },
-					{ "title": "Currency", "data": "currency_code" },
+					{ "title": "Currency", "data": "currency_code", render: function(data){return escapeXSS(data);} },
 					{ "title": "Due date", "data": "due_date", "searchable": true },
 					{ "title": "invoice_uuid", "data": "invoice_uuid", "orderable": false, "searchable": false, "visible":false },
 					{ "title": "company_id", "data": "company_id", "orderable": false, "searchable": false, "visible":false },

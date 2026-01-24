@@ -31,12 +31,12 @@
 <script>
       $(function(){
         	'use strict'
-	// Show flash messages as toast
+	// SECURITY: Show flash messages as toast with XSS protection
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 
 			$('#expenseListDt').DataTable({
@@ -48,11 +48,11 @@
 			},
 			order: [[5, 'desc']],
 			"columns": [
-				{ "title": "Expense type", "data": "expense_type" },
-				{ "title": "Vendor name", "data": "vendor_name" },
+				{ "title": "Expense type", "data": "expense_type", render: function(data){return escapeXSS(data);} },
+				{ "title": "Vendor name", "data": "vendor_name", render: function(data){return escapeXSS(data);} },
 				{ "title": "Amount", "data": "exp_amount" },
 				{ "title": "Paid", "data": "paid_amount" },
-				{ "title": "Remarks", "data": "remarks" },
+				{ "title": "Remarks", "data": "remarks", render: function(data){return escapeXSS(data);} },
 				{ "title": "Expense date", "data": "expense_date", "searchable": true },
 				{
 					"title": "Active?", "data": "status", "orderable": false, "searchable": false,
@@ -72,7 +72,7 @@
 					"render": function (data, type, row, meta) {
 						let id_val = safe_encode(data);
 						return '<button type="button" class="btn btn-sm btn-outline-secondary edit-button" onclick="openManage(\''+id_val+'\')" title="Edit"><i class="fa fa-pencil-alt"></i></button>'
-							+ '&nbsp;<button class="btn btn-sm btn-outline-danger delete-button" onclick="deleteRow(\''+id_val+'\', \''+row['expense_type']+'\')" type="button" title="Delete"><i class="fa fa-trash"></i></button>';
+							+ '&nbsp;<button class="btn btn-sm btn-outline-danger delete-button" onclick="deleteRow(\''+id_val+'\', \''+escapeXSS(row['expense_type'])+'\')" type="button" title="Delete"><i class="fa fa-trash"></i></button>';
 					}
 				}
 			]

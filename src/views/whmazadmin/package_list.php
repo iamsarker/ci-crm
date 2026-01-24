@@ -25,27 +25,16 @@
 
 <?php $this->load->view('whmazadmin/include/footer_script');?>
 <script>
-      // Helper function to escape HTML
-      function escapeHtml(text) {
-          var map = {
-              '&': '&amp;',
-              '<': '&lt;',
-              '>': '&gt;',
-              '"': '&quot;',
-              "'": '&#039;'
-          };
-          return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-      }
 
       $(function(){
         	'use strict'
 
-			// Show flash messages as toast
+			// SECURITY: Show flash messages as toast with XSS protection
 			<?php if ($this->session->flashdata('alert_success')) { ?>
-				toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+				toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 			<?php } ?>
 			<?php if ($this->session->flashdata('alert_error')) { ?>
-				toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+				toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 			<?php } ?>
 
 			$('#listDataTable').DataTable({
@@ -58,15 +47,15 @@
 				order: [[0, 'desc']],
 				"columns": [
 					{ "title": "ID", "data": "id", "width": "5%" },
-					{ "title": "Product Service", "data": "product_name", "width": "20%" },
+					{ "title": "Product Service", "data": "product_name", "width": "20%", render: function(data){return escapeXSS(data);} },
 					{
 						"title": "Currency", "data": "currency_code", "width": "10%",
 						"orderable": false,
 						"render": function (data, type, row) {
-							return row.currency_symbol + ' (' + row.currency_code + ')';
+							return escapeXSS(row.currency_symbol) + ' (' + escapeXSS(row.currency_code) + ')';
 						}
 					},
-					{ "title": "Billing Cycle", "data": "cycle_name", "width": "15%" },
+					{ "title": "Billing Cycle", "data": "cycle_name", "width": "15%", render: function(data){return escapeXSS(data);} },
 					{
 						"title": "Price", "data": "price", "width": "10%",
 						"className": "text-right",
@@ -98,7 +87,7 @@
 						"searchable": false,
 						"render": function (data, type, row) {
 							return '<button type="button" class="btn btn-xs btn-secondary" onclick="openManage(\'' + data + '\')" title="Manage"><i class="fa fa-wrench"></i></button> ' +
-								   '<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow(\'' + data + '\', \'' + escapeHtml(row.product_name) + '\')" title="Delete"><i class="fa fa-trash"></i></button>';
+								   '<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow(\'' + data + '\', \'' + escapeXSS(row.product_name) + '\')" title="Delete"><i class="fa fa-trash"></i></button>';
 						}
 					}
 				]

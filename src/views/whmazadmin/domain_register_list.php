@@ -28,28 +28,16 @@
 
 <?php $this->load->view('whmazadmin/include/footer_script');?>
 <script>
-// Helper function to escape HTML
-function escapeHtml(text) {
-    if (!text) return '';
-    var map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-}
 
 $(function(){
     'use strict'
 
-    // Show flash messages as toast
+    // SECURITY: Show flash messages as toast with XSS protection
     <?php if ($this->session->flashdata('alert_success')) { ?>
-        toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+        toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
     <?php } ?>
     <?php if ($this->session->flashdata('alert_error')) { ?>
-        toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+        toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
     <?php } ?>
 
     $('#listDataTable').DataTable({
@@ -102,7 +90,7 @@ $(function(){
                 "render": function (data, type, row) {
 					let idVal = safe_encode(data);
                     return '<button type="button" class="btn btn-xs btn-secondary" onclick="openManage(\'' + idVal + '\')" title="Manage"><i class="fa fa-wrench"></i></button> ' +
-                           '<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow(\'' + idVal + '\', \'' + escapeHtml(row.name) + '\')" title="Delete"><i class="fa fa-trash"></i></button>';
+                           '<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow(\'' + idVal + '\', \'' + escapeXSS(row.name) + '\')" title="Delete"><i class="fa fa-trash"></i></button>';
                 }
             }
         ]

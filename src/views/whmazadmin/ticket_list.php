@@ -31,12 +31,12 @@
 <script>
       $(function(){
         	'use strict'
-	// Show flash messages as toast
+	// SECURITY: Show flash messages as toast with XSS protection
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 
 
@@ -50,10 +50,10 @@
 				order: [[0, 'desc']],
 				"columns": [
 					{ "title": "Ticket#", "data": "id" },
-					{ "title": "Title", "data": "title" },
-					{ "title": "Company", "data": "company_name" },
-					{ "title": "Department", "data": "dept_name" },
-					{ "title": "User", "data": "user_name" },
+					{ "title": "Title", "data": "title", render: function(data){return escapeXSS(data);} },
+					{ "title": "Company", "data": "company_name", render: function(data){return escapeXSS(data);} },
+					{ "title": "Department", "data": "dept_name", render: function(data){return escapeXSS(data);} },
+					{ "title": "User", "data": "user_name", render: function(data){return escapeXSS(data);} },
 					{ "title": "Priority", "data": "priority",
 						render: function (data) {
 							if( data == 1 ){

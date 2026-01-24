@@ -31,12 +31,12 @@
 <script>
       $(function(){
         	'use strict'
-	// Show flash messages as toast
+	// SECURITY: Show flash messages as toast with XSS protection
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 
 			$('#announcementListDt').DataTable({
@@ -48,7 +48,7 @@
 			},
 			order: [[4, 'desc']],
 			"columns": [
-				{ "title": "Title", "data": "title" },
+				{ "title": "Title", "data": "title", render: function(data){return escapeXSS(data);} },
 				{
 					"title": "Published?",
 					"data": "is_published",
@@ -83,7 +83,7 @@
 					"render": function (data, type, row, meta) {
 						let idVal = safe_encode(data);
 						return '<button type="button" class="btn btn-sm btn-outline-secondary edit-button" onclick="openManage(\''+idVal+'\')" title="Edit"><i class="fa fa-pencil-alt"></i></button>'
-							+ '&nbsp;<button class="btn btn-sm btn-outline-danger delete-button" onclick="deleteRow(\''+idVal+'\', \''+row['title']+'\')" type="button" title="Delete"><i class="fa fa-trash"></i></button>';
+							+ '&nbsp;<button class="btn btn-sm btn-outline-danger delete-button" onclick="deleteRow(\''+idVal+'\', \''+escapeXSS(row['title'])+'\')" type="button" title="Delete"><i class="fa fa-trash"></i></button>';
 					}
 				}
 			]

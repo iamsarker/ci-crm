@@ -31,12 +31,12 @@
 <script>
       $(function(){
         	'use strict'
-	// Show flash messages as toast
+	// SECURITY: Show flash messages as toast with XSS protection
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 
 
@@ -49,11 +49,11 @@
 				},
 				order: [[0, 'desc']],
 				"columns": [
-					{ "title": "Order#", "data": "order_no" },
-					{ "title": "Company name", "data": "company_name" },
+					{ "title": "Order#", "data": "order_no", render: function(data){return escapeXSS(data);} },
+					{ "title": "Company name", "data": "company_name", render: function(data){return escapeXSS(data);} },
 					{ "title": "Discount", "data": "discount_amount" },
 					{ "title": "Total", "data": "total_amount" },
-					{ "title": "Currency", "data": "currency_code" },
+					{ "title": "Currency", "data": "currency_code", render: function(data){return escapeXSS(data);} },
 					{ "title": "Order date", "data": "order_date", "searchable": true },
 					{
 						"title": "Active?", "data": "status", "orderable": false, "searchable": false,
