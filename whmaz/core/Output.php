@@ -454,7 +454,7 @@ class CI_Output {
 		if ($this->parse_exec_vars === TRUE)
 		{
 			$memory	= round(memory_get_usage() / 1024 / 1024, 2).'MB';
-			$output = str_replace(array('{elapsed_time}', '{memory_usage}'), array($elapsed, $memory), $output);
+			$output = str_replace(array('{elapsed_time}', '{memory_usage}'), array($elapsed, $memory), $output ?? '');
 		}
 
 		// --------------------------------------------------------------------
@@ -520,7 +520,7 @@ class CI_Output {
 
 			// If the output data contains closing </body> and </html> tags
 			// we will remove them and add them back after we insert the profile data
-			$output = preg_replace('|</body>.*?</html>|is', '', $output, -1, $count).$CI->profiler->run();
+			$output = preg_replace('|</body>.*?</html>|is', '', $output ?? '', -1, $count).$CI->profiler->run();
 			if ($count > 0)
 			{
 				$output .= '</body></html>';

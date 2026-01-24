@@ -1,6 +1,16 @@
 app.factory('CommunicationService', function($http) {
     return {
         getRequest: function(type, url, reqData) {
+            // Get CSRF token from meta tags
+            var csrfName = document.querySelector('meta[name="csrf-token-name"]');
+            var csrfHash = document.querySelector('meta[name="csrf-token-hash"]');
+
+            // Add CSRF token to request data (not headers, CodeIgniter checks $_POST)
+            if (csrfName && csrfHash) {
+                reqData = reqData || {};
+                reqData[csrfName.getAttribute('content')] = csrfHash.getAttribute('content');
+            }
+
             return returnObj = {
                 method: type.toUpperCase(),
                 url: url,
@@ -18,7 +28,26 @@ app.factory('Communication', function ($http, $q, $timeout, CommunicationService
             var deferred = $q.defer();
             $timeout(function () {
                 var req = CommunicationService.getRequest(type, url, reqData);
-                $http(req).then(function (msg) {deferred.resolve(msg.data);}, function (err) {deferred.reject(err);});
+                $http(req).then(
+                    function (msg) {
+                        // Update CSRF token from response headers if available
+                        var newCsrfName = msg.headers('X-CSRF-TOKEN-NAME');
+                        var newCsrfHash = msg.headers('X-CSRF-TOKEN-HASH');
+
+                        if (newCsrfName && newCsrfHash) {
+                            var csrfNameMeta = document.querySelector('meta[name="csrf-token-name"]');
+                            var csrfHashMeta = document.querySelector('meta[name="csrf-token-hash"]');
+
+                            if (csrfNameMeta) csrfNameMeta.setAttribute('content', newCsrfName);
+                            if (csrfHashMeta) csrfHashMeta.setAttribute('content', newCsrfHash);
+                        }
+
+                        deferred.resolve(msg.data);
+                    },
+                    function (err) {
+                        deferred.reject(err);
+                    }
+                );
             });
             return deferred.promise;
         },

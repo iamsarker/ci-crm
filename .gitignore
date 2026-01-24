@@ -1,5 +1,8 @@
 .DS_Store
 
+# Environment configuration
+.env
+
 src/cache/*
 !src/cache/index.html
 
