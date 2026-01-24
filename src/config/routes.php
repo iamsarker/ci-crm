@@ -54,6 +54,6 @@ $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 $route['billing'] = FALSE;
 $route['change-currency/(:any)/(:any)'] = 'auth/change_currency/$1/$2';
-$route['domain-search/(:any)/(:any)'] = 'cart/domain_search/$1/$2';
-$route['domain-suggestion/(:any)'] = 'cart/get_domain_suggestions/$1';
+$route['domain-search'] = 'cart/domain_search';
+$route['domain-suggestion'] = 'cart/get_domain_suggestions';
 

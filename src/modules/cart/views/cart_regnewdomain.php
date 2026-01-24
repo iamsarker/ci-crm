@@ -36,8 +36,8 @@
 
 				<div class="col-md-12">
 					<p ng-if="data.status == 1" style="color: #6cb86c; font-size: 1.5em">
-						<span>Congratulations! {{data.info.name}} is available!</span><br/>
-						<b>{{data.info.price}} <?=getCurrencyCode()?></b>&nbsp;<button type="button" class="btn btn-xs btn-secondary" ng-click="addToCartRegisterDomain(data.info.domPriceId, data.info.name)" >Add to cart</button>
+						<span>Congratulations! {{data.info[0].name}} is available!</span><br/>
+						<b>{{data.info[0].price}} <?=getCurrencyCode()?></b>&nbsp;<button type="button" class="btn btn-xs btn-secondary" ng-click="addToCartRegisterDomain(data.info[0].domPriceId, data.info[0].name)" >Add to cart</button>
 					</p>
 					<p ng-if="data.status == 0" style="color: #d8535f; font-size: 1.5em">
 						{{search_domain_name}} is unavailable!
@@ -50,7 +50,7 @@
 
 				<div class="col-md-12" id="avail-ext-price">
 					<h2>Available domain Extensions and Prices</h2>
-					<table class="table table-primary table-striped">
+					<table class="table table-primary table-striped" id="domain-suggestion-list">
 						<thead>
 							<tr>
 								<th>Domain</th>

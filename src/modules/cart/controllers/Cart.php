@@ -195,8 +195,11 @@ class Cart extends WHMAZ_Controller
 
 
 
-	public function domain($type = NULL, $domkeyword = NULL) // type = register, transfer
+	public function domain() // type = register, transfer
 	{
+		$type       = $this->input->get('type');
+		$domkeyword = $this->input->get('domkeyword');
+
 		$data['services'] = $this->Cart_model->getServiceGroups();
 		$data['dom_prices'] = $this->Cart_model->getDomPricing();
 		$data['currency'] = $this->Cart_model->getCurrencies();
@@ -205,8 +208,11 @@ class Cart extends WHMAZ_Controller
 		$this->load->view('cart_regnewdomain', $data);
 	}
 
-	public function domain_search($type = NULL, $domkeyword = NULL) // type = register, transfer
+	public function domain_search() // type = register, transfer
 	{
+		$type       = $this->input->get('type');
+		$domkeyword = $this->input->get('domkeyword');
+
 		$resp_data = array();
 		$resp_data['status'] = 0;
 		$resp_data['info'] = array();
@@ -237,13 +243,7 @@ class Cart extends WHMAZ_Controller
 				$url = $regVendor['domain_check_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
 				$checkUrl = $url . '&domain-name=' . $keywrd . '&tlds=' . $extension;
 
-				// Log API request for debugging
-				log_message('debug', 'Domain Search API URL: ' . $checkUrl);
-
 				$resp = $this->curlGetRequest($checkUrl);
-
-				// Log API response for debugging
-				log_message('debug', 'Domain Search API Response: ' . json_encode($resp));
 
 				$tmp = array();
 
@@ -254,20 +254,27 @@ class Cart extends WHMAZ_Controller
 					return;
 				}
 
-				// BUGFIX: Build array properly instead of overwriting
-				foreach( $resp as $key => $row ){
-					if( isset($row->status) && $row->status == "available" ){
-						$extArr = explode(".", $key);
+				// Process API response
+				// Response format: {"domain.com": {"classkey": "domcno", "status": "available"}}
+				foreach( $resp as $domainName => $domainInfo ){
+					// Check if domain is available
+					if( isset($domainInfo['status']) && $domainInfo['status'] == "available" ){
+						// Extract extension from domain name (e.g., "example.com" -> "com")
+						$extArr = explode(".", $domainName);
 						$cnt = count($extArr);
 						$ext = $extArr[$cnt - 1];
+
+						// Get price for this extension from database
 						$domPriceObject = $this->getDomainPrice($priceList, ".".$ext);
 
-						// BUGFIX: Append to array instead of overwriting
-						$tmp[] = array(
-							"name" => $key,
-							"price" => !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0,
-							"domPriceId" => !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0
-						);
+						// Only add if we have pricing for this extension
+						if( !empty($domPriceObject) ){
+							$tmp[] = array(
+								"name" => $domainName,
+								"price" => !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0,
+								"domPriceId" => !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0
+							);
+						}
 					}
 				}
 
@@ -284,16 +291,14 @@ class Cart extends WHMAZ_Controller
 		}
 
 		echo json_encode($resp_data);
-
-		//echo json_encode(json_decode("{\"status\":1,\"info\":{\"name\":\"mdshahadatsarker.com\",\"price\":\"12.99\", \"domPriceId\":1}}"));
 	}
 
 
-	public function get_domain_suggestions($domkeyword = NULL)
+	public function get_domain_suggestions()
 	{
+		$domkeyword = $this->input->get('domkeyword');
 		$resp_data = $this->domainLiveSuggestions($domkeyword);
 		echo json_encode($resp_data);
-		// [{"name":"testx.domains","price":0,"domPriceId":0},{"name":"testx-domain.com","price":"1460","domPriceId":"2"},{"name":"testx-domain.store","price":"7560","domPriceId":"12"},{"name":"testx-site.com","price":"1460","domPriceId":"2"},{"name":"testxdomain.online","price":"4660","domPriceId":"10"},{"name":"toptestxdomain.com","price":"1460","domPriceId":"2"},{"name":"testxdomainllc.com","price":"1460","domPriceId":"2"},{"name":"testxdomain.store","price":"7560","domPriceId":"12"},{"name":"testx-domain.online","price":"4660","domPriceId":"10"},{"name":"testxbrand.com","price":"1460","domPriceId":"2"},{"name":"toptestx-domain.com","price":"1460","domPriceId":"2"},{"name":"testx-domainllc.com","price":"1460","domPriceId":"2"},{"name":"testxdomain.site","price":0,"domPriceId":0},{"name":"testxdomain.org","price":"1580","domPriceId":"6"},{"name":"testx-domain.host","price":0,"domPriceId":0},{"name":"testx-domain.space","price":0,"domPriceId":0},{"name":"testx-brand.com","price":"1460","domPriceId":"2"},{"name":"testx-domain.site","price":0,"domPriceId":0},{"name":"toptestxsite.com","price":"1460","domPriceId":"2"},{"name":"testxsitellc.com","price":"1460","domPriceId":"2"},{"name":"testx-domain.website","price":0,"domPriceId":0},{"name":"testx-domain.shop","price":0,"domPriceId":0},{"name":"testx-domain.org","price":"1580","domPriceId":"6"},{"name":"testxsite.store","price":"7560","domPriceId":"12"},{"name":"testx-domain.tech","price":0,"domPriceId":0},{"name":"testx-domain.net","price":"1510","domPriceId":"4"},{"name":"testx-site.online","price":"4660","domPriceId":"10"},{"name":"testxname.com","price":"1460","domPriceId":"2"},{"name":"toptestx-site.com","price":"1460","domPriceId":"2"},{"name":"testx-sitellc.com","price":"1460","domPriceId":"2"},{"name":"toptestxdomain.online","price":"4660","domPriceId":"10"},{"name":"testx-domain.club","price":0,"domPriceId":0},{"name":"webtestxdomain.com","price":"1460","domPriceId":"2"},{"name":"testxdomainllc.online","price":"4660","domPriceId":"10"},{"name":"toptestxdomainllc.com","price":"1460","domPriceId":"2"},{"name":"testxdomaininc.com","price":"1460","domPriceId":"2"},{"name":"testx-domain.scot","price":0,"domPriceId":0},{"name":"testx-site.store","price":"7560","domPriceId":"12"},{"name":"testxsite.org","price":"1580","domPriceId":"6"},{"name":"toptestxdomain.store","price":"7560","domPriceId":"12"},{"name":"testxdomainllc.store","price":"7560","domPriceId":"12"},{"name":"testx-name.com","price":"1460","domPriceId":"2"},{"name":"testxbrand.online","price":"4660","domPriceId":"10"},{"name":"toptestx-domain.online","price":"4660","domPriceId":"10"},{"name":"toptestxbrand.com","price":"1460","domPriceId":"2"},{"name":"webtestx-domain.com","price":"1460","domPriceId":"2"},{"name":"testx-domainllc.online","price":"4660","domPriceId":"10"},{"name":"testxbrandllc.com","price":"1460","domPriceId":"2"},{"name":"toptestx-domainllc.com","price":"1460","domPriceId":"2"},{"name":"testx-domaininc.com","price":"1460","domPriceId":"2"}]
 	}
 
 	private function domainLiveSuggestions($domkeyword = NULL){
@@ -313,17 +318,13 @@ class Cart extends WHMAZ_Controller
 
 				// Validate registrar configuration
 				if (empty($regVendor) || empty($regVendor['suggestion_api'])) {
-					log_message('error', 'Domain suggestion API not configured');
 					return array();
 				}
 
 				$priceList = $this->Cart_model->getDomPricing();
 
 				$url = $regVendor['suggestion_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
-				$suggsurl = $url . '&keyword=' . $keywrd;
-
-				// Log API request for debugging
-				log_message('debug', 'Domain Suggestion API URL: ' . $suggsurl);
+				$suggsurl = $url . '&keyword=' . $keywrd. '&tld-only='.$extension;
 
 				// BUGFIX: Initialize as empty array instead of array(array())
 				$tmp = array();
@@ -338,20 +339,25 @@ class Cart extends WHMAZ_Controller
 				}
 
 				$idx=0;
-				foreach( $list as $key => $row ){
-					// BUGFIX: Check if status property exists before accessing
-					if( isset($row->status) && $row->status == "available" ){
+				foreach( $list as $domainName => $domainInfo ){
+					// Check if domain is available
+					if( isset($domainInfo['status']) && $domainInfo['status'] == "available" ){
 
-						$extArr = explode(".", $key);
+						$extArr = explode(".", $domainName);
 						$cnt = count($extArr);
 						$ext = $extArr[$cnt - 1];
 						$domPriceObject = $this->getDomainPrice($priceList, ".".$ext);
 
-						$tmp[$idx]["name"] = $key;
-						$tmp[$idx]["price"] = !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0;
-						$tmp[$idx]["domPriceId"] = !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0;
+						// Only add if we have pricing for this extension
+						if( !empty($domPriceObject) ){
+							$tmp[$idx]["name"] = $domainName;
+							$tmp[$idx]["transfer"] = !empty($domPriceObject["transfer"]) ? $domPriceObject["transfer"] : 0.0;
+							$tmp[$idx]["renewal"] = !empty($domPriceObject["renewal"]) ? $domPriceObject["renewal"] : 0.0;
+							$tmp[$idx]["price"] = !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0;
+							$tmp[$idx]["domPriceId"] = !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0;
 
-						$idx++;
+							$idx++;
+						}
 					}
 				}
 
