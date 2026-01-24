@@ -109,7 +109,7 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 		$scope.search_domain_name = document.getElementById("search_domain_name").value;
 
 		DialogBox.showProgress();
-		let req = Communication.request("GET", BASE_URL + 'domain-search/register/'+$scope.search_domain_name, {});
+		let req = Communication.request("GET", BASE_URL + 'domain-search?type=register&domkeyword='+$scope.search_domain_name, {});
         req.then(function (resp) {
 			DialogBox.hideProgress();
             $scope.data = resp;
@@ -130,7 +130,7 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 		document.getElementById('avail-ext-price').style.display = 'none';
 		document.getElementById('domain-suggestions').style.display = 'block';
 
-		let req = Communication.request("GET", BASE_URL + 'domain-suggestion/'+$scope.search_domain_name, {});
+		let req = Communication.request("GET", BASE_URL + 'domain-suggestion?domkeyword='+$scope.search_domain_name, {});
 		req.then(function (resp) {
 			$scope.suggestionList = resp;
 
