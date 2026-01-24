@@ -69,5 +69,42 @@ class Company_model extends CI_Model{
 			return array('id' => 0, 'error' => true, 'message' => 'Database operation failed');
 		}
  	}
+
+	function getDataTableRecords($sqlQuery, $bindings) {
+		try {
+			$data = $this->db->query($sqlQuery, $bindings);
+			$results = $data->result_array();
+
+			return $results;
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('getDataTableRecords', $this->db->last_query(), $e->getMessage());
+			return array();
+		}
+	}
+
+	function countDataTableTotalRecords() {
+		try {
+			$query = $this->db->query("SELECT COUNT(id) as cnt FROM ".$this->table." WHERE status=1");
+			$data = $query->result_array();
+			return !empty($data) ? $data[0]['cnt'] : 0;
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('countDataTableTotalRecords', $this->db->last_query(), $e->getMessage());
+			return 0;
+		}
+	}
+
+	function countDataTableFilterRecords($where, $bindings) {
+		try {
+			$query = $this->db->query("SELECT COUNT(id) as cnt FROM ".$this->table." $where", $bindings);
+			$data = $query->result_array();
+			return !empty($data) ? $data[0]['cnt'] : 0;
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('countDataTableFilterRecords', $this->db->last_query(), $e->getMessage());
+			return 0;
+		}
+	}
 }
 ?>

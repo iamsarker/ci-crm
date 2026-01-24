@@ -14,7 +14,7 @@ class Company extends WHMAZADMIN_Controller {
 
 	public function index()
 	{
-		$data['results'] = $this->Company_model->loadAllData();
+		$data['results'] = array();
 		$this->load->view('whmazadmin/company_list', $data);
 	}
 
@@ -136,6 +136,49 @@ class Company extends WHMAZADMIN_Controller {
 		$this->session->set_flashdata('alert_success', 'Customer has been deleted successfully.');
 
 		redirect('whmazadmin/company/index');
+	}
+
+	public function ssp_list_api()
+	{
+		$this->processRestCall();
+
+		// Set proper JSON headers
+		header('Content-Type: application/json');
+
+		try {
+			$params = $this->input->get();
+
+			$bindings = array();
+			$where = '';
+
+			$sqlQuery = ssp_sql_query($params, "companies", $bindings, $where);
+
+			$data = $this->Company_model->getDataTableRecords($sqlQuery, $bindings);
+
+			$response = array(
+				"draw"            => !empty( $params['draw'] ) ? intval($params['draw']) : 0,
+				"recordsTotal"    => intval( $this->Company_model->countDataTableTotalRecords() ),
+				"recordsFiltered" => intval( $this->Company_model->countDataTableFilterRecords($where, $bindings) ),
+				"data"            => $data
+			);
+
+			echo json_encode($response);
+			exit;
+
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('ssp_list_api', 'DataTables API', $e->getMessage());
+
+			// Return error in DataTables format
+			echo json_encode(array(
+				"draw"            => 0,
+				"recordsTotal"    => 0,
+				"recordsFiltered" => 0,
+				"data"            => array(),
+				"error"           => $e->getMessage()
+			));
+			exit;
+		}
 	}
 
 }

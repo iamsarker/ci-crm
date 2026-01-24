@@ -49,39 +49,7 @@
 			</div>
 
 			<div class="col-md-12 col-sm-12 mt-5">
-				<table id="listDataTable" class="table table-hover">
-					<thead>
-					<tr>
-						<th class="wd-20p">Company name</th>
-						<th class="wd-20p text-center">Email</th>
-						<th class="wd-15p text-center">Mobile</th>
-						<th class="wd-5p text-center">Zip</th>
-						<th class="wd-15p text-center">Country</th>
-						<th class="wd-5p text-center">Active?</th>
-						<th class="wd-10p">Register date</th>
-						<th class="wd-10p text-center">Action</th>
-					</tr>
-					</thead>
-					<tbody>
-					<?php foreach($results as $row){ ?>
-						<tr>
-							<td><?= $row['name']; ?></td>
-							<td><?= $row['email']; ?></td>
-							<td><?= $row['mobile']; ?></td>
-							<td><?= $row['zip_code']; ?></td>
-							<td><?= $row['country']; ?></td>
-							<td class="text-center">
-								<?= getRowStatus($row['status']) ?>
-							</td>
-							<td><?= explode(" ", $row['inserted_on'])[0]; ?></td>
-							<td class="text-center">
-								<button type="button" class="btn btn-xs btn-secondary" onclick="openManage('<?=safe_encode($row['id'])?>')" title="Manage"><i class="fa fa-wrench"></i></button>
-								<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow('<?=safe_encode($row['id'])?>', '<?= $row['name']?>')" title="Delete"><i class="fa fa-trash"></i></button>
-							</td>
-						</tr>
-					<?php } ?>
-					</tbody>
-				</table>
+				<table id="companyListDt" class="table table-striped table-hover"></table>
 			</div>
       </div>
 		
@@ -92,7 +60,7 @@
 <script>
       $(function(){
         	'use strict'
-	// Show flash messages as toast
+	// SECURITY: Show flash messages as toast with XSS protection
 	<?php if ($this->session->flashdata('alert_success')) { ?>
 		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
@@ -100,7 +68,49 @@
 		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 
-			$('#listDataTable').DataTable();
+			$('#companyListDt').DataTable({
+				"responsive": true,
+				"processing": true,
+				"serverSide": true,
+				"ajax": {
+					"url": "<?=base_url()?>whmazadmin/company/ssp_list_api/",
+				},
+				order: [[6, 'desc']],
+				"columns": [
+					{ "title": "Company name", "data": "name", "width": "20%", render: function(data){return escapeXSS(data);} },
+					{ "title": "Email", "data": "email", "width": "20%", render: function(data){return escapeXSS(data);} },
+					{ "title": "Mobile", "data": "mobile", "width": "15%", render: function(data){return escapeXSS(data);} },
+					{ "title": "Zip", "data": "zip_code", "width": "5%", "className": "text-center", render: function(data){return escapeXSS(data);} },
+					{ "title": "Country", "data": "country", "width": "15%", render: function(data){return escapeXSS(data);} },
+					{
+						"title": "Active?", "data": "status", "width": "5%",
+						"className": "text-center",
+						"orderable": false,
+						"searchable": false,
+						render: function (data, type) {
+							if( data == 1 ){
+								return '<span class="badge bg-primary">Yes</span>';
+							} else {
+								return '<span class="badge bg-danger">No</span>';
+							}
+						}
+					},
+					{ "title": "Register date", "data": "inserted_on", "width": "10%", "searchable": false },
+					{
+						"title" : 'Action',
+						"data" : "id",
+						"width": "10%",
+						"className": "text-center",
+						"orderable": false,
+						"searchable": false,
+						"render": function (data, type, row, meta) {
+							let idVal = safe_encode(data);
+							return '<button type="button" class="btn btn-xs btn-secondary" onclick="openManage(\''+idVal+'\')" title="Manage"><i class="fa fa-wrench"></i></button> '
+								+ '<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow(\''+idVal+'\', \''+escapeXSS(row['name'])+'\')" title="Delete"><i class="fa fa-trash"></i></button>';
+						}
+					}
+				]
+			});
 
       });
 
@@ -143,9 +153,8 @@
 	  }
 
 	  function deleteRow(id, title) {
-
 		  Swal.fire({
-			  title: 'Do you want to delete the (<b>'+title+'</b>) record?',
+			  title: 'Do you want to delete the (<b>'+title+'</b>) company?',
 			  showDenyButton: true,
 			  icon: 'question',
 			  confirmButtonText: 'Yes, delete',
@@ -158,9 +167,6 @@
 		  }).then((result) => {
 			  if (result.isConfirmed) {
 				  window.location = "<?=base_url()?>whmazadmin/company/delete_records/"+id;
-				  console.log('success');
-			  } else if (result.isDenied) {
-				  console.log('Changes are not saved');
 			  }
 		  });
 	  }

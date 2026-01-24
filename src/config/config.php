@@ -478,6 +478,7 @@ $config['csrf_exclude_uris'] = array(
 	'whmazadmin/kb/ssp_list_api',
 	'whmazadmin/package/ssp_list_api',
 	'whmazadmin/domain_register/ssp_list_api',
+	'whmazadmin/company/ssp_list_api',
 	// Angular JSON API endpoints (authenticated, read-only operations)
 	// CSRF is less relevant for JSON APIs; these endpoints require authentication
 	'whmazadmin/dashboard/summary_api',
