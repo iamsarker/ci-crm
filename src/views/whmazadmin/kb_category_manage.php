@@ -22,6 +22,7 @@
 
 			<div class="col-md-12 col-sm-12 mt-5">
 				<form method="post" name="entityManageForm" id="entityManageForm" action="<?=base_url()?>whmazadmin/kb_category/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
+					<?=csrf_field()?>
 					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 					<input name="parent_id" type="hidden" id="parent_id" value="<?= !empty($detail['parent_id']) ? htmlspecialchars($detail['parent_id'], ENT_QUOTES, 'UTF-8') : 0 ?>" />
 					<div class="form-group">

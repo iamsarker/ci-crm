@@ -9,6 +9,7 @@
 		  <div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
 			<div class="wd-100p">
 				<form method="post" action="">
+					<?=csrf_field()?>
 					<h3 class="tx-color-01 mg-b-5">Reset your password</h3>
 					<p class="tx-color-03 tx-16 mg-b-40">Do you forget your password? </p>
 

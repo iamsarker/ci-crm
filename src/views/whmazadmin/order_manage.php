@@ -22,6 +22,7 @@
 
 			<div class="col-md-12 col-sm-12 mt-5">
 				<form method="post" name="entityManageForm" id="entityManageForm" action="<?=base_url()?>whmazadmin/order/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
+					<?=csrf_field()?>
 					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 
 					<div class="row ">

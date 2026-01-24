@@ -41,6 +41,7 @@
 					<div class="tab-pane fade show active" id="general-info" role="tabpanel" aria-labelledby="info-tab">
 
 						<form method="post" name="entityManageForm" id="entityManageForm" action="<?=base_url()?>whmazadmin/company/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
+							<?=csrf_field()?>
 							<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 
 							<div class="row">
