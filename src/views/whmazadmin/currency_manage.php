@@ -23,23 +23,23 @@
 			<div class="col-md-12 col-sm-12 mt-5">
 				<form method="post" name="entityManageForm" id="entityManageForm" action="<?=base_url()?>whmazadmin/currency/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
 					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
-					<input name="format" type="hidden" id="format" value="<?= !empty($detail['format']) ? $detail['format'] : 1?>" />
+					<input name="format" type="hidden" id="format" value="<?= !empty($detail['format']) ? htmlspecialchars($detail['format'], ENT_QUOTES, 'UTF-8') : 1?>" />
 
 					<div class="form-group">
 						<label for="code">Code</label>
-						<input name="code" type="text" class="form-control" id="code" value="<?= !empty($detail['code']) ? $detail['code'] : ''?>"/>
+						<input name="code" type="text" class="form-control" id="code" value="<?= !empty($detail['code']) ? htmlspecialchars($detail['code'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 						<?php echo form_error('code', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="symbol">Symbol</label>
-						<input name="symbol" type="text" class="form-control" id="symbol" value="<?= !empty($detail['symbol']) ? $detail['symbol'] : ''?>"/>
+						<input name="symbol" type="text" class="form-control" id="symbol" value="<?= !empty($detail['symbol']) ? htmlspecialchars($detail['symbol'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 						<?php echo form_error('symbol', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="rate">Rate</label>
-						<input name="rate" type="text" class="form-control" id="rate" value="<?= !empty($detail['rate']) ? $detail['rate'] : ''?>"/>
+						<input name="rate" type="text" class="form-control" id="rate" value="<?= !empty($detail['rate']) ? htmlspecialchars($detail['rate'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 						<?php echo form_error('rate', '<div class="error">', '</div>'); ?>
 					</div>
 
@@ -66,10 +66,10 @@ $(function(){
 
 	// Show flash messages as toast
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 });
 </script>

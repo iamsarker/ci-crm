@@ -9,9 +9,12 @@ class Announcement_model extends CI_Model{
 	}
 
 	function loadAllData() {
-		$sql = "SELECT * FROM $this->table WHERE status=1 ";
-		$data = $this->db->query($sql)->result_array();
-		
+		// BEST PRACTICE: Use query builder instead of raw SQL
+		$this->db->select('*');
+		$this->db->from($this->table);
+		$this->db->where('status', 1);
+		$data = $this->db->get()->result_array();
+
 		return $data;
  	}
 

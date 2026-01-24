@@ -9,10 +9,16 @@ class Company_model extends CI_Model{
 	}
 
 	function loadAllData() {
-		$sql = "SELECT * FROM $this->table WHERE status=1 ";
-		$data = $this->db->query($sql)->result_array();
-		
-		return $data;
+		try {
+			$sql = "SELECT * FROM $this->table WHERE status=1 ";
+			$data = $this->db->query($sql)->result_array();
+
+			return $data;
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('loadAllData', $this->db->last_query(), $e->getMessage());
+			return array();
+		}
  	}
 
 	function getDetail($id) {
@@ -21,15 +27,21 @@ class Company_model extends CI_Model{
 			return array();
 		}
 
-		$this->db->select('*');
-		$this->db->from($this->table);
-		$this->db->where('id', intval($id));
-		$this->db->where('status', 1);
-		$data = $this->db->get();
+		try {
+			$this->db->select('*');
+			$this->db->from($this->table);
+			$this->db->where('id', intval($id));
+			$this->db->where('status', 1);
+			$data = $this->db->get();
 
-		if ($data && $data->num_rows() > 0) {
-			return $data->row_array();
-		} else {
+			if ($data && $data->num_rows() > 0) {
+				return $data->row_array();
+			} else {
+				return array();
+			}
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('getDetail', $this->db->last_query(), $e->getMessage());
 			return array();
 		}
 	}
@@ -37,18 +49,25 @@ class Company_model extends CI_Model{
 	function saveData($data) {
 		$return['id'] = 0;
 
-		if( !empty($data['id']) && $data['id'] > 0){
-			$this->db->where('id', $data['id']);
-			if ($this->db->update($this->table, $data)) {
-				$return['id'] = $data['id'];
+		try {
+			if( !empty($data['id']) && $data['id'] > 0){
+				$this->db->where('id', $data['id']);
+				if ($this->db->update($this->table, $data)) {
+					$return['id'] = $data['id'];
+				}
+			} else {
+				if ($this->db->insert($this->table, $data)) {
+					$return['id'] = $this->db->insert_id();
+				}
 			}
-		} else {
-			if ($this->db->insert($this->table, $data)) {
-				$return['id'] = $this->db->insert_id();
-			}
-		}
 
-		return $return;
+			return $return;
+		} catch (Exception $e) {
+			// SECURITY: Log database error with operation details
+			$operation = (!empty($data['id']) && $data['id'] > 0) ? 'UPDATE' : 'INSERT';
+			ErrorHandler::log_database_error('saveData - ' . $operation, $this->db->last_query(), $e->getMessage());
+			return array('id' => 0, 'error' => true, 'message' => 'Database operation failed');
+		}
  	}
 }
 ?>

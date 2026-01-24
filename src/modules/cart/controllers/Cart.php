@@ -229,6 +229,10 @@ class Cart extends WHMAZ_Controller
 			$resp = $this->curlGetRequest($checkurl);
 
 			$tmp = array();
+			if( is_null($resp) || empty($resp) ){
+				return $tmp;
+			}
+
 			foreach( $resp as $key => $row ){
 				if( $row->status == "available" ){
 					$extArr = explode(".", $key);
@@ -279,9 +283,12 @@ class Cart extends WHMAZ_Controller
 			$url = $regVendor['suggestion_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
 			$suggsurl = $url . '&keyword=' . $keywrd;
 
-			$list = $this->curlGetRequest($suggsurl);
-
 			$tmp = array(array());
+			$list = $this->curlGetRequest($suggsurl);
+			if( is_null($list) || empty($list) ){
+				return $tmp;
+			}
+
 			$idx=0;
 			foreach( $list as $key => $row ){
 				if( $row->status == "available" ){

@@ -62,9 +62,9 @@ $(function(){
         order: [[0, 'desc']],
         "columns": [
             { "title": "ID", "data": "id", "width": "5%" },
-            { "title": "Registrar Name", "data": "name", "width": "25%" },
-            { "title": "Platform", "data": "platform", "width": "15%" },
-            { "title": "API Base URL", "data": "api_base_url", "width": "30%" },
+            { "title": "Registrar Name", "data": "name", "width": "25%", render: function(data){return escapeXSS(data);} },
+            { "title": "Platform", "data": "platform", "width": "15%", render: function(data){return escapeXSS(data);} },
+            { "title": "API Base URL", "data": "api_base_url", "width": "25%", render: function(data){return escapeXSS(data);} },
             {
                 "title": "Default?", "data": "is_selected", "width": "10%",
                 "className": "text-center",
@@ -92,17 +92,17 @@ $(function(){
                 }
             },
             { "title": "Last Updated", "data": "updated_on", "width": "15%" },
-            { "title": "encoded_id", "data": "encoded_id", "visible": false, "orderable": false, "searchable": false },
             {
                 "title": "Action",
-                "data": "encoded_id",
-                "width": "15%",
+                "data": "id",
+                "width": "20%",
                 "className": "text-center",
                 "orderable": false,
                 "searchable": false,
                 "render": function (data, type, row) {
-                    return '<button type="button" class="btn btn-xs btn-secondary" onclick="openManage(\'' + data + '\')" title="Manage"><i class="fa fa-wrench"></i></button> ' +
-                           '<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow(\'' + data + '\', \'' + escapeHtml(row.name) + '\')" title="Delete"><i class="fa fa-trash"></i></button>';
+					let idVal = safe_encode(data);
+                    return '<button type="button" class="btn btn-xs btn-secondary" onclick="openManage(\'' + idVal + '\')" title="Manage"><i class="fa fa-wrench"></i></button> ' +
+                           '<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow(\'' + idVal + '\', \'' + escapeHtml(row.name) + '\')" title="Delete"><i class="fa fa-trash"></i></button>';
                 }
             }
         ]

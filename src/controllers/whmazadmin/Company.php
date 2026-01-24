@@ -79,13 +79,16 @@ class Company extends WHMAZADMIN_Controller {
 				if($resp){
 
 					if( $form_data['id'] == 0 ){
+						// SECURITY FIX: Generate secure random password instead of hardcoded password
+						$temp_password = generate_secure_password(12, true); // Generate 12-character random password
+
 						$user['first_name'] = $form_data['first_name'];
 						$user['last_name'] = $form_data['last_name'];
 						$user['email'] = $form_data['email'];
 						$user['mobile'] = $form_data['mobile'];
 						$user['phone'] = $form_data['phone'];
 						$user['designation'] = 'Company Owner';
-						$user['password'] = password_hash('AbXy@2018', PASSWORD_DEFAULT);
+						$user['password'] = password_hash($temp_password, PASSWORD_DEFAULT);
 						$user['company_id'] = $resp['id'];
 						$user['user_type'] = '0'; // owner
 						$user['status'] = '1'; // active
@@ -93,6 +96,13 @@ class Company extends WHMAZADMIN_Controller {
 						$user['inserted_on'] = getDateTime();
 						$user['inserted_by'] = $form_data['inserted_by'];
 						$this->Common_model->save("users", $user);
+
+						// SECURITY: Store temporary password in session to display to admin
+						$this->session->set_flashdata('new_user_credentials', array(
+							'email' => $form_data['email'],
+							'password' => $temp_password,
+							'company_name' => $form_data['name']
+						));
 					}
 
 					$this->session->set_flashdata('alert_success', 'Customer has been saved successfully.');

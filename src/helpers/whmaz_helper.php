@@ -1,13 +1,13 @@
 <?php
 
 	function successAlert($msg){
-		return '<div class="alert alert-success text-center" style="margin-bottom:0;font-weight:bold;font-size:18px;">'.$msg.'</div>';
+		return '<div class="alert alert-success text-center" style="margin-bottom:0;font-weight:bold;font-size:18px;">'.htmlspecialchars($msg, ENT_QUOTES, 'UTF-8').'</div>';
 	}
 	function primaryAlert($msg){
-		return '<div class="alert alert-info text-center" style="margin-bottom:0;font-weight:bold;font-size:18px;">'.$msg.'</div>';
+		return '<div class="alert alert-info text-center" style="margin-bottom:0;font-weight:bold;font-size:18px;">'.htmlspecialchars($msg, ENT_QUOTES, 'UTF-8').'</div>';
 	}
 	function errorAlert($msg){
-		return '<div class="alert alert-danger text-center" style="margin-bottom:0;font-weight:bold;font-size:18px;">'.$msg.'</div>';
+		return '<div class="alert alert-danger text-center" style="margin-bottom:0;font-weight:bold;font-size:18px;">'.htmlspecialchars($msg, ENT_QUOTES, 'UTF-8').'</div>';
 	}
 
 	function xss_cleaner($str, $is_image = FALSE) {
@@ -398,6 +398,68 @@
 			);
 			return '<meta name="csrf-token-name" content="'.$csrf['name'].'" />
 <meta name="csrf-token-hash" content="'.$csrf['hash'].'" />';
+		}
+	}
+
+	/**
+	 * SECURITY: Generate secure random password
+	 *
+	 * Generates a cryptographically secure random password with configurable length
+	 * and character set options.
+	 *
+	 * @param int $length Length of the password (default: 16)
+	 * @param bool $include_special Include special characters (default: true)
+	 * @return string Secure random password
+	 *
+	 * Usage:
+	 *   $password = generate_secure_password();           // 16 chars with special chars
+	 *   $password = generate_secure_password(12);         // 12 chars with special chars
+	 *   $password = generate_secure_password(12, false);  // 12 chars without special chars
+	 */
+	if ( ! function_exists('generate_secure_password'))
+	{
+		function generate_secure_password($length = 16, $include_special = true)
+		{
+			// Use cryptographically secure random bytes
+			$random_bytes = random_bytes($length);
+
+			// Define character sets
+			$uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';  // Removed I, O for clarity
+			$lowercase = 'abcdefghjkmnpqrstuvwxyz';   // Removed i, l, o for clarity
+			$numbers = '23456789';                     // Removed 0, 1 for clarity
+			$special = '!@#$%^&*()-_=+';
+
+			// Build character pool
+			$chars = $uppercase . $lowercase . $numbers;
+			if ($include_special) {
+				$chars .= $special;
+			}
+
+			$chars_length = strlen($chars);
+			$password = '';
+
+			// Generate password ensuring at least one character from each set
+			// First, add one from each required set
+			$password .= $uppercase[ord($random_bytes[0]) % strlen($uppercase)];
+			$password .= $lowercase[ord($random_bytes[1]) % strlen($lowercase)];
+			$password .= $numbers[ord($random_bytes[2]) % strlen($numbers)];
+
+			if ($include_special) {
+				$password .= $special[ord($random_bytes[3]) % strlen($special)];
+				$start_pos = 4;
+			} else {
+				$start_pos = 3;
+			}
+
+			// Fill the rest with random characters
+			for ($i = $start_pos; $i < $length; $i++) {
+				$password .= $chars[ord($random_bytes[$i]) % $chars_length];
+			}
+
+			// Shuffle the password to randomize character positions
+			$password = str_shuffle($password);
+
+			return $password;
 		}
 	}
 

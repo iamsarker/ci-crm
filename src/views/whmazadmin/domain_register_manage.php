@@ -30,7 +30,7 @@
                             <div class="form-group">
                                 <label for="name">Registrar Name <span class="text-danger">*</span></label>
                                 <input name="name" type="text" class="form-control" id="name"
-                                       value="<?= !empty($detail['name']) ? $detail['name'] : ''?>"
+                                       value="<?= !empty($detail['name']) ? htmlspecialchars($detail['name'], ENT_QUOTES, 'UTF-8') : ''?>"
                                        placeholder="e.g., Namecheap, GoDaddy"/>
                                 <?php echo form_error('name', '<div class="error">', '</div>'); ?>
                             </div>
@@ -57,7 +57,7 @@
                             <div class="form-group">
                                 <label for="auth_userid">Auth User ID <span class="text-danger">*</span></label>
                                 <input name="auth_userid" type="text" class="form-control" id="auth_userid"
-                                       value="<?= !empty($detail['auth_userid']) ? $detail['auth_userid'] : ''?>"
+                                       value="<?= !empty($detail['auth_userid']) ? htmlspecialchars($detail['auth_userid'], ENT_QUOTES, 'UTF-8') : ''?>"
                                        placeholder="API User ID"/>
                                 <?php echo form_error('auth_userid', '<div class="error">', '</div>'); ?>
                             </div>
@@ -67,7 +67,7 @@
                             <div class="form-group">
                                 <label for="auth_apikey">Auth API Key <span class="text-danger">*</span></label>
                                 <input name="auth_apikey" type="text" class="form-control" id="auth_apikey"
-                                       value="<?= !empty($detail['auth_apikey']) ? $detail['auth_apikey'] : ''?>"
+                                       value="<?= !empty($detail['auth_apikey']) ? htmlspecialchars($detail['auth_apikey'], ENT_QUOTES, 'UTF-8') : ''?>"
                                        placeholder="API Key or Password"/>
                                 <?php echo form_error('auth_apikey', '<div class="error">', '</div>'); ?>
                             </div>
@@ -77,7 +77,7 @@
                     <div class="form-group">
                         <label for="api_base_url">API Base URL <span class="text-danger">*</span></label>
                         <input name="api_base_url" type="text" class="form-control" id="api_base_url"
-                               value="<?= !empty($detail['api_base_url']) ? $detail['api_base_url'] : ''?>"
+                               value="<?= !empty($detail['api_base_url']) ? htmlspecialchars($detail['api_base_url'], ENT_QUOTES, 'UTF-8') : ''?>"
                                placeholder="https://api.registrar.com"/>
                         <?php echo form_error('api_base_url', '<div class="error">', '</div>'); ?>
                     </div>
@@ -85,28 +85,28 @@
                     <div class="form-group">
                         <label for="domain_check_api">Domain Check API Endpoint</label>
                         <input name="domain_check_api" type="text" class="form-control" id="domain_check_api"
-                               value="<?= !empty($detail['domain_check_api']) ? $detail['domain_check_api'] : ''?>"
+                               value="<?= !empty($detail['domain_check_api']) ? htmlspecialchars($detail['domain_check_api'], ENT_QUOTES, 'UTF-8') : ''?>"
                                placeholder="https://api.registrar.com/domains/check"/>
                     </div>
 
                     <div class="form-group">
                         <label for="suggestion_api">Domain Suggestion API Endpoint</label>
                         <input name="suggestion_api" type="text" class="form-control" id="suggestion_api"
-                               value="<?= !empty($detail['suggestion_api']) ? $detail['suggestion_api'] : ''?>"
+                               value="<?= !empty($detail['suggestion_api']) ? htmlspecialchars($detail['suggestion_api'], ENT_QUOTES, 'UTF-8') : ''?>"
                                placeholder="https://api.registrar.com/domains/suggest"/>
                     </div>
 
                     <div class="form-group">
                         <label for="domain_reg_api">Domain Registration API Endpoint</label>
                         <input name="domain_reg_api" type="text" class="form-control" id="domain_reg_api"
-                               value="<?= !empty($detail['domain_reg_api']) ? $detail['domain_reg_api'] : ''?>"
+                               value="<?= !empty($detail['domain_reg_api']) ? htmlspecialchars($detail['domain_reg_api'], ENT_QUOTES, 'UTF-8') : ''?>"
                                placeholder="https://api.registrar.com/domains/register"/>
                     </div>
 
                     <div class="form-group">
                         <label for="price_list_api">Price List API Endpoint</label>
                         <input name="price_list_api" type="text" class="form-control" id="price_list_api"
-                               value="<?= !empty($detail['price_list_api']) ? $detail['price_list_api'] : ''?>"
+                               value="<?= !empty($detail['price_list_api']) ? htmlspecialchars($detail['price_list_api'], ENT_QUOTES, 'UTF-8') : ''?>"
                                placeholder="https://api.registrar.com/pricing/list"/>
                     </div>
 
@@ -116,7 +116,7 @@
                             <div class="form-group">
                                 <label for="def_ns1">Nameserver 1</label>
                                 <input name="def_ns1" type="text" class="form-control" id="def_ns1"
-                                       value="<?= !empty($detail['def_ns1']) ? $detail['def_ns1'] : ''?>"
+                                       value="<?= !empty($detail['def_ns1']) ? htmlspecialchars($detail['def_ns1'], ENT_QUOTES, 'UTF-8') : ''?>"
                                        placeholder="ns1.yourdns.com"/>
                             </div>
                         </div>
@@ -124,7 +124,7 @@
                             <div class="form-group">
                                 <label for="def_ns2">Nameserver 2</label>
                                 <input name="def_ns2" type="text" class="form-control" id="def_ns2"
-                                       value="<?= !empty($detail['def_ns2']) ? $detail['def_ns2'] : ''?>"
+                                       value="<?= !empty($detail['def_ns2']) ? htmlspecialchars($detail['def_ns2'], ENT_QUOTES, 'UTF-8') : ''?>"
                                        placeholder="ns2.yourdns.com"/>
                             </div>
                         </div>
@@ -135,7 +135,7 @@
                             <div class="form-group">
                                 <label for="def_ns3">Nameserver 3</label>
                                 <input name="def_ns3" type="text" class="form-control" id="def_ns3"
-                                       value="<?= !empty($detail['def_ns3']) ? $detail['def_ns3'] : ''?>"
+                                       value="<?= !empty($detail['def_ns3']) ? htmlspecialchars($detail['def_ns3'], ENT_QUOTES, 'UTF-8') : ''?>"
                                        placeholder="ns3.yourdns.com"/>
                             </div>
                         </div>
@@ -143,7 +143,7 @@
                             <div class="form-group">
                                 <label for="def_ns4">Nameserver 4</label>
                                 <input name="def_ns4" type="text" class="form-control" id="def_ns4"
-                                       value="<?= !empty($detail['def_ns4']) ? $detail['def_ns4'] : ''?>"
+                                       value="<?= !empty($detail['def_ns4']) ? htmlspecialchars($detail['def_ns4'], ENT_QUOTES, 'UTF-8') : ''?>"
                                        placeholder="ns4.yourdns.com"/>
                             </div>
                         </div>
@@ -175,10 +175,10 @@ $(function(){
 
     // Show flash messages as toast
     <?php if ($this->session->flashdata('alert_success')) { ?>
-        toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+        toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
     <?php } ?>
     <?php if ($this->session->flashdata('alert_error')) { ?>
-        toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+        toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
     <?php } ?>
 });
 </script>

@@ -124,19 +124,19 @@
 								<tbody>
 								<tr>
 									<td>DNS-1</td>
-									<td><input name="ns1" placeholder="Nameserver 1" id="ns1" value="<?= !empty($detail['ns1']) ? $detail['ns1'] : ''?>" type="text" class="form-control" /></td>
+									<td><input name="ns1" placeholder="Nameserver 1" id="ns1" value="<?= !empty($detail['ns1']) ? htmlspecialchars($detail['ns1'], ENT_QUOTES, 'UTF-8') : ''?>" type="text" class="form-control" /></td>
 								</tr>
 								<tr>
 									<td>DNS-2</td>
-									<td><input name="ns2" placeholder="Nameserver 2" id="ns2" value="<?= !empty($detail['ns2']) ? $detail['ns2'] : ''?>" type="text" class="form-control" /></td>
+									<td><input name="ns2" placeholder="Nameserver 2" id="ns2" value="<?= !empty($detail['ns2']) ? htmlspecialchars($detail['ns2'], ENT_QUOTES, 'UTF-8') : ''?>" type="text" class="form-control" /></td>
 								</tr>
 								<tr>
 									<td>DNS-3</td>
-									<td><input name="ns3" placeholder="Nameserver 3" id="ns3" value="<?= !empty($detail['ns3']) ? $detail['ns3'] : ''?>" type="text" class="form-control" /></td>
+									<td><input name="ns3" placeholder="Nameserver 3" id="ns3" value="<?= !empty($detail['ns3']) ? htmlspecialchars($detail['ns3'], ENT_QUOTES, 'UTF-8') : ''?>" type="text" class="form-control" /></td>
 								</tr>
 								<tr>
 									<td>DNS-4</td>
-									<td><input name="ns4" placeholder="Nameserver 4" id="ns4" value="<?= !empty($detail['ns4']) ? $detail['ns4'] : ''?>" type="text" class="form-control" /></td>
+									<td><input name="ns4" placeholder="Nameserver 4" id="ns4" value="<?= !empty($detail['ns4']) ? htmlspecialchars($detail['ns4'], ENT_QUOTES, 'UTF-8') : ''?>" type="text" class="form-control" /></td>
 								</tr>
 
 								</tbody>

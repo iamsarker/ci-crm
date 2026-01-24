@@ -16,13 +16,14 @@ class Kb_model extends CI_Model{
  	}
 
 	function getDetail($id) {
+		// SECURITY FIX: Use prepared statement to prevent SQL injection
 		// Validate ID parameter
 		if (empty($id) || !is_numeric($id) || intval($id) <= 0) {
 			return array();
 		}
 
-		$sql = "SELECT k.*, group_concat(cat.kb_cat_id) kb_cat_ids FROM $this->table k left join kb_cat_mapping cat on k.id=cat.kb_id WHERE k.id=".intval($id)." and k.status=1 ";
-		$data = $this->db->query($sql)->result_array();
+		$sql = "SELECT k.*, group_concat(cat.kb_cat_id) kb_cat_ids FROM kbs k left join kb_cat_mapping cat on k.id=cat.kb_id WHERE k.id=? and k.status=1";
+		$data = $this->db->query($sql, array(intval($id)))->result_array();
 
 		return !empty($data) ? $data[0] : array();
 	}

@@ -17,6 +17,35 @@
 				<?= $this->session->flashdata('alert') ?>
 			  <?php } ?>
 
+			  <?php
+			  // SECURITY: Display temporary credentials for newly created company
+			  if ($this->session->flashdata('new_user_credentials')) {
+				  $credentials = $this->session->flashdata('new_user_credentials');
+			  ?>
+				<div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+					<strong><i class="fa fa-key"></i> IMPORTANT - New Company Credentials</strong>
+					<hr>
+					<p class="mb-2"><strong>Company:</strong> <?= htmlspecialchars($credentials['company_name'], ENT_QUOTES, 'UTF-8'); ?></p>
+					<p class="mb-2"><strong>Email/Username:</strong> <?= htmlspecialchars($credentials['email'], ENT_QUOTES, 'UTF-8'); ?></p>
+					<p class="mb-2">
+						<strong>Temporary Password:</strong>
+						<code class="bg-dark text-white px-2 py-1" style="font-size: 1.1em;"><?= htmlspecialchars($credentials['password'], ENT_QUOTES, 'UTF-8'); ?></code>
+						<button type="button" class="btn btn-sm btn-outline-secondary ml-2" onclick="copyToClipboard('<?= htmlspecialchars($credentials['password'], ENT_QUOTES, 'UTF-8'); ?>')">
+							<i class="fa fa-copy"></i> Copy
+						</button>
+					</p>
+					<hr>
+					<p class="mb-0">
+						<i class="fa fa-exclamation-triangle"></i>
+						<strong>SECURITY NOTICE:</strong> Please copy these credentials and share them securely with the customer.
+						<span class="text-danger">The customer should change their password immediately after first login.</span>
+					</p>
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+			  <?php } ?>
+
 			</div>
 
 			<div class="col-md-12 col-sm-12 mt-5">
@@ -65,10 +94,10 @@
         	'use strict'
 	// Show flash messages as toast
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 
 			$('#listDataTable').DataTable();
@@ -77,6 +106,40 @@
 
 	  function openManage(id) {
 		  window.location = "<?=base_url()?>whmazadmin/company/manage/"+id;
+	  }
+
+	  // SECURITY: Copy password to clipboard securely
+	  function copyToClipboard(text) {
+		  // Modern clipboard API
+		  if (navigator.clipboard && window.isSecureContext) {
+			  navigator.clipboard.writeText(text).then(function() {
+				  toastSuccess('Password copied to clipboard!');
+			  }, function(err) {
+				  // Fallback for older browsers
+				  fallbackCopyToClipboard(text);
+			  });
+		  } else {
+			  // Fallback for older browsers or non-HTTPS
+			  fallbackCopyToClipboard(text);
+		  }
+	  }
+
+	  function fallbackCopyToClipboard(text) {
+		  const textArea = document.createElement("textarea");
+		  textArea.value = text;
+		  textArea.style.position = "fixed";
+		  textArea.style.left = "-999999px";
+		  textArea.style.top = "-999999px";
+		  document.body.appendChild(textArea);
+		  textArea.focus();
+		  textArea.select();
+		  try {
+			  document.execCommand('copy');
+			  toastSuccess('Password copied to clipboard!');
+		  } catch (err) {
+			  toastError('Failed to copy password. Please copy manually.');
+		  }
+		  document.body.removeChild(textArea);
 	  }
 
 	  function deleteRow(id, title) {

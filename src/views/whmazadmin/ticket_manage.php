@@ -40,7 +40,11 @@
                     
                     <div class="form-group col-md-10 mt-3">
                         <label>Attachment</label>
-                        <input type="file" name="attachment[]" class="form-control" multiple>
+                        <input type="file" name="attachment[]" class="form-control" multiple
+                            accept=".gif,.jpg,.jpeg,.png,.pdf,.txt"
+                            data-max-size="5242880"
+                            onchange="validateFileUpload(this)">
+                        <small class="form-text text-muted">Allowed: GIF, JPG, PNG, PDF, TXT. Max size: 5MB per file.</small>
                         <?php echo form_error('attachment'); ?>
                     </div>
                     <div class="form-group col-md-2 mt-4">

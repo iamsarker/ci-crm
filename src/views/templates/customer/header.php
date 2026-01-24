@@ -74,7 +74,24 @@
 	<link rel="stylesheet" href="<?=base_url()?>resources/assets/css/jquery.toast.css">
 	<link rel="stylesheet" href="<?=base_url()?>resources/lib/sweetalert2/sweetalert2.min.css">
 	<link rel="stylesheet" href="<?=base_url()?>resources/assets/css/custom.css">
-    <script type="text/javascript">var BASE_URL="<?=base_url()?>"; var isLoadingShown = false;</script>
+    <script type="text/javascript">
+		var BASE_URL="<?=base_url()?>";
+		var isLoadingShown = false;
+		function escapeXSS(str){
+
+			if(!str){
+				return "";}
+			str = str+"";
+			return str.replace(/\</g, '&lt;')
+				.replace(/\>/g, '&gt;')
+				.replace(/\"/g, '&quot;')
+				.replace(/\'/g, '&#x27;')
+				.replace(/\//g, '&#x2F;')
+				//.replace(/\&/g, '&amp;')
+				;
+
+		}
+	</script>
   </head>
   <body class="page-profile">
 

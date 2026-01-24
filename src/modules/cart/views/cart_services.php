@@ -32,9 +32,9 @@
 							<div class="tx-rubik tx-normal mg-b-10 mg-t-auto text-center">
 								<?php
 									$billings = is_array($row['billing']) ? $row['billing'] : json_decode($row['billing'], true);
-									echo "<select name='pay_term' class='form-select pay_term' id='pay_term_".$row['id']."' >";
+									echo "<select name='pay_term' class='form-select pay_term' id='pay_term_".htmlspecialchars($row['id'], ENT_QUOTES, 'UTF-8')."' >";
 									foreach ($billings as $key => $val ){?>
-										<option value="<?=$val["service_pricing_id"]?>"><?=format($val["price"],2).' '.$val["currency"].'/'.$val["cycle_name"]?></option>
+										<option value="<?=htmlspecialchars($val["service_pricing_id"], ENT_QUOTES, 'UTF-8')?>"><?=htmlspecialchars(format($val["price"],2), ENT_QUOTES, 'UTF-8').' '.htmlspecialchars($val["currency"], ENT_QUOTES, 'UTF-8').'/'.htmlspecialchars($val["cycle_name"], ENT_QUOTES, 'UTF-8')?></option>
 									<?php }
 									echo "</select>";
 								?>

@@ -25,13 +25,13 @@
 					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 					<div class="form-group">
 						<label for="title">KB title</label>
-						<input name="title" type="text" class="form-control make-slug" id="title" value="<?= !empty($detail['title']) ? $detail['title'] : ''?>"/>
+						<input name="title" type="text" class="form-control make-slug" id="title" value="<?= !empty($detail['title']) ? htmlspecialchars($detail['title'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 						<?php echo form_error('title', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="slug">Slug</label>
-						<input name="slug" type="text" class="form-control" id="slug" value="<?= !empty($detail['slug']) ? $detail['slug'] : ''?>"/>
+						<input name="slug" type="text" class="form-control" id="slug" value="<?= !empty($detail['slug']) ? htmlspecialchars($detail['slug'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 						<?php echo form_error('slug', '<div class="error">', '</div>'); ?>
 					</div>
 
@@ -39,7 +39,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="total_view">Total View</label>
-								<input name="total_view" type="text" class="form-control" id="total_view" readonly disabled value="<?= !empty($detail['total_view']) ? $detail['total_view'] : '0'?>"/>
+								<input name="total_view" type="text" class="form-control" id="total_view" readonly disabled value="<?= !empty($detail['total_view']) ? htmlspecialchars($detail['total_view'], ENT_QUOTES, 'UTF-8') : '0'?>"/>
 								<?php echo form_error('total_view', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -47,7 +47,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="useful">Useful</label>
-								<input name="useful" type="text" class="form-control" id="useful" readonly disabled value="<?= !empty($detail['useful']) ? $detail['useful'] : '0'?>"/>
+								<input name="useful" type="text" class="form-control" id="useful" readonly disabled value="<?= !empty($detail['useful']) ? htmlspecialchars($detail['useful'], ENT_QUOTES, 'UTF-8') : '0'?>"/>
 								<?php echo form_error('useful', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -55,7 +55,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="upvote">Upvote</label>
-								<input name="upvote" type="text" class="form-control" id="upvote" readonly disabled value="<?= !empty($detail['upvote']) ? $detail['upvote'] : '0'?>"/>
+								<input name="upvote" type="text" class="form-control" id="upvote" readonly disabled value="<?= !empty($detail['upvote']) ? htmlspecialchars($detail['upvote'], ENT_QUOTES, 'UTF-8') : '0'?>"/>
 								<?php echo form_error('upvote', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -63,7 +63,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="downvote">Down Vote</label>
-								<input name="downvote" type="text" class="form-control" id="downvote" readonly disabled value="<?= !empty($detail['downvote']) ? $detail['downvote'] : '0'?>"/>
+								<input name="downvote" type="text" class="form-control" id="downvote" readonly disabled value="<?= !empty($detail['downvote']) ? htmlspecialchars($detail['downvote'], ENT_QUOTES, 'UTF-8') : '0'?>"/>
 								<?php echo form_error('downvote', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -73,7 +73,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="sort_order">Serial#</label>
-								<input name="sort_order" type="text" class="form-control" id="sort_order" value="<?= !empty($detail['sort_order']) ? $detail['sort_order'] : '1'?>" />
+								<input name="sort_order" type="text" class="form-control" id="sort_order" value="<?= !empty($detail['sort_order']) ? htmlspecialchars($detail['sort_order'], ENT_QUOTES, 'UTF-8') : '1'?>" />
 								<?php echo form_error('sort_order', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -81,7 +81,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="tags">Tags</label>
-								<input name="tags" type="text" class="form-control" id="tags" value="<?= !empty($detail['tags']) ? $detail['tags'] : ''?>"/>
+								<input name="tags" type="text" class="form-control" id="tags" value="<?= !empty($detail['tags']) ? htmlspecialchars($detail['tags'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 								<?php echo form_error('tags', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -95,7 +95,7 @@
 								<select name="kb_cat_id[]" id="kb_cat_id" class="form-select select2" multiple>
 									<option value="" disabled>-- Select --</option>
 									<?php foreach( $categories as $item  ){?>
-										<option value="<?=$item['id'];?>" <?= in_array($item['id'], $kb_cat_ids) ? 'selected' : '' ?> ><?=$item['cat_title'];?></option>
+										<option value="<?=htmlspecialchars($item['id'], ENT_QUOTES, 'UTF-8');?>" <?= in_array($item['id'], $kb_cat_ids) ? 'selected' : '' ?> ><?=htmlspecialchars($item['cat_title'], ENT_QUOTES, 'UTF-8');?></option>
 									<?php } ?>
 								</select>
 								<?php echo form_error('kb_cat_id', '<div class="error">', '</div>'); ?>
@@ -106,8 +106,8 @@
 
 					<div class="form-group">
 						<?php echo form_error('article', '<div class="error">', '</div>'); ?>
-						<textarea name="article" id="article" style="display: none" id="article"><?= !empty($detail['article']) ? $detail['article'] : ''?></textarea>
-						<div id="editor" style="height: 180px"><?= !empty($detail['article']) ? $detail['article'] : ''?></div>
+						<textarea name="article" id="article" style="display: none" id="article"><?= !empty($detail['article']) ? htmlspecialchars($detail['article'], ENT_QUOTES, 'UTF-8') : ''?></textarea>
+						<div id="editor" style="height: 180px"><?= !empty($detail['article']) ? xss_cleaner($detail['article']) : ''?></div>
 					</div>
 
 					<div class="form-check mb-3">
@@ -133,10 +133,10 @@ $(function(){
 
 	// Show flash messages as toast
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 });
 </script>

@@ -92,8 +92,7 @@ class Cart_model extends CI_Model
 
 	function getDomRegister($extension)
 	{
-
-		$sql = "SELECT id, name, domain_check_api, suggestion_api, domain_reg_api, price_list_api, auth_userid, auth_apikey FROM dom_registers WHERE status=1 ";
+		$sql = "SELECT id, name, domain_check_api, suggestion_api, domain_reg_api, price_list_api, auth_userid, auth_apikey FROM dom_registers WHERE status=1 and is_selected = 1 ";
 		$data = $this->db->query($sql)->result_array();
 		return $data[0];
 	}

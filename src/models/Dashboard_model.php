@@ -19,14 +19,19 @@ class Dashboard_model extends CI_Model{
  	}
 
 	 function getServerDnsInfo($id) {
+		// SECURITY FIX: Use prepared statement to prevent SQL injection
+		// Validate input
+		if (!is_numeric($id) || $id <= 0) {
+			return array();
+		}
 
 		$sql = "SELECT s.name, s.dns1, s.dns2, s.dns3, s.dns4, s.ip_addr primar_ip
-			FROM product_service_pricing psp 
+			FROM product_service_pricing psp
 			JOIN product_services ps on psp.product_service_id=ps.id
 			JOIN servers s on ps.server_id=s.id
-			WHERE psp.id=$id limit 0,1";
+			WHERE psp.id=? limit 0,1";
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->query($sql, array(intval($id)))->result_array();
 
 		return $data;
  	}

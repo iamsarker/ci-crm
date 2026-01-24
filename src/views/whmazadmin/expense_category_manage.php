@@ -25,13 +25,13 @@
 					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 					<div class="form-group">
 						<label for="expense_type">Expense category name</label>
-						<input name="expense_type" type="text" class="form-control" id="expense_type" value="<?= !empty($detail['expense_type']) ? $detail['expense_type'] : ''?>"/>
+						<input name="expense_type" type="text" class="form-control" id="expense_type" value="<?= !empty($detail['expense_type']) ? htmlspecialchars($detail['expense_type'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 						<?php echo form_error('expense_type', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="remarks">Remarks</label>
-						<textarea name="remarks" rows="3" class="form-control" id="remarks"><?= !empty($detail['remarks']) ? $detail['remarks'] : ''?></textarea>
+						<textarea name="remarks" rows="3" class="form-control" id="remarks"><?= !empty($detail['remarks']) ? htmlspecialchars($detail['remarks'], ENT_QUOTES, 'UTF-8') : ''?></textarea>
 						<?php echo form_error('remarks', '<div class="error">', '</div>'); ?>
 					</div>
 
@@ -53,10 +53,10 @@ $(function(){
 
 	// Show flash messages as toast
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 });
 </script>

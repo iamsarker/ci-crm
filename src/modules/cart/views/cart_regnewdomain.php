@@ -26,7 +26,7 @@
 				<div class="col-md-12">
 					<div class="domain-search-panel">
 						<div class="input-group domain-search-box">
-							<input type="text" class="form-control" placeholder="Search your domain name" aria-label="Search your domain name" id="search_domain_name" value="<?=$domkeyword;?>" aria-describedby="button-addon2">
+							<input type="text" class="form-control" placeholder="Search your domain name" aria-label="Search your domain name" id="search_domain_name" value="<?=htmlspecialchars($domkeyword, ENT_QUOTES, 'UTF-8');?>" aria-describedby="button-addon2">
 							<div class="input-group-append" ng-init="loadDomainToVar()">
 								<button class="btn btn-outline-info" type="button" id="button-addon2" ng-click="btnSearchDomain()">Search</button>
 							</div>
@@ -62,10 +62,10 @@
 						<tbody>
 							<?php foreach ($dom_prices as $dp){?>
 							<tr>
-								<td><?=$dp['extension']?> </td>
-								<td><?=$dp['price'].' '.getCurrencyCode()?></td>
-								<td><?=$dp['transfer'].' '.getCurrencyCode()?></td>
-								<td><?=$dp['renewal'].' '.getCurrencyCode()?></td>
+								<td><?=htmlspecialchars($dp['extension'], ENT_QUOTES, 'UTF-8')?> </td>
+								<td><?=htmlspecialchars($dp['price'], ENT_QUOTES, 'UTF-8').' '.htmlspecialchars(getCurrencyCode(), ENT_QUOTES, 'UTF-8')?></td>
+								<td><?=htmlspecialchars($dp['transfer'], ENT_QUOTES, 'UTF-8').' '.htmlspecialchars(getCurrencyCode(), ENT_QUOTES, 'UTF-8')?></td>
+								<td><?=htmlspecialchars($dp['renewal'], ENT_QUOTES, 'UTF-8').' '.htmlspecialchars(getCurrencyCode(), ENT_QUOTES, 'UTF-8')?></td>
 							</tr>
 							<?php } ?>
 						</tbody>

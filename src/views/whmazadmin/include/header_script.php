@@ -71,4 +71,19 @@
 	function safe_encode(val){
 		return encodeURIComponent(btoa(val));
 	}
+
+	function escapeXSS(str){
+
+		if(!str){
+			return "";}
+		str = str+"";
+		return str.replace(/\</g, '&lt;')
+			.replace(/\>/g, '&gt;')
+			.replace(/\"/g, '&quot;')
+			.replace(/\'/g, '&#x27;')
+			.replace(/\//g, '&#x2F;')
+			//.replace(/\&/g, '&amp;')
+			;
+
+	}
 </script>

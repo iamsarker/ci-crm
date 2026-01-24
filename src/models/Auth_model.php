@@ -9,103 +9,128 @@ class Auth_model extends CI_Model{
 	function doLogin($email, $password) {
 		$return = array();
 
-		// SECURITY FIX: Use prepared statement to prevent SQL injection
-		$sql = "SELECT * FROM `users` WHERE users.email = ?";
-		$query = $this->db->query($sql, array($email));
-		if ($query->num_rows() == 0){
-			$return['status_code'] = -2;
+		try {
+			// SECURITY FIX: Use prepared statement to prevent SQL injection
+			$sql = "SELECT * FROM `users` WHERE users.email = ?";
+			$query = $this->db->query($sql, array($email));
+			if ($query->num_rows() == 0){
+				$return['status_code'] = -2;
+				return $return;
+			}
+
+			// SECURITY FIX: Use prepared statement to prevent SQL injection
+			$sql = "SELECT u.*, c.name company, c.address, c.city, c.state, c.zip_code, c.country FROM users u join companies c on u.company_id=c.id WHERE u.email = ? and u.status = 1 and c.status=1";
+			$query = $this->db->query($sql, array($email));
+			if ($query->num_rows() == 0){
+				$return['status_code'] = -1;
+				return $return;
+			}
+
+			$userdata = $query->row();
+			if (password_verify($password,$userdata->password)) {
+				$resp = array();
+				$resp['id'] = $userdata->id;
+				$resp['first_name'] = $userdata->first_name;
+				$resp['last_name'] = $userdata->last_name;
+				$resp['email'] = $userdata->email;
+				$resp['mobile'] = $userdata->mobile;
+				$resp['phone'] = $userdata->phone;
+				$resp['address'] = $userdata->address;
+				$resp['zip_code'] = $userdata->zip_code;
+				$resp['city'] = $userdata->city;
+				$resp['state'] = $userdata->state;
+				$resp['country'] = $userdata->country;
+				$resp['company'] = $userdata->company;
+				$resp['designation'] = $userdata->designation;
+				$resp['user_type'] = $userdata->user_type;
+				$resp['company_id'] = $userdata->company_id;
+				$resp['profile_pic'] = $userdata->profile_pic;
+				$resp['terminal'] = getClientIp();
+
+				$logins = array();
+				$logins['user_id'] = $userdata->id;
+				$logins['login_time'] = getDateTime();
+				$logins['session_val'] = 0;
+				$logins['terminal'] = $resp['terminal'];
+				$this->saveUserLogins($logins);
+				$return['status_code'] = 1;
+				$return['data'] = $resp;
+				return $return;
+			}
+			$return['status_code'] = 0;
+			return $return;
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('doLogin', $this->db->last_query(), $e->getMessage());
+			$return['status_code'] = -99; // Error code for database failure
 			return $return;
 		}
-
-		// SECURITY FIX: Use prepared statement to prevent SQL injection
-		$sql = "SELECT u.*, c.name company, c.address, c.city, c.state, c.zip_code, c.country FROM users u join companies c on u.company_id=c.id WHERE u.email = ? and u.status = 1 and c.status=1";
-		$query = $this->db->query($sql, array($email));
-		if ($query->num_rows() == 0){
-			$return['status_code'] = -1;
-			return $return;
-		}
-
-		$userdata = $query->row();
-		if (password_verify($password,$userdata->password)) {
-			$resp = array();
-			$resp['id'] = $userdata->id;
-			$resp['first_name'] = $userdata->first_name;
-			$resp['last_name'] = $userdata->last_name;
-			$resp['email'] = $userdata->email;
-			$resp['mobile'] = $userdata->mobile;
-			$resp['phone'] = $userdata->phone;
-			$resp['address'] = $userdata->address;
-			$resp['zip_code'] = $userdata->zip_code;
-			$resp['city'] = $userdata->city;
-			$resp['state'] = $userdata->state;
-			$resp['country'] = $userdata->country;
-			$resp['company'] = $userdata->company;
-			$resp['designation'] = $userdata->designation;
-			$resp['user_type'] = $userdata->user_type;
-			$resp['company_id'] = $userdata->company_id;
-			$resp['profile_pic'] = $userdata->profile_pic;
-			$resp['terminal'] = getClientIp();
-
-			$logins = array();
-			$logins['user_id'] = $userdata->id;
-			$logins['login_time'] = getDateTime();
-			$logins['session_val'] = 0;
-			$logins['terminal'] = $resp['terminal'];
-			$this->saveUserLogins($logins);
-			$return['status_code'] = 1;
-			$return['data'] = $resp;
-			return $return;
-		}
-		$return['status_code'] = 0;
-		return $return;
  	}
 
  	function saveUserLogins($data){
- 		$data['active'] = 1;
- 		if ($this->db->insert('user_logins', $data)) {
+ 		try {
+			$data['active'] = 1;
+			if ($this->db->insert('user_logins', $data)) {
+			}
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('saveUserLogins', $this->db->last_query(), $e->getMessage());
 		}
  	}
 
 	function newRegistration($data) {
 		$return = array();
 
-		$data['status'] = "2";
-		$data['inserted_on'] = getDateTime();
-		//$data['terminal'] = getClientIp();
+		try {
+			$data['status'] = "2";
+			$data['inserted_on'] = getDateTime();
+			//$data['terminal'] = getClientIp();
 
-		$data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+			$data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
 
-		$uniqueVarificationCode = uniqid().$data['email'].uniqid().time();
-		$verification_code = hash('sha256', 'TB'.$uniqueVarificationCode);
-		$data['verify_hash'] = $verification_code;
+			$uniqueVarificationCode = uniqid().$data['email'].uniqid().time();
+			$verification_code = hash('sha256', 'TB'.$uniqueVarificationCode);
+			$data['verify_hash'] = $verification_code;
 
-		if ($this->db->insert('users', $data)) {
-			$return['success'] = 1;
-			$return['email'] = $data['email'];
-			$return['verification_code'] = $verification_code;
-		} else {
+			if ($this->db->insert('users', $data)) {
+				$return['success'] = 1;
+				$return['email'] = $data['email'];
+				$return['verification_code'] = $verification_code;
+			} else {
+				$return['success'] = 0;
+			};
+			return $return;
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('newRegistration', $this->db->last_query(), $e->getMessage());
 			$return['success'] = 0;
-		};
-		return $return;
+			return $return;
+		}
  	}
 
 
 	public function forgetpaswrd($username)
 	{
-		$this->db->select('email');
-		$this->db->from('users');
-		$this->db->where('email', $username);
-		$query=$this->db->get();
-		if ($query->num_rows()){
-			$this->sendpassword($username);
+		try {
+			$this->db->select('email');
+			$this->db->from('users');
+			$this->db->where('email', $username);
+			$query=$this->db->get();
+			if ($query->num_rows()){
+				$this->sendpassword($username);
 
 //			var_dump($query->num_rows());
 //			exit();
+			}
+
+
+			return 0;
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('forgetpaswrd', $this->db->last_query(), $e->getMessage());
+			return 0;
 		}
-
-
-		return 0;
 
 
 	}
@@ -114,21 +139,22 @@ class Auth_model extends CI_Model{
 	 function sendpassword($email) {
 		 $return = array();
 
-		// SECURITY FIX: Use prepared statement to prevent SQL injection
-		$sql = "SELECT * FROM users WHERE email = ?";
-		$query1 = $this->db->query($sql, array($email));
-		$row = $query1->result();
-
-		if ($query1->num_rows() > 0) {
-			// SECURITY FIX: Generate secure random password instead of hardcoded "1"
-			$passwordplain = bin2hex(random_bytes(8)); // Generate 16-character random password
-			$newpass = password_hash($passwordplain, PASSWORD_DEFAULT);
-
+		try {
 			// SECURITY FIX: Use prepared statement to prevent SQL injection
-			$sql = "UPDATE `users` SET `password` = ? WHERE `users`.`email` = ?";
-			$query = $this->db->query($sql, array($newpass, $email));
-			if ($query){
-				$this->sendEditPaidInvoiceEmail($row, $email, $passwordplain);
+			$sql = "SELECT * FROM users WHERE email = ?";
+			$query1 = $this->db->query($sql, array($email));
+			$row = $query1->result();
+
+			if ($query1->num_rows() > 0) {
+				// SECURITY FIX: Generate secure random password instead of hardcoded "1"
+				$passwordplain = bin2hex(random_bytes(8)); // Generate 16-character random password
+				$newpass = password_hash($passwordplain, PASSWORD_DEFAULT);
+
+				// SECURITY FIX: Use prepared statement to prevent SQL injection
+				$sql = "UPDATE `users` SET `password` = ? WHERE `users`.`email` = ?";
+				$query = $this->db->query($sql, array($newpass, $email));
+				if ($query){
+					$this->sendEditPaidInvoiceEmail($row, $email, $passwordplain);
 
 //				if (!$mail->send()) {
 //					$return['status_code'] = 0;
@@ -138,16 +164,23 @@ class Auth_model extends CI_Model{
 //					$return['status_code'] = 1;
 //					$return['msg'] = "Password sent to your email!";
 //				}
-			}else {
-				$return['status_code'] = -1;
-				$return['msg'] = "Unable to update the password";
-			}
+				}else {
+					$return['status_code'] = -1;
+					$return['msg'] = "Unable to update the password";
+				}
 //
 
 
 
-			return $return;
+				return $return;
 
+			}
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('sendpassword', $this->db->last_query(), $e->getMessage());
+			$return['status_code'] = -99;
+			$return['msg'] = "Database error occurred";
+			return $return;
 		}
 	}
 
@@ -195,44 +228,62 @@ class Auth_model extends CI_Model{
  	function verifyUser($verificationCode){
  		$return = 0;
 
-		$this->db->select('id');
-		$this->db->from('users');
-		$this->db->where(array(
-			'verify_hash'=>$verificationCode,
-			'status'=>'2'
-		));
-		$num_results = $this->db->count_all_results();
-		if ($num_results == 1) {
-			$data['status'] = '1';
-			$this->db->where('verify_hash', $verificationCode);
-			if($this->db->update('users', $data)) {
-				$return = 1;
+		try {
+			$this->db->select('id');
+			$this->db->from('users');
+			$this->db->where(array(
+				'verify_hash'=>$verificationCode,
+				'status'=>'2'
+			));
+			$num_results = $this->db->count_all_results();
+			if ($num_results == 1) {
+				$data['status'] = '1';
+				$this->db->where('verify_hash', $verificationCode);
+				if($this->db->update('users', $data)) {
+					$return = 1;
+				}
 			}
+			return $return;
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('verifyUser', $this->db->last_query(), $e->getMessage());
+			return 0;
 		}
-		return $return;
  	}
 
  	function countDbSession($user_id){
-		$this->db->select('id');
-		$this->db->from('user_logins');
-		$this->db->where(array(
-			'user_id'=>$user_id,
-			'active'=>1
-		));
-		$num_results = $this->db->count_all_results();
+		try {
+			$this->db->select('id');
+			$this->db->from('user_logins');
+			$this->db->where(array(
+				'user_id'=>$user_id,
+				'active'=>1
+			));
+			$num_results = $this->db->count_all_results();
 
-		return $num_results;
+			return $num_results;
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('countDbSession', $this->db->last_query(), $e->getMessage());
+			return 0;
+		}
 	}
 
 	function isEmailExists($email){
-		$this->db->select('id');
-		$this->db->from('users');
-		$this->db->where(array(
-			'email'=>$email
-		));
-		$num_results = $this->db->count_all_results();
+		try {
+			$this->db->select('id');
+			$this->db->from('users');
+			$this->db->where(array(
+				'email'=>$email
+			));
+			$num_results = $this->db->count_all_results();
 
-		return $num_results;
+			return $num_results;
+		} catch (Exception $e) {
+			// SECURITY: Log database error
+			ErrorHandler::log_database_error('isEmailExists', $this->db->last_query(), $e->getMessage());
+			return 0;
+		}
 	}
 }
 ?>

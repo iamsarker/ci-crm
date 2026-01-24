@@ -47,21 +47,21 @@
 								<div class="col-md-6 col-sm-12">
 									<div class="form-group">
 										<label for="name">Company name</label>
-										<input name="name" type="text" class="form-control" id="name" value="<?= !empty($detail['name']) ? $detail['name'] : ''?>"/>
+										<input name="name" type="text" class="form-control" id="name" value="<?= !empty($detail['name']) ? htmlspecialchars($detail['name'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 										<?php echo form_error('name', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="first_name">First name</label>
-										<input name="first_name" type="text" class="form-control" id="first_name" value="<?= !empty($detail['first_name']) ? $detail['first_name'] : ''?>"/>
+										<input name="first_name" type="text" class="form-control" id="first_name" value="<?= !empty($detail['first_name']) ? htmlspecialchars($detail['first_name'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 										<?php echo form_error('first_name', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="last_name">Last name</label>
-										<input name="last_name" type="text" class="form-control" id="last_name" value="<?= !empty($detail['last_name']) ? $detail['last_name'] : ''?>"/>
+										<input name="last_name" type="text" class="form-control" id="last_name" value="<?= !empty($detail['last_name']) ? htmlspecialchars($detail['last_name'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 										<?php echo form_error('last_name', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -72,7 +72,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="email">Email</label>
-										<input name="email" type="text" class="form-control" id="email" value="<?= !empty($detail['email']) ? $detail['email'] : ''?>"/>
+										<input name="email" type="text" class="form-control" id="email" value="<?= !empty($detail['email']) ? htmlspecialchars($detail['email'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 										<?php echo form_error('email', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -80,7 +80,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="mobile">Mobile</label>
-										<input name="mobile" type="text" class="form-control" id="mobile" value="<?= !empty($detail['mobile']) ? $detail['mobile'] : ''?>"/>
+										<input name="mobile" type="text" class="form-control" id="mobile" value="<?= !empty($detail['mobile']) ? htmlspecialchars($detail['mobile'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 										<?php echo form_error('mobile', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -88,7 +88,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="phone">Phone</label>
-										<input name="phone" type="text" class="form-control" id="phone" value="<?= !empty($detail['phone']) ? $detail['phone'] : ''?>"/>
+										<input name="phone" type="text" class="form-control" id="phone" value="<?= !empty($detail['phone']) ? htmlspecialchars($detail['phone'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 										<?php echo form_error('phone', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -96,7 +96,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="city">City</label>
-										<input name="city" type="text" class="form-control" id="city" value="<?= !empty($detail['city']) ? $detail['city'] : ''?>"/>
+										<input name="city" type="text" class="form-control" id="city" value="<?= !empty($detail['city']) ? htmlspecialchars($detail['city'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 										<?php echo form_error('city', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -107,7 +107,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="address">Address</label>
-										<input name="address" type="text" class="form-control" id="address" value="<?= !empty($detail['address']) ? $detail['address'] : ''?>"/>
+										<input name="address" type="text" class="form-control" id="address" value="<?= !empty($detail['address']) ? htmlspecialchars($detail['address'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 										<?php echo form_error('address', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -115,7 +115,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="zip_code">Zip code</label>
-										<input name="zip_code" type="text" class="form-control" id="zip_code" value="<?= !empty($detail['zip_code']) ? $detail['zip_code'] : ''?>"/>
+										<input name="zip_code" type="text" class="form-control" id="zip_code" value="<?= !empty($detail['zip_code']) ? htmlspecialchars($detail['zip_code'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 										<?php echo form_error('zip_code', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -123,7 +123,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="state">State</label>
-										<input name="state" type="text" class="form-control" id="state" value="<?= !empty($detail['state']) ? $detail['state'] : ''?>"/>
+										<input name="state" type="text" class="form-control" id="state" value="<?= !empty($detail['state']) ? htmlspecialchars($detail['state'], ENT_QUOTES, 'UTF-8') : ''?>"/>
 										<?php echo form_error('state', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -176,10 +176,10 @@ $(function(){
 
 	// Show flash messages as toast
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 });
 </script>
