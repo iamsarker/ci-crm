@@ -50,7 +50,7 @@ $(function(){
         order: [[0, 'desc']],
         "columns": [
             { "title": "ID", "data": "id", "width": "5%" },
-            { "title": "Registrar Name", "data": "name", "width": "25%", render: function(data){return escapeXSS(data);} },
+            { "title": "Registrar Name", "data": "name", "width": "15%", render: function(data){return escapeXSS(data);} },
             { "title": "Platform", "data": "platform", "width": "15%", render: function(data){return escapeXSS(data);} },
             { "title": "API Base URL", "data": "api_base_url", "width": "25%", render: function(data){return escapeXSS(data);} },
             {
@@ -67,7 +67,7 @@ $(function(){
                 }
             },
             {
-                "title": "Active?", "data": "status", "width": "10%",
+                "title": "Active?", "data": "status", "width": "15%",
                 "className": "text-center",
                 "orderable": false,
                 "searchable": false,

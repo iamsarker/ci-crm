@@ -26,7 +26,7 @@
 				<div class="col-md-12">
 					<div class="domain-search-panel">
 						<div class="input-group domain-search-box">
-							<input type="text" class="form-control" placeholder="Search your domain name" aria-label="Search your domain name" id="search_domain_name" value="<?=htmlspecialchars($domkeyword, ENT_QUOTES, 'UTF-8');?>" aria-describedby="button-addon2">
+							<input type="text" class="form-control" placeholder="Search your domain name" aria-label="Search your domain name" id="search_domain_name" value="<?= empty($domkeyword) ? '' : htmlspecialchars($domkeyword, ENT_QUOTES, 'UTF-8');?>" aria-describedby="button-addon2">
 							<div class="input-group-append" ng-init="loadDomainToVar()">
 								<button class="btn btn-outline-info" type="button" id="button-addon2" ng-click="btnSearchDomain()">Search</button>
 							</div>

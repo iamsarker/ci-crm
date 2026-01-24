@@ -64,6 +64,7 @@ class WHMAZ_Controller extends MX_Controller
 		$headers = array(
 			'Accept: application/json',
 			'Content-Type: application/json',
+			'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 		);
 		curl_setopt($ch, CURLOPT_URL, $finalUrl);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
@@ -71,11 +72,26 @@ class WHMAZ_Controller extends MX_Controller
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); // Follow redirects
+		curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
 		// SECURITY: Ensure SSL verification is enabled
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+
 		$resp = curl_exec($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$curlError = curl_error($ch);
 		curl_close($ch);
+
+		// Log errors for debugging
+		if ($httpCode !== 200 && $httpCode !== 0) {
+			log_message('error', 'cURL HTTP Error ' . $httpCode . ': ' . $finalUrl);
+			log_message('error', 'cURL Response: ' . $resp);
+		}
+		if ($curlError) {
+			log_message('error', 'cURL Error: ' . $curlError . ' for URL: ' . $finalUrl);
+		}
+
 		return json_decode($resp);
 	}
 

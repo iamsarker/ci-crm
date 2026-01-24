@@ -151,15 +151,19 @@
           
           <?php } else{ $menus = getMenuItems();?>
           <li class="nav-item"><a href="<?=base_url()?>home" class="nav-link"><i data-feather="home"></i> Home</a></li>
-          <li class="nav-item with-sub">
-            <a href="" class="nav-link"><i data-feather="pie-chart"></i> Shop</a>
+		  <li class="nav-item with-sub">
+			  <a href="" class="nav-link"><i data-feather="globe"></i> Domain</a>
+			  <ul class="navbar-menu-sub">
+				  <li class="nav-sub-item"><a href="<?=base_url()?>cart/domain/register" class="nav-sub-link"><i data-feather="globe"></i> Register domain</a></li>
+				  <li class="nav-sub-item"><a href="<?=base_url()?>cart/domain/register" class="nav-sub-link"><i data-feather="repeat"></i> Transfer domain to us</a></li>
+			  </ul>
+		  </li>
+		  <li class="nav-item with-sub">
+            <a href="" class="nav-link"><i data-feather="server"></i> Hosting</a>
             <ul class="navbar-menu-sub">
 				<?php foreach ($menus as $row){?>
 				<li class="nav-sub-item"><a href="<?=base_url()?>cart/services/<?=$row['id']?>" class="nav-sub-link"><i data-feather="shopping-cart"></i> <?=$row['group_name']?></a></li>
 				<?php }?>
-				<li class="nav-sub-item"><hr></li>
-                <li class="nav-sub-item"><a href="<?=base_url()?>cart/domain/register" class="nav-sub-link"><i data-feather="globe"></i> Register domain</a></li>
-                <li class="nav-sub-item"><a href="<?=base_url()?>cart/domain/register" class="nav-sub-link"><i data-feather="repeat"></i> Transfer domain to us</a></li>
             </ul>
           </li>
           <li class="nav-item"><a href="<?=base_url()?>announcement" class="nav-link"><i data-feather="box"></i> Announcement</a></li>

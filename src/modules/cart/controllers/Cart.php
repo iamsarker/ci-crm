@@ -209,47 +209,78 @@ class Cart extends WHMAZ_Controller
 	{
 		$resp_data = array();
 		$resp_data['status'] = 0;
+		$resp_data['info'] = array();
 
-		if (!empty($domkeyword)) {
-			$domArr = explode(".", $domkeyword);
+		try {
+			if (!empty($domkeyword)) {
+				$domArr = explode(".", $domkeyword);
 
-			$keywrd = $domArr[0];
-			$extension = "com";
-			$len = count($domArr);
-			if ($len > 1) {
-				$extension = $domArr[$len - 1];
-			}
-
-			$regVendor = $this->Cart_model->getDomRegister(".com");
-			$priceList = $this->Cart_model->getDomPricing();
-
-			$url = $regVendor['domain_check_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
-			$checkurl = $url . '&domain-name=' . $keywrd . '&tlds=' . $extension;
-
-			$resp = $this->curlGetRequest($checkurl);
-
-			$tmp = array();
-			if( is_null($resp) || empty($resp) ){
-				return $tmp;
-			}
-
-			foreach( $resp as $key => $row ){
-				if( $row->status == "available" ){
-					$extArr = explode(".", $key);
-					$cnt = count($extArr);
-					$ext = $extArr[$cnt - 1];
-					$domPriceObject = $this->getDomainPrice($priceList, ".".$ext);
-
-					$tmp["name"] = $key;
-					$tmp["price"] = !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0;
-					$tmp["domPriceId"] = !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0;
+				$keywrd = $domArr[0];
+				$extension = "com";
+				$len = count($domArr);
+				if ($len > 1) {
+					$extension = $domArr[$len - 1];
 				}
-			}
 
-			if( !empty($tmp) ) {
-				$resp_data['status'] = 1;
+				// BUGFIX: Use actual extension instead of hardcoded ".com"
+				$regVendor = $this->Cart_model->getDomRegister("." . $extension);
+
+				// Validate registrar configuration
+				if (empty($regVendor) || empty($regVendor['domain_check_api'])) {
+					$resp_data['error'] = 'Domain registrar not configured';
+					echo json_encode($resp_data);
+					return;
+				}
+
+				$priceList = $this->Cart_model->getDomPricing();
+
+				$url = $regVendor['domain_check_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
+				$checkUrl = $url . '&domain-name=' . $keywrd . '&tlds=' . $extension;
+
+				// Log API request for debugging
+				log_message('debug', 'Domain Search API URL: ' . $checkUrl);
+
+				$resp = $this->curlGetRequest($checkUrl);
+
+				// Log API response for debugging
+				log_message('debug', 'Domain Search API Response: ' . json_encode($resp));
+
+				$tmp = array();
+
+				// BUGFIX: Don't return early, continue to echo JSON
+				if( is_null($resp) || empty($resp) ){
+					$resp_data['error'] = 'No response from domain registrar API';
+					echo json_encode($resp_data);
+					return;
+				}
+
+				// BUGFIX: Build array properly instead of overwriting
+				foreach( $resp as $key => $row ){
+					if( isset($row->status) && $row->status == "available" ){
+						$extArr = explode(".", $key);
+						$cnt = count($extArr);
+						$ext = $extArr[$cnt - 1];
+						$domPriceObject = $this->getDomainPrice($priceList, ".".$ext);
+
+						// BUGFIX: Append to array instead of overwriting
+						$tmp[] = array(
+							"name" => $key,
+							"price" => !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0,
+							"domPriceId" => !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0
+						);
+					}
+				}
+
+				if( !empty($tmp) ) {
+					$resp_data['status'] = 1;
+				}
+				$resp_data['info'] = $tmp;
 			}
-			$resp_data['info'] = $tmp;
+		} catch (Exception $e) {
+			// Log error
+			log_message('error', 'Domain Search Error: ' . $e->getMessage());
+			ErrorHandler::log_database_error('domain_search', 'API Call', $e->getMessage());
+			$resp_data['error'] = 'Domain search failed: ' . $e->getMessage();
 		}
 
 		echo json_encode($resp_data);
@@ -267,46 +298,69 @@ class Cart extends WHMAZ_Controller
 
 	private function domainLiveSuggestions($domkeyword = NULL){
 
-		if (!empty($domkeyword)) {
-			$domArr = explode(".", $domkeyword);
+		try {
+			if (!empty($domkeyword)) {
+				$domArr = explode(".", $domkeyword);
 
-			$keywrd = $domArr[0];
-			$extension = "com";
-			$len = count($domArr);
-			if ($len > 1) {
-				$extension = $domArr[$len - 1];
-			}
+				$keywrd = $domArr[0];
+				$extension = "com";
+				$len = count($domArr);
+				if ($len > 1) {
+					$extension = $domArr[$len - 1];
+				}
 
-			$regVendor = $this->Cart_model->getDomRegister("." . $extension);
-			$priceList = $this->Cart_model->getDomPricing();
+				$regVendor = $this->Cart_model->getDomRegister("." . $extension);
 
-			$url = $regVendor['suggestion_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
-			$suggsurl = $url . '&keyword=' . $keywrd;
+				// Validate registrar configuration
+				if (empty($regVendor) || empty($regVendor['suggestion_api'])) {
+					log_message('error', 'Domain suggestion API not configured');
+					return array();
+				}
 
-			$tmp = array(array());
-			$list = $this->curlGetRequest($suggsurl);
-			if( is_null($list) || empty($list) ){
+				$priceList = $this->Cart_model->getDomPricing();
+
+				$url = $regVendor['suggestion_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
+				$suggsurl = $url . '&keyword=' . $keywrd;
+
+				// Log API request for debugging
+				log_message('debug', 'Domain Suggestion API URL: ' . $suggsurl);
+
+				// BUGFIX: Initialize as empty array instead of array(array())
+				$tmp = array();
+				$list = $this->curlGetRequest($suggsurl);
+
+				// Log API response for debugging
+				log_message('debug', 'Domain Suggestion API Response: ' . json_encode($list));
+
+				// BUGFIX: Return empty array properly
+				if( is_null($list) || empty($list) ){
+					return array();
+				}
+
+				$idx=0;
+				foreach( $list as $key => $row ){
+					// BUGFIX: Check if status property exists before accessing
+					if( isset($row->status) && $row->status == "available" ){
+
+						$extArr = explode(".", $key);
+						$cnt = count($extArr);
+						$ext = $extArr[$cnt - 1];
+						$domPriceObject = $this->getDomainPrice($priceList, ".".$ext);
+
+						$tmp[$idx]["name"] = $key;
+						$tmp[$idx]["price"] = !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0;
+						$tmp[$idx]["domPriceId"] = !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0;
+
+						$idx++;
+					}
+				}
+
 				return $tmp;
 			}
-
-			$idx=0;
-			foreach( $list as $key => $row ){
-				if( $row->status == "available" ){
-
-					$extArr = explode(".", $key);
-					$cnt = count($extArr);
-					$ext = $extArr[$cnt - 1];
-					$domPriceObject = $this->getDomainPrice($priceList, ".".$ext);
-
-					$tmp[$idx]["name"] = $key;
-					$tmp[$idx]["price"] = !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0;
-					$tmp[$idx]["domPriceId"] = !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0;
-
-					$idx++;
-				}
-			}
-
-			return $tmp;
+		} catch (Exception $e) {
+			// Log error
+			log_message('error', 'Domain Suggestion Error: ' . $e->getMessage());
+			ErrorHandler::log_database_error('domainLiveSuggestions', 'API Call', $e->getMessage());
 		}
 
 		return array();
