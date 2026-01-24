@@ -19,6 +19,10 @@ class Dashboard extends WHMAZADMIN_Controller
 	}
 
 	public function summary_api() {
+		// Send CSRF headers for Angular to update token
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
 		echo json_encode($this->Dashboard_model->loadSummaryData());
 	}
 

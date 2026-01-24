@@ -9,6 +9,7 @@
 		  <div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
 			<div class="wd-200p">
 				<form method="post" action="">
+					<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
 					<h3 class="tx-color-01 mg-b-5">Reset your password</h3>
 					<p class="tx-color-03 tx-16 mg-b-40">Do you forget your password? </p>
 

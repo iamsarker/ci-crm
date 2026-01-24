@@ -45,9 +45,11 @@ class Clientarea extends WHMAZ_Controller {
 		$query = "https://".$serverInfo["hostname"].":2087/json-api/create_user_session?api.version=1&user=tong0bari&service=cpaneld";
 
 		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
+		// SECURITY FIX: Enable SSL verification for secure connections
+		// If using self-signed certificates, configure proper CA bundle instead of disabling
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 
 		$header[0] = "Authorization: WHM ".$serverInfo['username'].":" . preg_replace("'(\r|\n)'","", base64_decode(base64_decode($serverInfo['access_hash'])));
 		curl_setopt($curl,CURLOPT_HTTPHEADER,$header);
@@ -80,9 +82,11 @@ class Clientarea extends WHMAZ_Controller {
 		$query = "https://".$serverInfo["hostname"].":2087/json-api/create_user_session?api.version=1&user=tong0bari&service=cpaneld";
 
 		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,0);
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,0);
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
+		// SECURITY FIX: Enable SSL verification for secure connections
+		// If using self-signed certificates, configure proper CA bundle instead of disabling
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
 
 		$header[0] = "Authorization: WHM ".$serverInfo['username'].":" . preg_replace("'(\r|\n)'","", base64_decode(base64_decode($serverInfo['access_hash'])));
 		curl_setopt($curl,CURLOPT_HTTPHEADER,$header);
@@ -121,6 +125,10 @@ class Clientarea extends WHMAZ_Controller {
 	}
 
 	public function summary_api() {
+		// Send CSRF headers for Angular to update token
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
 		echo json_encode($this->Clientarea_model->loadSummaryData(getCompanyId()));
 	}
 }

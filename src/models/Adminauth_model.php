@@ -9,8 +9,9 @@ class Adminauth_model extends CI_Model{
 	function doLogin($email, $password) {
 		$return = array();
 
-		$sql = "SELECT id, admin_role_id, first_name, last_name, username, password, email, mobile, phone, designation, signature, support_depts, profile_pic FROM admin_users WHERE (username='$email' or email='$email') and status = 1";
-		$query = $this->db->query($sql);
+		// SECURITY FIX: Use prepared statement to prevent SQL injection in admin login
+		$sql = "SELECT id, admin_role_id, first_name, last_name, username, password, email, mobile, phone, designation, signature, support_depts, profile_pic FROM admin_users WHERE (username = ? or email = ?) and status = 1";
+		$query = $this->db->query($sql, array($email, $email));
 		if ($query->num_rows() == 0){
 			$return['status_code'] = -1;
 			return $return;

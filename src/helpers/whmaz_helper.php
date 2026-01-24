@@ -363,4 +363,42 @@
 		}
 	}
 
+	/**
+	 * CSRF Field - Outputs hidden input field with CSRF token
+	 * Used for forms to include CSRF protection
+	 * Usage: <?=csrf_field()?>
+	 */
+	if ( ! function_exists('csrf_field'))
+	{
+		function csrf_field()
+		{
+			$ci = & get_instance();
+			$csrf = array(
+				'name' => $ci->security->get_csrf_token_name(),
+				'hash' => $ci->security->get_csrf_hash()
+			);
+			return '<input type="hidden" name="'.$csrf['name'].'" value="'.$csrf['hash'].'" />';
+		}
+	}
+
+	/**
+	 * CSRF Meta - Outputs meta tags with CSRF token for AJAX requests
+	 * Usage in header: <?=csrf_meta()?>
+	 * Usage in JS: var csrfName = $('meta[name="csrf-token-name"]').attr('content');
+	 *              var csrfHash = $('meta[name="csrf-token-hash"]').attr('content');
+	 */
+	if ( ! function_exists('csrf_meta'))
+	{
+		function csrf_meta()
+		{
+			$ci = & get_instance();
+			$csrf = array(
+				'name' => $ci->security->get_csrf_token_name(),
+				'hash' => $ci->security->get_csrf_hash()
+			);
+			return '<meta name="csrf-token-name" content="'.$csrf['name'].'" />
+<meta name="csrf-token-hash" content="'.$csrf['hash'].'" />';
+		}
+	}
+
 ?>

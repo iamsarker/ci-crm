@@ -52,78 +52,96 @@ class Order_model extends CI_Model{
 
 
 	function loadOrderList($companyId, $limit) {
+		// SECURITY FIX: Use query builder to prevent SQL injection
+		$this->db->select('*');
+		$this->db->from('orders');
+		$this->db->where('status', 1);
 
-		$usrCondition = " WHERE status=1 ";
 		if( is_numeric($companyId) && $companyId > 0 ){
-			$usrCondition = " WHERE company_id=$companyId AND status=1 ";
+			$this->db->where('company_id', intval($companyId));
 		}
 
-		$sql = "SELECT * FROM orders $usrCondition AND status=1 ORDER BY id DESC ";
+		$this->db->order_by('id', 'DESC');
+
 		if( is_numeric($limit) && $limit > 0 ){
-			$sql .= " LIMIT $limit ";
+			$this->db->limit(intval($limit));
 		}
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->get()->result_array();
 
 		return $data;
  	}
 
 	function loadOrderServices($companyId, $limit) {
+		// SECURITY FIX: Use query builder to prevent SQL injection
+		$this->db->select('*');
+		$this->db->from('order_services');
 
-		$usrCondition = "";
 		if( is_numeric($companyId) && $companyId > 0 ){
-			$usrCondition = " company_id=$companyId ";
+			$this->db->where('company_id', intval($companyId));
 		}
 
-		$sql = "SELECT * FROM order_services WHERE $usrCondition ORDER BY id DESC ";
+		$this->db->order_by('id', 'DESC');
+
 		if( is_numeric($limit) && $limit > 0 ){
-			$sql .= " LIMIT $limit ";
+			$this->db->limit(intval($limit));
 		}
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->get()->result_array();
 
 		return $data;
 	}
 
 	function loadOrderServiceById($companyId, $id) {
-
-		$usrCondition = "";
-		if( is_numeric($companyId) && $companyId > 0 ){
-			$usrCondition = " os.id=$id and os.company_id=$companyId ";
+		// SECURITY FIX: Use query builder to prevent SQL injection
+		if( !is_numeric($companyId) || !is_numeric($id) || $companyId <= 0 || $id <= 0 ){
+			return array();
 		}
 
-		$sql = "SELECT os.*, o.currency_code, o.instructions FROM order_services os join orders o on os.order_id=o.id WHERE $usrCondition ";
-		$data = $this->db->query($sql)->result_array();
+		$this->db->select('os.*, o.currency_code, o.instructions');
+		$this->db->from('order_services os');
+		$this->db->join('orders o', 'os.order_id = o.id');
+		$this->db->where('os.id', intval($id));
+		$this->db->where('os.company_id', intval($companyId));
+
+		$data = $this->db->get()->result_array();
 
 		return !empty($data) ? $data[0] : array();
 	}
 
 	function loadOrderDomains($companyId, $limit) {
+		// SECURITY FIX: Use query builder to prevent SQL injection
+		$this->db->select('*');
+		$this->db->from('order_domains');
 
-		$usrCondition = "";
 		if( is_numeric($companyId) && $companyId > 0 ){
-			$usrCondition = " company_id=$companyId ";
+			$this->db->where('company_id', intval($companyId));
 		}
 
-		$sql = "SELECT * FROM order_domains WHERE $usrCondition ORDER BY id DESC ";
+		$this->db->order_by('id', 'DESC');
+
 		if( is_numeric($limit) && $limit > 0 ){
-			$sql .= " LIMIT $limit ";
+			$this->db->limit(intval($limit));
 		}
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->get()->result_array();
 
 		return $data;
 	}
 
 	function loadOrderDomainById($companyId, $id) {
-
-		$usrCondition = "";
-		if( is_numeric($companyId) && $companyId > 0 ){
-			$usrCondition = " od.id=$id and od.company_id=$companyId ";
+		// SECURITY FIX: Use query builder to prevent SQL injection
+		if( !is_numeric($companyId) || !is_numeric($id) || $companyId <= 0 || $id <= 0 ){
+			return array();
 		}
 
-		$sql = "SELECT od.*, o.currency_code, o.instructions FROM order_domains od join orders o on od.order_id=o.id WHERE $usrCondition ";
-		$data = $this->db->query($sql)->result_array();
+		$this->db->select('od.*, o.currency_code, o.instructions');
+		$this->db->from('order_domains od');
+		$this->db->join('orders o', 'od.order_id = o.id');
+		$this->db->where('od.id', intval($id));
+		$this->db->where('od.company_id', intval($companyId));
+
+		$data = $this->db->get()->result_array();
 
 		return !empty($data) ? $data[0] : array();
 	}

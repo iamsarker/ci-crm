@@ -412,8 +412,10 @@ $config['sess_regenerate_destroy'] = FALSE;
 $config['cookie_prefix']	= '';
 $config['cookie_domain']	= '';
 $config['cookie_path']		= '/';
+// SECURITY NOTE: Set cookie_secure to TRUE in production if using HTTPS
 $config['cookie_secure']	= FALSE;
-$config['cookie_httponly'] 	= FALSE;
+// SECURITY FIX: Enable httponly to prevent JavaScript access to cookies
+$config['cookie_httponly'] 	= TRUE;
 
 /*
 |--------------------------------------------------------------------------
@@ -457,12 +459,33 @@ $config['global_xss_filtering'] = FALSE;
 | 'csrf_regenerate' = Regenerate token on every submission
 | 'csrf_exclude_uris' = Array of URIs which ignore CSRF checks
 */
-$config['csrf_protection'] = FALSE;
-$config['csrf_token_name'] = 'csrf_test_name';
+// SECURITY FIX: Enable CSRF protection for all forms
+$config['csrf_protection'] = TRUE;
+$config['csrf_token_name'] = 'csrf_token_name';
 $config['csrf_cookie_name'] = 'csrf_cookie_name';
 $config['csrf_expire'] = 7200;
 $config['csrf_regenerate'] = TRUE;
-$config['csrf_exclude_uris'] = array();
+// Exclude API endpoints that handle AJAX requests with custom validation
+$config['csrf_exclude_uris'] = array(
+	// DataTables server-side pagination endpoints (POST with custom data format)
+	'whmazadmin/order/ssp_list_api',
+	'whmazadmin/invoice/ssp_list_api',
+	'whmazadmin/expense/ssp_list_api',
+	'whmazadmin/ticket/ssp_list_api',
+	'whmazadmin/announcement/ssp_list_api',
+	'whmazadmin/kb/ssp_list_api',
+	'whmazadmin/package/ssp_list_api',
+	'whmazadmin/domain_register/ssp_list_api',
+	// Angular JSON API endpoints (authenticated, read-only operations)
+	// CSRF is less relevant for JSON APIs; these endpoints require authentication
+	'whmazadmin/dashboard/summary_api',
+	'whmazadmin/order/recent_list_api',
+	'whmazadmin/invoice/recent_list_api',
+	'whmazadmin/ticket/recent_list_api',
+	'clientarea/summary_api',
+	'tickets/ticket_list_api',
+	'billing/invoice_list_api'
+);
 
 /*
 |--------------------------------------------------------------------------

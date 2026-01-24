@@ -63,7 +63,7 @@ class Company extends WHMAZADMIN_Controller {
 					'status'       	=> 1
 				);
 
-				if( intval($form_data['id']) > 0 ){
+				if( strlen($form_data['id']) > 0 ){
 					$oldEntity = $this->Company_model->getDetail(safe_decode($id_val));
 					$form_data['updated_on'] = getDateTime();
 					$form_data['updated_by'] = getAdminId();

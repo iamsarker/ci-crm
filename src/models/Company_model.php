@@ -16,10 +16,22 @@ class Company_model extends CI_Model{
  	}
 
 	function getDetail($id) {
-		$sql = "SELECT * FROM $this->table WHERE id=$id and status=1 ";
-		$data = $this->db->query($sql)->result_array();
+		// SECURITY FIX: Validate ID and use query builder to prevent SQL injection
+		if (empty($id) || !is_numeric($id) || intval($id) <= 0) {
+			return array();
+		}
 
-		return !empty($data) ? $data[0] : array();
+		$this->db->select('*');
+		$this->db->from($this->table);
+		$this->db->where('id', intval($id));
+		$this->db->where('status', 1);
+		$data = $this->db->get();
+
+		if ($data && $data->num_rows() > 0) {
+			return $data->row_array();
+		} else {
+			return array();
+		}
 	}
 
 	function saveData($data) {

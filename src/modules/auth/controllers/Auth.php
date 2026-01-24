@@ -28,9 +28,16 @@ class Auth extends WHMAZ_Controller
 			if ($resp['status_code'] == 1) {
 				$this->session->set_userdata("CUSTOMER", $resp['data']);
 
+				// SECURITY FIX: Validate redirect URL to prevent open redirect vulnerability
 				if( !empty($redirectUrl) ){
-					header("Location: ".$redirectUrl);
-					die();
+					// Only allow internal redirects (relative URLs starting with /)
+					if (strpos($redirectUrl, '/') === 0 && strpos($redirectUrl, '//') !== 0) {
+						// Valid internal redirect
+						redirect($redirectUrl, 'refresh');
+					} else {
+						// Invalid redirect URL, go to default page
+						redirect('/clientarea/index', 'refresh');
+					}
 				} else{
 					redirect('/clientarea/index', 'refresh');
 				}

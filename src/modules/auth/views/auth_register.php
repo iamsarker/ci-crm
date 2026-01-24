@@ -11,10 +11,11 @@
     		<?php } ?>
 
 	      	<form method="post" action="">
+	      		<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
 	        <div class="media align-items-stretch justify-content-center ht-100p pos-relative">
 	          	<div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
 		            <div class="wd-100p">
-		            	
+
 		            	<h4 class="tx-color-01 mg-b-5">Create new account</h4>
 		            	<p class="tx-color-03 tx-16 mg-b-20">It's free to signup and only takes a minute.</p>
 

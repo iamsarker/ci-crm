@@ -38,6 +38,36 @@
 
 		$('[data-toggle="tooltip"]').tooltip()
 
+		// Setup CSRF token for jQuery AJAX requests
+		var csrfName = $('meta[name="csrf-token-name"]').attr('content');
+		var csrfHash = $('meta[name="csrf-token-hash"]').attr('content');
+
+		$.ajaxSetup({
+			beforeSend: function(xhr, settings) {
+				// Add CSRF token to POST requests
+				if (settings.type === 'POST' && csrfName && csrfHash) {
+					settings.data = settings.data || {};
+					if (typeof settings.data === 'string') {
+						settings.data += '&' + csrfName + '=' + csrfHash;
+					} else if (typeof settings.data === 'object') {
+						settings.data[csrfName] = csrfHash;
+					}
+				}
+			},
+			complete: function(xhr) {
+				// Update CSRF token from response headers
+				var newCsrfName = xhr.getResponseHeader('X-CSRF-TOKEN-NAME');
+				var newCsrfHash = xhr.getResponseHeader('X-CSRF-TOKEN-HASH');
+
+				if (newCsrfName && newCsrfHash) {
+					csrfName = newCsrfName;
+					csrfHash = newCsrfHash;
+					$('meta[name="csrf-token-name"]').attr('content', newCsrfName);
+					$('meta[name="csrf-token-hash"]').attr('content', newCsrfHash);
+				}
+			}
+		});
+
 		window.darkMode = function(){
 			$('.btn-white').addClass('btn-dark').removeClass('btn-white');
 			$('.bg-white').addClass('bg-gray-900').removeClass('bg-white');

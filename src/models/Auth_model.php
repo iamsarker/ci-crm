@@ -8,15 +8,18 @@ class Auth_model extends CI_Model{
 
 	function doLogin($email, $password) {
 		$return = array();
-		$sql = "SELECT * FROM `users` WHERE users.email='$email'";
-		$query = $this->db->query($sql);
+
+		// SECURITY FIX: Use prepared statement to prevent SQL injection
+		$sql = "SELECT * FROM `users` WHERE users.email = ?";
+		$query = $this->db->query($sql, array($email));
 		if ($query->num_rows() == 0){
 			$return['status_code'] = -2;
 			return $return;
 		}
 
-		$sql = "SELECT u.*, c.name company, c.address, c.city, c.state, c.zip_code, c.country FROM users u join companies c on u.company_id=c.id WHERE u.email='$email' and u.status = 1 and c.status=1";
-		$query = $this->db->query($sql);
+		// SECURITY FIX: Use prepared statement to prevent SQL injection
+		$sql = "SELECT u.*, c.name company, c.address, c.city, c.state, c.zip_code, c.country FROM users u join companies c on u.company_id=c.id WHERE u.email = ? and u.status = 1 and c.status=1";
+		$query = $this->db->query($sql, array($email));
 		if ($query->num_rows() == 0){
 			$return['status_code'] = -1;
 			return $return;
@@ -111,20 +114,21 @@ class Auth_model extends CI_Model{
 	 function sendpassword($email) {
 		 $return = array();
 
-
-		$query1 = $this->db->query("SELECT *  from users where email = '" . $email . "'");
+		// SECURITY FIX: Use prepared statement to prevent SQL injection
+		$sql = "SELECT * FROM users WHERE email = ?";
+		$query1 = $this->db->query($sql, array($email));
 		$row = $query1->result();
 
-
 		if ($query1->num_rows() > 0) {
-//			$passwordplain = rand(999999999, 9999999999);
-			$newpass = password_hash(1, PASSWORD_DEFAULT);
+			// SECURITY FIX: Generate secure random password instead of hardcoded "1"
+			$passwordplain = bin2hex(random_bytes(8)); // Generate 16-character random password
+			$newpass = password_hash($passwordplain, PASSWORD_DEFAULT);
 
-			$sql = "UPDATE `users` SET `password` = '".$newpass."' WHERE `users`.`email` = '".$email."'";
-
-			$query = $this->db->query($sql);
+			// SECURITY FIX: Use prepared statement to prevent SQL injection
+			$sql = "UPDATE `users` SET `password` = ? WHERE `users`.`email` = ?";
+			$query = $this->db->query($sql, array($newpass, $email));
 			if ($query){
-				$this->sendEditPaidInvoiceEmail($row,"yeasinalicse@gmail.com");
+				$this->sendEditPaidInvoiceEmail($row, $email, $passwordplain);
 
 //				if (!$mail->send()) {
 //					$return['status_code'] = 0;
@@ -147,8 +151,8 @@ class Auth_model extends CI_Model{
 		}
 	}
 
-	function sendEditPaidInvoiceEmail($info, $emailTo){
-		$appSettings = $this->db->query("SELECT *  from app_settings");
+	function sendEditPaidInvoiceEmail($info, $emailTo, $passwordplain){
+		$appSettings = $this->db->query("SELECT * from app_settings");
 		$rowData = $appSettings->result();
 		$this->load->library('email');
 		$this->email->clear();
@@ -165,20 +169,19 @@ class Auth_model extends CI_Model{
 		$this->email->set_newline("\r\n");
 		$this->email->from($rowData[0]->email, 'Tong Bari');
 
-		$emailList = array(
-			$emailTo,
-			$rowData[0]->email,
-		);
+		// SECURITY FIX: Only send to the user, not to multiple addresses
+		$this->email->to($emailTo);
+		$this->email->subject("Password Reset - Tong Bari");
 
-		$this->email->to($emailList);
-		$this->email->subject("Update your password - Tong Bari");
-		$passwordplain = 123;
-//		$body = $this->load->view('email/email_demo', $info, TRUE);
-		$body='Dear ,'. "\r\n";
-		$body.='Thanks for contacting us regarding forgot password,<br> Your <b>Password</b> is <b>'.$passwordplain.'</b>'."\r\n";
-		$body.='<br>Please Update your password.';
-		$body.='<br>Thanks & Regards';
-		$body.='<br>Tong Bari';
+		// SECURITY FIX: Use the actual generated password, not hardcoded "123"
+		$userName = !empty($info[0]->first_name) ? $info[0]->first_name : 'User';
+		$body = 'Dear ' . htmlspecialchars($userName) . ',<br><br>';
+		$body .= 'You have requested to reset your password.<br><br>';
+		$body .= 'Your new temporary password is: <b>' . htmlspecialchars($passwordplain) . '</b><br><br>';
+		$body .= 'Please login and change this password immediately for security reasons.<br><br>';
+		$body .= 'If you did not request this password reset, please contact us immediately.<br><br>';
+		$body .= 'Thanks & Regards<br>';
+		$body .= 'Tong Bari Team';
 
 		$this->email->message($body);
 

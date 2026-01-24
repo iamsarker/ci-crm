@@ -25,6 +25,9 @@
 <meta name="description" content="WHMAZ Admin - Web Host Manager A to Z solutions. Alternative of WHMCS">
 <meta name="author" content="Tong Bari">
 
+<!-- CSRF Token for AJAX requests -->
+<?=csrf_meta()?>
+
 <!-- Favicon -->
 <link rel="shortcut icon" type="image/x-icon" href="<?=base_url()?>resources/assets/img/favicon.png">
 

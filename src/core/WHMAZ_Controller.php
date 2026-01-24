@@ -48,6 +48,15 @@ class WHMAZ_Controller extends MX_Controller
 
 	function processRestCall(){
 		$_POST = json_decode(file_get_contents('php://input'), true);
+
+		// Send updated CSRF token in response headers for Angular
+		$this->sendCsrfHeaders();
+	}
+
+	function sendCsrfHeaders(){
+		// Send CSRF token in response headers so Angular can update it
+		header('X-CSRF-TOKEN-NAME: ' . $this->security->get_csrf_token_name());
+		header('X-CSRF-TOKEN-HASH: ' . $this->security->get_csrf_hash());
 	}
 
 	function curlGetRequest($finalUrl){
@@ -62,7 +71,11 @@ class WHMAZ_Controller extends MX_Controller
 		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+		// SECURITY: Ensure SSL verification is enabled
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		$resp = curl_exec($ch);
+		curl_close($ch);
 		return json_decode($resp);
 	}
 

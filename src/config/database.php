@@ -73,12 +73,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $active_group = 'default';
 $query_builder = TRUE;
 
+// SECURITY FIX: Use environment variables for database credentials
+// Credentials are now loaded from .env file (never commit .env to git!)
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => '67.222.24.126',
-	'username' => 'tong0bari_whmazusr',
-	'password' => 'Oam9d}%uObdu',
-	'database' => 'tong0bari_whmaz',
+	'hostname' => env('DB_HOSTNAME', 'localhost'),
+	'username' => env('DB_USERNAME', ''),
+	'password' => env('DB_PASSWORD', ''),
+	'database' => env('DB_DATABASE', ''),
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,

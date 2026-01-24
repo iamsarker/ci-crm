@@ -8,13 +8,28 @@ class Common_model extends CI_Model {
     }
 
 	public function generate_dropdown($table, $id, $field, $field2=null, $field3=null) {
+		// SECURITY NOTE: This method accepts table/field names as parameters
+		// Ensure these are only called from trusted code paths, not user input
+		// Whitelist validation would be needed if called with user input
+
 		$data[''] = '-- Select One --';
+
+		// Sanitize field names to prevent SQL injection
+		$id = $this->db->protect_identifiers($id, false);
+		$field = $this->db->protect_identifiers($field, false);
+		if (!empty($field2)) {
+			$field2 = $this->db->protect_identifiers($field2, false);
+		}
+		if (!empty($field3)) {
+			$field3 = $this->db->protect_identifiers($field3, false);
+		}
+
 		if( !empty($field2) && !empty($field3) ){
-			$this->db->select("$id, $field, $field2, $field3");
+			$this->db->select("$id, $field, $field2, $field3", false);
 		} else if( !empty($field2) && empty($field3) ){
-			$this->db->select("$id, $field, $field2");
+			$this->db->select("$id, $field, $field2", false);
 		} else {
-			$this->db->select("$id, $field");
+			$this->db->select("$id, $field", false);
 		}
 
 		$this->db->from($table);
@@ -23,7 +38,15 @@ class Common_model extends CI_Model {
 		$query = $this->db->get();
 
 		foreach ($query->result_array() AS $rows) {
-			$data[$rows[$id]] = $rows[$field] . (!empty( $field2 ) ? ' - '.$rows[$field2] : '') . (!empty( $field3 ) ? ' - '.$rows[$field3] : '');
+			// Remove protect_identifiers wrapping for array key access
+			$idKey = str_replace('`', '', $id);
+			$fieldKey = str_replace('`', '', $field);
+			$field2Key = !empty($field2) ? str_replace('`', '', $field2) : null;
+			$field3Key = !empty($field3) ? str_replace('`', '', $field3) : null;
+
+			$data[$rows[$idKey]] = $rows[$fieldKey] .
+				(!empty($field2Key) && isset($rows[$field2Key]) ? ' - '.$rows[$field2Key] : '') .
+				(!empty($field3Key) && isset($rows[$field3Key]) ? ' - '.$rows[$field3Key] : '');
 		}
 
 		return $data;
@@ -133,15 +156,21 @@ class Common_model extends CI_Model {
 	}
 
 	public function getServerInfoByOrderServiceId($orderServiceId, $companyId) {
-		$sql = "SELECT s.* 
+		// SECURITY FIX: Use prepared statement to prevent SQL injection
+		// Validate inputs
+		if (!is_numeric($orderServiceId) || !is_numeric($companyId) || $orderServiceId <= 0 || $companyId <= 0) {
+			return array();
+		}
+
+		$sql = "SELECT s.*
 			FROM servers s
 			JOIN product_services ps on s.id=ps.server_id
 			JOIN product_service_pricing psp on psp.product_service_id=ps.id
 			JOIN order_services os on psp.id=os.product_service_pricing_id
-			WHERE os.id=$orderServiceId and os.company_id=$companyId";
-		$data = $this->db->query($sql)->result_array();
+			WHERE os.id=? and os.company_id=?";
+		$data = $this->db->query($sql, array(intval($orderServiceId), intval($companyId)))->result_array();
 
-		if ($data) {
+		if ($data && count($data) > 0) {
 			return $data[0];
 		} else {
 			return array();
