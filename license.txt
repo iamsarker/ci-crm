@@ -1,21 +1,435 @@
-The MIT License (MIT)
+END USER LICENSE AGREEMENT (EULA)
+WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
-Copyright (c) 2014 - 2019, British Columbia Institute of Technology
+================================================================================
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Last Updated: January 25, 2026
+Version: 1.0.0
+Product: WHMAZ - CI-CRM
+Vendor: [YOUR COMPANY NAME]
+Website: [YOUR WEBSITE URL]
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+================================================================================
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+IMPORTANT - READ CAREFULLY
+
+This End User License Agreement ("EULA") is a legal agreement between you (either an individual or a single entity, referred to as "You" or "Licensee") and [YOUR COMPANY NAME] ("Licensor", "We", "Us", or "Our") for the software product identified above, which includes computer software and may include associated media, printed materials, and "online" or electronic documentation ("Software").
+
+By purchasing, downloading, installing, or using the Software, you agree to be bound by the terms of this EULA. If you do not agree to the terms of this EULA, do not install or use the Software.
+
+================================================================================
+
+1. GRANT OF LICENSE
+
+This Software is licensed to you through CodeCanyon (Envato Market). Your use of the Software is governed by both this EULA and the Envato Market License terms, which can be found at:
+https://codecanyon.net/licenses/standard
+https://codecanyon.net/licenses/extended
+
+Two types of licenses are available:
+
+1.1 REGULAR LICENSE
+
+The Regular License grants you, the purchaser, an ongoing, non-exclusive, worldwide license to use the Software to create one single End Product for yourself or for one client (a "single application"), and the End Product may be distributed for Free.
+
+Regular License Terms:
+- You may use the Software to create ONE End Product (single website/application)
+- The End Product may be for yourself or for one client
+- You may charge your client for your services to create the End Product
+- The End Product must NOT be sold or distributed to multiple clients
+- The End Product must NOT allow end users to create their own implementations
+- You may modify the Software to suit your requirements
+- You may NOT redistribute or resell the Software itself (source code)
+- You may NOT offer the Software as a hosted/SaaS solution to multiple end users
+
+Examples of acceptable use under Regular License:
+✓ Creating a website for your own company
+✓ Creating a website for a single client and charging for your services
+✓ Creating an internal tool for a single organization
+
+Examples of prohibited use under Regular License:
+✗ Creating a SaaS product where multiple end users each create their own accounts
+✗ Selling the Software to multiple clients
+✗ Offering the Software as a hosted service to multiple paying customers
+✗ Creating a website template and selling it to multiple buyers
+
+1.2 EXTENDED LICENSE
+
+The Extended License grants you, the purchaser, an ongoing, non-exclusive, worldwide license to use the Software to create one single End Product for yourself or for one client (a "single application"), and the End Product may be sold or distributed for charge to multiple end users.
+
+Extended License Terms:
+- All Regular License terms apply, PLUS:
+- The End Product MAY be sold to multiple end users
+- The End Product MAY be offered as a SaaS (Software as a Service) solution
+- End users MAY create their own accounts and use the system
+- You MAY charge end users for access to the End Product
+- You still may NOT redistribute or resell the Software source code itself
+- You still may NOT sublicense the Software to others
+
+Examples of acceptable use under Extended License:
+✓ Creating a SaaS platform where multiple companies subscribe and use the system
+✓ Offering the Software as a hosted service with multiple paying customers
+✓ Creating a multi-tenant application where each customer has their own account
+
+Examples of prohibited use under Extended License:
+✗ Reselling the Software source code to other developers
+✗ Offering the Software as a template for others to install on their own servers
+✗ Sublicensing the Software to other development agencies
+
+================================================================================
+
+2. COPYRIGHT AND OWNERSHIP
+
+2.1 Copyright Notice
+
+Copyright © 2026 [YOUR COMPANY NAME]. All rights reserved.
+
+The Software is protected by copyright laws and international copyright treaties, as well as other intellectual property laws and treaties. The Software is licensed, not sold.
+
+2.2 Ownership
+
+The Software and all intellectual property rights therein are and shall remain the sole property of the Licensor. This license does not grant you any rights to trademarks, service marks, or logos of the Licensor.
+
+2.3 Third-Party Components
+
+The Software includes third-party open-source components. These components are subject to their respective licenses. See CREDITS.md for a complete list of third-party components and their licenses.
+
+================================================================================
+
+3. PERMITTED USES
+
+Subject to the terms and conditions of this EULA and your purchased license type (Regular or Extended), you are granted the following rights:
+
+3.1 Installation and Use
+- Install and use the Software on unlimited servers/domains for the single End Product
+- Use the Software for your internal business purposes
+- Modify the Software to suit your requirements
+
+3.2 Modifications
+- Modify, adapt, or create derivative works of the Software
+- Combine the Software with other software applications
+- Remove or alter any proprietary notices in the Software for your End Product
+
+3.3 Backup Copies
+- Make backup copies of the Software for archival purposes
+- Use backup copies only in the event that the primary copy is destroyed or becomes unusable
+
+================================================================================
+
+4. RESTRICTIONS
+
+You may NOT:
+
+4.1 Redistribution
+- Distribute, sell, lease, rent, lend, or sublicense the Software source code to third parties
+- Make the Software source code available to others via file sharing, cloud storage, or any other means
+- Package the Software with other products for distribution
+- Use the Software to create a competing product
+
+4.2 Reverse Engineering
+- Reverse engineer, decompile, disassemble, or otherwise attempt to discover the source code of compiled portions (if any)
+- Remove or obscure any copyright notices or proprietary markings from the Software (except in your End Product)
+
+4.3 Unauthorized Use
+- Use the Software in violation of any applicable laws or regulations
+- Use the Software to create malicious, harmful, or illegal applications
+- Use the Software in a manner that infringes upon the rights of others
+- Share your license credentials with others
+
+4.4 Transfer Limitations
+- Transfer the license to another person or entity without prior written consent from the Licensor
+- Use a single license for multiple End Products (you must purchase separate licenses)
+
+================================================================================
+
+5. SUPPORT AND UPDATES
+
+5.1 Support Period
+
+Purchase of the Software includes:
+- 6 months of support from the date of purchase
+- Access to documentation and knowledge base
+- Email support for installation and configuration issues
+- Bug fix support
+
+Extended support periods may be purchased separately.
+
+5.2 Updates
+
+You are entitled to:
+- Free updates and bug fixes for the duration of your support period
+- Access to minor version updates (e.g., 1.x to 1.y)
+- Documentation updates
+
+Major version updates (e.g., 1.x to 2.x) may require a separate purchase or upgrade fee.
+
+5.3 Support Channels
+
+Support is provided via:
+- Email: support@yourcompany.com
+- Support ticket system (if available)
+- Documentation: README.md, INSTALLATION.md, USER_GUIDE.md
+
+Support response time: Within 48 hours (business days)
+
+5.4 Support Limitations
+
+Support does NOT include:
+- Installation services (installation guides are provided)
+- Customization or development services
+- Third-party plugin/library support
+- Server configuration or management
+- Training or consulting services
+
+================================================================================
+
+6. WARRANTY DISCLAIMER
+
+6.1 "AS IS" Basis
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+6.2 No Guarantees
+
+THE LICENSOR DOES NOT WARRANT THAT:
+- The Software will meet your specific requirements
+- The operation of the Software will be uninterrupted or error-free
+- All Software defects will be corrected
+- The Software will be compatible with all systems or configurations
+
+6.3 User Responsibility
+
+You acknowledge that:
+- You are responsible for selecting the Software to achieve your intended results
+- You are responsible for the installation, use, and results obtained from the Software
+- You are responsible for backup and recovery of your data
+
+================================================================================
+
+7. LIMITATION OF LIABILITY
+
+7.1 Maximum Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESS INFORMATION, OR ANY OTHER PECUNIARY LOSS) ARISING OUT OF THE USE OF OR INABILITY TO USE THE SOFTWARE, EVEN IF THE LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+7.2 Liability Cap
+
+IN ANY CASE, THE LICENSOR'S ENTIRE LIABILITY UNDER ANY PROVISION OF THIS EULA SHALL BE LIMITED TO THE AMOUNT ACTUALLY PAID BY YOU FOR THE SOFTWARE LICENSE.
+
+7.3 Jurisdictional Limitations
+
+Some jurisdictions do not allow the exclusion or limitation of incidental or consequential damages, so the above limitation or exclusion may not apply to you.
+
+================================================================================
+
+8. DATA PROTECTION AND PRIVACY
+
+8.1 Data Collection
+
+The Software may collect and process data entered by you or your users. You are responsible for:
+- Complying with all applicable data protection laws (GDPR, CCPA, etc.)
+- Obtaining necessary consents from end users
+- Implementing appropriate security measures
+- Providing privacy policies to end users
+
+8.2 No Data Transmission to Licensor
+
+The Software does NOT automatically transmit any data to the Licensor, except:
+- License validation (if implemented)
+- Update checks (if enabled)
+- Error reporting (if you opt-in)
+
+8.3 Third-Party Services
+
+If you integrate third-party services (payment gateways, email services, domain registrars, etc.), you are responsible for complying with their terms of service and privacy policies.
+
+================================================================================
+
+9. SECURITY
+
+9.1 Security Best Practices
+
+You are responsible for:
+- Securing your installation with proper server configuration
+- Changing default passwords and credentials
+- Keeping the Software updated with latest security patches
+- Implementing SSL/TLS encryption
+- Regular security audits of your implementation
+- Backup and disaster recovery procedures
+
+9.2 Security Vulnerabilities
+
+If you discover a security vulnerability in the Software:
+- Report it immediately to: security@yourcompany.com
+- Do NOT publicly disclose the vulnerability before it is patched
+- Allow reasonable time for the Licensor to address the issue
+
+9.3 Indemnification
+
+You agree to indemnify and hold harmless the Licensor from any claims, damages, or losses arising from:
+- Your failure to implement proper security measures
+- Data breaches resulting from your configuration or use
+- Unauthorized access to your systems
+
+================================================================================
+
+10. TERMINATION
+
+10.1 Termination for Breach
+
+This license is effective until terminated. Your rights under this license will terminate automatically without notice if you fail to comply with any term(s) of this EULA.
+
+10.2 Effect of Termination
+
+Upon termination:
+- You must cease all use of the Software
+- You must destroy all copies of the Software in your possession
+- You must remove the Software from all servers and systems
+- Any End Products created may continue to operate (unless termination was due to violation)
+
+10.3 Survival
+
+Sections 2 (Copyright and Ownership), 6 (Warranty Disclaimer), 7 (Limitation of Liability), and 11 (General Provisions) shall survive any termination of this EULA.
+
+================================================================================
+
+11. GENERAL PROVISIONS
+
+11.1 Entire Agreement
+
+This EULA constitutes the entire agreement between you and the Licensor concerning the Software and supersedes all prior agreements and understandings.
+
+11.2 Amendments
+
+The Licensor reserves the right to modify this EULA at any time. Updated versions will be posted at [YOUR WEBSITE URL]. Continued use of the Software after changes constitutes acceptance of the modified EULA.
+
+11.3 Severability
+
+If any provision of this EULA is held to be unenforceable, the remainder shall continue in full force and effect.
+
+11.4 Waiver
+
+Failure to enforce any provision of this EULA shall not constitute a waiver of such provision or the right to enforce it.
+
+11.5 Governing Law
+
+This EULA shall be governed by and construed in accordance with the laws of [YOUR JURISDICTION], without regard to its conflict of law provisions.
+
+11.6 Dispute Resolution
+
+Any dispute arising out of or relating to this EULA shall be resolved through:
+1. Good faith negotiation between the parties
+2. Mediation (if negotiation fails)
+3. Arbitration or court proceedings (as a last resort)
+
+11.7 Attorney's Fees
+
+In the event of any legal action to enforce this EULA, the prevailing party shall be entitled to recover reasonable attorney's fees and costs.
+
+================================================================================
+
+12. DEFINITIONS
+
+12.1 End Product
+A customized implementation of the Software as a website, application, or service for a specific use case.
+
+12.2 End User
+A person or entity who uses the End Product created with the Software.
+
+12.3 Free
+No fee is charged to access or download the End Product. The End Product may be monetized through advertising or other methods that don't involve charging users to access it.
+
+12.4 For Charge
+A fee is required to access or download the End Product.
+
+12.5 SaaS (Software as a Service)
+A software distribution model where the Software is hosted centrally and licensed on a subscription basis.
+
+12.6 Multi-Tenant
+An architecture where a single instance of the Software serves multiple customers (tenants), with data isolation between them.
+
+================================================================================
+
+13. CODECANYON MARKETPLACE TERMS
+
+13.1 Marketplace Relationship
+
+This Software is distributed through CodeCanyon (Envato Market). Your use is subject to:
+- This EULA
+- Envato Market Terms: https://envato.com/market-terms/
+- Envato Market Licenses: https://codecanyon.net/licenses/
+
+13.2 Conflict Resolution
+
+In case of conflict between this EULA and Envato Market terms, the Envato Market terms shall prevail regarding:
+- License grants and restrictions
+- Refund policies
+- Dispute resolution through Envato
+
+13.3 Refund Policy
+
+Refunds are governed by Envato's refund policy:
+https://envato.com/market-refund-policy/
+
+Generally, refunds are available if:
+- The Software is broken and cannot be fixed within a reasonable timeframe
+- The Software does not match the description provided
+- Request is made within the specified refund period
+
+Refunds are NOT available for:
+- Change of mind
+- Lack of technical expertise to use the Software
+- Compatibility issues that were disclosed in documentation
+- Issues with your hosting environment
+
+================================================================================
+
+14. OPEN SOURCE COMPONENTS
+
+14.1 Third-Party Licenses
+
+The Software incorporates open-source components licensed under various licenses including MIT, Apache 2.0, BSD, and others. See CREDITS.md for complete details.
+
+14.2 License Compliance
+
+Use of the Software requires compliance with all third-party component licenses. The Licensor has ensured that all included components are compatible with commercial use.
+
+14.3 No Warranty from Third Parties
+
+Third-party components are provided "as is" without warranty from their respective authors. The Licensor is not responsible for issues arising from third-party components.
+
+================================================================================
+
+15. EXPORT COMPLIANCE
+
+You agree to comply with all applicable export and import laws and regulations. You agree not to export or re-export the Software to any country, person, or entity subject to export restrictions.
+
+================================================================================
+
+16. CONTACT INFORMATION
+
+For questions about this EULA, please contact:
+
+[YOUR COMPANY NAME]
+Email: legal@yourcompany.com
+Support: support@yourcompany.com
+Website: [YOUR WEBSITE URL]
+
+For CodeCanyon/Envato related issues:
+Envato Market Support: https://help.market.envato.com/
+
+================================================================================
+
+17. ACKNOWLEDGMENT
+
+BY INSTALLING, COPYING, OR OTHERWISE USING THE SOFTWARE, YOU ACKNOWLEDGE THAT YOU HAVE READ THIS EULA, UNDERSTAND IT, AND AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS.
+
+IF YOU DO NOT AGREE TO THE TERMS OF THIS EULA, DO NOT INSTALL OR USE THE SOFTWARE AND DELETE ALL COPIES IN YOUR POSSESSION.
+
+================================================================================
+
+END OF LICENSE AGREEMENT
+
+Product: WHMAZ - CI-CRM v1.0.0
+License Version: 1.0
+Effective Date: January 25, 2026
+Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.
