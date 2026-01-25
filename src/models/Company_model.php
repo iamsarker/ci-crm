@@ -106,5 +106,77 @@ class Company_model extends CI_Model{
 			return 0;
 		}
 	}
+
+	// ============================================
+	// Services DataTable Methods
+	// ============================================
+
+	function getServicesDataTableRecords($sqlQuery, $bindings) {
+		try {
+			$data = $this->db->query($sqlQuery, $bindings);
+			return $data->result_array();
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('getServicesDataTableRecords', $this->db->last_query(), $e->getMessage());
+			return array();
+		}
+	}
+
+	function countServicesDataTableTotalRecords($companyId) {
+		try {
+			$query = $this->db->query("SELECT COUNT(id) as cnt FROM order_services WHERE company_id = ?", array(intval($companyId)));
+			$data = $query->result_array();
+			return !empty($data) ? $data[0]['cnt'] : 0;
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('countServicesDataTableTotalRecords', $this->db->last_query(), $e->getMessage());
+			return 0;
+		}
+	}
+
+	function countServicesDataTableFilterRecords($where, $bindings) {
+		try {
+			$query = $this->db->query("SELECT COUNT(id) as cnt FROM order_services $where", $bindings);
+			$data = $query->result_array();
+			return !empty($data) ? $data[0]['cnt'] : 0;
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('countServicesDataTableFilterRecords', $this->db->last_query(), $e->getMessage());
+			return 0;
+		}
+	}
+
+	// ============================================
+	// Domains DataTable Methods
+	// ============================================
+
+	function getDomainsDataTableRecords($sqlQuery, $bindings) {
+		try {
+			$data = $this->db->query($sqlQuery, $bindings);
+			return $data->result_array();
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('getDomainsDataTableRecords', $this->db->last_query(), $e->getMessage());
+			return array();
+		}
+	}
+
+	function countDomainsDataTableTotalRecords($companyId) {
+		try {
+			$query = $this->db->query("SELECT COUNT(id) as cnt FROM order_domains WHERE company_id = ?", array(intval($companyId)));
+			$data = $query->result_array();
+			return !empty($data) ? $data[0]['cnt'] : 0;
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('countDomainsDataTableTotalRecords', $this->db->last_query(), $e->getMessage());
+			return 0;
+		}
+	}
+
+	function countDomainsDataTableFilterRecords($where, $bindings) {
+		try {
+			$query = $this->db->query("SELECT COUNT(id) as cnt FROM order_domains $where", $bindings);
+			$data = $query->result_array();
+			return !empty($data) ? $data[0]['cnt'] : 0;
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('countDomainsDataTableFilterRecords', $this->db->last_query(), $e->getMessage());
+			return 0;
+		}
+	}
 }
 ?>

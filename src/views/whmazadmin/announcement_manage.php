@@ -27,13 +27,13 @@
 
 					<div class="form-group">
 						<label for="title">Title</label>
-						<input name="title" type="text" class="form-control make-slug" id="title" value="<?= !empty($detail['title']) ? htmlspecialchars($detail['title'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+						<input name="title" type="text" class="form-control make-slug" id="title" value="<?= htmlspecialchars($detail['title'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('title', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="slug">Slug</label>
-						<input name="slug" type="text" class="form-control" id="slug" value="<?= !empty($detail['slug']) ? htmlspecialchars($detail['slug'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+						<input name="slug" type="text" class="form-control" id="slug" value="<?= htmlspecialchars($detail['slug'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('slug', '<div class="error">', '</div>'); ?>
 					</div>
 
@@ -41,7 +41,7 @@
 						<div class="col-md-6 col-sm-12">
 							<div class="form-group">
 								<label for="tags">Tags</label>
-								<input name="tags" type="text" class="form-control" id="tags" value="<?= !empty($detail['tags']) ? htmlspecialchars($detail['tags'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+								<input name="tags" type="text" class="form-control" id="tags" value="<?= htmlspecialchars($detail['tags'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('tags', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -55,7 +55,7 @@
 						<div class="col-md-2 col-sm-12">
 							<div class="form-group">
 								<label for="publish_date">Publish date</label>
-								<input name="publish_date" type="text" class="form-control" id="publish_date" readonly disabled value="<?= !empty($detail['publish_date']) ? htmlspecialchars($detail['publish_date'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+								<input name="publish_date" type="text" class="form-control" id="publish_date" readonly disabled value="<?= htmlspecialchars($detail['publish_date'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('publish_date', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -63,7 +63,7 @@
 						<div class="col-md-2 col-sm-12">
 							<div class="form-group">
 								<label for="total_view">Total view</label>
-								<input name="total_view" type="text" class="form-control" id="total_view" readonly disabled value="<?= !empty($detail['total_view']) ? htmlspecialchars($detail['total_view'], ENT_QUOTES, 'UTF-8') : '0'?>"/>
+								<input name="total_view" type="text" class="form-control" id="total_view" readonly disabled value="<?= htmlspecialchars($detail['total_view'] ?? '0', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('total_view', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -73,7 +73,7 @@
 
 					<div class="form-group mb-3">
 						<?php echo form_error('description', '<div class="error">', '</div>'); ?>
-						<textarea name="description" id="description" style="display: none" id="description"><?= !empty($detail['description']) ? htmlspecialchars($detail['description'], ENT_QUOTES, 'UTF-8') : ''?></textarea>
+						<textarea name="description" id="description" style="display: none"><?= htmlspecialchars($detail['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
 						<div id="editor" style="height: 300px"><?= !empty($detail['description']) ? xss_cleaner($detail['description']) : ''?></div>
 					</div>
 

@@ -57,7 +57,7 @@
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="reg_period">Registration Period (Years) <span class="text-danger">*</span></label>
-								<input name="reg_period" type="number" class="form-control" id="reg_period" value="<?= !empty($detail['reg_period']) ? htmlspecialchars($detail['reg_period'], ENT_QUOTES, 'UTF-8') : '1'?>" placeholder="1"/>
+								<input name="reg_period" type="number" class="form-control" id="reg_period" value="<?= htmlspecialchars($detail['reg_period'] ?? '1', ENT_QUOTES, 'UTF-8') ?>" placeholder="1"/>
 								<?php echo form_error('reg_period', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -65,7 +65,7 @@
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="price">Registration Price <span class="text-danger">*</span></label>
-								<input name="price" type="text" class="form-control" id="price" value="<?= !empty($detail['price']) ? htmlspecialchars($detail['price'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="0.00"/>
+								<input name="price" type="text" class="form-control" id="price" value="<?= htmlspecialchars($detail['price'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="0.00"/>
 								<?php echo form_error('price', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -73,7 +73,7 @@
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="transfer">Transfer Price <span class="text-danger">*</span></label>
-								<input name="transfer" type="text" class="form-control" id="transfer" value="<?= !empty($detail['transfer']) ? htmlspecialchars($detail['transfer'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="0.00"/>
+								<input name="transfer" type="text" class="form-control" id="transfer" value="<?= htmlspecialchars($detail['transfer'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="0.00"/>
 								<?php echo form_error('transfer', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -81,7 +81,7 @@
 						<div class="col-md-3">
 							<div class="form-group">
 								<label for="renewal">Renewal Price <span class="text-danger">*</span></label>
-								<input name="renewal" type="text" class="form-control" id="renewal" value="<?= !empty($detail['renewal']) ? htmlspecialchars($detail['renewal'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="0.00"/>
+								<input name="renewal" type="text" class="form-control" id="renewal" value="<?= htmlspecialchars($detail['renewal'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="0.00"/>
 								<?php echo form_error('renewal', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>

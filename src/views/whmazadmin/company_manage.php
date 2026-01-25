@@ -48,21 +48,21 @@
 								<div class="col-md-6 col-sm-12">
 									<div class="form-group">
 										<label for="name">Company name</label>
-										<input name="name" type="text" class="form-control" id="name" value="<?= !empty($detail['name']) ? htmlspecialchars($detail['name'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+										<input name="name" type="text" class="form-control" id="name" value="<?= htmlspecialchars($detail['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('name', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="first_name">First name</label>
-										<input name="first_name" type="text" class="form-control" id="first_name" value="<?= !empty($detail['first_name']) ? htmlspecialchars($detail['first_name'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+										<input name="first_name" type="text" class="form-control" id="first_name" value="<?= htmlspecialchars($detail['first_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('first_name', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="last_name">Last name</label>
-										<input name="last_name" type="text" class="form-control" id="last_name" value="<?= !empty($detail['last_name']) ? htmlspecialchars($detail['last_name'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+										<input name="last_name" type="text" class="form-control" id="last_name" value="<?= htmlspecialchars($detail['last_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('last_name', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -73,7 +73,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="email">Email</label>
-										<input name="email" type="text" class="form-control" id="email" value="<?= !empty($detail['email']) ? htmlspecialchars($detail['email'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+										<input name="email" type="text" class="form-control" id="email" value="<?= htmlspecialchars($detail['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('email', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -81,7 +81,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="mobile">Mobile</label>
-										<input name="mobile" type="text" class="form-control" id="mobile" value="<?= !empty($detail['mobile']) ? htmlspecialchars($detail['mobile'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+										<input name="mobile" type="text" class="form-control" id="mobile" value="<?= htmlspecialchars($detail['mobile'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('mobile', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -89,7 +89,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="phone">Phone</label>
-										<input name="phone" type="text" class="form-control" id="phone" value="<?= !empty($detail['phone']) ? htmlspecialchars($detail['phone'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+										<input name="phone" type="text" class="form-control" id="phone" value="<?= htmlspecialchars($detail['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('phone', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -97,7 +97,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="city">City</label>
-										<input name="city" type="text" class="form-control" id="city" value="<?= !empty($detail['city']) ? htmlspecialchars($detail['city'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+										<input name="city" type="text" class="form-control" id="city" value="<?= htmlspecialchars($detail['city'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('city', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -108,7 +108,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="address">Address</label>
-										<input name="address" type="text" class="form-control" id="address" value="<?= !empty($detail['address']) ? htmlspecialchars($detail['address'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+										<input name="address" type="text" class="form-control" id="address" value="<?= htmlspecialchars($detail['address'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('address', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -116,7 +116,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="zip_code">Zip code</label>
-										<input name="zip_code" type="text" class="form-control" id="zip_code" value="<?= !empty($detail['zip_code']) ? htmlspecialchars($detail['zip_code'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+										<input name="zip_code" type="text" class="form-control" id="zip_code" value="<?= htmlspecialchars($detail['zip_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('zip_code', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -124,7 +124,7 @@
 								<div class="col-md-3 col-sm-12">
 									<div class="form-group">
 										<label for="state">State</label>
-										<input name="state" type="text" class="form-control" id="state" value="<?= !empty($detail['state']) ? htmlspecialchars($detail['state'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+										<input name="state" type="text" class="form-control" id="state" value="<?= htmlspecialchars($detail['state'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('state', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
@@ -146,13 +146,17 @@
 					</div>
 
 					<div class="tab-pane fade" id="service-info" role="tabpanel" aria-labelledby="service-tab">
-						<h6>Services</h6>
-						<p>...</p>
+						<h6 class="mb-3">Services</h6>
+						<div class="table-responsive">
+							<table id="serviceListDt" class="table table-striped table-hover" style="width: 100%"></table>
+						</div>
 					</div>
 
 					<div class="tab-pane fade" id="domain-info" role="tabpanel" aria-labelledby="domain-tab">
-						<h6>Domains</h6>
-						<p>...</p>
+						<h6 class="mb-3">Domains</h6>
+						<div class="table-responsive">
+							<table id="domainListDt" class="table table-striped table-hover" style="width: 100%"></table>
+						</div>
 					</div>
 
 					<div class="tab-pane fade" id="invoice-info" role="tabpanel" aria-labelledby="invoice-tab">
@@ -190,6 +194,94 @@ $(function(){
 	$(function(){
 		'use strict'
 
+		// Services DataTable
+		$('#serviceListDt').DataTable({
+			"responsive": true,
+			"processing": true,
+			"serverSide": true,
+			"ajax": {
+				"url": "<?=base_url()?>" + "whmazadmin/company/ssp_services_api/"+ "<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>",
+			},
+			"columns": [
+				{ "title": "ID", "data": "id" },
+				{ "title": "Hosting Domain", "data": "hosting_domain",
+					render: function (data, type, row) {
+						return data ? data : '-';
+					}
+				},
+				{ "title": "First Pay", "data": "first_pay_amount",
+					render: function (data, type, row) {
+						return parseFloat(data).toFixed(2);
+					}
+				},
+				{ "title": "Recurring", "data": "recurring_amount",
+					render: function (data, type, row) {
+						return parseFloat(data).toFixed(2);
+					}
+				},
+				{ "title": "Reg Date", "data": "reg_date" },
+				{ "title": "Next Due", "data": "next_due_date" },
+				{ "title": "CompanyId", "data": "company_id", "visible": false, "orderable": true, "searchable": true },
+				{
+					"title": "Status", "data": "status", "orderable": false, "searchable": false,
+					render: function (data, type) {
+						switch(parseInt(data)) {
+							case 0: return '<span class="badge bg-warning">Pending</span>';
+							case 1: return '<span class="badge bg-success">Active</span>';
+							case 2: return '<span class="badge bg-danger">Expired</span>';
+							case 3: return '<span class="badge bg-secondary">Suspended</span>';
+							case 4: return '<span class="badge bg-dark">Terminated</span>';
+							default: return '<span class="badge bg-secondary">Unknown</span>';
+						}
+					}
+				}
+			]
+		});
+
+		// Domains DataTable
+		$('#domainListDt').DataTable({
+			"responsive": true,
+			"processing": true,
+			"serverSide": true,
+			"ajax": {
+				"url": "<?=base_url()?>" + "whmazadmin/company/ssp_domains_api/"+ "<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>",
+			},
+			"columns": [
+				{ "title": "ID", "data": "id" },
+				{ "title": "Domain", "data": "domain" },
+				{ "title": "First Pay", "data": "first_pay_amount",
+					render: function (data, type, row) {
+						return parseFloat(data).toFixed(2);
+					}
+				},
+				{ "title": "Recurring", "data": "recurring_amount",
+					render: function (data, type, row) {
+						return parseFloat(data).toFixed(2);
+					}
+				},
+				{ "title": "Reg Date", "data": "reg_date" },
+				{ "title": "Exp Date", "data": "exp_date" },
+				{ "title": "Next Due", "data": "next_due_date" },
+				{ "title": "CompanyId", "data": "company_id", "visible": false, "orderable": true, "searchable": true },
+				{
+					"title": "Status", "data": "status", "orderable": false, "searchable": false,
+					render: function (data, type) {
+						switch(parseInt(data)) {
+							case 0: return '<span class="badge bg-warning">Pending Reg</span>';
+							case 1: return '<span class="badge bg-success">Active</span>';
+							case 2: return '<span class="badge bg-danger">Expired</span>';
+							case 3: return '<span class="badge bg-info">Grace</span>';
+							case 4: return '<span class="badge bg-dark">Cancelled</span>';
+							case 5: return '<span class="badge bg-warning">Pending Transfer</span>';
+							case 6: return '<span class="badge bg-secondary">Deleted</span>';
+							default: return '<span class="badge bg-secondary">Unknown</span>';
+						}
+					}
+				}
+			]
+		});
+
+		// Invoices DataTable
 		$('#invoiceListDt').DataTable({
 			"responsive": true,
 			"processing": true,
@@ -202,7 +294,7 @@ $(function(){
 				{ "title": "Order#", "data": "order_no" },
 				{ "title": "Amount", "data": "total",
 					render: function (data, type, row, meta) {
-						return data + " " + row['currency_code'];
+						return parseFloat(data).toFixed(2) + " " + row['currency_code'];
 					}
 				},
 				{ "title": "Due date", "data": "due_date" },
@@ -213,7 +305,7 @@ $(function(){
 					"title": "Pay Status", "data": "pay_status", "orderable": false, "searchable": false,
 					render: function (data, type) {
 						if( data == "PAID" ){
-							return '<span class="badge bg-primary">Paid</span>';
+							return '<span class="badge bg-success">Paid</span>';
 						} else if( data == "DUE" ){
 							return '<span class="badge bg-danger">Due</span>';
 						} else {
@@ -225,7 +317,7 @@ $(function(){
 					"title": "Active?", "data": "status", "orderable": false, "searchable": false,
 					render: function (data, type) {
 						if( data == 1 ){
-							return '<span class="badge bg-primary">Yes</span>';
+							return '<span class="badge bg-success">Yes</span>';
 						} else {
 							return '<span class="badge bg-danger">No</span>';
 						}
@@ -233,11 +325,11 @@ $(function(){
 				},
 				{
 					"title" : 'Action',
-					"data" : "id",
+					"data" : "invoice_uuid",
 					"orderable": false,
 					"searchable": false,
-					"render": function (data) {
-						return '<a href="/whmazadmin/invoice/manage' + data + '" class="btn btn-sm btn-outline-secondary edit-button" data-id="'+data+'" type="button" title="Edit"><i class="fa fa-pencil-alt"></i></a>';
+					"render": function (data, type, row) {
+						return '<a href="<?=base_url()?>whmazadmin/invoice/view_invoice/<?= $detail['id']?>/' + data + '" class="btn btn-sm btn-outline-secondary" title="View Invoice"><i class="fa fa-eye"></i></a>';
 					}
 				}
 			]

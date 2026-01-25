@@ -26,13 +26,13 @@
 					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 					<div class="form-group">
 						<label for="title">KB title</label>
-						<input name="title" type="text" class="form-control make-slug" id="title" value="<?= !empty($detail['title']) ? htmlspecialchars($detail['title'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+						<input name="title" type="text" class="form-control make-slug" id="title" value="<?= htmlspecialchars($detail['title'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('title', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="slug">Slug</label>
-						<input name="slug" type="text" class="form-control" id="slug" value="<?= !empty($detail['slug']) ? htmlspecialchars($detail['slug'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+						<input name="slug" type="text" class="form-control" id="slug" value="<?= htmlspecialchars($detail['slug'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('slug', '<div class="error">', '</div>'); ?>
 					</div>
 
@@ -40,7 +40,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="total_view">Total View</label>
-								<input name="total_view" type="text" class="form-control" id="total_view" readonly disabled value="<?= !empty($detail['total_view']) ? htmlspecialchars($detail['total_view'], ENT_QUOTES, 'UTF-8') : '0'?>"/>
+								<input name="total_view" type="text" class="form-control" id="total_view" readonly disabled value="<?= htmlspecialchars($detail['total_view'] ?? '0', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('total_view', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -48,7 +48,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="useful">Useful</label>
-								<input name="useful" type="text" class="form-control" id="useful" readonly disabled value="<?= !empty($detail['useful']) ? htmlspecialchars($detail['useful'], ENT_QUOTES, 'UTF-8') : '0'?>"/>
+								<input name="useful" type="text" class="form-control" id="useful" readonly disabled value="<?= htmlspecialchars($detail['useful'] ?? '0', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('useful', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -56,7 +56,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="upvote">Upvote</label>
-								<input name="upvote" type="text" class="form-control" id="upvote" readonly disabled value="<?= !empty($detail['upvote']) ? htmlspecialchars($detail['upvote'], ENT_QUOTES, 'UTF-8') : '0'?>"/>
+								<input name="upvote" type="text" class="form-control" id="upvote" readonly disabled value="<?= htmlspecialchars($detail['upvote'] ?? '0', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('upvote', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -64,7 +64,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="downvote">Down Vote</label>
-								<input name="downvote" type="text" class="form-control" id="downvote" readonly disabled value="<?= !empty($detail['downvote']) ? htmlspecialchars($detail['downvote'], ENT_QUOTES, 'UTF-8') : '0'?>"/>
+								<input name="downvote" type="text" class="form-control" id="downvote" readonly disabled value="<?= htmlspecialchars($detail['downvote'] ?? '0', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('downvote', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -74,7 +74,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="sort_order">Serial#</label>
-								<input name="sort_order" type="text" class="form-control" id="sort_order" value="<?= !empty($detail['sort_order']) ? htmlspecialchars($detail['sort_order'], ENT_QUOTES, 'UTF-8') : '1'?>" />
+								<input name="sort_order" type="text" class="form-control" id="sort_order" value="<?= htmlspecialchars($detail['sort_order'] ?? '1', ENT_QUOTES, 'UTF-8') ?>" />
 								<?php echo form_error('sort_order', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -82,7 +82,7 @@
 						<div class="col-md-3 col-sm-12">
 							<div class="form-group">
 								<label for="tags">Tags</label>
-								<input name="tags" type="text" class="form-control" id="tags" value="<?= !empty($detail['tags']) ? htmlspecialchars($detail['tags'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+								<input name="tags" type="text" class="form-control" id="tags" value="<?= htmlspecialchars($detail['tags'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('tags', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -107,7 +107,7 @@
 
 					<div class="form-group">
 						<?php echo form_error('article', '<div class="error">', '</div>'); ?>
-						<textarea name="article" id="article" style="display: none" id="article"><?= !empty($detail['article']) ? htmlspecialchars($detail['article'], ENT_QUOTES, 'UTF-8') : ''?></textarea>
+						<textarea name="article" id="article" style="display: none"><?= htmlspecialchars($detail['article'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
 						<div id="editor" style="height: 180px"><?= !empty($detail['article']) ? xss_cleaner($detail['article']) : ''?></div>
 					</div>
 

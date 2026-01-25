@@ -54,7 +54,7 @@
 						<div class="col-md-4 col-sm-12">
 							<div class="form-group">
 								<label for="expense_date">Expense date</label>
-								<input name="expense_date" type="date" class="form-control" id="expense_date" value="<?= !empty($detail['expense_date']) ? htmlspecialchars($detail['expense_date'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+								<input name="expense_date" type="date" class="form-control" id="expense_date" value="<?= htmlspecialchars($detail['expense_date'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('expense_date', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -62,7 +62,7 @@
 						<div class="col-md-4 col-sm-12">
 							<div class="form-group">
 								<label for="exp_amount">Expense amount</label>
-								<input name="exp_amount" type="text" class="form-control" id="exp_amount" value="<?= !empty($detail['exp_amount']) ? htmlspecialchars($detail['exp_amount'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+								<input name="exp_amount" type="text" class="form-control" id="exp_amount" value="<?= htmlspecialchars($detail['exp_amount'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('exp_amount', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -70,7 +70,7 @@
 						<div class="col-md-4 col-sm-12">
 							<div class="form-group">
 								<label for="paid_amount">Paid amount</label>
-								<input name="paid_amount" type="text" class="form-control" id="paid_amount" value="<?= !empty($detail['paid_amount']) ? htmlspecialchars($detail['paid_amount'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+								<input name="paid_amount" type="text" class="form-control" id="paid_amount" value="<?= htmlspecialchars($detail['paid_amount'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('paid_amount', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -78,7 +78,7 @@
 
 					<div class="form-group">
 						<label for="remarks">Remarks</label>
-						<textarea name="remarks" rows="3" class="form-control" id="remarks"><?= !empty($detail['remarks']) ? htmlspecialchars($detail['remarks'], ENT_QUOTES, 'UTF-8') : ''?></textarea>
+						<textarea name="remarks" rows="3" class="form-control" id="remarks"><?= htmlspecialchars($detail['remarks'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
 						<?php echo form_error('remarks', '<div class="error">', '</div>'); ?>
 					</div>
 

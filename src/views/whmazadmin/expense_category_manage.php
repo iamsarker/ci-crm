@@ -26,13 +26,13 @@
 					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 					<div class="form-group">
 						<label for="expense_type">Expense category name</label>
-						<input name="expense_type" type="text" class="form-control" id="expense_type" value="<?= !empty($detail['expense_type']) ? htmlspecialchars($detail['expense_type'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+						<input name="expense_type" type="text" class="form-control" id="expense_type" value="<?= htmlspecialchars($detail['expense_type'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('expense_type', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="remarks">Remarks</label>
-						<textarea name="remarks" rows="3" class="form-control" id="remarks"><?= !empty($detail['remarks']) ? htmlspecialchars($detail['remarks'], ENT_QUOTES, 'UTF-8') : ''?></textarea>
+						<textarea name="remarks" rows="3" class="form-control" id="remarks"><?= htmlspecialchars($detail['remarks'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
 						<?php echo form_error('remarks', '<div class="error">', '</div>'); ?>
 					</div>
 

@@ -29,14 +29,14 @@
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="site_name">Site Name <span class="text-danger">*</span></label>
-										<input name="site_name" type="text" class="form-control" id="site_name" value="<?= !empty($detail['site_name']) ? htmlspecialchars($detail['site_name'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Enter site name"/>
+										<input name="site_name" type="text" class="form-control" id="site_name" value="<?= htmlspecialchars($detail['site_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Enter site name"/>
 										<?php echo form_error('site_name', '<div class="text-danger">', '</div>'); ?>
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="site_desc">Site Description</label>
-										<input name="site_desc" type="text" class="form-control" id="site_desc" value="<?= !empty($detail['site_desc']) ? htmlspecialchars($detail['site_desc'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Enter site description"/>
+										<input name="site_desc" type="text" class="form-control" id="site_desc" value="<?= htmlspecialchars($detail['site_desc'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Enter site description"/>
 									</div>
 								</div>
 							</div>
@@ -44,7 +44,7 @@
 								<div class="col-md-12">
 									<div class="form-group">
 										<label for="admin_url">Admin URL</label>
-										<input name="admin_url" type="text" class="form-control" id="admin_url" value="<?= !empty($detail['admin_url']) ? htmlspecialchars($detail['admin_url'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Enter admin URL"/>
+										<input name="admin_url" type="text" class="form-control" id="admin_url" value="<?= htmlspecialchars($detail['admin_url'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Enter admin URL"/>
 									</div>
 								</div>
 							</div>
@@ -91,14 +91,14 @@
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="company_name">Company Name <span class="text-danger">*</span></label>
-										<input name="company_name" type="text" class="form-control" id="company_name" value="<?= !empty($detail['company_name']) ? htmlspecialchars($detail['company_name'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Enter company name"/>
+										<input name="company_name" type="text" class="form-control" id="company_name" value="<?= htmlspecialchars($detail['company_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Enter company name"/>
 										<?php echo form_error('company_name', '<div class="text-danger">', '</div>'); ?>
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="zip_code">Zip Code</label>
-										<input name="zip_code" type="text" class="form-control" id="zip_code" value="<?= !empty($detail['zip_code']) ? htmlspecialchars($detail['zip_code'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Enter zip code"/>
+										<input name="zip_code" type="text" class="form-control" id="zip_code" value="<?= htmlspecialchars($detail['zip_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Enter zip code"/>
 									</div>
 								</div>
 							</div>
@@ -106,7 +106,7 @@
 								<div class="col-md-12">
 									<div class="form-group">
 										<label for="company_address">Company Address</label>
-										<textarea name="company_address" class="form-control" id="company_address" rows="3" placeholder="Enter company address"><?= !empty($detail['company_address']) ? htmlspecialchars($detail['company_address'], ENT_QUOTES, 'UTF-8') : ''?></textarea>
+										<textarea name="company_address" class="form-control" id="company_address" rows="3" placeholder="Enter company address"><?= htmlspecialchars($detail['company_address'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
 									</div>
 								</div>
 							</div>
@@ -123,20 +123,20 @@
 								<div class="col-md-4">
 									<div class="form-group">
 										<label for="email">Email <span class="text-danger">*</span></label>
-										<input name="email" type="email" class="form-control" id="email" value="<?= !empty($detail['email']) ? htmlspecialchars($detail['email'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Enter email address"/>
+										<input name="email" type="email" class="form-control" id="email" value="<?= htmlspecialchars($detail['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Enter email address"/>
 										<?php echo form_error('email', '<div class="text-danger">', '</div>'); ?>
 									</div>
 								</div>
 								<div class="col-md-4">
 									<div class="form-group">
 										<label for="phone">Phone</label>
-										<input name="phone" type="text" class="form-control" id="phone" value="<?= !empty($detail['phone']) ? htmlspecialchars($detail['phone'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Enter phone number"/>
+										<input name="phone" type="text" class="form-control" id="phone" value="<?= htmlspecialchars($detail['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Enter phone number"/>
 									</div>
 								</div>
 								<div class="col-md-4">
 									<div class="form-group">
 										<label for="fax">Fax</label>
-										<input name="fax" type="text" class="form-control" id="fax" value="<?= !empty($detail['fax']) ? htmlspecialchars($detail['fax'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Enter fax number"/>
+										<input name="fax" type="text" class="form-control" id="fax" value="<?= htmlspecialchars($detail['fax'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Enter fax number"/>
 									</div>
 								</div>
 							</div>
@@ -153,13 +153,13 @@
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="smtp_host">SMTP Host</label>
-										<input name="smtp_host" type="text" class="form-control" id="smtp_host" value="<?= !empty($detail['smtp_host']) ? htmlspecialchars($detail['smtp_host'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="e.g., smtp.gmail.com"/>
+										<input name="smtp_host" type="text" class="form-control" id="smtp_host" value="<?= htmlspecialchars($detail['smtp_host'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="e.g., smtp.gmail.com"/>
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="smtp_port">SMTP Port</label>
-										<input name="smtp_port" type="text" class="form-control" id="smtp_port" value="<?= !empty($detail['smtp_port']) ? htmlspecialchars($detail['smtp_port'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="e.g., 587"/>
+										<input name="smtp_port" type="text" class="form-control" id="smtp_port" value="<?= htmlspecialchars($detail['smtp_port'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="e.g., 587"/>
 									</div>
 								</div>
 							</div>
@@ -167,13 +167,13 @@
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="smtp_username">SMTP Username</label>
-										<input name="smtp_username" type="text" class="form-control" id="smtp_username" value="<?= !empty($detail['smtp_username']) ? htmlspecialchars($detail['smtp_username'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="SMTP username"/>
+										<input name="smtp_username" type="text" class="form-control" id="smtp_username" value="<?= htmlspecialchars($detail['smtp_username'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="SMTP username"/>
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="smtp_authkey">SMTP Auth Key / Password</label>
-										<input name="smtp_authkey" type="password" class="form-control" id="smtp_authkey" value="<?= !empty($detail['smtp_authkey']) ? htmlspecialchars($detail['smtp_authkey'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="SMTP password or auth key"/>
+										<input name="smtp_authkey" type="password" class="form-control" id="smtp_authkey" value="<?= htmlspecialchars($detail['smtp_authkey'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="SMTP password or auth key"/>
 									</div>
 								</div>
 							</div>
@@ -193,13 +193,13 @@
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="captcha_site_key">reCAPTCHA Site Key</label>
-										<input name="captcha_site_key" type="text" class="form-control" id="captcha_site_key" value="<?= !empty($detail['captcha_site_key']) ? htmlspecialchars($detail['captcha_site_key'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Enter site key"/>
+										<input name="captcha_site_key" type="text" class="form-control" id="captcha_site_key" value="<?= htmlspecialchars($detail['captcha_site_key'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Enter site key"/>
 									</div>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group">
 										<label for="captcha_secret_key">reCAPTCHA Secret Key</label>
-										<input name="captcha_secret_key" type="password" class="form-control" id="captcha_secret_key" value="<?= !empty($detail['captcha_secret_key']) ? htmlspecialchars($detail['captcha_secret_key'], ENT_QUOTES, 'UTF-8') : ''?>" placeholder="Enter secret key"/>
+										<input name="captcha_secret_key" type="password" class="form-control" id="captcha_secret_key" value="<?= htmlspecialchars($detail['captcha_secret_key'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Enter secret key"/>
 									</div>
 								</div>
 							</div>

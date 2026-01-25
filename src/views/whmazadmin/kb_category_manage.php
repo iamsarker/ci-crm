@@ -24,22 +24,22 @@
 				<form method="post" name="entityManageForm" id="entityManageForm" action="<?=base_url()?>whmazadmin/kb_category/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
 					<?=csrf_field()?>
 					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
-					<input name="parent_id" type="hidden" id="parent_id" value="<?= !empty($detail['parent_id']) ? htmlspecialchars($detail['parent_id'], ENT_QUOTES, 'UTF-8') : 0 ?>" />
+					<input name="parent_id" type="hidden" id="parent_id" value="<?= htmlspecialchars($detail['parent_id'] ?? '0', ENT_QUOTES, 'UTF-8') ?>" />
 					<div class="form-group">
 						<label for="cat_title">KB category title</label>
-						<input name="cat_title" type="text" class="form-control make-slug" id="cat_title" value="<?= !empty($detail['cat_title']) ? htmlspecialchars($detail['cat_title'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+						<input name="cat_title" type="text" class="form-control make-slug" id="cat_title" value="<?= htmlspecialchars($detail['cat_title'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('cat_title', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="slug">Slug</label>
-						<input name="slug" type="text" class="form-control" id="slug" value="<?= !empty($detail['slug']) ? htmlspecialchars($detail['slug'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+						<input name="slug" type="text" class="form-control" id="slug" value="<?= htmlspecialchars($detail['slug'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('slug', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="description">Description</label>
-						<textarea name="description" rows="3" class="form-control" id="description"><?= !empty($detail['description']) ? htmlspecialchars($detail['description'], ENT_QUOTES, 'UTF-8') : ''?></textarea>
+						<textarea name="description" rows="3" class="form-control" id="description"><?= htmlspecialchars($detail['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
 						<?php echo form_error('description', '<div class="error">', '</div>'); ?>
 					</div>
 

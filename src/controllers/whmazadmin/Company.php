@@ -181,4 +181,112 @@ class Company extends WHMAZADMIN_Controller {
 		}
 	}
 
+	/**
+	 * Server-side DataTable API for Services (order_services)
+	 */
+	public function ssp_services_api($tmpCompanyId = null)
+	{
+		$this->processRestCall();
+
+		header('Content-Type: application/json');
+
+		try {
+			$params = $this->input->get();
+			$companyId = !empty($tmpCompanyId) ? safe_decode($tmpCompanyId) : 0;
+
+			// Inject company_id filter
+			if ($companyId > 0) {
+				for ($i = 0; $i < count($params["columns"]); $i++) {
+					if ($params["columns"][$i]['data'] == "company_id") {
+						$params["columns"][$i]["search"]["value"] = $companyId;
+						break;
+					}
+				}
+			}
+
+			$bindings = array();
+			$where = '';
+
+			$sqlQuery = ssp_sql_query($params, "order_services", $bindings, $where);
+
+			$data = $this->Company_model->getServicesDataTableRecords($sqlQuery, $bindings);
+
+			$response = array(
+				"draw"            => !empty($params['draw']) ? intval($params['draw']) : 0,
+				"recordsTotal"    => intval($this->Company_model->countServicesDataTableTotalRecords($companyId)),
+				"recordsFiltered" => intval($this->Company_model->countServicesDataTableFilterRecords($where, $bindings)),
+				"data"            => $data
+			);
+
+			echo json_encode($response);
+			exit;
+
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('ssp_services_api', 'DataTables API', $e->getMessage());
+
+			echo json_encode(array(
+				"draw"            => 0,
+				"recordsTotal"    => 0,
+				"recordsFiltered" => 0,
+				"data"            => array(),
+				"error"           => $e->getMessage()
+			));
+			exit;
+		}
+	}
+
+	/**
+	 * Server-side DataTable API for Domains (order_domains)
+	 */
+	public function ssp_domains_api($tmpCompanyId = null)
+	{
+		$this->processRestCall();
+
+		header('Content-Type: application/json');
+
+		try {
+			$params = $this->input->get();
+			$companyId = !empty($tmpCompanyId) ? safe_decode($tmpCompanyId) : 0;
+
+			// Inject company_id filter
+			if ($companyId > 0) {
+				for ($i = 0; $i < count($params["columns"]); $i++) {
+					if ($params["columns"][$i]['data'] == "company_id") {
+						$params["columns"][$i]["search"]["value"] = $companyId;
+						break;
+					}
+				}
+			}
+
+			$bindings = array();
+			$where = '';
+
+			$sqlQuery = ssp_sql_query($params, "order_domains", $bindings, $where);
+
+			$data = $this->Company_model->getDomainsDataTableRecords($sqlQuery, $bindings);
+
+			$response = array(
+				"draw"            => !empty($params['draw']) ? intval($params['draw']) : 0,
+				"recordsTotal"    => intval($this->Company_model->countDomainsDataTableTotalRecords($companyId)),
+				"recordsFiltered" => intval($this->Company_model->countDomainsDataTableFilterRecords($where, $bindings)),
+				"data"            => $data
+			);
+
+			echo json_encode($response);
+			exit;
+
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('ssp_domains_api', 'DataTables API', $e->getMessage());
+
+			echo json_encode(array(
+				"draw"            => 0,
+				"recordsTotal"    => 0,
+				"recordsFiltered" => 0,
+				"data"            => array(),
+				"error"           => $e->getMessage()
+			));
+			exit;
+		}
+	}
+
 }

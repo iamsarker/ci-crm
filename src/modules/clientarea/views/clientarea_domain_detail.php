@@ -16,16 +16,16 @@
               </div>
               <ul class="list-group list-group-flush">
                 <li class="list-group-item d-flex justify-content-between">
-					<span>NS1</span><b class="text-secondary float-right"><?= !empty($detail['ns1']) ? $detail['ns1'] : ''?></b>
+					<span>NS1</span><b class="text-secondary float-right"><?= htmlspecialchars($detail['ns1'] ?? '', ENT_QUOTES, 'UTF-8')?></b>
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
-					<span>NS2</span><b class="text-secondary float-right"><?= !empty($detail['ns2']) ? $detail['ns2'] : ''?></b>
+					<span>NS2</span><b class="text-secondary float-right"><?= htmlspecialchars($detail['ns2'] ?? '', ENT_QUOTES, 'UTF-8')?></b>
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
-					<span>NS3</span><span class="text-secondary float-right"><?= !empty($detail['ns3']) ? $detail['ns3'] : ''?></span>
+					<span>NS3</span><span class="text-secondary float-right"><?= htmlspecialchars($detail['ns3'] ?? '', ENT_QUOTES, 'UTF-8')?></span>
                 </li>
                 <li class="list-group-item d-flex justify-content-between">
-					<span>NS4</span><span class="text-secondary float-right"><?= !empty($detail['ns4']) ? $detail['ns4'] : ''?></span>
+					<span>NS4</span><span class="text-secondary float-right"><?= htmlspecialchars($detail['ns4'] ?? '', ENT_QUOTES, 'UTF-8')?></span>
                 </li>
               </ul>
             </div>
@@ -64,32 +64,32 @@
 								<tr>
 									<td>Domain</td>
 									<td> : </td>
-									<td><h4 class="text-secondary text-right"><?= !empty($detail['domain']) ? $detail['domain'] : ''?></h4></td>
+									<td><h4 class="text-secondary text-right"><?= htmlspecialchars($detail['domain'] ?? '', ENT_QUOTES, 'UTF-8')?></h4></td>
 								</tr>
 								<tr>
 									<td>Registration</td>
 									<td> : </td>
-									<td><h5 class="text-secondary text-right"><?= !empty($detail['reg_date']) ? $detail['reg_date'] : ''?></h5></td>
+									<td><h5 class="text-secondary text-right"><?= htmlspecialchars($detail['reg_date'] ?? '', ENT_QUOTES, 'UTF-8')?></h5></td>
 								</tr>
 								<tr>
 									<td>Expiry</td>
 									<td> : </td>
-									<td><h5 class="text-secondary text-right"><?= !empty($detail['exp_date']) ? $detail['exp_date'] : ''?></h5></td>
+									<td><h5 class="text-secondary text-right"><?= htmlspecialchars($detail['exp_date'] ?? '', ENT_QUOTES, 'UTF-8')?></h5></td>
 								</tr>
 								<tr>
 									<td><b>Next Renewal</b></td>
 									<td> : </td>
-									<td><h5 class="text-secondary text-right"><b><?= !empty($detail['next_due_date']) ? $detail['next_due_date'] : ''?></b></h5></td>
+									<td><h5 class="text-secondary text-right"><b><?= htmlspecialchars($detail['next_due_date'] ?? '', ENT_QUOTES, 'UTF-8')?></b></h5></td>
 								</tr>
 								<tr>
 									<td>Registration Amount</td>
 									<td> : </td>
-									<td><h5 class="text-secondary text-right"><?= !empty($detail['currency_code']) ? $detail['currency_code'] : ''?>&nbsp;<?= !empty($detail['first_pay_amount']) ? $detail['first_pay_amount'] : ''?></h5></td>
+									<td><h5 class="text-secondary text-right"><?= htmlspecialchars($detail['currency_code'] ?? '', ENT_QUOTES, 'UTF-8')?>&nbsp;<?= htmlspecialchars($detail['first_pay_amount'] ?? '', ENT_QUOTES, 'UTF-8')?></h5></td>
 								</tr>
 								<tr>
 									<td><b>Renewal Amount</b></td>
 									<td> : </td>
-									<td><h5 class="text-secondary text-right"><b><?= !empty($detail['currency_code']) ? $detail['currency_code'] : ''?>&nbsp;<?= !empty($detail['recurring_amount']) ? $detail['recurring_amount'] : ''?></b></h5></td>
+									<td><h5 class="text-secondary text-right"><b><?= htmlspecialchars($detail['currency_code'] ?? '', ENT_QUOTES, 'UTF-8')?>&nbsp;<?= htmlspecialchars($detail['recurring_amount'] ?? '', ENT_QUOTES, 'UTF-8')?></b></h5></td>
 								</tr>
 								<tr>
 									<td><b>Status</b></td>
@@ -124,19 +124,19 @@
 								<tbody>
 								<tr>
 									<td>DNS-1</td>
-									<td><input name="ns1" placeholder="Nameserver 1" id="ns1" value="<?= !empty($detail['ns1']) ? htmlspecialchars($detail['ns1'], ENT_QUOTES, 'UTF-8') : ''?>" type="text" class="form-control" /></td>
+									<td><input name="ns1" placeholder="Nameserver 1" id="ns1" value="<?= htmlspecialchars($detail['ns1'] ?? '', ENT_QUOTES, 'UTF-8') ?>" type="text" class="form-control" /></td>
 								</tr>
 								<tr>
 									<td>DNS-2</td>
-									<td><input name="ns2" placeholder="Nameserver 2" id="ns2" value="<?= !empty($detail['ns2']) ? htmlspecialchars($detail['ns2'], ENT_QUOTES, 'UTF-8') : ''?>" type="text" class="form-control" /></td>
+									<td><input name="ns2" placeholder="Nameserver 2" id="ns2" value="<?= htmlspecialchars($detail['ns2'] ?? '', ENT_QUOTES, 'UTF-8') ?>" type="text" class="form-control" /></td>
 								</tr>
 								<tr>
 									<td>DNS-3</td>
-									<td><input name="ns3" placeholder="Nameserver 3" id="ns3" value="<?= !empty($detail['ns3']) ? htmlspecialchars($detail['ns3'], ENT_QUOTES, 'UTF-8') : ''?>" type="text" class="form-control" /></td>
+									<td><input name="ns3" placeholder="Nameserver 3" id="ns3" value="<?= htmlspecialchars($detail['ns3'] ?? '', ENT_QUOTES, 'UTF-8') ?>" type="text" class="form-control" /></td>
 								</tr>
 								<tr>
 									<td>DNS-4</td>
-									<td><input name="ns4" placeholder="Nameserver 4" id="ns4" value="<?= !empty($detail['ns4']) ? htmlspecialchars($detail['ns4'], ENT_QUOTES, 'UTF-8') : ''?>" type="text" class="form-control" /></td>
+									<td><input name="ns4" placeholder="Nameserver 4" id="ns4" value="<?= htmlspecialchars($detail['ns4'] ?? '', ENT_QUOTES, 'UTF-8') ?>" type="text" class="form-control" /></td>
 								</tr>
 
 								</tbody>

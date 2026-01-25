@@ -24,23 +24,23 @@
 				<form method="post" name="entityManageForm" id="entityManageForm" action="<?=base_url()?>whmazadmin/currency/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
 					<?=csrf_field()?>
 					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
-					<input name="format" type="hidden" id="format" value="<?= !empty($detail['format']) ? htmlspecialchars($detail['format'], ENT_QUOTES, 'UTF-8') : 1?>" />
+					<input name="format" type="hidden" id="format" value="<?= htmlspecialchars($detail['format'] ?? '1', ENT_QUOTES, 'UTF-8') ?>" />
 
 					<div class="form-group">
 						<label for="code">Code</label>
-						<input name="code" type="text" class="form-control" id="code" value="<?= !empty($detail['code']) ? htmlspecialchars($detail['code'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+						<input name="code" type="text" class="form-control" id="code" value="<?= htmlspecialchars($detail['code'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('code', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="symbol">Symbol</label>
-						<input name="symbol" type="text" class="form-control" id="symbol" value="<?= !empty($detail['symbol']) ? htmlspecialchars($detail['symbol'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+						<input name="symbol" type="text" class="form-control" id="symbol" value="<?= htmlspecialchars($detail['symbol'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('symbol', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="rate">Rate</label>
-						<input name="rate" type="text" class="form-control" id="rate" value="<?= !empty($detail['rate']) ? htmlspecialchars($detail['rate'], ENT_QUOTES, 'UTF-8') : ''?>"/>
+						<input name="rate" type="text" class="form-control" id="rate" value="<?= htmlspecialchars($detail['rate'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('rate', '<div class="error">', '</div>'); ?>
 					</div>
 
