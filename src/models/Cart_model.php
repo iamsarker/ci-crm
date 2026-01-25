@@ -35,14 +35,18 @@ class Cart_model extends CI_Model
 	function getProductServiceItems($stype)
 	{
 		$cId = getCurrencyId();
-		$sql = "SELECT ps.id, ps.product_name, ps.product_desc, CONCAT(CONCAT('[', GROUP_CONCAT(JSON_OBJECT('service_pricing_id', psp.id, 'price', psp.price, 'cycle_name', bc.cycle_name, 'currency', c.code))), ']') billing 
-				FROM product_services ps 
-				JOIN product_service_pricing psp on psp.product_service_id=ps.id 
-				JOIN billing_cycle bc on psp.billing_cycle_id=bc.id 
-				JOIN currencies c on psp.currency_id=c.id 
-				WHERE ps.product_service_group_id=$stype and psp.currency_id=$cId AND psp.status=1  and ps.is_hidden=0 and ps.status=1 
+		// SQL Injection Fix: Cast to integer and use parameterized query
+		$stype = (int)$stype;
+		$cId = (int)$cId;
+
+		$sql = "SELECT ps.id, ps.product_name, ps.product_desc, CONCAT(CONCAT('[', GROUP_CONCAT(JSON_OBJECT('service_pricing_id', psp.id, 'price', psp.price, 'cycle_name', bc.cycle_name, 'currency', c.code))), ']') billing
+				FROM product_services ps
+				JOIN product_service_pricing psp on psp.product_service_id=ps.id
+				JOIN billing_cycle bc on psp.billing_cycle_id=bc.id
+				JOIN currencies c on psp.currency_id=c.id
+				WHERE ps.product_service_group_id=? and psp.currency_id=? AND psp.status=1  and ps.is_hidden=0 and ps.status=1
 				GROUP BY ps.id ";
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->query($sql, array($stype, $cId))->result_array();
 		return $data;
 	}
 
@@ -56,37 +60,44 @@ class Cart_model extends CI_Model
 
 	function deleteAllCarts($userId, $sessionId)
 	{
+		// SQL Injection Fix: Cast to integer and use parameterized query
+		$userId = (int)$userId;
+		$sessionId = (int)$sessionId;
+
 		if( $userId > 0 ){
-			$sql = " DELETE FROM add_to_carts where user_id=$userId ";
-			$this->db->query($sql);
+			$sql = " DELETE FROM add_to_carts where user_id=? ";
+			$this->db->query($sql, array($userId));
 		}
 
 		if( $sessionId > 0 ){
-			$sql = " DELETE FROM add_to_carts where customer_session_id=$sessionId ";
-			$this->db->query($sql);
+			$sql = " DELETE FROM add_to_carts where customer_session_id=? ";
+			$this->db->query($sql, array($sessionId));
 		}
 	}
 
 	function getCartListData()
 	{
-		$customerId = getCustomerId();
-		$customerSessionId = getCustomerSessionId();
+		// SQL Injection Fix: Cast to integer and use parameterized query
+		$customerId = (int)getCustomerId();
+		$customerSessionId = (int)getCustomerSessionId();
 
-		$sql = "SELECT * FROM add_to_carts where user_id=$customerId or customer_session_id=$customerSessionId";
-		$data = $this->db->query($sql)->result_array();
+		$sql = "SELECT * FROM add_to_carts where user_id=? or customer_session_id=?";
+		$data = $this->db->query($sql, array($customerId, $customerSessionId))->result_array();
 		return $data;
 	}
 
 
 	function getDomPricing()
 	{
-		$cId = getCurrencyId();
+		// SQL Injection Fix: Cast to integer and use parameterized query
+		$cId = (int)getCurrencyId();
+
 		$sql = " SELECT dp.id, dp.currency_id, dp.price, dp.transfer, dp.renewal, de.extension
 			FROM dom_pricing dp
 			JOIN dom_extensions de on dp.dom_extension_id=de.id
-			WHERE dp.status=1 AND dp.reg_period=1 AND dp.currency_id=$cId AND de.status=1 ";
+			WHERE dp.status=1 AND dp.reg_period=1 AND dp.currency_id=? AND de.status=1 ";
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->query($sql, array($cId))->result_array();
 		return $data;
 	}
 
@@ -99,19 +110,25 @@ class Cart_model extends CI_Model
 
 	function getCartServicePrice($id)
 	{
-		$sql = "SELECT psp.price as item_price, psp.currency_id, bc.id billing_cycle_id, bc.cycle_name 
-			FROM product_service_pricing psp 
-			JOIN billing_cycle bc on psp.billing_cycle_id=bc.id 
-			WHERE psp.id=$id and psp.status=1 ";
-		$data = $this->db->query($sql)->result_array();
-		return $data[0];
+		// SQL Injection Fix: Cast to integer and use parameterized query
+		$id = (int)$id;
+
+		$sql = "SELECT psp.price as item_price, psp.currency_id, bc.id billing_cycle_id, bc.cycle_name
+			FROM product_service_pricing psp
+			JOIN billing_cycle bc on psp.billing_cycle_id=bc.id
+			WHERE psp.id=? and psp.status=1 ";
+		$data = $this->db->query($sql, array($id))->result_array();
+		return !empty($data) ? $data[0] : array();
 	}
 
 	function getCartDomainPrice($id)
 	{
-		$sql = "SELECT dp.price as item_price, dp.currency_id, dp.reg_period  FROM dom_pricing dp WHERE dp.id=$id and dp.status=1 ";
-		$data = $this->db->query($sql)->result_array();
-		return $data[0];
+		// SQL Injection Fix: Cast to integer and use parameterized query
+		$id = (int)$id;
+
+		$sql = "SELECT dp.price as item_price, dp.currency_id, dp.reg_period  FROM dom_pricing dp WHERE dp.id=? and dp.status=1 ";
+		$data = $this->db->query($sql, array($id))->result_array();
+		return !empty($data) ? $data[0] : array();
 	}
 
 	function saveCart($data)
