@@ -557,3 +557,31 @@ $config['rewrite_short_tags'] = FALSE;
 | Array:		array('10.0.1.200', '192.168.5.0/24')
 */
 $config['proxy_ips'] = '';
+/*
+|--------------------------------------------------------------------------
+| Security Headers Configuration
+|--------------------------------------------------------------------------
+|
+| Set security headers via PHP if .htaccess is not available
+| These headers help protect against various attacks
+*/
+$config['security_headers'] = TRUE;
+if ($config['security_headers']) {
+	// Prevent clickjacking attacks
+	header('X-Frame-Options: SAMEORIGIN');
+	
+	// Prevent MIME type sniffing
+	header('X-Content-Type-Options: nosniff');
+	
+	// XSS Protection for older browsers
+	header('X-XSS-Protection: 1; mode=block');
+	
+	// Control referrer information
+	header('Referrer-Policy: strict-origin-when-cross-origin');
+	
+	// Content Security Policy - restrict resource loading
+	header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'");
+	
+	// Additional security headers for modern browsers
+	header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+}

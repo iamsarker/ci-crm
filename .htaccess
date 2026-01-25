@@ -1,4 +1,60 @@
+# Enable mod_rewrite
 RewriteEngine On
+
+# Prevent direct access to sensitive files
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php/$1 [L]
+
+# ============================================================================
+# SECURITY HEADERS
+# ============================================================================
+
+# Prevent clickjacking attacks by restricting how the site can be framed
+Header set X-Frame-Options "SAMEORIGIN"
+
+# Prevent MIME type sniffing (attacks via content-type confusion)
+Header set X-Content-Type-Options "nosniff"
+
+# XSS Protection for older browsers
+Header set X-XSS-Protection "1; mode=block"
+
+# Control what referrer information is shared
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+# Content Security Policy - Restrict resource loading
+# Allows content only from same origin for scripts/styles, images from any https source
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'self'"
+
+# Enforce HTTPS in production (uncomment when using HTTPS)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ============================================================================
+# ADDITIONAL SECURITY
+# ============================================================================
+
+# Disable directory listing
+Options -Indexes
+
+# Prevent access to sensitive files
+<Files ~ "^\.(env|git|htaccess)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</Files>
+
+# Protect configuration files
+<FilesMatch "^(config|database|composer)\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
