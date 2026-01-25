@@ -177,22 +177,22 @@
 
 #### Standard Form Fields
 ```php
-<!-- Text Input -->
+<!-- Text Input with XSS Protection and Null Check -->
 <div class="col-md-6 col-sm-12">
     <div class="form-group">
         <label for="name">Company name</label>
         <input name="name" type="text" class="form-control" id="name"
-               value="<?= !empty($detail['name']) ? $detail['name'] : ''?>"/>
+               value="<?= htmlspecialchars($detail['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
         <?php echo form_error('name', '<div class="error">', '</div>'); ?>
     </div>
 </div>
 
-<!-- Email Input -->
+<!-- Email Input with XSS Protection and Null Check -->
 <div class="col-md-6 col-sm-12">
     <div class="form-group">
         <label for="email">Email</label>
         <input name="email" type="email" class="form-control" id="email"
-               value="<?= !empty($detail['email']) ? $detail['email'] : ''?>"/>
+               value="<?= htmlspecialchars($detail['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
         <?php echo form_error('email', '<div class="error">', '</div>'); ?>
     </div>
 </div>
@@ -208,11 +208,11 @@
     </div>
 </div>
 
-<!-- Textarea -->
+<!-- Textarea with XSS Protection and Null Check -->
 <div class="col-md-12 col-sm-12">
     <div class="form-group">
         <label for="address">Address</label>
-        <textarea name="address" class="form-control" id="address" rows="3"><?= !empty($detail['address']) ? $detail['address'] : ''?></textarea>
+        <textarea name="address" class="form-control" id="address" rows="3"><?= htmlspecialchars($detail['address'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
         <?php echo form_error('address', '<div class="error">', '</div>'); ?>
     </div>
 </div>
@@ -2236,5 +2236,5 @@ log_message('debug', 'Debug info: ' . print_r($data, true));
 
 ---
 
-**Last Updated:** 2026-01-13
-**Version:** 1.0
+**Last Updated:** 2026-01-25
+**Version:** 1.1

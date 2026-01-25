@@ -16,6 +16,12 @@ Multiple models were using string interpolation in SQL queries, making them vuln
 - `src/models/Adminauth_model.php` - doLogin()
 - `src/models/Order_model.php` - All query methods
 - `src/models/Company_model.php` - getDetail()
+- `src/models/Server_model.php` - getDetail()
+- `src/models/Servicecategory_model.php` - getDetail()
+- `src/models/Servicegroup_model.php` - getDetail()
+- `src/models/Servicemodule_model.php` - getDetail()
+- `src/models/Ticketdepartment_model.php` - getDetail()
+- `src/models/Support_model.php` - loadKBCatList(), loadKBList(), loadAnnouncements()
 
 ### Solution
 - Converted all raw SQL queries to use prepared statements with parameter binding
@@ -318,6 +324,15 @@ Before deploying to production, test the following:
 - `src/modules/auth/views/auth_forgetpass.php`
 - `src/views/whmazadmin/admin_login.php`
 
+### Views (XSS Prevention with htmlspecialchars + null coalescing)
+- `src/views/whmazadmin/service_category_manage.php`
+- `src/views/whmazadmin/service_group_manage.php`
+- `src/views/whmazadmin/service_module_manage.php`
+- `src/views/whmazadmin/ticket_department_manage.php`
+- `src/views/whmazadmin/ticket_manage.php`
+- `src/views/whmazadmin/server_manage.php`
+- `src/views/whmazadmin/package_manage.php`
+
 ---
 
 ## Documentation for Buyers
@@ -359,6 +374,6 @@ When selling on CodeCanyon, include the following in your documentation:
 
 ---
 
-**Generated:** 2026-01-23
+**Generated:** 2026-01-25
 **Status:** All critical security issues resolved ✓
 **CodeCanyon Ready:** YES (with production recommendations)

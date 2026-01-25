@@ -15,7 +15,7 @@ This document outlines all security enhancements made to the CI-CRM application 
 ### Impact: +10 points
 
 ### Issues Fixed:
-- **18 SQL injection vulnerabilities** eliminated across 7 model files
+- **27 SQL injection vulnerabilities** eliminated across 13 model files
 - All database queries converted to use prepared statements or query builder
 
 ### Files Modified:
@@ -51,6 +51,26 @@ This document outlines all security enhancements made to the CI-CRM application 
    - loadSummaryData() - Fixed $id injection (4 UNION queries)
    - getServerDnsInfo() - Fixed $id injection
 
+8. **Server_model.php** (1 method)
+   - getDetail() - Fixed $id injection with prepared statement
+
+9. **Servicecategory_model.php** (1 method)
+   - getDetail() - Fixed $id injection with prepared statement
+
+10. **Servicegroup_model.php** (1 method)
+    - getDetail() - Fixed $id injection with prepared statement
+
+11. **Servicemodule_model.php** (1 method)
+    - getDetail() - Fixed $id injection with prepared statement
+
+12. **Ticketdepartment_model.php** (1 method)
+    - getDetail() - Fixed $id injection with prepared statement
+
+13. **Support_model.php** (3 additional methods)
+    - loadKBCatList() - Fixed $limit injection with prepared statement
+    - loadKBList() - Fixed $limit injection with prepared statement
+    - loadAnnouncements() - Fixed $limit injection with prepared statement
+
 ### Security Pattern Applied:
 ```php
 // BEFORE (Vulnerable):
@@ -71,7 +91,7 @@ $data = $this->db->query($sql, array(intval($id)))->result_array();
 ### Impact: +6 points
 
 ### Issues Fixed:
-- **100+ XSS vulnerabilities** eliminated across 30+ view files
+- **120+ XSS vulnerabilities** eliminated across 37+ view files
 - All dynamic output properly escaped
 
 ### Categories Fixed:
@@ -131,6 +151,15 @@ toastSuccess(<?= json_encode($message) ?>);
 - cart_regnewdomain.php
 - cart_services.php
 - clientarea_domain_detail.php
+
+**Additional Admin Views (2026-01-25):**
+- service_category_manage.php - Added htmlspecialchars() with null coalescing
+- service_group_manage.php - Added htmlspecialchars() with null coalescing
+- service_module_manage.php - Added htmlspecialchars() with null coalescing
+- ticket_department_manage.php - Added htmlspecialchars() with null coalescing
+- ticket_manage.php - Added htmlspecialchars() with null coalescing
+- server_manage.php - Fixed flash messages to use json_encode()
+- package_manage.php - Added null coalescing for loop values
 
 **Core Helpers:**
 - whmaz_helper.php (successAlert, primaryAlert, errorAlert functions)
@@ -753,6 +782,6 @@ For questions or security concerns, please contact:
 
 ---
 
-**Last Updated**: 2026-01-24
-**Version**: 1.0
+**Last Updated**: 2026-01-25
+**Version**: 1.1
 **Security Standard**: CodeCanyon Approved

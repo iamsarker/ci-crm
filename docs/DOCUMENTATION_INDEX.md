@@ -237,12 +237,18 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ## Version Information
 
-- **Documentation Version:** 1.2
+- **Documentation Version:** 1.3
 - **Last Updated:** 2026-01-25
 - **Project Status:** Active Development
 - **Maintained By:** TongBari (https://tongbari.com/)
 
-### Recent Updates (v1.2 - 2026-01-25)
+### Recent Updates (v1.3 - 2026-01-25)
+- Fixed SQL injection in 6 additional models (Server, Servicecategory, Servicegroup, Servicemodule, Ticketdepartment, Support)
+- Fixed XSS vulnerabilities in 7 admin view files with htmlspecialchars() and null coalescing
+- Enhanced invoice tab in company_manage page
+- Updated flash messages to use json_encode() for JavaScript context
+
+### Previous Updates (v1.2 - 2026-01-25)
 - Reorganized documentation into `docs/` and `codecanyon/` folders
 - Added General Settings CRUD with reCAPTCHA configuration
 - Fixed SQL injection in Billing_model.php and Clientarea_model.php

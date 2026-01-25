@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2026-01-25
+
+### Security Patch
+
+#### SQL Injection Fixes
+- Fixed SQL injection vulnerabilities in 6 additional model files:
+  - `Server_model.php` - getDetail() method
+  - `Servicecategory_model.php` - getDetail() method
+  - `Servicegroup_model.php` - getDetail() method
+  - `Servicemodule_model.php` - getDetail() method
+  - `Ticketdepartment_model.php` - getDetail() method
+  - `Support_model.php` - loadKBCatList(), loadKBList(), loadAnnouncements() methods
+- All queries now use prepared statements with parameter binding
+
+#### XSS Prevention Fixes
+- Added `htmlspecialchars()` with null coalescing operator (`??`) to 7 view files:
+  - `service_category_manage.php`
+  - `service_group_manage.php`
+  - `service_module_manage.php`
+  - `ticket_department_manage.php`
+  - `ticket_manage.php`
+  - `server_manage.php`
+  - `package_manage.php`
+- Fixed JavaScript flash messages to use `json_encode()` instead of `addslashes()`
+
+#### Invoice Tab Enhancement
+- Updated `company_manage.php` invoice tab with DataTable for server-side processing
+- Added "Mark as Paid" functionality for invoices
+- Invoice view and PDF download from company management page
+
+---
+
 ## [1.0.0] - 2026-01-25
 
 ### Initial Release
@@ -452,6 +484,12 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.0.1] - 2026-01-25 - Security Patch
+- Fixed SQL injection in 6 model files (Server, Servicecategory, Servicegroup, Servicemodule, Ticketdepartment, Support)
+- Fixed XSS vulnerabilities in 7 admin view files
+- Added null coalescing for safer data handling
+- Enhanced invoice management in company_manage page
+
 ### [1.0.0] - 2026-01-25 - Initial Release
 - First stable production release
 - Complete CRM functionality for hosting providers
@@ -591,6 +629,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.0.0
+**Current Version:** 1.0.1
 **Release Date:** January 25, 2026
-**Status:** Stable Production Release
+**Status:** Stable Production Release (Security Patch)
