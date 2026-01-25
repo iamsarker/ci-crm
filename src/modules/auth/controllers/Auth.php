@@ -63,6 +63,9 @@ class Auth extends WHMAZ_Controller
 		$captcha_site_key = !empty($app_settings['captcha_site_key']) ? $app_settings['captcha_site_key'] : '';
 		$captcha_secret_key = !empty($app_settings['captcha_secret_key']) ? $app_settings['captcha_secret_key'] : '';
 
+		// Get countries for dropdown
+		$countries = $this->Appsetting_model->getCountries();
+
 		if ($this->input->post()) {
 
 			// Verify reCAPTCHA only if keys are configured
@@ -71,6 +74,7 @@ class Auth extends WHMAZ_Controller
 				if (empty($recaptcha_response)) {
 					$this->session->set_flashdata('alert', errorAlert('Please complete the reCAPTCHA verification.'));
 					$data['captcha_site_key'] = $captcha_site_key;
+					$data['countries'] = $countries;
 					$this->load->view('auth_register', $data);
 					return;
 				}
@@ -97,6 +101,7 @@ class Auth extends WHMAZ_Controller
 				if (!$recaptcha_result['success']) {
 					$this->session->set_flashdata('alert', errorAlert('reCAPTCHA verification failed. Please try again.'));
 					$data['captcha_site_key'] = $captcha_site_key;
+					$data['countries'] = $countries;
 					$this->load->view('auth_register', $data);
 					return;
 				}
@@ -113,6 +118,7 @@ class Auth extends WHMAZ_Controller
 		}
 
 		$data['captcha_site_key'] = $captcha_site_key;
+		$data['countries'] = $countries;
 		$this->load->view('auth_register', $data);
 	}
 

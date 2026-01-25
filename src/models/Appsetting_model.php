@@ -35,6 +35,14 @@ class Appsetting_model extends CI_Model {
 	}
 
 	/**
+	 * Get all active countries
+	 */
+	function getCountries() {
+		$sql = "SELECT country_name FROM countries WHERE status = 1 ORDER BY country_name ASC";
+		return $this->db->query($sql)->result_array();
+	}
+
+	/**
 	 * Save application settings
 	 */
 	function saveData($data) {

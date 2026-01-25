@@ -80,7 +80,12 @@
 			            
 			            <div class="form-group">
 			                <label>Country</label>
-			                <input type="text" class="form-control" name="reg[country]" placeholder="Country">
+			                <select class="form-control form-select" name="reg[country]">
+			                	<option value="">-- Select Country --</option>
+			                	<?php if (!empty($countries)) { foreach ($countries as $country) { ?>
+			                		<option value="<?= htmlspecialchars($country['country_name'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($country['country_name'], ENT_QUOTES, 'UTF-8') ?></option>
+			                	<?php } } ?>
+			                </select>
 			            </div>
 
 			            <div class="form-group tx-12">

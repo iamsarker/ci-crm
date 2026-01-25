@@ -40,7 +40,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="platform">Platform <span class="text-danger">*</span></label>
-                                <select name="platform" class="form-control" id="platform">
+                                <select name="platform" class="form-control form-select" id="platform">
                                     <option value="">Select Platform</option>
                                     <option value="STARGATE" <?= (!empty($detail['platform']) && $detail['platform'] == 'STARGATE') ? 'selected' : ''?>>STARGATE (ResellerClub/Resell.biz)</option>
                                     <option value="NAMECHEAP" <?= (!empty($detail['platform']) && $detail['platform'] == 'NAMECHEAP') ? 'selected' : ''?>>NAMECHEAP</option>

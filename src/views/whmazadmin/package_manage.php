@@ -23,7 +23,7 @@
 
 					<div class="form-group">
 						<label for="product_service_id">Product Service <span class="text-danger">*</span></label>
-						<select name="product_service_id" class="form-control" id="product_service_id">
+						<select name="product_service_id" class="form-control form-select" id="product_service_id">
 							<option value="">Select Product Service</option>
 							<?php foreach($services as $service){ ?>
 								<option value="<?= htmlspecialchars($service['id'], ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['product_service_id']) && $detail['product_service_id'] == $service['id']) ? 'selected' : ''?>>
@@ -36,7 +36,7 @@
 
 					<div class="form-group">
 						<label for="currency_id">Currency <span class="text-danger">*</span></label>
-						<select name="currency_id" class="form-control" id="currency_id">
+						<select name="currency_id" class="form-control form-select" id="currency_id">
 							<option value="">Select Currency</option>
 							<?php foreach($currencies as $currency){ ?>
 								<option value="<?= htmlspecialchars($currency['id'], ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['currency_id']) && $detail['currency_id'] == $currency['id']) ? 'selected' : ''?>>
@@ -49,7 +49,7 @@
 
 					<div class="form-group">
 						<label for="billing_cycle_id">Billing Cycle <span class="text-danger">*</span></label>
-						<select name="billing_cycle_id" class="form-control" id="billing_cycle_id">
+						<select name="billing_cycle_id" class="form-control form-select" id="billing_cycle_id">
 							<option value="">Select Billing Cycle</option>
 							<?php foreach($billing_cycles as $cycle){ ?>
 								<option value="<?= htmlspecialchars($cycle['id'], ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['billing_cycle_id']) && $detail['billing_cycle_id'] == $cycle['id']) ? 'selected' : ''?>>

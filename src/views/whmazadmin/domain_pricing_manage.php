@@ -25,7 +25,7 @@
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="dom_extension_id">Domain Extension <span class="text-danger">*</span></label>
-								<select name="dom_extension_id" class="form-control" id="dom_extension_id">
+								<select name="dom_extension_id" class="form-control form-select" id="dom_extension_id">
 									<option value="">Select Extension</option>
 									<?php foreach($extensions as $ext){ ?>
 										<option value="<?= htmlspecialchars($ext['id'], ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['dom_extension_id']) && $detail['dom_extension_id'] == $ext['id']) ? 'selected' : ''?>>
@@ -40,7 +40,7 @@
 						<div class="col-md-6">
 							<div class="form-group">
 								<label for="currency_id">Currency <span class="text-danger">*</span></label>
-								<select name="currency_id" class="form-control" id="currency_id">
+								<select name="currency_id" class="form-control form-select" id="currency_id">
 									<option value="">Select Currency</option>
 									<?php foreach($currencies as $currency){ ?>
 										<option value="<?= htmlspecialchars($currency['id'], ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['currency_id']) && $detail['currency_id'] == $currency['id']) ? 'selected' : ''?>>
