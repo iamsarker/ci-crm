@@ -44,11 +44,11 @@ app.controller('ServiceProductCtrl', function ($scope, $http, $timeout, $rootSco
 					$("#hostingDomainModal").modal("hide");
 
 					if( $scope.hosting_domain_type.trim() == "1" ){
-						let redirectUrl = BASE_URL + 'cart/domain/register/'+$scope.hosting_domain;
+						let redirectUrl = BASE_URL + 'cart/domain?type=register&domkeyword='+$scope.hosting_domain;
 						window.open(redirectUrl, "_self");
 
 					} else if( $scope.hosting_domain_type.trim() == "1" ){
-						let redirectUrl = BASE_URL + 'cart/domain/renew/'+$scope.hosting_domain;
+						let redirectUrl = BASE_URL + 'cart/domain?type=renew&domkeyword='+$scope.hosting_domain;
 						window.open(redirectUrl, "_self");
 
 					} else {
