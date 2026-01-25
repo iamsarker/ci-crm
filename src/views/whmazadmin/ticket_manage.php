@@ -5,7 +5,7 @@
         <div class="row">
 
             <div class="col-md-12">
-                <h3>View Ticket #<?= $tid ?></h3>
+                <h3>View Ticket #<?= htmlspecialchars($tid ?? '', ENT_QUOTES, 'UTF-8') ?></h3>
                 <hr class="mg-5" />
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb breadcrumb-style1 mg-b-0">
@@ -61,12 +61,12 @@
                         <?php if( !empty($replies) ) foreach ($replies as $obj) { ?>
                             <div class="card card-widget card-contacts mg-b-10">
                                 <div class="card-header">
-                                    <h6 class="card-title mb-0"><i class="fa fa-user"></i>&nbsp;<?= $obj['user_name'] ?></h6>
+                                    <h6 class="card-title mb-0"><i class="fa fa-user"></i>&nbsp;<?= htmlspecialchars($obj['user_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></h6>
                                     <nav class="nav">
-                                        <?= $obj['inserted_on'] ?>
+                                        <?= htmlspecialchars($obj['inserted_on'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                                     </nav>
                                 </div><!-- card-header -->
-                                
+
                                 <div class="card-body" style="padding: 10px;">
                                     <?= $obj['message'] ?>
                                 </div>
@@ -91,13 +91,13 @@
 
                         <div class="card card-widget card-contacts">
                             <div class="card-header">
-                                <h6 class="card-title mg-b-0"><i class="fa fa-user"></i>&nbsp;<?= !empty($ticket) ? $ticket['user_name'] : '' ?></h6>
+                                <h6 class="card-title mg-b-0"><i class="fa fa-user"></i>&nbsp;<?= htmlspecialchars($ticket['user_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></h6>
                                 <nav class="nav">
-                                    <?= !empty($ticket) ? $ticket['inserted_on'] : '' ?>
+                                    <?= htmlspecialchars($ticket['inserted_on'] ?? '', ENT_QUOTES, 'UTF-8') ?>
                                 </nav>
                             </div><!-- card-header -->
                             <div class="card-body" style="padding: 10px;">
-                                <?= !empty($ticket) ? $ticket['message'] : ''?>
+                                <?= $ticket['message'] ?? '' ?>
                             </div>
 
                             <div class="card-footer">

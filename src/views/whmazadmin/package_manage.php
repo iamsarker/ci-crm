@@ -26,8 +26,8 @@
 						<select name="product_service_id" class="form-control form-select" id="product_service_id">
 							<option value="">Select Product Service</option>
 							<?php foreach($services as $service){ ?>
-								<option value="<?= htmlspecialchars($service['id'], ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['product_service_id']) && $detail['product_service_id'] == $service['id']) ? 'selected' : ''?>>
-									<?= htmlspecialchars($service['product_name'], ENT_QUOTES, 'UTF-8')?>
+								<option value="<?= htmlspecialchars($service['id'] ?? '', ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['product_service_id']) && $detail['product_service_id'] == ($service['id'] ?? '')) ? 'selected' : ''?>>
+									<?= htmlspecialchars($service['product_name'] ?? '', ENT_QUOTES, 'UTF-8')?>
 								</option>
 							<?php } ?>
 						</select>
@@ -39,8 +39,8 @@
 						<select name="currency_id" class="form-control form-select" id="currency_id">
 							<option value="">Select Currency</option>
 							<?php foreach($currencies as $currency){ ?>
-								<option value="<?= htmlspecialchars($currency['id'], ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['currency_id']) && $detail['currency_id'] == $currency['id']) ? 'selected' : ''?>>
-									<?= htmlspecialchars($currency['symbol'], ENT_QUOTES, 'UTF-8') . ' (' . htmlspecialchars($currency['code'], ENT_QUOTES, 'UTF-8') . ')'?>
+								<option value="<?= htmlspecialchars($currency['id'] ?? '', ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['currency_id']) && $detail['currency_id'] == ($currency['id'] ?? '')) ? 'selected' : ''?>>
+									<?= htmlspecialchars($currency['symbol'] ?? '', ENT_QUOTES, 'UTF-8') . ' (' . htmlspecialchars($currency['code'] ?? '', ENT_QUOTES, 'UTF-8') . ')'?>
 								</option>
 							<?php } ?>
 						</select>
@@ -52,8 +52,8 @@
 						<select name="billing_cycle_id" class="form-control form-select" id="billing_cycle_id">
 							<option value="">Select Billing Cycle</option>
 							<?php foreach($billing_cycles as $cycle){ ?>
-								<option value="<?= htmlspecialchars($cycle['id'], ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['billing_cycle_id']) && $detail['billing_cycle_id'] == $cycle['id']) ? 'selected' : ''?>>
-									<?= htmlspecialchars($cycle['cycle_name'], ENT_QUOTES, 'UTF-8')?>
+								<option value="<?= htmlspecialchars($cycle['id'] ?? '', ENT_QUOTES, 'UTF-8')?>" <?= (!empty($detail['billing_cycle_id']) && $detail['billing_cycle_id'] == ($cycle['id'] ?? '')) ? 'selected' : ''?>>
+									<?= htmlspecialchars($cycle['cycle_name'] ?? '', ENT_QUOTES, 'UTF-8')?>
 								</option>
 							<?php } ?>
 						</select>

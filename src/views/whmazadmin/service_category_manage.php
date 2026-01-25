@@ -26,19 +26,19 @@
 					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 					<div class="form-group">
 						<label for="servce_type_name">Service category name</label>
-						<input name="servce_type_name" type="text" class="form-control" id="servce_type_name" value="<?= !empty($detail['servce_type_name']) ? $detail['servce_type_name'] : ''?>"/>
+						<input name="servce_type_name" type="text" class="form-control" id="servce_type_name" value="<?= htmlspecialchars($detail['servce_type_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('servce_type_name', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="sort_order">Serial#</label>
-						<input name="sort_order" type="text" class="form-control" id="sort_order" value="<?= !empty($detail['sort_order']) ? $detail['sort_order'] : 1?>"/>
+						<input name="sort_order" type="text" class="form-control" id="sort_order" value="<?= htmlspecialchars($detail['sort_order'] ?? '1', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('sort_order', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="remarks">Remarks</label>
-						<textarea name="remarks" rows="3" class="form-control" id="remarks"><?= !empty($detail['remarks']) ? $detail['remarks'] : ''?></textarea>
+						<textarea name="remarks" rows="3" class="form-control" id="remarks"><?= htmlspecialchars($detail['remarks'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
 						<?php echo form_error('remarks', '<div class="error">', '</div>'); ?>
 					</div>
 
@@ -60,10 +60,10 @@ $(function(){
 
 	// Show flash messages as toast
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 });
 </script>

@@ -138,38 +138,42 @@ class Support_model extends CI_Model{
 
 
 	function loadKBCatList($limit) {
-
-		$sql = " SELECT kc.id, kc.cat_title, kc.parent_id, kc.slug, kc.description, COUNT(kcm.id) total_kb 
-			FROM kb_cats kc 
-			LEFT JOIN kb_cat_mapping kcm on kc.id=kcm.kb_cat_id 
-			WHERE kc.status=1 and kc.is_hidden=0 
-			GROUP BY kc.id 
+		// SECURITY FIX: Use prepared statement for LIMIT to prevent SQL injection
+		$sql = " SELECT kc.id, kc.cat_title, kc.parent_id, kc.slug, kc.description, COUNT(kcm.id) total_kb
+			FROM kb_cats kc
+			LEFT JOIN kb_cat_mapping kcm on kc.id=kcm.kb_cat_id
+			WHERE kc.status=1 and kc.is_hidden=0
+			GROUP BY kc.id
 			ORDER BY kc.cat_title ";
 
-		if( is_numeric($limit) && $limit > 0 ){
-			$sql .= " LIMIT $limit ";
+		$bindings = array();
+		if (is_numeric($limit) && $limit > 0) {
+			$sql .= " LIMIT ?";
+			$bindings[] = intval($limit);
 		}
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->query($sql, $bindings)->result_array();
 
 		return $data;
 	}
 
 	function loadKBList($limit) {
-
-		$sql = " SELECT k.id, k.title, k.slug, k.article, k.tags, k.total_view, k.useful, k.upvote, k.downvote, CONCAT('[', GROUP_CONCAT(JSON_OBJECT( 'id',kc.id, 'title', kc.cat_title, 'slug', kc.slug)), ']') as kb_cats 
-			FROM kbs k 
-			JOIN kb_cat_mapping kcm on k.id=kcm.kb_id 
-			JOIN kb_cats kc on kcm.kb_cat_id=kc.id 
-			WHERE k.status=1 
-			GROUP BY k.id 
+		// SECURITY FIX: Use prepared statement for LIMIT to prevent SQL injection
+		$sql = " SELECT k.id, k.title, k.slug, k.article, k.tags, k.total_view, k.useful, k.upvote, k.downvote, CONCAT('[', GROUP_CONCAT(JSON_OBJECT( 'id',kc.id, 'title', kc.cat_title, 'slug', kc.slug)), ']') as kb_cats
+			FROM kbs k
+			JOIN kb_cat_mapping kcm on k.id=kcm.kb_id
+			JOIN kb_cats kc on kcm.kb_cat_id=kc.id
+			WHERE k.status=1
+			GROUP BY k.id
 			ORDER BY k.sort_order ASC ";
 
-		if( is_numeric($limit) && $limit > 0 ){
-			$sql .= " LIMIT $limit ";
+		$bindings = array();
+		if (is_numeric($limit) && $limit > 0) {
+			$sql .= " LIMIT ?";
+			$bindings[] = intval($limit);
 		}
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->query($sql, $bindings)->result_array();
 
 		return $data;
 	}
@@ -196,17 +200,19 @@ class Support_model extends CI_Model{
 
 
 	function loadAnnouncements($limit) {
-
-		$sql = " SELECT a.id, a.title, a.slug, a.description, a.tags, a.total_view 
-			FROM announcements a 
-			WHERE a.status=1 and a.is_published=1 
+		// SECURITY FIX: Use prepared statement for LIMIT to prevent SQL injection
+		$sql = " SELECT a.id, a.title, a.slug, a.description, a.tags, a.total_view
+			FROM announcements a
+			WHERE a.status=1 and a.is_published=1
 			ORDER BY a.publish_date DESC ";
 
-		if( is_numeric($limit) && $limit > 0 ){
-			$sql .= " LIMIT $limit ";
+		$bindings = array();
+		if (is_numeric($limit) && $limit > 0) {
+			$sql .= " LIMIT ?";
+			$bindings[] = intval($limit);
 		}
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->query($sql, $bindings)->result_array();
 		return $data;
 	}
 

@@ -30,7 +30,7 @@
 						<div class="col-md-6 col-sm-12">
 							<div class="form-group">
 								<label for="subject">Service group name</label>
-								<input name="group_name" type="text" class="form-control" id="group_name" value="<?= !empty($detail['group_name']) ? $detail['group_name'] : ''?>"/>
+								<input name="group_name" type="text" class="form-control" id="group_name" value="<?= htmlspecialchars($detail['group_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 								<?php echo form_error('group_name', '<div class="error">', '</div>'); ?>
 							</div>
 						</div>
@@ -47,13 +47,13 @@
 
 					<div class="form-group">
 						<label for="subject">Group headline</label>
-						<input name="group_headline" type="text" class="form-control" id="group_headline" value="<?= !empty($detail['group_headline']) ? $detail['group_headline'] : ''?>" />
+						<input name="group_headline" type="text" class="form-control" id="group_headline" value="<?= htmlspecialchars($detail['group_headline'] ?? '', ENT_QUOTES, 'UTF-8') ?>" />
 						<?php echo form_error('group_headline', '<div class="error">', '</div>'); ?>
 					</div>
 
 					<div class="form-group">
 						<label for="subject">Group Tags</label>
-						<input name="tags" type="text" class="form-control" id="tags" value="<?= !empty($detail['tags']) ? $detail['tags'] : ''?>"/>
+						<input name="tags" type="text" class="form-control" id="tags" value="<?= htmlspecialchars($detail['tags'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 						<?php echo form_error('tags', '<div class="error">', '</div>'); ?>
 					</div>
 
@@ -75,10 +75,10 @@ $(function(){
 
 	// Show flash messages as toast
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 });
 </script>
