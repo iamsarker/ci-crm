@@ -1,4 +1,7 @@
 <?php $this->load->view('templates/customer/header');?>
+<?php if (!empty($captcha_site_key)) { ?>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<?php } ?>
 
 <div class="content content-fixed content-profile content-wrapper">
       <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
@@ -83,6 +86,12 @@
 			            <div class="form-group tx-12">
                 			By clicking <strong>Create an account</strong> below, you agree to our <br />terms of service and privacy statement.
               			</div>
+
+			            <?php if (!empty($captcha_site_key)) { ?>
+			            <div class="form-group">
+			                <div class="g-recaptcha" data-sitekey="<?= htmlspecialchars($captcha_site_key, ENT_QUOTES, 'UTF-8') ?>"></div>
+			            </div>
+			            <?php } ?>
 
 			            <button class="btn btn-brand-02 btn-block">Sign Up</button>
 			            <div class="tx-13 mg-t-20 tx-center">Already have an account? <a href="<?=base_url()?>auth/login">Login now</a></div>

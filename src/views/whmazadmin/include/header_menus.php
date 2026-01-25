@@ -66,6 +66,7 @@
 				<li class="nav-item with-sub">
 					<a href="" class="nav-link"><i data-feather="settings"></i> Settings</a>
 					<ul class="navbar-menu-sub">
+						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/general_setting/manage" class="nav-sub-link"><i data-feather="settings"></i>General Settings</a></li>
 						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/server/index" class="nav-sub-link"><i data-feather="server"></i>Servers</a></li>
 						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/currency/index" class="nav-sub-link"><i data-feather="dollar-sign"></i>Currencies</a></li>
 						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/service_category/index" class="nav-sub-link"><i data-feather="layers"></i>Service Categories</a></li>

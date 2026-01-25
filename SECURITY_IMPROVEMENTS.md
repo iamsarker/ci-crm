@@ -568,6 +568,124 @@ public function methodName($params) {
 
 ---
 
+## 7. Google reCAPTCHA Protection - IMPLEMENTED ✅
+
+### Impact: Bot/Spam Prevention
+
+### Implementation Overview:
+
+Added Google reCAPTCHA v2 to the user registration page to prevent automated bot registrations and spam accounts.
+
+### Components Implemented:
+
+#### A. Configuration via Database (app_settings table)
+
+**reCAPTCHA keys are stored in the `app_settings` table:**
+- `captcha_site_key` - Public site key for frontend widget
+- `captcha_secret_key` - Private secret key for server-side validation
+
+**Setup Instructions:**
+1. Go to https://www.google.com/recaptcha/admin
+2. Register your site (select reCAPTCHA v2 "I'm not a robot" checkbox)
+3. Copy Site Key and Secret Key
+4. Navigate to Admin Panel → General Settings (`whmazadmin/general_setting/manage`)
+5. Enter the keys in the "Google reCAPTCHA Configuration" section
+6. Save settings
+
+**Note:** If reCAPTCHA keys are not configured, the registration form will work without reCAPTCHA verification.
+
+#### B. Frontend Integration (auth_register.php)
+
+**1. reCAPTCHA JavaScript API:**
+```html
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+```
+
+**2. reCAPTCHA Widget:**
+```php
+<div class="form-group">
+    <div class="g-recaptcha" data-sitekey="<?=RECAPTCHA_SITE_KEY?>"></div>
+</div>
+```
+
+#### C. Server-Side Validation (Auth.php Controller)
+
+**Validation Steps:**
+1. Load reCAPTCHA keys from `app_settings` table via `Appsetting_model`
+2. Check if reCAPTCHA is configured (keys are not empty)
+3. If configured, verify reCAPTCHA response with Google's API
+4. Show appropriate error messages on failure
+5. If not configured, skip reCAPTCHA verification
+
+**Code Pattern:**
+```php
+// Get app settings for reCAPTCHA keys
+$app_settings = $this->Appsetting_model->getSettings();
+$captcha_site_key = !empty($app_settings['captcha_site_key']) ? $app_settings['captcha_site_key'] : '';
+$captcha_secret_key = !empty($app_settings['captcha_secret_key']) ? $app_settings['captcha_secret_key'] : '';
+
+// Verify reCAPTCHA only if keys are configured
+if (!empty($captcha_site_key) && !empty($captcha_secret_key)) {
+    $recaptcha_response = $this->input->post('g-recaptcha-response');
+    if (empty($recaptcha_response)) {
+        // Show error: Please complete the reCAPTCHA verification
+        return;
+    }
+
+    // Verify with Google API
+    $verify_url = 'https://www.google.com/recaptcha/api/siteverify';
+    $post_data = array(
+        'secret' => $captcha_secret_key,
+        'response' => $recaptcha_response,
+        'remoteip' => $this->input->ip_address()
+    );
+
+    // Process verification response
+    $result = file_get_contents($verify_url, false, $context);
+    $recaptcha_result = json_decode($result, true);
+
+    if (!$recaptcha_result['success']) {
+        // Show error: reCAPTCHA verification failed
+        return;
+    }
+}
+
+// Proceed with registration...
+```
+
+### Files Modified:
+
+| File | Change |
+|------|--------|
+| src/modules/auth/views/auth_register.php | Added reCAPTCHA JavaScript and widget (conditionally loaded) |
+| src/modules/auth/controllers/Auth.php | Added server-side reCAPTCHA validation with database keys |
+| src/models/Appsetting_model.php | Model for retrieving app settings including reCAPTCHA keys |
+| src/controllers/whmazadmin/General_setting.php | Admin UI for managing reCAPTCHA keys |
+| src/views/whmazadmin/general_setting_manage.php | Admin form for reCAPTCHA configuration |
+
+### Security Benefits:
+
+1. ✅ **Bot Prevention:** Blocks automated registration attempts
+2. ✅ **Spam Protection:** Reduces spam account creation
+3. ✅ **Brute Force Mitigation:** Adds barrier to mass account creation
+4. ✅ **Server-Side Validation:** Cannot be bypassed by disabling JavaScript
+5. ✅ **IP Logging:** Includes user IP in verification for additional security
+
+### Testing:
+
+1. **Valid Submission:** Complete reCAPTCHA → Registration proceeds
+2. **Missing reCAPTCHA:** Skip checkbox → Error message displayed
+3. **Invalid/Expired:** Tamper with response → Verification fails
+4. **Bot Simulation:** Automated POST without reCAPTCHA → Rejected
+
+### Future Enhancements:
+
+- Add reCAPTCHA to login page (optional, for brute force protection)
+- Consider reCAPTCHA v3 for invisible verification
+- Add reCAPTCHA to contact/support forms
+
+---
+
 ## Additional Recommendations for Future
 
 ### High Priority:

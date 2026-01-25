@@ -77,6 +77,7 @@ This application consists of **TWO separate portals** with distinct access level
 src/controllers/whmazadmin/
 ├── Authenticate.php          # Admin login/logout
 ├── Dashboard.php             # Admin dashboard
+├── General_setting.php       # Application settings (site info, SMTP, reCAPTCHA)
 ├── Company.php               # Customer company management
 ├── Currency.php              # Currency settings
 ├── Server.php                # Server management
@@ -1391,14 +1392,24 @@ $autoload['helper'] = array('url', 'file', 'whmaz', 'ssp');
 
 **Stored in:** `app_settings` database table
 
-**Typical Settings:**
+**SMTP Settings:**
 - SMTP host
 - SMTP port
 - SMTP username
-- SMTP password
-- From email address
-- From name
-- Email protocol (mail/smtp)
+- SMTP password/auth key
+
+### Google reCAPTCHA Configuration
+
+**Stored in:** `app_settings` database table
+
+**Settings:**
+- `captcha_site_key` - Public site key for frontend widget
+- `captcha_secret_key` - Private secret key for server-side validation
+
+**Used in:**
+- Customer registration page (`auth/register`)
+
+**Admin Configuration:** `whmazadmin/general_setting/manage`
 
 ---
 

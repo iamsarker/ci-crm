@@ -1,4 +1,4 @@
-<?php 
+<?php
 class Clientarea_model extends CI_Model{
 
 	function __construct(){
@@ -7,29 +7,39 @@ class Clientarea_model extends CI_Model{
 	}
 
 	function loadSummaryData($id) {
+		// SECURITY: Validate input to prevent SQL injection
+		if (!is_numeric($id) || $id <= 0) {
+			return array();
+		}
 
-		$sql = "SELECT COUNT(id) cnt FROM order_services WHERE company_id=$id UNION ALL
-				SELECT COUNT(id) cnt FROM order_domains WHERE company_id=$id UNION ALL 
-				SELECT COUNT(id) cnt FROM tickets WHERE company_id=$id UNION ALL 
-				SELECT COUNT(id) cnt FROM invoices WHERE company_id=$id ";
+		$id = intval($id);
 
-		$data = $this->db->query($sql)->result_array();
-		
+		$sql = "SELECT COUNT(id) cnt FROM order_services WHERE company_id = ? UNION ALL
+				SELECT COUNT(id) cnt FROM order_domains WHERE company_id = ? UNION ALL
+				SELECT COUNT(id) cnt FROM tickets WHERE company_id = ? UNION ALL
+				SELECT COUNT(id) cnt FROM invoices WHERE company_id = ?";
+
+		$data = $this->db->query($sql, array($id, $id, $id, $id))->result_array();
+
 		return $data;
- 	}
+	}
 
-	 function getServerDnsInfo($id) {
+	function getServerDnsInfo($id) {
+		// SECURITY: Validate input to prevent SQL injection
+		if (!is_numeric($id) || $id <= 0) {
+			return array();
+		}
 
 		$sql = "SELECT s.name, s.dns1, s.dns2, s.dns3, s.dns4, s.ip_addr primar_ip
-			FROM product_service_pricing psp 
-			JOIN product_services ps on psp.product_service_id=ps.id
-			JOIN servers s on ps.server_id=s.id
-			WHERE psp.id=$id limit 0,1";
+			FROM product_service_pricing psp
+			JOIN product_services ps ON psp.product_service_id = ps.id
+			JOIN servers s ON ps.server_id = s.id
+			WHERE psp.id = ? LIMIT 1";
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->query($sql, array(intval($id)))->result_array();
 
 		return $data;
- 	}
+	}
 
  	function saveUserLogins($data){
  		$data['active'] = 1;

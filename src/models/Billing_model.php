@@ -1,4 +1,4 @@
-<?php 
+<?php
 class Billing_model extends CI_Model{
 
 	function __construct(){
@@ -7,71 +7,88 @@ class Billing_model extends CI_Model{
 	}
 
 	function loadInvoiceList($companyId, $limit) {
+		// SECURITY: Validate inputs to prevent SQL injection
+		$bindings = array();
 
-		$usrCondition = " WHERE status=1 ";
-		if( is_numeric($companyId) && $companyId > 0 ){
-			$usrCondition = " WHERE company_id=$companyId AND status=1 ";
+		$sql = "SELECT * FROM invoices WHERE status=1 ";
+
+		if (is_numeric($companyId) && $companyId > 0) {
+			$sql .= " AND company_id = ? ";
+			$bindings[] = intval($companyId);
 		}
 
-		$sql = "SELECT * FROM invoices $usrCondition ORDER BY updated_on DESC ";
-		if( is_numeric($limit) && $limit > 0 ){
-			$sql .= " LIMIT $limit ";
+		$sql .= " ORDER BY updated_on DESC ";
+
+		if (is_numeric($limit) && $limit > 0) {
+			$sql .= " LIMIT " . intval($limit);
 		}
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->query($sql, $bindings)->result_array();
 
 		return $data;
  	}
 
 	function getInvoiceByUuid($invoice_uuid, $companyId) {
+		// SECURITY: Validate inputs
+		if (empty($invoice_uuid) || !is_numeric($companyId) || $companyId <= 0) {
+			return array();
+		}
 
-		$sql = "SELECT inv.*, o.discount_amount, o.total_amount order_amount, o.payment_gateway_id, c.name company_name, c.address company_address, c.city company_city, c.state company_state, c.zip_code, c.country
-			FROM invoices inv 
-			join orders o on inv.order_id=o.id 
-			join companies c on inv.company_id=c.id 
-			WHERE inv.invoice_uuid='$invoice_uuid' and inv.company_id=$companyId AND inv.status=1 ORDER BY inv.updated_on DESC ";
+		$sql = "SELECT inv.*, o.discount_amount, o.total_amount order_amount, o.payment_gateway_id,
+				c.name company_name, c.address company_address, c.city company_city,
+				c.state company_state, c.zip_code, c.country
+			FROM invoices inv
+			JOIN orders o ON inv.order_id = o.id
+			JOIN companies c ON inv.company_id = c.id
+			WHERE inv.invoice_uuid = ? AND inv.company_id = ? AND inv.status = 1
+			ORDER BY inv.updated_on DESC ";
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->query($sql, array($invoice_uuid, intval($companyId)))->result_array();
 
-		if( $data ){
+		if ($data) {
 			return $data[0];
 		}
 		return array();
 	}
 
 	function invoiceSummary($companyId){
-		$sql = " SELECT sum(CASE WHEN upper(pay_status)='PAID' THEN 1 ELSE 0 END) paid, 
-			sum(CASE WHEN upper(pay_status)='DUE' THEN 1 ELSE 0 END) due, 
-			sum(CASE WHEN upper(pay_status)='PARTIAL' THEN 1 ELSE 0 END) partialy
-			FROM invoices WHERE ";
+		// SECURITY: Use parameterized query
+		$bindings = array();
 
-		if( is_numeric($companyId) && $companyId > 0 ){
-			$sql .= " company_id=$companyId and  ";
+		$sql = "SELECT
+				SUM(CASE WHEN UPPER(pay_status) = 'PAID' THEN 1 ELSE 0 END) paid,
+				SUM(CASE WHEN UPPER(pay_status) = 'DUE' THEN 1 ELSE 0 END) due,
+				SUM(CASE WHEN UPPER(pay_status) = 'PARTIAL' THEN 1 ELSE 0 END) partialy
+			FROM invoices WHERE status = 1 ";
+
+		if (is_numeric($companyId) && $companyId > 0) {
+			$sql .= " AND company_id = ? ";
+			$bindings[] = intval($companyId);
 		}
-		$sql .= " status=1 ";
 
-		$data = $this->db->query($sql)->result_array();
+		$data = $this->db->query($sql, $bindings)->result_array();
 
 		return $data;
 	}
 
 	function getInvoiceItems($invoiceId) {
+		// SECURITY: Validate input
+		if (!is_numeric($invoiceId) || $invoiceId <= 0) {
+			return array();
+		}
 
-		$sql = "SELECT ii.*
-			FROM invoice_items ii 
-			WHERE ii.invoice_id=$invoiceId ";
+		$sql = "SELECT ii.* FROM invoice_items ii WHERE ii.invoice_id = ?";
 
-		return $this->db->query($sql)->result_array();
+		return $this->db->query($sql, array(intval($invoiceId)))->result_array();
 	}
 
 	function allCurrencies() {
-		$sql = "SELECT * FROM currencies WHERE status=1 ORDER BY updated_on DESC ";
+		$sql = "SELECT * FROM currencies WHERE status = 1 ORDER BY updated_on DESC";
 
 		$data = $this->db->query($sql)->result_array();
 
 		return $data;
 	}
-
 
 }
 ?>

@@ -250,29 +250,39 @@ INSERT INTO `announcements` (`id`, `title`, `slug`, `description`, `is_published
 --
 
 CREATE TABLE `app_settings` (
-  `id` int(11) NOT NULL,
-  `site_name` varchar(255) NOT NULL,
-  `site_desc` varchar(255) NOT NULL,
-  `admin_url` varchar(255) NOT NULL,
-  `favicon` varchar(255) NOT NULL,
-  `logo` varchar(255) NOT NULL,
-  `company_name` varchar(255) NOT NULL,
-  `company_address` varchar(255) NOT NULL,
-  `zip_code` varchar(20) NOT NULL,
-  `license_auth` varchar(255) DEFAULT NULL,
-  `license_hash` varchar(255) DEFAULT NULL,
-  `email` varchar(255) NOT NULL,
-  `fax` varchar(255) NOT NULL,
-  `phone` varchar(255) NOT NULL,
-  `smtp_host` varchar(150) DEFAULT NULL,
-  `smtp_port` varchar(8) DEFAULT NULL,
-  `smtp_username` varchar(255) DEFAULT NULL,
-  `smtp_authkey` varchar(255) DEFAULT NULL,
-  `inserted_on` datetime DEFAULT NULL,
-  `inserted_by` int(11) DEFAULT NULL,
-  `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `updated_by` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+	`id` int(11) NOT NULL,
+	`site_name` varchar(255) NOT NULL,
+	`site_desc` varchar(255) NOT NULL,
+	`admin_url` varchar(255) NOT NULL,
+	`favicon` varchar(255) NOT NULL,
+	`logo` varchar(255) NOT NULL,
+	`company_name` varchar(255) NOT NULL,
+	`company_address` varchar(255) NOT NULL,
+	`zip_code` varchar(20) NOT NULL,
+	`license_auth` varchar(255) DEFAULT NULL,
+	`license_hash` varchar(255) DEFAULT NULL,
+	`email` varchar(255) NOT NULL,
+	`fax` varchar(255) NOT NULL,
+	`phone` varchar(255) NOT NULL,
+	`smtp_host` varchar(150) DEFAULT NULL,
+	`smtp_port` varchar(8) DEFAULT NULL,
+	`smtp_username` varchar(255) DEFAULT NULL,
+	`smtp_authkey` varchar(255) DEFAULT NULL,
+	`captcha_site_key` varchar(100) NOT NULL,
+	`captcha_secret_key` varchar(100) NOT NULL,
+	`inserted_on` datetime DEFAULT NULL,
+	`inserted_by` int(11) DEFAULT NULL,
+	`updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+	`updated_by` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `app_settings`
+--
+
+INSERT INTO `app_settings` (`id`, `site_name`, `site_desc`, `admin_url`, `favicon`, `logo`, `company_name`, `company_address`, `zip_code`, `license_auth`, `license_hash`, `email`, `fax`, `phone`, `smtp_host`, `smtp_port`, `smtp_username`, `smtp_authkey`, `captcha_site_key`, `captcha_secret_key`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+	(0, 'Tong Bari', '', '', '', '', '', '', '1219', NULL, NULL, '', '', '', NULL, NULL, NULL, NULL, '', '', NULL, NULL, '2026-01-25 14:30:11', NULL);
+
 
 -- --------------------------------------------------------
 

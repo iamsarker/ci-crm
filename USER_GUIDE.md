@@ -272,11 +272,15 @@ After first login, immediately:
      - ZIP/Postal Code
      - Country
 
-3. **Accept Terms**
+3. **Complete Security Verification**
+   - Complete the Google reCAPTCHA checkbox ("I'm not a robot")
+   - This prevents automated bot registrations
+
+4. **Accept Terms**
    - Read Terms of Service
    - Check "I agree" checkbox
 
-4. **Submit Registration**
+5. **Submit Registration**
    - Click "Register" button
    - Check email for verification link
    - Click verification link to activate account
@@ -1747,6 +1751,49 @@ The admin dashboard provides comprehensive business insights:
 ---
 
 ## System Settings
+
+### General Settings
+
+**Access:** `whmazadmin/general_setting/manage`
+
+The General Settings page allows you to configure all core application settings in one place.
+
+**Site Information:**
+- **Site Name:** Your website/application name
+- **Site Description:** Brief description of your site
+- **Admin URL:** Custom admin panel URL
+- **Logo:** Upload company logo (JPG, PNG, GIF - Max 2MB)
+- **Favicon:** Upload site favicon (JPG, PNG, GIF, ICO - Max 2MB)
+
+**Company Information:**
+- **Company Name:** Your business name
+- **Company Address:** Full business address
+- **Zip Code:** Postal/ZIP code
+
+**Contact Information:**
+- **Email:** Primary contact email address
+- **Phone:** Contact phone number
+- **Fax:** Fax number (if applicable)
+
+**SMTP Configuration:**
+- **SMTP Host:** Mail server address (e.g., smtp.gmail.com)
+- **SMTP Port:** Usually 587 (TLS) or 465 (SSL)
+- **SMTP Username:** Email account username
+- **SMTP Auth Key/Password:** Email account password or app-specific password
+
+**Google reCAPTCHA Configuration:**
+- **reCAPTCHA Site Key:** Public site key from Google reCAPTCHA admin
+- **reCAPTCHA Secret Key:** Private secret key from Google reCAPTCHA admin
+- Get keys from: https://www.google.com/recaptcha/admin
+
+**Database Table:** `app_settings`
+
+**Files:**
+- Controller: `src/controllers/whmazadmin/General_setting.php`
+- Model: `src/models/Appsetting_model.php`
+- View: `src/views/whmazadmin/general_setting_manage.php`
+
+---
 
 ### Company Settings
 
