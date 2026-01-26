@@ -613,7 +613,9 @@ public function methodName($params) {
 
 ### Implementation Overview:
 
-Added Google reCAPTCHA v2 to the user registration page to prevent automated bot registrations and spam accounts.
+Added Google reCAPTCHA v2 ("I'm not a robot" checkbox) to protect against automated bot submissions:
+- **User Registration Page** - Prevents automated bot registrations and spam accounts
+- **Domain Search Page** - Protects domain availability lookups from abuse
 
 ### Components Implemented:
 
@@ -698,6 +700,9 @@ if (!empty($captcha_site_key) && !empty($captcha_secret_key)) {
 |------|--------|
 | src/modules/auth/views/auth_register.php | Added reCAPTCHA JavaScript and widget (conditionally loaded) |
 | src/modules/auth/controllers/Auth.php | Added server-side reCAPTCHA validation with database keys |
+| src/modules/cart/views/cart_regnewdomain.php | Added reCAPTCHA v2 checkbox widget for domain search |
+| src/modules/cart/controllers/Cart.php | Added server-side reCAPTCHA verification for domain search |
+| resources/angular/app/services_controller.js | Updated btnSearchDomain() to validate and send reCAPTCHA token |
 | src/models/Appsetting_model.php | Model for retrieving app settings including reCAPTCHA keys |
 | src/controllers/whmazadmin/General_setting.php | Admin UI for managing reCAPTCHA keys |
 | src/views/whmazadmin/general_setting_manage.php | Admin form for reCAPTCHA configuration |
@@ -728,17 +733,14 @@ if (!empty($captcha_site_key) && !empty($captcha_secret_key)) {
 ## Additional Recommendations for Future
 
 ### High Priority:
-1. **Security Headers**
-   - X-Frame-Options: DENY
-   - X-Content-Type-Options: nosniff
-   - Content-Security-Policy
-   - Strict-Transport-Security (HSTS)
-
-2. **Security Headers**
-   - X-Frame-Options: DENY
-   - X-Content-Type-Options: nosniff
-   - Content-Security-Policy
-   - Strict-Transport-Security (HSTS)
+1. ~~**Security Headers**~~ - ✅ IMPLEMENTED (see `docs/SECURITY_HEADERS_SETUP.md`)
+   - ✅ X-Frame-Options: SAMEORIGIN
+   - ✅ X-Content-Type-Options: nosniff
+   - ✅ Content-Security-Policy (with Google reCAPTCHA & Google Fonts support)
+   - ✅ X-XSS-Protection: 1; mode=block
+   - ✅ Referrer-Policy: strict-origin-when-cross-origin
+   - ✅ Permissions-Policy
+   - ⚠️ Strict-Transport-Security (HSTS) - Enable when using HTTPS
 
 ### Medium Priority:
 1. ~~**Rate Limiting**~~ - ✅ IMPLEMENTED (see Section 8 below)
@@ -996,5 +998,5 @@ function sanitize_html($html) {
 ---
 
 **Last Updated**: 2026-01-26
-**Version**: 1.3
+**Version**: 1.4
 **Security Standard**: CodeCanyon Approved

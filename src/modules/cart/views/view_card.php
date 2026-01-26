@@ -12,9 +12,6 @@
 			<div class="col-md-9 col-sm-12">
 				<h3>View cart</h3>
 				<hr class="mg-5"/>
-				<?php if ($this->session->flashdata('alert')) { ?>
-					<?= $this->session->flashdata('alert') ?>
-				<?php } ?>
 				<div class="row mg-t-15">
 					<div class="col-md-12 mb-2">
 						<table class="table table-primary table-striped">
@@ -121,5 +118,12 @@
 <script src="<?=base_url()?>resources/angular/app/app.directives.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/app/app.services.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/app/services_controller.js?v=1.0.0"></script>
-
+<script>
+	<?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	<?php } ?>
+	<?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	<?php } ?>
+</script>
 <?php $this->load->view('templates/customer/footer'); ?>

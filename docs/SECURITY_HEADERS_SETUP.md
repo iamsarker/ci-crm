@@ -69,25 +69,26 @@ Referrer-Policy: strict-origin-when-cross-origin
 ---
 
 ### 5. **Content-Security-Policy (CSP)**
-**Purpose:** Comprehensive protection against XSS and injection attacks  
+**Purpose:** Comprehensive protection against XSS and injection attacks
 **Policy:**
 ```
 default-src 'self'
-script-src 'self' 'unsafe-inline'
-style-src 'self' 'unsafe-inline'
+script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com
 img-src 'self' https: data:
-font-src 'self' data:
-connect-src 'self'
+font-src 'self' https://fonts.gstatic.com data:
+connect-src 'self' https://www.google.com
+frame-src 'self' https://www.google.com
 frame-ancestors 'self'
 ```
 
 **Restrictions:**
-- Scripts only from own domain (allows inline for compatibility)
-- Stylesheets only from own domain
+- Scripts only from own domain + Google reCAPTCHA (allows inline for compatibility)
+- Stylesheets from own domain + Google Fonts
 - Images from own domain, HTTPS, or data URIs
-- Fonts from own domain or data URIs
-- API calls only to own domain
-- Iframe embedding only from same domain
+- Fonts from own domain, Google Fonts, or data URIs
+- API calls to own domain + Google reCAPTCHA
+- Iframe embedding only from same domain + Google reCAPTCHA
 
 ---
 

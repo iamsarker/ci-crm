@@ -50,9 +50,6 @@
 					<li class="breadcrumb-item active"><a>Service Detail</a></li>
 				</ol>
 			</nav>
-          <?php if ($this->session->flashdata('alert')) { ?>
-            <?= $this->session->flashdata('alert') ?>
-          <?php } ?>
 
 
 			<div class="row mt-4">
@@ -168,5 +165,12 @@
   </div><!-- content -->
 
 <?php $this->load->view('templates/customer/footer_script');?>
-
+<script>
+	<?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	<?php } ?>
+	<?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	<?php } ?>
+</script>
 <?php $this->load->view('templates/customer/footer');?>

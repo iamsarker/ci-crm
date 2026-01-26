@@ -2,9 +2,6 @@
 
 <div class="content content-fixed content-auth-alt content-wrapper">
       <div class="container d-flex justify-content-center ht-100p">
-      	<?php if ($this->session->flashdata('alert')) { ?>
-    	<?= $this->session->flashdata('alert') ?>
-		<?php } ?>
 		<div class="mx-wd-300 wd-sm-450 ht-100p d-flex flex-column align-items-center justify-content-center">
 		  <div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
 			<div class="wd-200p">
@@ -27,4 +24,12 @@
 </div>
 
 <?php $this->load->view('templates/customer/footer_script');?>
+<script>
+	<?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	<?php } ?>
+	<?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	<?php } ?>
+</script>
 <?php $this->load->view('templates/customer/footer');?>

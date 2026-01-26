@@ -44,9 +44,6 @@
                 </nav>
 
 
-				<?php if ($this->session->flashdata('alert')) { ?>
-					<?= $this->session->flashdata('alert') ?>
-				<?php } ?>
 
                 <!-- form element start -->
                 <?php
@@ -178,5 +175,12 @@
             jQuery('#registry_no_' + form_id).remove();
             registryNo = registryNo - 1;
         }
+
+		<?php if ($this->session->flashdata('alert_success')) { ?>
+			toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+		<?php } ?>
+		<?php if ($this->session->flashdata('alert_error')) { ?>
+			toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+		<?php } ?>
     </script>
     <?php $this->load->view('templates/customer/footer');?>

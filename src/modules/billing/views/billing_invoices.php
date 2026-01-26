@@ -47,9 +47,6 @@
 					<li class="breadcrumb-item active"><a>My Invoices</a></li>
 				</ol>
 			</nav>
-          <?php if ($this->session->flashdata('alert')) { ?>
-            <?= $this->session->flashdata('alert') ?>
-          <?php } ?>
           <div data-label="Example" class="df-example demo-table mg-t-25">
             <table id="example1" class="table table-hover">
               <thead>
@@ -120,5 +117,12 @@
 		  console.log("downloading...")
 		  window.location = "<?=base_url()?>billing/download_invoice/"+invoice_uuid;
 	  }
+
+	  <?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	  <?php } ?>
+	  <?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	  <?php } ?>
     </script>
 <?php $this->load->view('templates/customer/footer');?>

@@ -63,9 +63,6 @@
                 </nav>
 
 
-                <?php if ($this->session->flashdata('alert')) { ?>
-                    <?= $this->session->flashdata('alert') ?>
-                <?php } ?>
                 
                 
                 
@@ -202,5 +199,11 @@
 
     });
 
+	<?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	<?php } ?>
+	<?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	<?php } ?>
 </script>
 <?php $this->load->view('templates/customer/footer'); ?>

@@ -45,28 +45,28 @@ class Auth extends WHMAZ_Controller
 
 			} else if ($resp['status_code'] == -100) {
 				// SECURITY: Rate limiting - too many failed attempts
-				$this->session->set_flashdata('alert', errorAlert($resp['message']));
+				$this->session->set_flashdata('alert_error', $resp['message']);
 			} else if ($resp['status_code'] == -1) {
 				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
 				$msg = 'Please check your mail. A confirmation message has been sent !!!';
 				if ($remaining > 0 && $remaining <= 3) {
 					$msg .= " ({$remaining} attempts remaining)";
 				}
-				$this->session->set_flashdata('alert', errorAlert($msg));
+				$this->session->set_flashdata('alert_error', $msg);
 			} else if ($resp['status_code'] == -2) {
 				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
 				$msg = 'Please Enter your current email address !!!';
 				if ($remaining > 0 && $remaining <= 3) {
 					$msg .= " ({$remaining} attempts remaining)";
 				}
-				$this->session->set_flashdata('alert', errorAlert($msg));
+				$this->session->set_flashdata('alert_error', $msg);
 			} else {
 				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
 				$msg = 'Invalid username/password. Try Again';
 				if ($remaining > 0 && $remaining <= 3) {
 					$msg .= " ({$remaining} attempts remaining)";
 				}
-				$this->session->set_flashdata('alert', errorAlert($msg));
+				$this->session->set_flashdata('alert_error', $msg);
 			}
 
 		}
@@ -90,7 +90,7 @@ class Auth extends WHMAZ_Controller
 			if (!empty($captcha_site_key) && !empty($captcha_secret_key)) {
 				$recaptcha_response = $this->input->post('g-recaptcha-response');
 				if (empty($recaptcha_response)) {
-					$this->session->set_flashdata('alert', errorAlert('Please complete the reCAPTCHA verification.'));
+					$this->session->set_flashdata('alert_error', 'Please complete the reCAPTCHA verification.');
 					$data['captcha_site_key'] = $captcha_site_key;
 					$data['countries'] = $countries;
 					$this->load->view('auth_register', $data);
@@ -117,7 +117,7 @@ class Auth extends WHMAZ_Controller
 				$recaptcha_result = json_decode($result, true);
 
 				if (!$recaptcha_result['success']) {
-					$this->session->set_flashdata('alert', errorAlert('reCAPTCHA verification failed. Please try again.'));
+					$this->session->set_flashdata('alert_error', 'reCAPTCHA verification failed. Please try again.');
 					$data['captcha_site_key'] = $captcha_site_key;
 					$data['countries'] = $countries;
 					$this->load->view('auth_register', $data);
@@ -128,9 +128,9 @@ class Auth extends WHMAZ_Controller
 			$newUserReq = xss_cleaner($this->input->post('reg'));
 			$resp = $this->Auth_model->newRegistration($newUserReq);
 			if ($resp['success'] == 1) {
-				$this->session->set_flashdata('alert', successAlert('Registration has been completed successfully. A confirmation link has been sent through email.'));
+				$this->session->set_flashdata('alert_success', 'Registration has been completed successfully. A confirmation link has been sent through email.');
 			} else {
-				$this->session->set_flashdata('alert', errorAlert('Failed to register. Try Again'));
+				$this->session->set_flashdata('alert_error', 'Failed to register. Try Again');
 			}
 
 		}
@@ -146,7 +146,7 @@ class Auth extends WHMAZ_Controller
 		$this->session->unset_userdata('CUSTOMER', $resp);
 		$this->session->unset_userdata('CUSTOMER');
 		$this->session->sess_destroy();
-		$this->session->set_flashdata('alert', errorAlert('Logout success !!!'));
+		$this->session->set_flashdata('alert_success', 'Logout success !!!');
 		redirect('/auth/login', 'refresh');
 	}
 

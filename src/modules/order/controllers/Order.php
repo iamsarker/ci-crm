@@ -60,10 +60,10 @@ class Order extends WHMAZ_Controller
 			);
 
 			if($this->Common_model->save('tickets', $form_data)){
-				$this->session->set_flashdata('alert', successAlert('Support ticket has been placed successfully.'));
+				$this->session->set_flashdata('alert_success', 'Support ticket has been placed successfully.');
 				redirect("supports/tickets");
 			}else {
-				$this->session->set_flashdata('alert', errorAlert('Something went wrong. Try again'));
+				$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
 			}
 		}
 

@@ -19,9 +19,6 @@
 						<li class="breadcrumb-item">Find best hosting from us</li>
 					</ol>
 				</nav>
-				<?php if ($this->session->flashdata('alert')) { ?>
-					<?= $this->session->flashdata('alert') ?>
-				<?php } ?>
 
 				<div class="row justify-content-center mg-t-15">
 
@@ -101,5 +98,12 @@
 <script src="<?=base_url()?>resources/angular/app/app.directives.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/app/app.services.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/app/services_controller.js?v=1.0.0"></script>
-
+<script>
+	<?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	<?php } ?>
+	<?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	<?php } ?>
+</script>
 <?php $this->load->view('templates/customer/footer');?>

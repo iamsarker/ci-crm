@@ -45,9 +45,6 @@
 					<li class="breadcrumb-item active"><a href="<?=base_url()?>supports/view_announcement/<?=$details['id']?>/<?=$details['slug']?>"><?=$details['title']?></a></li>
 				</ol>
 			</nav>
-          <?php if ($this->session->flashdata('alert')) { ?>
-            <?= $this->session->flashdata('alert') ?>
-          <?php } ?>
           <div data-label="Example" class="df-example demo-table mg-t-25">
 
 				<?= sanitize_html($details['description'] ?? '') ?>
@@ -62,3 +59,11 @@
 
 <?php $this->load->view('templates/customer/footer');?>
 <?php $this->load->view('templates/customer/footer_script');?>
+<script>
+	<?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	<?php } ?>
+	<?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	<?php } ?>
+</script>

@@ -2,9 +2,6 @@
 
 <div class="content content-fixed content-profile content-wrapper">
       <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
-      	<?php if ($this->session->flashdata('alert')) { ?>
-    	<?= $this->session->flashdata('alert') ?>
-		<?php } ?>
 		<div class="content content-fixed content-auth" style="margin-top: 15px">
 	      <div class="container">
 	        <div class="media align-items-stretch justify-content-center ht-100p pos-relative">
@@ -39,3 +36,11 @@
 
 <?php $this->load->view('templates/customer/footer');?>
 <?php $this->load->view('templates/customer/footer_script');?>
+<script>
+	<?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	<?php } ?>
+	<?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	<?php } ?>
+</script>

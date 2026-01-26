@@ -9,9 +9,6 @@
 		<div class="content content-fixed content-auth mt-0">
 	      <div class="container">
 
-	      	<?php if ($this->session->flashdata('alert')) { ?>
-        	<?= $this->session->flashdata('alert') ?>
-    		<?php } ?>
 
 	      	<form method="post" action="">
 	      		<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
@@ -110,4 +107,12 @@
 </div>
 
 <?php $this->load->view('templates/customer/footer_script');?>
+<script>
+	<?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	<?php } ?>
+	<?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	<?php } ?>
+</script>
 <?php $this->load->view('templates/customer/footer');?>

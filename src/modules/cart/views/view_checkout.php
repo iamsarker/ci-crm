@@ -13,9 +13,6 @@
 			<div class="col-md-9 col-sm-12">
 				<h3>CheckOut</h3>
 				<hr class="mg-5"/>
-				<?php if ($this->session->flashdata('alert')) { ?>
-					<?= $this->session->flashdata('alert') ?>
-				<?php } ?>
 				<div class="row mg-t-15">
 					<div class="card card-widget card-contacts" style="margin-top:15px;">
 						<div class="card-header">
@@ -80,4 +77,12 @@
 </script>
 
 <?php $this->load->view('templates/customer/footer_script'); ?>
+<script>
+	<?php if ($this->session->flashdata('alert_success')) { ?>
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	<?php } ?>
+	<?php if ($this->session->flashdata('alert_error')) { ?>
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	<?php } ?>
+</script>
 <?php $this->load->view('templates/customer/footer'); ?>

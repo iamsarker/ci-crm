@@ -201,26 +201,25 @@ if (strpos($redirectUrl, '/') === 0 && strpos($redirectUrl, '//') !== 0) {
 
 ## 🟡 RECOMMENDATIONS FOR PRODUCTION (Medium Priority)
 
-### 1. **Rate Limiting for Login Attempts** ⚠️
-**Current Status:** Not implemented  
-**Recommendation:** Add rate limiting to prevent brute force attacks
+### 1. **Rate Limiting for Login Attempts** ✅
+**Current Status:** Fully Implemented
+**Implementation:** Custom rate limiting with database-backed tracking
 
-**Implementation:**
-```php
-// Add to Auth_model->doLogin()
-// Track failed attempts per IP/email
-// Block after 5 failed attempts for 15 minutes
-```
+**Features:**
+- Tracks failed login attempts per IP address and email
+- Blocks login after 5 failed attempts for 15 minutes
+- Auto-cleanup of old records (24 hours)
+- Applies to both Customer Portal and Admin Portal
 
-**Suggested Library:** Consider `fkooman/ip-based-access-control` or custom implementation
+**Documentation:** See `docs/SECURITY_IMPROVEMENTS.md` Section 8 for details
 
 ---
 
-### 2. **Security Headers** ⚠️
-**Current Status:** Partially present via .htaccess files  
-**Recommendation:** Add comprehensive security headers
+### 2. **Security Headers** ✅
+**Current Status:** Fully Implemented
+**Implementation:** Comprehensive security headers configured in both `.htaccess` and `src/config/config.php`
 
-**Add to `.htaccess` or web server config:**
+**Configured Headers:**
 ```apache
 # Prevent clickjacking
 Header set X-Frame-Options "SAMEORIGIN"
@@ -234,9 +233,14 @@ Header set X-XSS-Protection "1; mode=block"
 # Referrer Policy
 Header set Referrer-Policy "strict-origin-when-cross-origin"
 
-# Content Security Policy
-Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+# Content Security Policy (includes Google reCAPTCHA & Google Fonts)
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https: data:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://www.google.com; frame-src 'self' https://www.google.com; frame-ancestors 'self'"
+
+# Permissions Policy
+Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 ```
+
+**Documentation:** See `docs/SECURITY_HEADERS_SETUP.md` for full details
 
 ---
 
@@ -447,10 +451,10 @@ Before deploying to production:
   - [ ] `uploadedfiles/` protected with `.htaccess`
   - [ ] Application files read-only where possible
 
-- [ ] **Headers and Security**
-  - [ ] Security headers configured in `.htaccess`
-  - [ ] CSRF protection enabled
-  - [ ] Rate limiting considered for login
+- [x] **Headers and Security**
+  - [x] Security headers configured in `.htaccess` (including CSP with Google Fonts)
+  - [x] CSRF protection enabled
+  - [x] Rate limiting implemented for login (5 attempts / 15 min lockout)
 
 - [ ] **Logging and Monitoring**
   - [ ] Error logging configured
@@ -474,8 +478,8 @@ Before deploying to production:
 | **Overall Score** | 32/100 | 95/100 | ✅ **Excellent** |
 | **Critical Issues** | 6 | 0 | ✅ **Fixed** |
 | **High Issues** | 4 | 0 | ✅ **Fixed** |
-| **Medium Issues** | 3 | 1 | ✅ **Improved** |
-| **Recommendations** | N/A | 8 | ⚠️ **Production Ready** |
+| **Medium Issues** | 3 | 0 | ✅ **Fixed** |
+| **Recommendations** | N/A | 6 | ✅ **Production Ready** |
 
 ---
 
@@ -512,6 +516,7 @@ Before deploying to production:
 
 ---
 
-**Report Generated:** January 25, 2026  
-**Security Standard:** CodeCanyon Approved + Production Ready  
+**Report Generated:** January 25, 2026
+**Last Updated:** January 26, 2026
+**Security Standard:** CodeCanyon Approved + Production Ready
 **Recommended For:** Production Deployment ✅
