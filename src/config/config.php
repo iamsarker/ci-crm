@@ -581,7 +581,8 @@ if ($config['security_headers']) {
 	
 	// Content Security Policy - restrict resource loading
 	// Google reCAPTCHA requires: www.google.com, www.gstatic.com
-	header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; font-src 'self' data:; connect-src 'self' https://www.google.com; frame-src 'self' https://www.google.com; frame-ancestors 'self'");
+	// Google Fonts requires: fonts.googleapis.com (CSS), fonts.gstatic.com (font files)
+	header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https: data:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://www.google.com; frame-src 'self' https://www.google.com; frame-ancestors 'self'");
 	
 	// Additional security headers for modern browsers
 	header('Permissions-Policy: geolocation=(), microphone=(), camera=()');

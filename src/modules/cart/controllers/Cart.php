@@ -10,6 +10,7 @@ class Cart extends WHMAZ_Controller
 		$this->load->model('Common_model');
 		$this->load->model('Cart_model');
 		$this->load->model('Order_model');
+		$this->load->model('Appsetting_model');
 	}
 
 	public function view()
@@ -200,6 +201,10 @@ class Cart extends WHMAZ_Controller
 		$type       = $this->input->get('type');
 		$domkeyword = $this->input->get('domkeyword');
 
+		// Get app settings for reCAPTCHA keys
+		$app_settings = $this->Appsetting_model->getSettings();
+		$data['captcha_site_key'] = !empty($app_settings['captcha_site_key']) ? $app_settings['captcha_site_key'] : '';
+
 		$data['services'] = $this->Cart_model->getServiceGroups();
 		$data['dom_prices'] = $this->Cart_model->getDomPricing();
 		$data['currency'] = $this->Cart_model->getCurrencies();
@@ -212,10 +217,49 @@ class Cart extends WHMAZ_Controller
 	{
 		$type       = $this->input->get('type');
 		$domkeyword = $this->input->get('domkeyword');
+		$recaptcha_token = $this->input->get('recaptcha_token');
 
 		$resp_data = array();
 		$resp_data['status'] = 0;
 		$resp_data['info'] = array();
+
+		// Get app settings for reCAPTCHA keys
+		$app_settings = $this->Appsetting_model->getSettings();
+		$captcha_site_key = !empty($app_settings['captcha_site_key']) ? $app_settings['captcha_site_key'] : '';
+		$captcha_secret_key = !empty($app_settings['captcha_secret_key']) ? $app_settings['captcha_secret_key'] : '';
+
+		// Verify reCAPTCHA if keys are configured
+		if (!empty($captcha_site_key) && !empty($captcha_secret_key)) {
+			if (empty($recaptcha_token)) {
+				$resp_data['error'] = 'Please complete the reCAPTCHA verification.';
+				echo json_encode($resp_data);
+				return;
+			}
+
+			$verify_url = 'https://www.google.com/recaptcha/api/siteverify';
+			$verify_data = array(
+				'secret' => $captcha_secret_key,
+				'response' => $recaptcha_token,
+				'remoteip' => $this->input->ip_address()
+			);
+
+			$options = array(
+				'http' => array(
+					'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+					'method' => 'POST',
+					'content' => http_build_query($verify_data)
+				)
+			);
+			$context = stream_context_create($options);
+			$verify_response = file_get_contents($verify_url, false, $context);
+			$response_data = json_decode($verify_response, true);
+
+			if (empty($response_data['success']) || $response_data['success'] !== true) {
+				$resp_data['error'] = 'reCAPTCHA verification failed. Please try again.';
+				echo json_encode($resp_data);
+				return;
+			}
+		}
 
 		try {
 			if (!empty($domkeyword)) {

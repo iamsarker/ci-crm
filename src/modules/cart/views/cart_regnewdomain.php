@@ -1,4 +1,14 @@
 <?php $this->load->view('templates/customer/header');?>
+<?php if (!empty($captcha_site_key)) { ?>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+	var RECAPTCHA_SITE_KEY = '<?= htmlspecialchars($captcha_site_key, ENT_QUOTES, 'UTF-8') ?>';
+</script>
+<?php } else { ?>
+<script>
+	var RECAPTCHA_SITE_KEY = '';
+</script>
+<?php } ?>
 
 	 <div class="content content-fixed content-wrapper" ng-app="ServicesApp">
       <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0" ng-controller="ServiceDomainCtrl">
@@ -18,25 +28,35 @@
 					<li class="breadcrumb-item">Find your expected domain through us</li>
 				</ol>
 			</nav>
-          <?php if ($this->session->flashdata('alert')) { ?>
-            <?= $this->session->flashdata('alert') ?>
-          <?php } ?>
 
 			<div class="row mg-t-15">
 				<div class="col-md-12">
 					<div class="domain-search-panel">
-						<div class="input-group domain-search-box">
-							<input type="text" class="form-control" placeholder="Search your domain name" aria-label="Search your domain name" id="search_domain_name" value="<?= empty($domkeyword) ? '' : htmlspecialchars($domkeyword, ENT_QUOTES, 'UTF-8');?>" aria-describedby="button-addon2">
-							<div class="input-group-append" ng-init="loadDomainToVar()">
-								<button class="btn btn-outline-info" type="button" id="button-addon2" ng-click="btnSearchDomain()">Search</button>
+
+						<div class="row">
+							<div class="col-md-4 col-sm-12">
+								<?php if (!empty($captcha_site_key)) { ?>
+									<div class="mg-t-10">
+										<div class="g-recaptcha" data-sitekey="<?= htmlspecialchars($captcha_site_key, ENT_QUOTES, 'UTF-8') ?>"></div>
+									</div>
+								<?php } ?>
 							</div>
+							<div class="col-md-8 col-sm-12">
+								<div class="input-group domain-search-box">
+									<input type="text" class="form-control" placeholder="Search your domain name" aria-label="Search your domain name(Single domain)" id="search_domain_name" value="<?= empty($domkeyword) ? '' : htmlspecialchars($domkeyword, ENT_QUOTES, 'UTF-8');?>" aria-describedby="button-addon2">
+									<div class="input-group-append" ng-init="loadDomainToVar()">
+										<button class="btn btn-outline-info mt-2 ms-1" type="button" id="button-addon2" ng-click="btnSearchDomain()">Search</button>
+									</div>
+								</div>
+							</div>
+
 						</div>
 					</div>
 				</div>
 
 				<div class="col-md-12">
 					<p ng-if="data.status == 1" style="color: #6cb86c; font-size: 1.5em">
-						<span>Congratulations! {{data.info[0].name}} is available!</span><br/>
+						<span>Congratulations! <b>{{data.info[0].name}}</b> is available!</span><br/>
 						<b>{{data.info[0].price}} <?=getCurrencyCode()?></b>&nbsp;<button type="button" class="btn btn-xs btn-secondary" ng-click="addToCartRegisterDomain(data.info[0].domPriceId, data.info[0].name)" >Add to cart</button>
 					</p>
 					<p ng-if="data.status == 0" style="color: #d8535f; font-size: 1.5em">
