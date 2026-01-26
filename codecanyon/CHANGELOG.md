@@ -7,6 +7,59 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2] - 2026-01-26
+
+### Security Enhancement - Rate Limiting
+
+#### Login Rate Limiting (Brute Force Protection)
+- Implemented comprehensive rate limiting for both Customer Portal and Admin Portal
+- **Configuration:**
+  - Maximum 5 failed attempts before lockout
+  - 15-minute lockout duration
+  - Auto-cleanup of records older than 24 hours
+- **Features:**
+  - Tracks failed attempts by both IP address and email
+  - Shows remaining attempts warning (when 3 or fewer left)
+  - Displays unlock time when locked out
+  - Clears failed attempts on successful login
+- **New Files:**
+  - `src/models/Loginattempt_model.php` - Rate limiting model
+  - `database/migrations/003_create_login_attempts_table.sql` - Database migration
+- **Modified Files:**
+  - `src/models/Auth_model.php` - Added rate limiting checks
+  - `src/models/Adminauth_model.php` - Added rate limiting checks
+  - `src/modules/auth/controllers/Auth.php` - Handle rate limit errors
+  - `src/controllers/whmazadmin/Authenticate.php` - Handle rate limit errors
+
+#### Additional SQL Injection Fixes
+- Fixed SQL injection in 5 more model files:
+  - `Currency_model.php` - getDetail() method
+  - `Kbcat_model.php` - getDetail() method
+  - `Expensecategory_model.php` - getDetail() method
+  - `Expensevendor_model.php` - getDetail() method
+  - `Package_model.php` - getDetail() method
+
+#### Additional XSS Fixes
+- Fixed `addslashes()` to `json_encode()` in 10 more list view files for proper JavaScript context escaping
+
+#### Onclick Handler XSS Fixes
+- Fixed unescaped title parameters in onclick handlers using `json_encode()` for 9 list view files:
+  - `currency_list.php`, `expense_category_list.php`, `expense_vendor_list.php`
+  - `kb_category_list.php`, `server_list.php`, `service_category_list.php`
+  - `service_group_list.php`, `service_module_list.php`, `ticket_department_list.php`
+
+#### Rich Text Content Sanitization
+- Added new `sanitize_html()` helper function for safe rich text rendering
+  - Allows safe formatting tags (p, b, i, a, ul, ol, li, h1-h6, etc.)
+  - Strips dangerous elements (onclick, javascript:, etc.)
+- Applied sanitization to rich text content display in:
+  - `ticket_manage.php` (admin) - ticket messages and replies
+  - `viewticket.php` (client) - ticket messages and replies
+  - `support_kb_details.php` - knowledge base articles
+  - `support_announcement_detail.php` - announcements
+
+---
+
 ## [1.0.1] - 2026-01-25
 
 ### Security Patch
