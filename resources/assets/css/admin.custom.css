@@ -17,14 +17,15 @@
 
 .domain-search-panel{
 	background-color: #9fcdff;
-	padding: 50px;
+	padding: 40px;
 	border-radius: 8px;
 }
 .domain-search-box{
 	background-color: white;
 	margin: 10px;
 	padding: 10px;
-	border-radius: 8px;
+	border-radius: 1px;
+	height: 75px;
 }
 
 select.fontawesome {

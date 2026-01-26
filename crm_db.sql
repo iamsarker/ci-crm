@@ -361,6 +361,23 @@ INSERT INTO `companies` (`id`, `name`, `mobile`, `phone`, `email`, `address`, `c
 (11, 'Alaka Bhattacharjee', '+8801731795993', '+8801731795993', 'aporajita2001@gmail.com', 'Kumarpara', 'Sylhet', 'Sylhet', '3100', 'Alaka', 'Bhattacharjee', 'Bangladesh', 1, '2024-11-22 16:22:00', 1, '2024-11-22 16:22:43', 1, NULL, NULL);
 
 -- --------------------------------------------------------
+--
+-- Table structure for table `login_attempts`
+--
+
+CREATE TABLE IF NOT EXISTS `login_attempts` (
+	`id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`identifier` VARCHAR(255) NOT NULL COMMENT 'IP address or email',
+	`identifier_type` ENUM('ip', 'email') NOT NULL DEFAULT 'ip',
+	`ip_address` VARCHAR(45) NOT NULL COMMENT 'IP address of the attempt',
+	`user_agent` VARCHAR(255) DEFAULT NULL,
+	`is_successful` TINYINT(1) NOT NULL DEFAULT 0,
+	`attempt_time` DATETIME NOT NULL,
+	PRIMARY KEY (`id`),
+	INDEX `idx_identifier` (`identifier`, `identifier_type`),
+	INDEX `idx_attempt_time` (`attempt_time`),
+	INDEX `idx_ip_time` (`ip_address`, `attempt_time`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Table structure for table `countries`

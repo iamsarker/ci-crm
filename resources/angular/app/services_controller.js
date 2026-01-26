@@ -108,10 +108,43 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 
 		$scope.search_domain_name = document.getElementById("search_domain_name").value;
 
+		if (!$scope.search_domain_name || $scope.search_domain_name.trim() === '') {
+			toastWarning("Please enter a domain name to search");
+			return;
+		}
+
+		// Check if reCAPTCHA is configured and get response
+		let recaptchaToken = '';
+		if (typeof RECAPTCHA_SITE_KEY !== 'undefined' && RECAPTCHA_SITE_KEY !== '') {
+			recaptchaToken = grecaptcha.getResponse();
+			if (!recaptchaToken) {
+				toastWarning("Please complete the reCAPTCHA verification");
+				return;
+			}
+		}
+
 		DialogBox.showProgress();
-		let req = Communication.request("GET", BASE_URL + 'domain-search?type=register&domkeyword='+$scope.search_domain_name, {});
+
+		let url = BASE_URL + 'domain-search?type=register&domkeyword=' + $scope.search_domain_name;
+		if (recaptchaToken) {
+			url += '&recaptcha_token=' + encodeURIComponent(recaptchaToken);
+		}
+
+		let req = Communication.request("GET", url, {});
         req.then(function (resp) {
 			DialogBox.hideProgress();
+
+			// Reset reCAPTCHA for next search
+			if (typeof grecaptcha !== 'undefined' && RECAPTCHA_SITE_KEY !== '') {
+				grecaptcha.reset();
+			}
+
+			if (resp.error) {
+				toastError(resp.error);
+				$scope.data = {status: -1, info: {}};
+				return;
+			}
+
             $scope.data = resp;
 
 			setTimeout(function (){
@@ -120,6 +153,10 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 
         }, function (err) {
 			DialogBox.hideProgress();
+			// Reset reCAPTCHA on error
+			if (typeof grecaptcha !== 'undefined' && RECAPTCHA_SITE_KEY !== '') {
+				grecaptcha.reset();
+			}
             log("summary error", JSON.stringify(err));
         });
     };
