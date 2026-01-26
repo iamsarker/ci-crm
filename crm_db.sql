@@ -1376,6 +1376,8 @@ CREATE TABLE `order_services` (
   `company_id` bigint(20) NOT NULL,
   `product_service_id` int(11) NOT NULL,
   `product_service_pricing_id` int(11) NOT NULL,
+  `product_service_type_key` varchar(150) DEFAULT NULL,
+  `cp_username` varchar(50) DEFAULT NULL COMMENT 'cPanel username for hosting accounts',
   `billing_cycle_id` int(11) NOT NULL,
   `description` text DEFAULT NULL,
   `first_pay_amount` double NOT NULL,

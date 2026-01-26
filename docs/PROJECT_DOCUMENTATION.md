@@ -1128,6 +1128,34 @@ Available in footer for both admin and client portals
 | `order_domains` | Ordered domains |
 | `add_to_carts` | Shopping cart items |
 
+#### `order_services` Table Structure
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | BIGINT(20) | Primary key, auto-increment |
+| `order_id` | BIGINT(20) | Foreign key to `orders` table |
+| `company_id` | BIGINT(20) | Foreign key to `companies` table |
+| `product_service_id` | INT(11) | Foreign key to `product_services` table |
+| `product_service_pricing_id` | INT(11) | Foreign key to `product_service_pricing` table |
+| `product_service_type_key` | VARCHAR(150) | Service type identifier key (e.g., 'SHARED_HOSTING', 'RESELLER_HOSTING') |
+| `cp_username` | VARCHAR(50) | cPanel username for hosting accounts (used for SSO) |
+| `billing_cycle_id` | INT(11) | Foreign key to `billing_cycle` table |
+| `description` | TEXT | Service description |
+| `first_pay_amount` | DOUBLE | Initial payment amount |
+| `recurring_amount` | DOUBLE | Recurring payment amount |
+| `hosting_domain` | VARCHAR(200) | Associated domain name |
+| `reg_date` | DATE | Service registration date |
+| `exp_date` | DATE | Service expiry date |
+| `next_due_date` | DATE | Next billing due date |
+| `is_synced` | TINYINT(4) | Sync status with provisioning system (1=synced) |
+| `status` | TINYINT(4) | 0=pending, 1=active, 2=expired, 3=suspended, 4=terminated |
+| `remarks` | VARCHAR(255) | Additional remarks |
+| `inserted_on` | DATETIME | Record creation timestamp |
+| `inserted_by` | INT(11) | User who created the record |
+| `updated_on` | TIMESTAMP | Last update timestamp |
+| `updated_by` | INT(11) | User who last updated the record |
+| `deleted_on` | DATETIME | Soft delete timestamp |
+| `deleted_by` | INT(11) | User who deleted the record |
+
 ### Billing & Invoice Tables
 | Table | Purpose |
 |-------|---------|
