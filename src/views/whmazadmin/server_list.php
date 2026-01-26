@@ -45,7 +45,7 @@
 							<td><?= $row['dns4']; ?></td>
 							<td class="text-center">
 								<button type="button" class="btn btn-xs btn-secondary" onclick="openManage('<?=safe_encode($row['id'])?>')" title="Manage"><i class="fa fa-wrench"></i></button>
-								<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow('<?=safe_encode($row['id'])?>', '<?= $row['name']?>')" title="Delete"><i class="fa fa-trash"></i></button>
+								<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow('<?=safe_encode($row['id'])?>', <?= json_encode($row['name'] ?? '') ?>)" title="Delete"><i class="fa fa-trash"></i></button>
 							</td>
 						</tr>
 					<?php } ?>
@@ -63,10 +63,10 @@
         	'use strict'
 	// Show flash messages as toast
 	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess('<?= addslashes($this->session->flashdata('alert_success')) ?>');
+		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
 	<?php } ?>
 	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError('<?= addslashes($this->session->flashdata('alert_error')) ?>');
+		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
 
 			$('#listDataTable').DataTable();

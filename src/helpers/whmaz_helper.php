@@ -402,6 +402,55 @@
 	}
 
 	/**
+	 * SECURITY: Sanitize HTML content for safe display
+	 *
+	 * Allows safe HTML tags (formatting, links, lists) while removing
+	 * dangerous elements (scripts, event handlers, javascript: URLs).
+	 * Use this for rich text content from editors like Quill.
+	 *
+	 * @param string $html The HTML content to sanitize
+	 * @return string Sanitized HTML safe for display
+	 *
+	 * Usage:
+	 *   <?= sanitize_html($ticket['message']) ?>
+	 */
+	if ( ! function_exists('sanitize_html'))
+	{
+		function sanitize_html($html)
+		{
+			if (empty($html)) {
+				return '';
+			}
+
+			// Allowed tags (Quill editor output + common formatting)
+			$allowed_tags = '<p><br><strong><b><em><i><u><s><strike><a><blockquote><pre><code><ul><ol><li><h1><h2><h3><h4><h5><h6><sub><sup><span><div>';
+
+			// First strip all non-allowed tags
+			$html = strip_tags($html, $allowed_tags);
+
+			// Remove dangerous attributes using regex
+			// Remove event handlers (onclick, onerror, onload, etc.)
+			$html = preg_replace('/\s*on\w+\s*=\s*["\'][^"\']*["\']/i', '', $html);
+			$html = preg_replace('/\s*on\w+\s*=\s*[^\s>]*/i', '', $html);
+
+			// Remove javascript: and data: URLs in href/src attributes
+			$html = preg_replace('/href\s*=\s*["\']?\s*javascript:[^"\'>\s]*/i', 'href="#"', $html);
+			$html = preg_replace('/href\s*=\s*["\']?\s*data:[^"\'>\s]*/i', 'href="#"', $html);
+			$html = preg_replace('/src\s*=\s*["\']?\s*javascript:[^"\'>\s]*/i', 'src=""', $html);
+			$html = preg_replace('/src\s*=\s*["\']?\s*data:[^"\'>\s]*/i', 'src=""', $html);
+
+			// Remove style attributes with expression/javascript
+			$html = preg_replace('/style\s*=\s*["\'][^"\']*expression\s*\([^"\']*["\']/i', '', $html);
+			$html = preg_replace('/style\s*=\s*["\'][^"\']*javascript:[^"\']*["\']/i', '', $html);
+
+			// Remove any remaining script-like content
+			$html = preg_replace('/<\s*script[^>]*>.*?<\s*\/\s*script\s*>/is', '', $html);
+
+			return $html;
+		}
+	}
+
+	/**
 	 * SECURITY: Generate secure random password
 	 *
 	 * Generates a cryptographically secure random password with configurable length

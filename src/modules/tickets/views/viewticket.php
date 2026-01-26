@@ -117,7 +117,7 @@
                                 </div><!-- card-header -->
                                 
                                 <div class="card-body" style="padding: 10px;">
-                                    <?= $obj['message'] ?>
+                                    <?= sanitize_html($obj['message'] ?? '') ?>
                                 </div>
                                 
                                 <div class="card-footer">
@@ -146,7 +146,7 @@
                                 </nav>
                             </div><!-- card-header -->
                             <div class="card-body" style="padding: 10px;">
-                                <?= !empty($ticket) ? $ticket['message'] : ''?>
+                                <?= sanitize_html($ticket['message'] ?? '') ?>
                             </div>
 
                             <div class="card-footer">

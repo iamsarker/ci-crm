@@ -28,19 +28,42 @@ class Authenticate extends WHMAZADMIN_Controller
 			if ($resp['status_code'] == 1) {
 				$this->session->set_userdata("ADMIN", $resp['data']);
 
+				// SECURITY FIX: Validate redirect URL to prevent open redirect vulnerability
 				if( !empty($redirectUrl) ){
-					header("Location: ".$redirectUrl);
-					die();
+					// Only allow internal redirects (relative URLs starting with /)
+					if (strpos($redirectUrl, '/') === 0 && strpos($redirectUrl, '//') !== 0) {
+						redirect($redirectUrl, 'refresh');
+					} else {
+						redirect('/whmazadmin/dashboard/index', 'refresh');
+					}
 				} else{
 					redirect('/whmazadmin/dashboard/index', 'refresh');
 				}
 
+			} else if ($resp['status_code'] == -100) {
+				// SECURITY: Rate limiting - too many failed attempts
+				$this->session->set_flashdata('alert_error', $resp['message']);
 			} else if ($resp['status_code'] == -1) {
-				$this->session->set_flashdata('alert_error', 'Please check your mail. A confirmation message has been sent !!!');
+				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
+				$msg = 'Invalid username or account not active.';
+				if ($remaining > 0 && $remaining <= 3) {
+					$msg .= " ({$remaining} attempts remaining)";
+				}
+				$this->session->set_flashdata('alert_error', $msg);
 			} else if ($resp['status_code'] == -2) {
-				$this->session->set_flashdata('alert_error', 'Please Enter your current email address !!!');
+				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
+				$msg = 'Please Enter your current email address !!!';
+				if ($remaining > 0 && $remaining <= 3) {
+					$msg .= " ({$remaining} attempts remaining)";
+				}
+				$this->session->set_flashdata('alert_error', $msg);
 			} else {
-				$this->session->set_flashdata('alert_error', 'Invalid username/password. Try Again');
+				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
+				$msg = 'Invalid username/password. Try Again';
+				if ($remaining > 0 && $remaining <= 3) {
+					$msg .= " ({$remaining} attempts remaining)";
+				}
+				$this->session->set_flashdata('alert_error', $msg);
 			}
 
 		}

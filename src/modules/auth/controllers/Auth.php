@@ -43,12 +43,30 @@ class Auth extends WHMAZ_Controller
 					redirect('/clientarea/index', 'refresh');
 				}
 
+			} else if ($resp['status_code'] == -100) {
+				// SECURITY: Rate limiting - too many failed attempts
+				$this->session->set_flashdata('alert', errorAlert($resp['message']));
 			} else if ($resp['status_code'] == -1) {
-				$this->session->set_flashdata('alert', errorAlert('Please check your mail. A confirmation message has been sent !!!'));
+				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
+				$msg = 'Please check your mail. A confirmation message has been sent !!!';
+				if ($remaining > 0 && $remaining <= 3) {
+					$msg .= " ({$remaining} attempts remaining)";
+				}
+				$this->session->set_flashdata('alert', errorAlert($msg));
 			} else if ($resp['status_code'] == -2) {
-				$this->session->set_flashdata('alert', errorAlert('Please Enter your current email address !!!'));
+				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
+				$msg = 'Please Enter your current email address !!!';
+				if ($remaining > 0 && $remaining <= 3) {
+					$msg .= " ({$remaining} attempts remaining)";
+				}
+				$this->session->set_flashdata('alert', errorAlert($msg));
 			} else {
-				$this->session->set_flashdata('alert', errorAlert('Invalid username/password. Try Again'));
+				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
+				$msg = 'Invalid username/password. Try Again';
+				if ($remaining > 0 && $remaining <= 3) {
+					$msg .= " ({$remaining} attempts remaining)";
+				}
+				$this->session->set_flashdata('alert', errorAlert($msg));
 			}
 
 		}

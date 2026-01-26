@@ -50,7 +50,7 @@
           <?php } ?>
           <div data-label="Example" class="df-example demo-table mg-t-25">
 
-				<?= $details['article'];?>
+				<?= sanitize_html($details['article'] ?? '') ?>
 
           </div>
         </div>

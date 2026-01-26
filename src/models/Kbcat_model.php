@@ -16,8 +16,13 @@ class Kbcat_model extends CI_Model{
  	}
 
 	function getDetail($id) {
-		$sql = "SELECT * FROM $this->table WHERE id=$id and status=1 ";
-		$data = $this->db->query($sql)->result_array();
+		// SECURITY FIX: Use prepared statement to prevent SQL injection
+		if (!is_numeric($id) || $id <= 0) {
+			return array();
+		}
+
+		$sql = "SELECT * FROM " . $this->table . " WHERE id=? AND status=1";
+		$data = $this->db->query($sql, array(intval($id)))->result_array();
 
 		return !empty($data) ? $data[0] : array();
 	}

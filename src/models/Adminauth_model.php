@@ -4,21 +4,50 @@ class Adminauth_model extends CI_Model{
 	function __construct(){
 		parent::__construct();
 		$this->load->database();
+		$this->load->model('Loginattempt_model');
+	}
+
+	/**
+	 * Check if login is allowed (rate limiting)
+	 *
+	 * @param string $email User email or username
+	 * @return array ['allowed' => bool, 'message' => string]
+	 */
+	function checkRateLimit($email) {
+		$ip = $this->input->ip_address();
+		return $this->Loginattempt_model->checkLoginAllowed($email, $ip);
 	}
 
 	function doLogin($email, $password) {
 		$return = array();
+		$ip = $this->input->ip_address();
+		$user_agent = $this->input->user_agent();
+
+		// SECURITY: Check rate limiting before processing login
+		$rate_check = $this->Loginattempt_model->checkLoginAllowed($email, $ip);
+		if (!$rate_check['allowed']) {
+			$return['status_code'] = -100; // Rate limited
+			$return['message'] = $rate_check['message'];
+			$return['minutes_remaining'] = $rate_check['minutes_remaining'];
+			return $return;
+		}
 
 		// SECURITY FIX: Use prepared statement to prevent SQL injection in admin login
 		$sql = "SELECT id, admin_role_id, first_name, last_name, username, password, email, mobile, phone, designation, signature, support_depts, profile_pic FROM admin_users WHERE (username = ? or email = ?) and status = 1";
 		$query = $this->db->query($sql, array($email, $email));
 		if ($query->num_rows() == 0){
+			// SECURITY: Record failed attempt
+			$this->Loginattempt_model->recordFailedAttempt($email, $ip, $user_agent);
 			$return['status_code'] = -1;
+			$return['remaining_attempts'] = $rate_check['remaining_attempts'] - 1;
 			return $return;
 		}
 
 		$userdata = $query->row();
 		if (password_verify($password, $userdata->password)) {
+			// SECURITY: Clear failed attempts on successful login
+			$this->Loginattempt_model->clearAllAttempts($email, $ip);
+
 			$resp = array();
 			$resp['id'] = $userdata->id;
 			$resp['first_name'] = $userdata->first_name;
@@ -43,7 +72,11 @@ class Adminauth_model extends CI_Model{
 			$return['data'] = $resp;
 			return $return;
 		}
+
+		// SECURITY: Record failed attempt for wrong password
+		$this->Loginattempt_model->recordFailedAttempt($email, $ip, $user_agent);
 		$return['status_code'] = 0;
+		$return['remaining_attempts'] = $rate_check['remaining_attempts'] - 1;
 		return $return;
 	}
 
