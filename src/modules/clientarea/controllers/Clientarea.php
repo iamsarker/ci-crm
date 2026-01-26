@@ -40,76 +40,106 @@ class Clientarea extends WHMAZ_Controller {
 
 	public function cpanel_single_sign_on($orderId, $serviceDetailId){
 
+		$serviceDetail = $this->Order_model->loadOrderServiceById(getCompanyId(), $serviceDetailId);
+
+		if (empty($serviceDetail) || empty($serviceDetail['cp_username'])) {
+			$this->session->set_flashdata('alert_error', 'cPanel username not found for this service');
+			redirect('clientarea/service_detail/' . $serviceDetailId, 'refresh');
+		}
+
 		$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($serviceDetailId, getCompanyId());
 
-		$query = "https://".$serverInfo["hostname"].":2087/json-api/create_user_session?api.version=1&user=tong0bari&service=cpaneld";
+		if (empty($serverInfo) || empty($serverInfo['hostname'])) {
+			$this->session->set_flashdata('alert_error', 'Server information not found');
+			redirect('clientarea/service_detail/' . $serviceDetailId, 'refresh');
+		}
+
+		$cpUsername = $serviceDetail['cp_username'];
+		$query = "https://".$serverInfo["hostname"].":2087/json-api/create_user_session?api.version=1&user=".urlencode($cpUsername)."&service=cpaneld";
 
 		$curl = curl_init();
-		// SECURITY FIX: Enable SSL verification for secure connections
-		// If using self-signed certificates, configure proper CA bundle instead of disabling
-		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+		// NOTE: SSL verification disabled for WHM servers with self-signed certificates
+		// For production with valid SSL, set CURLOPT_SSL_VERIFYPEER to true
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 
 		$header[0] = "Authorization: WHM ".$serverInfo['username'].":" . preg_replace("'(\r|\n)'","", base64_decode(base64_decode($serverInfo['access_hash'])));
-		curl_setopt($curl,CURLOPT_HTTPHEADER,$header);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
 		curl_setopt($curl, CURLOPT_URL, $query);
 		$result = curl_exec($curl);
 
 		if ($result == false) {
-			echo json_encode("ERROR FOUND");
-			die();
+			$this->session->set_flashdata('alert_error', 'Failed to connect to server: ' . curl_error($curl));
+			curl_close($curl);
+			redirect('clientarea/service_detail/' . $serviceDetailId, 'refresh');
 		}
 
-		if($result){
-			$decoded_response = json_decode( $result, true );
+		curl_close($curl);
 
-			if(isset($decoded_response['data']) && !empty($decoded_response['data'])){
-				$url = $decoded_response['data']['url'];
-				header("Location: $url");
-			}
+		$decoded_response = json_decode($result, true);
 
+		if (isset($decoded_response['data']) && !empty($decoded_response['data']['url'])) {
+			$url = $decoded_response['data']['url'];
+			header("Location: $url");
+			exit;
 		}
 
-		echo json_encode("ERROR FOUND");
-		die();
+		$this->session->set_flashdata('alert_error', 'Failed to create cPanel session');
+		redirect('clientarea/service_detail/' . $serviceDetailId, 'refresh');
 	}
 
 	public function webmail_single_sign_on($orderId, $serviceDetailId){
 
+		$serviceDetail = $this->Order_model->loadOrderServiceById(getCompanyId(), $serviceDetailId);
+
+		if (empty($serviceDetail) || empty($serviceDetail['cp_username'])) {
+			$this->session->set_flashdata('alert_error', 'cPanel username not found for this service');
+			redirect('clientarea/service_detail/' . $serviceDetailId, 'refresh');
+		}
+
 		$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($serviceDetailId, getCompanyId());
 
-		$query = "https://".$serverInfo["hostname"].":2087/json-api/create_user_session?api.version=1&user=tong0bari&service=cpaneld";
+		if (empty($serverInfo) || empty($serverInfo['hostname'])) {
+			$this->session->set_flashdata('alert_error', 'Server information not found');
+			redirect('clientarea/service_detail/' . $serviceDetailId, 'refresh');
+		}
+
+		$cpUsername = $serviceDetail['cp_username'];
+		$query = "https://".$serverInfo["hostname"].":2087/json-api/create_user_session?api.version=1&user=".urlencode($cpUsername)."&service=webmaild";
 
 		$curl = curl_init();
-		// SECURITY FIX: Enable SSL verification for secure connections
-		// If using self-signed certificates, configure proper CA bundle instead of disabling
-		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
-		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+		// NOTE: SSL verification disabled for WHM servers with self-signed certificates
+		// For production with valid SSL, set CURLOPT_SSL_VERIFYPEER to true
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($curl, CURLOPT_TIMEOUT, 30);
 
 		$header[0] = "Authorization: WHM ".$serverInfo['username'].":" . preg_replace("'(\r|\n)'","", base64_decode(base64_decode($serverInfo['access_hash'])));
-		curl_setopt($curl,CURLOPT_HTTPHEADER,$header);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, $header);
 		curl_setopt($curl, CURLOPT_URL, $query);
 		$result = curl_exec($curl);
 
 		if ($result == false) {
-			echo json_encode("ERROR FOUND");
-			die();
+			$this->session->set_flashdata('alert_error', 'Failed to connect to server: ' . curl_error($curl));
+			curl_close($curl);
+			redirect('clientarea/service_detail/' . $serviceDetailId, 'refresh');
 		}
 
-		if($result){
-			$decoded_response = json_decode( $result, true );
+		curl_close($curl);
 
-			if(isset($decoded_response['data']) && !empty($decoded_response['data'])){
-				$url = $decoded_response['data']['url'];
-				header("Location: $url");
-			}
+		$decoded_response = json_decode($result, true);
 
+		if (isset($decoded_response['data']) && !empty($decoded_response['data']['url'])) {
+			$url = $decoded_response['data']['url'];
+			header("Location: $url");
+			exit;
 		}
 
-		echo json_encode("ERROR FOUND");
-		die();
+		$this->session->set_flashdata('alert_error', 'Failed to create webmail session');
+		redirect('clientarea/service_detail/' . $serviceDetailId, 'refresh');
 	}
 
 	public function domains() {

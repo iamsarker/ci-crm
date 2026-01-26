@@ -108,11 +108,13 @@
 
 <?php $this->load->view('templates/customer/footer_script');?>
 <script>
-	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
+	<?php $alert_success = $this->session->flashdata('alert_success'); ?>
+	<?php if ($alert_success) { ?>
+		toastSuccess(<?= json_encode(htmlspecialchars($alert_success, ENT_QUOTES, 'UTF-8')) ?>);
 	<?php } ?>
-	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
+	<?php $alert_error = $this->session->flashdata('alert_error'); ?>
+	<?php if ($alert_error) { ?>
+		toastError(<?= json_encode(htmlspecialchars($alert_error, ENT_QUOTES, 'UTF-8')) ?>);
 	<?php } ?>
 </script>
 <?php $this->load->view('templates/customer/footer');?>

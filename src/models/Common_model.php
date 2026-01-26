@@ -361,6 +361,32 @@ class Common_model extends CI_Model {
         return !empty($totalfilename) ? $totalfilename : false;
     }
 
+    /**
+     * Get product service type key by pricing ID
+     * @param int $pricingId - product_service_pricing.id
+     * @return string|null - key_name from product_service_types or null if not found
+     */
+    public function getProductServiceTypeKeyByPricingId($pricingId) {
+        if (!is_numeric($pricingId) || $pricingId <= 0) {
+            return "OTHER";
+        }
+
+        try {
+            $sql = "SELECT pst.key_name
+                    FROM product_service_pricing psp
+                    JOIN product_services ps ON psp.product_service_id = ps.id
+                    JOIN product_service_types pst ON ps.product_service_type_id = pst.id
+                    WHERE psp.id = ? AND psp.status = 1";
+
+            $result = $this->db->query($sql, array(intval($pricingId)))->row();
+
+            return !empty($result) ? $result->key_name : "OTHER";
+        } catch (Exception $e) {
+            ErrorHandler::log_database_error('getProductServiceTypeKeyByPricingId', $this->db->last_query(), $e->getMessage());
+            return "OTHER";
+        }
+    }
+
 }
 
 ?>

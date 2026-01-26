@@ -172,7 +172,7 @@ class Cart extends WHMAZ_Controller
 						$item['hosting_domain'] = $row['hosting_domain'];
 						$item['description'] = $row['note'];
 						$item['product_service_pricing_id'] = $row['product_service_pricing_id'];
-						$item['product_service_pricing_id'] = $row['product_service_pricing_id'];
+						$item['product_service_type_key'] = $this->Common_model->getProductServiceTypeKeyByPricingId($row['product_service_pricing_id']);
 
 						$this->Order_model->saveOrderService($item);
 					}
