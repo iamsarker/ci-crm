@@ -8,6 +8,7 @@ class General_setting extends WHMAZADMIN_Controller {
 	function __construct() {
 		parent::__construct();
 		$this->load->model('Appsetting_model');
+		$this->load->model('Dunningrule_model');
 		$this->load->model('Common_model');
 		if (!$this->isLogin()) {
 			redirect('/whmazadmin/authenticate/login', 'refresh');
@@ -92,8 +93,101 @@ class General_setting extends WHMAZADMIN_Controller {
 
 		// Load existing settings
 		$data['detail'] = $this->Appsetting_model->getSettings();
+		$data['dunning_rules'] = $this->Dunningrule_model->loadAllData();
+		$data['active_tab'] = $this->input->get('tab') === 'dunning' ? 'dunning' : 'general';
 
 		$this->load->view('whmazadmin/general_setting_manage', $data);
+	}
+
+	/**
+	 * Save dunning rule (AJAX)
+	 */
+	public function save_dunning_rule() {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+			show_404();
+		}
+
+		$this->form_validation->set_rules('step_number', 'Step Number', 'required|integer|greater_than[0]');
+		$this->form_validation->set_rules('days_after_due', 'Days After Due', 'required|integer|greater_than_equal_to[0]');
+		$this->form_validation->set_rules('action_type', 'Action Type', 'required|in_list[EMAIL,SUSPEND,TERMINATE]');
+
+		if ($this->form_validation->run() == false) {
+			echo json_encode(array('success' => 0, 'message' => strip_tags(validation_errors())));
+			return;
+		}
+
+		$id = intval($this->input->post('id'));
+		$step_number = intval($this->input->post('step_number'));
+
+		// Check duplicate step number
+		if ($this->Dunningrule_model->isStepExists($step_number, $id)) {
+			echo json_encode(array('success' => 0, 'message' => 'Step number ' . $step_number . ' already exists.'));
+			return;
+		}
+
+		$data = array(
+			'id'             => $id,
+			'step_number'    => $step_number,
+			'days_after_due' => intval($this->input->post('days_after_due')),
+			'action_type'    => $this->input->post('action_type'),
+			'email_template' => $this->input->post('email_template'),
+			'is_active'      => $this->input->post('is_active') ? 1 : 0,
+		);
+
+		$resp = $this->Dunningrule_model->saveData($data);
+		if ($resp['success'] == 1) {
+			echo json_encode(array('success' => 1, 'message' => 'Dunning rule saved successfully.'));
+		} else {
+			echo json_encode(array('success' => 0, 'message' => 'Failed to save dunning rule.'));
+		}
+	}
+
+	/**
+	 * Get dunning rule detail (AJAX)
+	 */
+	public function get_dunning_rule($id = 0) {
+		if (!$this->input->is_ajax_request()) {
+			show_404();
+		}
+
+		$id = intval($id);
+		$detail = $this->Dunningrule_model->getDetail($id);
+
+		if (!empty($detail)) {
+			echo json_encode(array('success' => 1, 'data' => $detail));
+		} else {
+			echo json_encode(array('success' => 0, 'message' => 'Rule not found.'));
+		}
+	}
+
+	/**
+	 * Delete dunning rule (AJAX)
+	 */
+	public function delete_dunning_rule($id = 0) {
+		if (!$this->input->is_ajax_request()) {
+			show_404();
+		}
+
+		$id = intval($id);
+		$resp = $this->Dunningrule_model->deleteData($id);
+
+		if ($resp['success'] == 1) {
+			echo json_encode(array('success' => 1, 'message' => 'Dunning rule deleted successfully.'));
+		} else {
+			echo json_encode(array('success' => 0, 'message' => 'Failed to delete dunning rule.'));
+		}
+	}
+
+	/**
+	 * Get all dunning rules as JSON (AJAX)
+	 */
+	public function get_dunning_rules() {
+		if (!$this->input->is_ajax_request()) {
+			show_404();
+		}
+
+		$rules = $this->Dunningrule_model->loadAllData();
+		echo json_encode(array('success' => 1, 'data' => $rules));
 	}
 
 	/**

@@ -7,22 +7,22 @@
 <meta name="twitter:creator" content="@whmaz">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="WHMAZ Admin">
-<meta name="twitter:description" content="WHMAZ Admin - Web Host Manager A to Z solutions. Alternative of WHMCS">
-<meta name="twitter:image" content="http://themepixels.me/dashforge/img/dashforge-social.png">
+<meta name="twitter:description" content="WHMAZ Admin - Web Host Manager A to Z solutions.  Lightweight Domain Hosting Management System.">
+<meta name="twitter:image" content="<?=base_url()?>resources/assets/img/dashforge-social.png">
 
 <!-- Facebook -->
 <meta property="og:url" content="https://whmaz.com/">
 <meta property="og:title" content="WHMAZ Admin">
-<meta property="og:description" content="WHMAZ Admin - Web Host Manager A to Z solutions. Alternative of WHMCS">
+<meta property="og:description" content="WHMAZ Admin - Web Host Manager A to Z solutions.  Lightweight Domain Hosting Management System.">
 
-<meta property="og:image" content="http://themepixels.me/dashforge/img/dashforge-social.png">
-<meta property="og:image:secure_url" content="http://themepixels.me/dashforge/img/dashforge-social.png">
+<meta property="og:image" content="<?=base_url()?>resources/assets/img/dashforge-social.png">
+<meta property="og:image:secure_url" content="<?=base_url()?>resources/assets/img/dashforge-social.png">
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="600">
 
 <!-- Meta -->
-<meta name="description" content="WHMAZ Admin - Web Host Manager A to Z solutions. Alternative of WHMCS">
+<meta name="description" content="WHMAZ Admin - Web Host Manager A to Z solutions.  Lightweight Domain Hosting Management System.">
 <meta name="author" content="Tong Bari">
 
 <!-- CSRF Token for AJAX requests -->
