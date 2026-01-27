@@ -73,9 +73,10 @@
 						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/service_group/index" class="nav-sub-link"><i data-feather="aperture"></i>Service Groups</a></li>
 						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/service_module/index" class="nav-sub-link"><i data-feather="aperture"></i>Service Modules</a></li>
 						<li class="nav-sub-item">&nbsp;</li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/package/index" class="nav-sub-link"><i data-feather="sliders"></i>Packages</a></li>
+						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/service_product/index" class="nav-sub-link"><i data-feather="hard-drive"></i>Hosting Management</a></li>
+						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/package/index" class="nav-sub-link"><i data-feather="sliders"></i>Hosting Pricing</a></li>
 						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/domain_register/index" class="nav-sub-link"><i data-feather="globe"></i>Domain Register</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/domain_pricing/index" class="nav-sub-link"><i data-feather="globe"></i>Domain Pricing</a></li>
+						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/domain_pricing/index" class="nav-sub-link"><i data-feather="sliders"></i>Domain Pricing</a></li>
 						<li class="nav-sub-item">&nbsp;</li>
 
 						<!-- <li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/contactus" class="nav-sub-link"><i data-feather="map-pin"></i> Contact us</a></li> -->

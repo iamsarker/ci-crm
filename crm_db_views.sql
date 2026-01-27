@@ -22,12 +22,13 @@ JOIN payment_gateway p on o.payment_gateway_id=p.id
 -- product_service_view or package_view
 
 CREATE OR REPLACE VIEW product_service_view AS
-SELECT DISTINCT ps.id, ps.product_service_group_id, ps.server_id, ps.product_service_module_id, ps.product_service_type_id, ps.product_name, ps.product_desc, ps.is_hidden, ps.status,
-psg.group_name, psg.group_headline, s.name server_name, s.hostname server_hostname, s.ip_addr server_ip, psm.module_name
+SELECT DISTINCT ps.id, ps.product_service_group_id, ps.server_id, ps.product_service_module_id, ps.product_service_type_id, ps.product_name, ps.product_desc, ps.is_hidden, ps.cp_package, ps.status, ps.updated_on,
+psg.group_name, psg.group_headline, s.name server_name, s.hostname server_hostname, s.ip_addr server_ip, psm.module_name, pst.servce_type_name
 FROM product_services ps
 JOIN product_service_groups psg on ps.product_service_group_id=psg.id
-JOIN servers s on ps.server_id=s.id
-JOIN product_service_modules psm on ps.product_service_module_id=psm.id;
+LEFT JOIN servers s on ps.server_id=s.id
+JOIN product_service_modules psm on ps.product_service_module_id=psm.id
+JOIN product_service_types pst on ps.product_service_type_id=pst.id;
 
 
 -- expense_view
