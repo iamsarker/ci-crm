@@ -73,13 +73,22 @@
 
 					</div>
 
-					<div class="row mt-3">
+					<div class="row mt-3" id="cp_package_row" style="display:none;">
 
 						<div class="col-md-6 col-sm-12">
 							<div class="form-group">
 								<label for="cp_package">cPanel package name</label>
-								<input name="cp_package" type="text" class="form-control" id="cp_package" value="<?= htmlspecialchars($detail['cp_package'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-								<small class="text-muted">The cPanel/WHM package name for auto-provisioning</small>
+								<select name="cp_package" class="form-select" id="cp_package">
+									<option value="">-- Select Package --</option>
+									<?php if (!empty($detail['cp_package'])): ?>
+										<option value="<?= htmlspecialchars($detail['cp_package'], ENT_QUOTES, 'UTF-8') ?>" selected><?= htmlspecialchars($detail['cp_package'], ENT_QUOTES, 'UTF-8') ?></option>
+									<?php endif; ?>
+								</select>
+								<small class="text-muted" id="cp_package_hint">Select service type, module &amp; server first</small>
+								<div id="cp_package_loading" style="display:none;">
+									<span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+									<small class="text-primary">Fetching packages from server...</small>
+								</div>
 							</div>
 						</div>
 
@@ -127,6 +136,126 @@ $(function(){
 	<?php if ($this->session->flashdata('alert_error')) { ?>
 		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
 	<?php } ?>
+
+	// Mappings from PHP
+	var serviceTypeKeys = <?= json_encode($service_type_keys) ?>;
+	var moduleKeys = <?= json_encode($module_keys) ?>;
+	var hostingTypes = ['SHARED_HOSTING', 'RESELLER_HOSTING'];
+	var savedCpPackage = <?= json_encode($detail['cp_package'] ?? '') ?>;
+	var packageData = {}; // Store full package details keyed by name
+
+	// Format quota/bandwidth values for display
+	function formatSize(val, unit) {
+		if (!val || val === 'unlimited') return 'Unlimited';
+		var num = parseInt(val);
+		if (isNaN(num)) return val;
+		if (unit === 'MB' && num >= 1024) return (num / 1024).toFixed(1) + ' GB';
+		return num + ' ' + unit;
+	}
+
+	// Build HTML description from package details
+	function buildPackageDescription(pkg) {
+		var lines = [];
+		lines.push('<strong>' + escapeXSS(pkg.name) + '</strong>');
+		lines.push(formatSize(pkg.quota, 'MB') + ' Disk Space');
+		lines.push(formatSize(pkg.bwlimit, 'MB') + ' Bandwidth');
+		lines.push((pkg.maxaddon === 'unlimited' ? 'Unlimited' : pkg.maxaddon) + ' Addon Domains');
+		lines.push((pkg.maxpark === 'unlimited' ? 'Unlimited' : pkg.maxpark) + ' Parked Domains');
+		lines.push((pkg.maxsub === 'unlimited' ? 'Unlimited' : pkg.maxsub) + ' Subdomains');
+		lines.push((pkg.maxftp === 'unlimited' ? 'Unlimited' : pkg.maxftp) + ' FTP Accounts');
+		lines.push((pkg.maxsql === 'unlimited' ? 'Unlimited' : pkg.maxsql) + ' MySQL Databases');
+		lines.push((pkg.maxpop === 'unlimited' ? 'Unlimited' : pkg.maxpop) + ' Email Accounts');
+		lines.push((pkg.maxlst === 'unlimited' ? 'Unlimited' : pkg.maxlst) + ' Mailing Lists');
+		lines.push(pkg.hasshell === 'y' ? 'Shell Access' : 'No Shell');
+		lines.push(pkg.cgi === 'y' ? 'CGI Access' : 'No CGI');
+
+		return '<ul>\n' + lines.map(function(l) { return '<li>' + l + '</li>'; }).join('\n') + '\n</ul>';
+	}
+
+	// Check if cPanel section should be visible
+	function checkCpanelVisibility() {
+		var typeId = $('#product_service_type_id').val();
+		var moduleId = $('#product_service_module_id').val();
+
+		var typeKey = serviceTypeKeys[typeId] || '';
+		var moduleName = (moduleKeys[moduleId] || '').toLowerCase();
+
+		if (hostingTypes.indexOf(typeKey) !== -1 && moduleName === 'cpanel') {
+			$('#cp_package_row').show();
+			loadPackagesIfReady();
+		} else {
+			$('#cp_package_row').hide();
+		}
+	}
+
+	// Load packages from server when all conditions are met
+	function loadPackagesIfReady() {
+		var serverId = $('#server_id').val();
+		if (!serverId) {
+			$('#cp_package_hint').text('Please select a server to load packages');
+			return;
+		}
+
+		$('#cp_package_loading').show();
+		$('#cp_package_hint').hide();
+		$('#cp_package').prop('disabled', true);
+
+		$.ajax({
+			url: '<?= base_url() ?>whmazadmin/service_product/get_server_packages/' + serverId,
+			type: 'GET',
+			dataType: 'json',
+			success: function(response) {
+				$('#cp_package_loading').hide();
+				$('#cp_package').prop('disabled', false);
+
+				if (response.success && response.packages) {
+					var $select = $('#cp_package');
+					$select.empty().append('<option value="">-- Select Package --</option>');
+					packageData = {};
+
+					$.each(response.packages, function(i, pkg) {
+						packageData[pkg.name] = pkg;
+						var selected = (pkg.name === savedCpPackage) ? ' selected' : '';
+						$select.append('<option value="' + escapeXSS(pkg.name) + '"' + selected + '>' + escapeXSS(pkg.name) + '</option>');
+					});
+
+					$('#cp_package_hint').text(response.packages.length + ' package(s) found').show();
+
+					// If editing and saved package exists, populate description
+					if (savedCpPackage && packageData[savedCpPackage] && !$('#product_desc').val().trim()) {
+						$('#product_desc').val(buildPackageDescription(packageData[savedCpPackage]));
+					}
+				} else {
+					$('#cp_package_hint').text(response.message || 'Failed to load packages').show();
+				}
+			},
+			error: function() {
+				$('#cp_package_loading').hide();
+				$('#cp_package').prop('disabled', false);
+				$('#cp_package_hint').text('Error connecting to server').show();
+			}
+		});
+	}
+
+	// When a package is selected, populate the description field
+	$('#cp_package').on('change', function() {
+		var pkgName = $(this).val();
+		if (pkgName && packageData[pkgName]) {
+			$('#product_desc').val(buildPackageDescription(packageData[pkgName]));
+		}
+	});
+
+	// Bind change events
+	$('#product_service_type_id, #product_service_module_id').on('change', function() {
+		checkCpanelVisibility();
+	});
+
+	$('#server_id').on('change', function() {
+		checkCpanelVisibility();
+	});
+
+	// Run on page load (for edit mode)
+	checkCpanelVisibility();
 });
 </script>
 

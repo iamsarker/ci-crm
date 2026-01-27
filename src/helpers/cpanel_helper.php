@@ -574,4 +574,52 @@ if (!function_exists('whm_modify_account')) {
     }
 }
 
+/**
+ * List all hosting packages on a WHM server
+ *
+ * @param array $serverInfo Server information with hostname, username, access_hash
+ * @return array Response with package list or error
+ */
+if (!function_exists('whm_list_packages')) {
+    function whm_list_packages($serverInfo) {
+        $response = whm_api_call($serverInfo, 'listpkgs');
+
+        if ($response['success'] && !empty($response['data'])) {
+            $packages = array();
+
+            // whm_api_call wraps the WHM JSON under $response['data'],
+            // so the package list is at $response['data']['data']['pkg']
+            $pkgList = array();
+            if (isset($response['data']['data']['pkg'])) {
+                $pkgList = $response['data']['data']['pkg'];
+            }
+
+            foreach ($pkgList as $pkg) {
+                if (!empty($pkg['name'])) {
+                    $packages[] = array(
+                        'name'      => $pkg['name'],
+                        'quota'     => isset($pkg['QUOTA']) ? $pkg['QUOTA'] : 'unlimited',
+                        'bwlimit'   => isset($pkg['BWLIMIT']) ? $pkg['BWLIMIT'] : 'unlimited',
+                        'maxftp'    => isset($pkg['MAXFTP']) ? $pkg['MAXFTP'] : 'unlimited',
+                        'maxsql'    => isset($pkg['MAXSQL']) ? $pkg['MAXSQL'] : 'unlimited',
+                        'maxpop'    => isset($pkg['MAXPOP']) ? $pkg['MAXPOP'] : 'unlimited',
+                        'maxpark'   => isset($pkg['MAXPARK']) ? $pkg['MAXPARK'] : 'unlimited',
+                        'maxaddon'  => isset($pkg['MAXADDON']) ? $pkg['MAXADDON'] : 'unlimited',
+                        'maxsub'    => isset($pkg['MAXSUB']) ? $pkg['MAXSUB'] : 'unlimited',
+                        'maxlst'    => isset($pkg['MAXLST']) ? $pkg['MAXLST'] : 'unlimited',
+                        'hasshell'  => isset($pkg['HASSHELL']) ? $pkg['HASSHELL'] : 'n',
+                        'cgi'       => isset($pkg['CGI']) ? $pkg['CGI'] : 'n',
+                    );
+                }
+            }
+            usort($packages, function($a, $b) { return strcmp($a['name'], $b['name']); });
+            return array('success' => true, 'packages' => $packages);
+        } else if ($response['success']) {
+            return array('success' => true, 'packages' => array());
+        }
+
+        return array('success' => false, 'error' => isset($response['error']) ? $response['error'] : 'Failed to fetch packages');
+    }
+}
+
 ?>

@@ -121,7 +121,48 @@ class Service_product extends WHMAZADMIN_Controller {
 		$data['service_modules'] = $this->Common_model->generate_dropdown('product_service_modules', 'id', 'module_name');
 		$data['servers'] = $this->Common_model->generate_dropdown('servers', 'id', 'name');
 
+		// Get type key_name and module name mappings for JS (to know which IDs are hosting/cpanel)
+		$data['service_type_keys'] = $this->Serviceproduct_model->getServiceTypeKeys();
+		$data['module_keys'] = $this->Serviceproduct_model->getModuleKeys();
+
 		$this->load->view('whmazadmin/service_product_manage', $data);
+	}
+
+	/**
+	 * AJAX: Get cPanel packages from a server
+	 * @param int $serverId Server ID
+	 */
+	public function get_server_packages($serverId = null)
+	{
+		$this->processRestCall();
+		header('Content-Type: application/json');
+
+		if (empty($serverId) || !is_numeric($serverId)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid server ID'));
+			exit;
+		}
+
+		try {
+			$serverInfo = $this->Common_model->get_data_by_id('servers', intval($serverId));
+
+			if (empty($serverInfo)) {
+				echo json_encode(array('success' => false, 'message' => 'Server not found'));
+				exit;
+			}
+
+			$serverArr = (array) $serverInfo;
+			$result = whm_list_packages($serverArr);
+
+			if ($result['success']) {
+				echo json_encode(array('success' => true, 'packages' => $result['packages']));
+			} else {
+				echo json_encode(array('success' => false, 'message' => $result['error']));
+			}
+		} catch (Exception $e) {
+			log_message('error', 'get_server_packages error: ' . $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Error fetching packages from server'));
+		}
+		exit;
 	}
 
 	public function delete_records($id_val)

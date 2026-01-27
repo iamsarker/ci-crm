@@ -78,6 +78,40 @@ class Serviceproduct_model extends CI_Model{
 		}
 	}
 
+	/**
+	 * Get service type ID => key_name mapping
+	 * e.g. { "1": "SHARED_HOSTING", "2": "RESELLER_HOSTING", ... }
+	 */
+	function getServiceTypeKeys() {
+		try {
+			$query = $this->db->query("SELECT id, key_name FROM product_service_types WHERE status=1");
+			$data = array();
+			foreach ($query->result_array() as $row) {
+				$data[$row['id']] = $row['key_name'];
+			}
+			return $data;
+		} catch (Exception $e) {
+			return array();
+		}
+	}
+
+	/**
+	 * Get module ID => module_name mapping
+	 * e.g. { "1": "No Module", "2": "cPanel" }
+	 */
+	function getModuleKeys() {
+		try {
+			$query = $this->db->query("SELECT id, module_name FROM product_service_modules WHERE status=1");
+			$data = array();
+			foreach ($query->result_array() as $row) {
+				$data[$row['id']] = $row['module_name'];
+			}
+			return $data;
+		} catch (Exception $e) {
+			return array();
+		}
+	}
+
 	function countDataTableFilterRecords($where, $bindings) {
 		try {
 			$query = $this->db->query("SELECT COUNT(id) as cnt FROM product_service_view $where", $bindings);
