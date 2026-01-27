@@ -1719,6 +1719,32 @@ CREATE TABLE `product_service_view` (
 
 -- --------------------------------------------------------
 
+
+CREATE TABLE dunning_log (
+	 id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+	 invoice_id      BIGINT NOT NULL,
+	 company_id      BIGINT NOT NULL,
+	 dunning_step    INT NOT NULL,           -- 1, 2, 3, etc.
+	 action_type     VARCHAR(20) NOT NULL,   -- 'REMINDER_EMAIL', 'SUSPENSION', 'TERMINATION', 'PAYMENT_RETRY'
+	 action_date     DATETIME NOT NULL,
+	 next_action_date DATE DEFAULT NULL,
+	 email_sent      TINYINT DEFAULT 0,
+	 notes           TEXT,
+	 inserted_on     DATETIME,
+	 inserted_by     BIGINT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+CREATE TABLE dunning_rules (
+   id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+   step_number     INT NOT NULL,           -- 1, 2, 3, 4
+   days_after_due  INT NOT NULL,           -- 1, 3, 7, 14
+   action_type     VARCHAR(20) NOT NULL,   -- 'EMAIL', 'SUSPEND', 'TERMINATE'
+   email_template  text,
+   is_active       TINYINT DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
 --
 -- Table structure for table `servers`
 --
