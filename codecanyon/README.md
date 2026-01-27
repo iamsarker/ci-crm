@@ -2,7 +2,7 @@
 
 > **The Ultimate WHMCS Alternative** - A comprehensive web hosting automation platform and client management system built with CodeIgniter 3.x
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.3-blue.svg)](CHANGELOG.md)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-8892BF.svg)](https://php.net)
 [![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.1.13-EE4623.svg)](https://codeigniter.com)
 [![License](https://img.shields.io/badge/license-Commercial-green.svg)](LICENSE.txt)
@@ -131,6 +131,7 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 - Service categories and groups
 - Server management
 - Product/Service modules
+- **Service product management with cPanel/WHM integration**
 - Domain extension pricing
 - Email templates
 - System settings
@@ -663,7 +664,7 @@ A: Single license = Single domain. Extended license available for multiple domai
 A: Yes! Sample Nginx configuration available in documentation.
 
 **Q: Can I integrate with cPanel/WHM?**
-A: API integration possible. Custom development required.
+A: Yes! cPanel/WHM integration is built-in. The system can list hosting packages from your WHM servers via API, and service products can be linked to cPanel packages with auto-populated descriptions.
 
 ### Licensing & Usage
 
@@ -679,6 +680,17 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
 ---
 
 ## 📋 Changelog
+
+### Version 1.0.3 (January 2026) - Feature Update
+
+**New Features:**
+- Service product management with full CRUD and server-side DataTable
+- cPanel/WHM integration: dynamic package dropdown, auto-populate product description
+- `cpanel_helper.php` for WHM API calls
+
+**Bug Fixes:**
+- Fixed Cart.php company_id assignment bug
+- Fixed SSP helper numeric column search (exact match instead of LIKE)
 
 ### Version 1.0.0 (January 2026) - Initial Release
 

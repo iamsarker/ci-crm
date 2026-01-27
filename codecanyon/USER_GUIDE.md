@@ -32,6 +32,7 @@
 - [Customer Management](#customer-management)
 - [Order Management](#order-management)
 - [Package Management](#package-management)
+- [Service Product Management](#service-product-management)
 - [Domain Pricing Management](#domain-pricing-management)
 - [Invoice Management](#invoice-management)
 - [Payment Management](#payment-management)
@@ -1206,6 +1207,84 @@ The admin dashboard provides comprehensive business insights:
 - Edit group name
 - Set group display order
 - Hide/show entire group
+
+---
+
+## Service Product Management
+
+### Service Product List
+
+1. **Access Service Products**
+   - Go to "Products" → "Service Products"
+   - View all service products with server-side pagination
+
+2. **Product List Information**
+   - Product name
+   - Service group
+   - Service type (Shared Hosting, Reseller Hosting, VPS, etc.)
+   - Module (cPanel, etc.)
+   - cPanel package (if applicable)
+   - Hidden/Active status
+   - Last updated date
+   - Actions (Manage, Delete)
+
+### Creating a Service Product
+
+1. **Click "Add"**
+   - Opens the service product creation form
+
+2. **Basic Information**
+   - **Product Name:** Display name (e.g., "Basic Shared Hosting")
+   - **Service Group:** Select from configured service groups
+   - **Service Type:** Select type (Shared Hosting, Reseller Hosting, VPS, Dedicated, etc.)
+   - **Module:** Select provisioning module (cPanel, etc.)
+   - **Server:** Select which server hosts this product
+   - **Hidden:** Check to hide product from client area
+
+3. **cPanel Package Selection** (Shared Hosting / Reseller Hosting with cPanel module only)
+   - When service type is **Shared Hosting** or **Reseller Hosting** and module is **cPanel**, a dynamic dropdown appears
+   - Select the server first, then available cPanel packages are loaded automatically from the WHM server
+   - Selecting a package auto-fills the **Product Description** with package details:
+     - Disk Space
+     - Bandwidth
+     - Max Addon Domains
+     - Max Subdomains
+     - Max FTP Accounts
+     - Max Email Accounts
+     - Max Databases
+     - Shell Access
+     - CGI Access
+
+4. **Product Description**
+   - Rich text description of the product
+   - Auto-populated from cPanel package details (editable)
+   - Displayed to customers when ordering
+
+5. **Save Product**
+   - Click "Save"
+   - Product available for assignment to orders
+
+### Editing Service Products
+
+1. **Find Product**
+   - Search in the product list
+   - Click "Manage" button (wrench icon)
+
+2. **Modify Details**
+   - Update any field
+   - Change service group, type, or module
+   - Re-select cPanel package if needed
+   - Toggle hidden status
+
+3. **Save Changes**
+   - Click "Save"
+   - Changes effective immediately
+
+### Deleting Service Products
+
+- Click the "Delete" button (trash icon) in the product list
+- Confirm deletion in the popup dialog
+- Products are soft-deleted (can be recovered from database)
 
 ---
 
@@ -2678,7 +2757,7 @@ This guide covered:
 ---
 
 **Document Information:**
-- Version: 1.0.0
-- Last Updated: January 25, 2026
+- Version: 1.0.3
+- Last Updated: January 27, 2026
 - Product: WHMAZ - CI-CRM
 - Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.

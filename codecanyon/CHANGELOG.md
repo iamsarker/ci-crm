@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.3] - 2026-01-27
+
+### New Feature - Service Product Management
+
+#### Service Product CRUD
+- Added full CRUD for service products (`product_services` table)
+- **New Files:**
+  - `src/models/Serviceproduct_model.php` - Service product model with SSP support
+  - `src/controllers/whmazadmin/Service_product.php` - Admin controller
+  - `src/views/whmazadmin/service_product_list.php` - Product listing with server-side DataTable
+  - `src/views/whmazadmin/service_product_manage.php` - Add/edit product form
+- Server-side DataTable pagination via `product_service_view` database view
+- Service group, service type, module, and server assignment
+- Hidden/visible toggle and soft delete support
+
+#### cPanel/WHM Integration
+- Added dynamic cPanel package dropdown on service product manage page
+- Loads available hosting packages from selected WHM server via API
+- Triggers when service type is `SHARED_HOSTING` or `RESELLER_HOSTING` and module is `cpanel`
+- Auto-populates product description from cPanel package details (disk space, bandwidth, addon domains, FTP accounts, email accounts, databases, subdomains, shell access)
+- **New Helper:** `src/helpers/cpanel_helper.php` with `whm_list_packages()` function
+- Added `cpanel` helper to autoload configuration
+
+#### Bug Fixes
+- Fixed `Cart.php` bug where `company_id` was incorrectly set to `$userId` instead of `$companyId` when saving order services (caused "Service not found" error in company management)
+- Fixed `ssp_helper.php` column search: numeric values now use exact match (`=`) instead of `LIKE` to prevent false matches (e.g., searching for company ID "2" no longer returns "12")
+
+#### Database Updates
+- Updated `product_service_view` to include `cp_package`, `updated_on`, `servce_type_name` columns
+- Changed `servers` join from `JOIN` to `LEFT JOIN` in `product_service_view` (server_id can be NULL)
+- Added `product_service_types` join for service type name
+
+---
+
 ## [1.0.2] - 2026-01-26
 
 ### Security Enhancement - Rate Limiting
@@ -527,7 +561,7 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 - Affiliate/referral system
 - Client credit system
 - Product bundles
-- Automated service provisioning (cPanel, Plesk integration)
+- Automated service provisioning (cPanel account creation/suspension, Plesk integration)
 - Domain reseller management
 - Email marketing integration
 - Social media login (OAuth)
@@ -536,6 +570,19 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 ---
 
 ## Version History
+
+### [1.0.3] - 2026-01-27 - Feature Update
+- Added Service Product Management (CRUD with server-side DataTable)
+- Added cPanel/WHM integration (dynamic package dropdown, auto-populate description)
+- Added `cpanel_helper.php` for WHM API calls
+- Fixed Cart.php company_id bug
+- Fixed SSP helper numeric column search exact match
+- Updated `product_service_view` database view
+
+### [1.0.2] - 2026-01-26 - Security Enhancement
+- Login rate limiting (brute force protection)
+- Additional SQL injection and XSS fixes
+- Rich text content sanitization
 
 ### [1.0.1] - 2026-01-25 - Security Patch
 - Fixed SQL injection in 6 model files (Server, Servicecategory, Servicegroup, Servicemodule, Ticketdepartment, Support)
@@ -682,6 +729,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.0.1
-**Release Date:** January 25, 2026
-**Status:** Stable Production Release (Security Patch)
+**Current Version:** 1.0.3
+**Release Date:** January 27, 2026
+**Status:** Stable Production Release (Feature Update)
