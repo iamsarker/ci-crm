@@ -2236,5 +2236,5 @@ log_message('debug', 'Debug info: ' . print_r($data, true));
 
 ---
 
-**Last Updated:** 2026-01-25
-**Version:** 1.1
+**Last Updated:** 2026-01-27
+**Version:** 1.2

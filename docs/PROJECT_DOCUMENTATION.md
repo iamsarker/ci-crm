@@ -85,6 +85,7 @@ src/controllers/whmazadmin/
 ├── Service_category.php      # Service categories
 ├── Service_group.php         # Service groups
 ├── Service_module.php        # Service modules
+├── Service_product.php       # Service product management (with cPanel integration)
 ├── Domain_pricing.php        # Domain pricing
 ├── Order.php                 # Order management
 ├── Invoice.php               # Invoice management
@@ -108,6 +109,7 @@ src/views/whmazadmin/
 ├── package/
 ├── service_category/
 ├── service_group/
+├── service_product/          # Service product views (list + manage)
 ├── domain_pricing/
 ├── order/
 ├── invoice/
@@ -465,6 +467,33 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 - Module activation/deactivation
 - Module parameters setup
 - API integration settings
+
+#### 4.5 Service Product Management
+**Controller:** `whmazadmin/Service_product.php`
+**Model:** `Serviceproduct_model.php`
+**Views:**
+- `src/views/whmazadmin/service_product_list.php` - Product listing with server-side DataTable
+- `src/views/whmazadmin/service_product_manage.php` - Add/edit product form
+**Database Table:** `product_services`
+**Database View:** `product_service_view`
+
+**Features:**
+- Full CRUD for service products (hosting plans, etc.)
+- Server-side DataTable pagination via `product_service_view`
+- Service group, service type, and module assignment
+- Server assignment for hosting products
+- **Dynamic cPanel package dropdown** - When service type is `SHARED_HOSTING` or `RESELLER_HOSTING` and module is `cpanel`, the form loads available cPanel packages from the selected server via WHM API
+- Auto-populate product description from cPanel package details (disk space, bandwidth, addon domains, etc.)
+- Hidden/visible toggle for products
+- Soft delete support
+
+**Key URLs:**
+- `/whmazadmin/service_product` - Product listing
+- `/whmazadmin/service_product/manage` - Add new product
+- `/whmazadmin/service_product/manage/{encoded_id}` - Edit product
+- `/whmazadmin/service_product/delete_records/{encoded_id}` - Soft delete
+- `/whmazadmin/service_product/ssp_list_api` - Server-side DataTables API
+- `/whmazadmin/service_product/get_server_packages/{server_id}` - AJAX endpoint for cPanel packages
 
 ---
 
@@ -1289,6 +1318,20 @@ DataTables server-side processing for large datasets
 
 ### Custom Helpers
 
+#### cpanel_helper.php (cPanel/WHM API Integration)
+
+**Functions:**
+- `whm_api_call($serverInfo, $function, $params)` - Make WHM API calls to remote servers
+- `whm_list_packages($serverInfo)` - List all hosting packages from a WHM server (returns name, quota, bandwidth, FTP, SQL, email, addon domains, subdomains, shell access, CGI)
+
+**Usage:**
+```php
+$this->load->helper('cpanel');
+$serverInfo = $this->Server_model->getDetail($serverId);
+$result = whm_list_packages($serverInfo);
+// Returns: array('success' => true, 'packages' => array(...))
+```
+
 #### whmaz_helper.php (50+ functions)
 
 **Alert Functions:**
@@ -1413,7 +1456,7 @@ $autoload['libraries'] = array(
 
 **Helpers:**
 ```php
-$autoload['helper'] = array('url', 'file', 'whmaz', 'ssp');
+$autoload['helper'] = array('url', 'file', 'whmaz', 'ssp', 'cpanel');
 ```
 
 ### Email Configuration
@@ -1566,6 +1609,6 @@ For HMVC documentation: https://github.com/jenssegers/codeigniter-hmvc
 
 ---
 
-**Documentation Version:** 1.0
-**Last Updated:** 2026-01-13
+**Documentation Version:** 1.1
+**Last Updated:** 2026-01-27
 **Project Status:** Active Development

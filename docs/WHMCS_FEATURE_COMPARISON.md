@@ -111,12 +111,14 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 ### 1. Service Provisioning
 - [x] Module framework exists
-- [ ] cPanel/WHM integration
+- [x] cPanel/WHM integration (package listing via WHM API, dynamic package dropdown in service product management)
+- [ ] cPanel/WHM automated account creation
+- [ ] cPanel/WHM automated suspension/termination
 - [ ] Plesk integration
 - [ ] DirectAdmin integration
 - [ ] Custom server module API
-- [ ] Automated account creation
-- [ ] Automated suspension/termination
+- [ ] Automated account creation (generic)
+- [ ] Automated suspension/termination (generic)
 - [ ] Service upgrade/downgrade automation
 
 ### 2. Payment Gateways
@@ -323,9 +325,9 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - ❌ Late fees
 - ❌ Pro-rata billing
 
-**Service Provisioning:** 🔄 30% Complete
+**Service Provisioning:** 🔄 40% Complete
 - ✅ Module framework
-- ❌ cPanel/WHM integration
+- 🔄 cPanel/WHM integration (package listing & product management done; account creation pending)
 - ❌ Plesk integration
 - ❌ Automated provisioning
 - ❌ Automated suspension
@@ -380,7 +382,10 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 ### Phase 2: Service Provisioning (Priority: HIGH)
 **Timeline:** 3-4 months
-- [ ] cPanel/WHM integration module
+- [x] cPanel/WHM package listing (WHM API integration via `cpanel_helper.php`)
+- [x] Service product management with dynamic cPanel package selection
+- [ ] cPanel/WHM automated account creation
+- [ ] cPanel/WHM automated suspension/unsuspension
 - [ ] Plesk integration module
 - [ ] Automated account creation
 - [ ] Automated suspension/unsuspension
@@ -652,5 +657,5 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 **Project Vision:** Become the best open-source alternative to WHMCS for small to medium web hosting businesses.
 
-**Last Updated:** 2026-01-13
-**Version:** 1.0
+**Last Updated:** 2026-01-27
+**Version:** 1.1

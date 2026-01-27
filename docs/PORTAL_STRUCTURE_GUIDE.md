@@ -95,6 +95,7 @@ src/controllers/whmazadmin/
 ├── Service_category.php      # Service categories
 ├── Service_group.php         # Service groups
 ├── Service_module.php        # Provisioning modules
+├── Service_product.php       # Service product management (cPanel integration)
 ├── Domain_pricing.php        # Domain pricing management
 ├── Order.php                 # Order management
 ├── Invoice.php               # Invoice management & PDF
@@ -120,6 +121,7 @@ src/views/whmazadmin/
 ├── service_category/         # Category views
 ├── service_group/            # Group views
 ├── service_module/           # Module views
+├── service_product/          # Service product views (list + manage)
 ├── domain_pricing/           # Domain pricing views
 ├── order/                    # Order management views
 ├── invoice/                  # Invoice views
@@ -150,6 +152,7 @@ src/views/whmazadmin/
 | **Service_category** | Categories | `/whmazadmin/service_category` |
 | **Service_group** | Groups | `/whmazadmin/service_group` |
 | **Service_module** | Modules | `/whmazadmin/service_module` |
+| **Service_product** | Service Products | `/whmazadmin/service_product`, `/whmazadmin/service_product/manage` |
 | **Domain_pricing** | Domain Pricing | `/whmazadmin/domain_pricing` |
 | **Order** | Order Management | `/whmazadmin/order`, `/whmazadmin/order/view/{id}` |
 | **Invoice** | Invoice Management | `/whmazadmin/invoice`, `/whmazadmin/invoice/pdf/{id}` |
@@ -319,4 +322,4 @@ $route['domain-suggestion/(:any)'] = 'cart/get_domain_suggestions/$1';
 
 ---
 
-**Last Updated:** 2026-01-13
+**Last Updated:** 2026-01-27
