@@ -169,9 +169,133 @@
 
 			</div>
       </div>
-		
+
     </div><!-- container -->
   </div><!-- content -->
+
+<!-- Service Management Modal -->
+<div class="modal fade" id="serviceManageModal" tabindex="-1" aria-labelledby="serviceManageModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title" id="serviceManageModalLabel"><i class="fa fa-server"></i> Manage Service</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<form id="serviceManageForm">
+					<?=csrf_field()?>
+					<input type="hidden" name="service_id" id="modal_service_id" value="">
+
+					<div class="row">
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Service ID</label>
+								<input type="text" class="form-control" id="modal_display_id" readonly>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Service Type</label>
+								<input type="text" class="form-control" id="modal_service_type" readonly>
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Hosting Domain</label>
+								<input type="text" class="form-control" id="modal_hosting_domain" readonly>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Product/Package</label>
+								<input type="text" class="form-control" id="modal_product_name" readonly>
+							</div>
+						</div>
+					</div>
+
+					<hr>
+					<h6 class="text-primary"><i class="fa fa-cloud"></i> cPanel Configuration</h6>
+
+					<div class="row">
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">cPanel Username <span class="text-danger">*</span></label>
+								<input type="text" class="form-control" name="cp_username" id="modal_cp_username" placeholder="Enter cPanel username">
+								<small class="text-muted">Max 8 characters, lowercase letters and numbers only</small>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Service Status</label>
+								<select class="form-select" name="service_status" id="modal_service_status">
+									<option value="0">Pending</option>
+									<option value="1">Active</option>
+									<option value="2">Expired</option>
+									<option value="3">Suspended</option>
+									<option value="4">Terminated</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">cPanel Package</label>
+								<input type="text" class="form-control" id="modal_cp_package" readonly>
+							</div>
+						</div>
+						<div class="col-md-6">
+							<div class="mb-3">
+								<label class="form-label">Sync Status</label>
+								<span id="modal_sync_status" class="badge bg-secondary">Not synced</span>
+							</div>
+						</div>
+					</div>
+
+					<div id="cpanel_section" style="display:none;">
+						<hr>
+						<h6 class="text-success"><i class="fa fa-terminal"></i> cPanel Actions</h6>
+						<div class="alert alert-info">
+							<small><strong>Note:</strong> These actions will directly affect the cPanel server. Use with caution.</small>
+						</div>
+						<div class="btn-group" role="group">
+							<button type="button" class="btn btn-outline-success btn-sm" id="btnCreateCpanel" title="Create cPanel Account">
+								<i class="fa fa-plus-circle"></i> Create Account
+							</button>
+							<button type="button" class="btn btn-outline-info btn-sm" id="btnSyncCpanel" title="Sync from cPanel">
+								<i class="fa fa-sync"></i> Sync Info
+							</button>
+							<button type="button" class="btn btn-outline-warning btn-sm" id="btnSuspendCpanel" title="Suspend Account">
+								<i class="fa fa-pause-circle"></i> Suspend
+							</button>
+							<button type="button" class="btn btn-outline-primary btn-sm" id="btnUnsuspendCpanel" title="Unsuspend Account">
+								<i class="fa fa-play-circle"></i> Unsuspend
+							</button>
+							<button type="button" class="btn btn-outline-danger btn-sm" id="btnTerminateCpanel" title="Terminate Account">
+								<i class="fa fa-trash"></i> Terminate
+							</button>
+						</div>
+					</div>
+				</form>
+
+				<div id="modal_loading" class="text-center" style="display:none;">
+					<div class="spinner-border text-primary" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+					<p class="mt-2">Processing...</p>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary" id="btnSaveService"><i class="fa fa-save"></i> Save Changes</button>
+			</div>
+		</div>
+	</div>
+</div>
 
 <?php $this->load->view('whmazadmin/include/footer_script');?>
 
@@ -195,7 +319,7 @@ $(function(){
 		'use strict'
 
 		// Services DataTable
-		$('#serviceListDt').DataTable({
+		var serviceTable = $('#serviceListDt').DataTable({
 			"responsive": true,
 			"processing": true,
 			"serverSide": true,
@@ -207,6 +331,11 @@ $(function(){
 				{ "title": "Hosting Domain", "data": "hosting_domain",
 					render: function (data, type, row) {
 						return data ? data : '-';
+					}
+				},
+				{ "title": "cPanel User", "data": "cp_username",
+					render: function (data, type, row) {
+						return data ? '<code>' + data + '</code>' : '<span class="text-muted">-</span>';
 					}
 				},
 				{ "title": "First Pay", "data": "first_pay_amount",
@@ -233,6 +362,12 @@ $(function(){
 							case 4: return '<span class="badge bg-dark">Terminated</span>';
 							default: return '<span class="badge bg-secondary">Unknown</span>';
 						}
+					}
+				},
+				{
+					"title": "Action", "data": "id", "orderable": false, "searchable": false,
+					render: function (data, type, row) {
+						return '<button type="button" class="btn btn-sm btn-outline-primary btn-manage-service" data-service-id="' + data + '" title="Manage Service"><i class="fa fa-cog"></i> Manage</button>';
 					}
 				}
 			]
@@ -333,6 +468,320 @@ $(function(){
 					}
 				}
 			]
+		});
+
+		// Service Management Modal handlers
+		var serviceModal = new bootstrap.Modal(document.getElementById('serviceManageModal'));
+		var currentServiceId = null;
+		var companyId = "<?= !empty($detail['id']) ? $detail['id'] : 0 ?>";
+
+		// Open modal when clicking Manage button
+		$(document).on('click', '.btn-manage-service', function() {
+			currentServiceId = $(this).data('service-id');
+			loadServiceDetails(currentServiceId);
+		});
+
+		// Load service details into modal
+		function loadServiceDetails(serviceId) {
+			$('#modal_loading').show();
+			$('#serviceManageForm').hide();
+
+			$.ajax({
+				url: '<?=base_url()?>whmazadmin/company/get_service_detail/' + serviceId + '/' + companyId,
+				type: 'GET',
+				dataType: 'json',
+				success: function(response) {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+
+					if (response.success) {
+						var data = response.data;
+						$('#modal_service_id').val(data.id);
+						$('#modal_display_id').val(data.id);
+						$('#modal_hosting_domain').val(data.hosting_domain || '-');
+						$('#modal_product_name').val(data.product_name || '-');
+						$('#modal_service_type').val(data.product_service_type_key || 'OTHER');
+						$('#modal_cp_username').val(data.cp_username || '');
+						$('#modal_service_status').val(data.status);
+						$('#modal_cp_package').val(data.cp_package || 'Not configured');
+
+						// Show sync status
+						if (data.is_synced == 1) {
+							$('#modal_sync_status').removeClass('bg-secondary bg-danger').addClass('bg-success').text('Synced');
+						} else {
+							$('#modal_sync_status').removeClass('bg-success bg-danger').addClass('bg-secondary').text('Not synced');
+						}
+
+						// Show cPanel section only for hosting types
+						var hostingTypes = ['SHARED_HOSTING', 'RESELLER_HOSTING'];
+						if (hostingTypes.includes(data.product_service_type_key)) {
+							$('#cpanel_section').show();
+						} else {
+							$('#cpanel_section').hide();
+						}
+
+						serviceModal.show();
+					} else {
+						toastError(response.message || 'Failed to load service details');
+					}
+				},
+				error: function() {
+					$('#modal_loading').hide();
+					toastError('Failed to load service details');
+				}
+			});
+		}
+
+		// Save service changes
+		$('#btnSaveService').on('click', function() {
+			var serviceId = $('#modal_service_id').val();
+			var cpUsername = $('#modal_cp_username').val();
+			var status = $('#modal_service_status').val();
+
+			// Basic validation for cPanel username
+			if (cpUsername && !/^[a-z][a-z0-9]{0,7}$/.test(cpUsername)) {
+				toastError('cPanel username must start with a letter, contain only lowercase letters and numbers, and be max 8 characters');
+				return;
+			}
+
+			$.ajax({
+				url: '<?=base_url()?>whmazadmin/company/update_service/' + serviceId,
+				type: 'POST',
+				data: {
+					cp_username: cpUsername,
+					status: status,
+					<?= $this->security->get_csrf_token_name() ?>: '<?= $this->security->get_csrf_hash() ?>'
+				},
+				dataType: 'json',
+				success: function(response) {
+					if (response.success) {
+						toastSuccess(response.message || 'Service updated successfully');
+						serviceModal.hide();
+						serviceTable.ajax.reload();
+					} else {
+						toastError(response.message || 'Failed to update service');
+					}
+				},
+				error: function() {
+					toastError('Failed to update service');
+				}
+			});
+		});
+
+		// Create cPanel Account
+		$('#btnCreateCpanel').on('click', function() {
+			var serviceId = $('#modal_service_id').val();
+			var cpUsername = $('#modal_cp_username').val();
+
+			if (!cpUsername) {
+				toastError('Please enter a cPanel username first');
+				return;
+			}
+
+			if (!confirm('Are you sure you want to create a cPanel account for this service?')) {
+				return;
+			}
+
+			$('#modal_loading').show();
+			$('#serviceManageForm').hide();
+
+			$.ajax({
+				url: '<?=base_url()?>whmazadmin/company/create_cpanel_account/' + serviceId,
+				type: 'POST',
+				data: {
+					cp_username: cpUsername,
+					<?= $this->security->get_csrf_token_name() ?>: '<?= $this->security->get_csrf_hash() ?>'
+				},
+				dataType: 'json',
+				success: function(response) {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+
+					if (response.success) {
+						toastSuccess(response.message || 'cPanel account created successfully');
+						loadServiceDetails(serviceId);
+						serviceTable.ajax.reload();
+					} else {
+						toastError(response.message || 'Failed to create cPanel account');
+					}
+				},
+				error: function() {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+					toastError('Failed to create cPanel account');
+				}
+			});
+		});
+
+		// Sync cPanel Info
+		$('#btnSyncCpanel').on('click', function() {
+			var serviceId = $('#modal_service_id').val();
+			var cpUsername = $('#modal_cp_username').val();
+
+			if (!cpUsername) {
+				toastError('No cPanel username configured');
+				return;
+			}
+
+			$('#modal_loading').show();
+			$('#serviceManageForm').hide();
+
+			$.ajax({
+				url: '<?=base_url()?>whmazadmin/company/sync_cpanel_account/' + serviceId,
+				type: 'POST',
+				data: {
+					<?= $this->security->get_csrf_token_name() ?>: '<?= $this->security->get_csrf_hash() ?>'
+				},
+				dataType: 'json',
+				success: function(response) {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+
+					if (response.success) {
+						toastSuccess(response.message || 'cPanel info synced successfully');
+						loadServiceDetails(serviceId);
+					} else {
+						toastError(response.message || 'Failed to sync cPanel info');
+					}
+				},
+				error: function() {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+					toastError('Failed to sync cPanel info');
+				}
+			});
+		});
+
+		// Suspend cPanel Account
+		$('#btnSuspendCpanel').on('click', function() {
+			var serviceId = $('#modal_service_id').val();
+			var cpUsername = $('#modal_cp_username').val();
+
+			if (!cpUsername) {
+				toastError('No cPanel username configured');
+				return;
+			}
+
+			if (!confirm('Are you sure you want to SUSPEND the cPanel account "' + cpUsername + '"?')) {
+				return;
+			}
+
+			$('#modal_loading').show();
+			$('#serviceManageForm').hide();
+
+			$.ajax({
+				url: '<?=base_url()?>whmazadmin/company/suspend_cpanel_account/' + serviceId,
+				type: 'POST',
+				data: {
+					<?= $this->security->get_csrf_token_name() ?>: '<?= $this->security->get_csrf_hash() ?>'
+				},
+				dataType: 'json',
+				success: function(response) {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+
+					if (response.success) {
+						toastSuccess(response.message || 'cPanel account suspended successfully');
+						loadServiceDetails(serviceId);
+						serviceTable.ajax.reload();
+					} else {
+						toastError(response.message || 'Failed to suspend cPanel account');
+					}
+				},
+				error: function() {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+					toastError('Failed to suspend cPanel account');
+				}
+			});
+		});
+
+		// Unsuspend cPanel Account
+		$('#btnUnsuspendCpanel').on('click', function() {
+			var serviceId = $('#modal_service_id').val();
+			var cpUsername = $('#modal_cp_username').val();
+
+			if (!cpUsername) {
+				toastError('No cPanel username configured');
+				return;
+			}
+
+			if (!confirm('Are you sure you want to UNSUSPEND the cPanel account "' + cpUsername + '"?')) {
+				return;
+			}
+
+			$('#modal_loading').show();
+			$('#serviceManageForm').hide();
+
+			$.ajax({
+				url: '<?=base_url()?>whmazadmin/company/unsuspend_cpanel_account/' + serviceId,
+				type: 'POST',
+				data: {
+					<?= $this->security->get_csrf_token_name() ?>: '<?= $this->security->get_csrf_hash() ?>'
+				},
+				dataType: 'json',
+				success: function(response) {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+
+					if (response.success) {
+						toastSuccess(response.message || 'cPanel account unsuspended successfully');
+						loadServiceDetails(serviceId);
+						serviceTable.ajax.reload();
+					} else {
+						toastError(response.message || 'Failed to unsuspend cPanel account');
+					}
+				},
+				error: function() {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+					toastError('Failed to unsuspend cPanel account');
+				}
+			});
+		});
+
+		// Terminate cPanel Account
+		$('#btnTerminateCpanel').on('click', function() {
+			var serviceId = $('#modal_service_id').val();
+			var cpUsername = $('#modal_cp_username').val();
+
+			if (!cpUsername) {
+				toastError('No cPanel username configured');
+				return;
+			}
+
+			if (!confirm('WARNING: This will permanently DELETE the cPanel account "' + cpUsername + '" and all its data. This action cannot be undone!\n\nAre you sure you want to continue?')) {
+				return;
+			}
+
+			$('#modal_loading').show();
+			$('#serviceManageForm').hide();
+
+			$.ajax({
+				url: '<?=base_url()?>whmazadmin/company/terminate_cpanel_account/' + serviceId,
+				type: 'POST',
+				data: {
+					<?= $this->security->get_csrf_token_name() ?>: '<?= $this->security->get_csrf_hash() ?>'
+				},
+				dataType: 'json',
+				success: function(response) {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+
+					if (response.success) {
+						toastSuccess(response.message || 'cPanel account terminated successfully');
+						loadServiceDetails(serviceId);
+						serviceTable.ajax.reload();
+					} else {
+						toastError(response.message || 'Failed to terminate cPanel account');
+					}
+				},
+				error: function() {
+					$('#modal_loading').hide();
+					$('#serviceManageForm').show();
+					toastError('Failed to terminate cPanel account');
+				}
+			});
 		});
 
 	});

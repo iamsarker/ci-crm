@@ -198,7 +198,7 @@ class Company extends WHMAZADMIN_Controller {
 			if ($companyId > 0) {
 				for ($i = 0; $i < count($params["columns"]); $i++) {
 					if ($params["columns"][$i]['data'] == "company_id") {
-						$params["columns"][$i]["search"]["value"] = $companyId;
+						$params["columns"][$i]["search"]["value"] = intval($companyId);
 						break;
 					}
 				}
@@ -287,6 +287,432 @@ class Company extends WHMAZADMIN_Controller {
 			));
 			exit;
 		}
+	}
+
+	/**
+	 * Get service detail for management modal
+	 * @param int $serviceId Service ID
+	 * @param int $companyId Company ID for security validation
+	 */
+	public function get_service_detail($serviceId = null, $companyId = null)
+	{
+		$this->processRestCall();
+		header('Content-Type: application/json');
+
+		if (empty($serviceId) || !is_numeric($serviceId) || empty($companyId) || !is_numeric($companyId)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid parameters'));
+			exit;
+		}
+
+		try {
+			$service = $this->Company_model->getServiceDetail($serviceId, $companyId);
+
+			if (empty($service)) {
+				echo json_encode(array('success' => false, 'message' => 'Service not found'));
+				exit;
+			}
+
+			echo json_encode(array('success' => true, 'data' => $service));
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('get_service_detail', 'Service detail fetch', $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Failed to load service details'));
+		}
+		exit;
+	}
+
+	/**
+	 * Update service details (cp_username, status)
+	 * @param int $serviceId Service ID
+	 */
+	public function update_service($serviceId = null)
+	{
+		$this->processRestCall();
+		header('Content-Type: application/json');
+
+		if (empty($serviceId) || !is_numeric($serviceId)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid service ID'));
+			exit;
+		}
+
+		$cpUsername = $this->input->post('cp_username');
+		$status = $this->input->post('status');
+
+		// Validate cPanel username format if provided
+		if (!empty($cpUsername) && !preg_match('/^[a-z][a-z0-9]{0,7}$/', $cpUsername)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid cPanel username format'));
+			exit;
+		}
+
+		// Validate status
+		$validStatuses = array(0, 1, 2, 3, 4);
+		if (!in_array((int)$status, $validStatuses)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid status'));
+			exit;
+		}
+
+		try {
+			$updateData = array(
+				'cp_username' => $cpUsername,
+				'status' => (int)$status,
+				'updated_on' => getDateTime(),
+				'updated_by' => getAdminId()
+			);
+
+			$result = $this->Company_model->updateService($serviceId, $updateData);
+
+			if ($result) {
+				echo json_encode(array('success' => true, 'message' => 'Service updated successfully'));
+			} else {
+				echo json_encode(array('success' => false, 'message' => 'Failed to update service'));
+			}
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('update_service', 'Service update', $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Error updating service'));
+		}
+		exit;
+	}
+
+	/**
+	 * Create cPanel account for a service
+	 * @param int $serviceId Service ID
+	 */
+	public function create_cpanel_account($serviceId = null)
+	{
+		$this->processRestCall();
+		header('Content-Type: application/json');
+
+		if (empty($serviceId) || !is_numeric($serviceId)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid service ID'));
+			exit;
+		}
+
+		$cpUsername = $this->input->post('cp_username');
+
+		if (empty($cpUsername)) {
+			echo json_encode(array('success' => false, 'message' => 'cPanel username is required'));
+			exit;
+		}
+
+		// Validate cPanel username format
+		if (!preg_match('/^[a-z][a-z0-9]{0,7}$/', $cpUsername)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid cPanel username format'));
+			exit;
+		}
+
+		try {
+			// Get service details
+			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
+
+			if (empty($service)) {
+				echo json_encode(array('success' => false, 'message' => 'Service not found'));
+				exit;
+			}
+
+			// Check if hosting domain is set
+			if (empty($service['hosting_domain'])) {
+				echo json_encode(array('success' => false, 'message' => 'Hosting domain is not configured for this service'));
+				exit;
+			}
+
+			// Get server info
+			$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($serviceId, $service['company_id']);
+
+			if (empty($serverInfo)) {
+				echo json_encode(array('success' => false, 'message' => 'Server information not found for this service'));
+				exit;
+			}
+
+			// Get customer info for email
+			$company = $this->Company_model->getDetail($service['company_id']);
+
+			// Generate secure password
+			$password = generate_secure_password(16, true);
+
+			// Get cPanel package name
+			$cpPackage = !empty($service['cp_package']) ? $service['cp_package'] : 'default';
+
+			// Create cPanel account via WHM API
+			$result = whm_create_account(
+				$serverInfo,
+				$service['hosting_domain'],
+				$cpUsername,
+				$password,
+				$cpPackage,
+				$company['email']
+			);
+
+			if ($result['success']) {
+				// Update service with cp_username and mark as synced
+				$updateData = array(
+					'cp_username' => $cpUsername,
+					'is_synced' => 1,
+					'status' => 1, // Active
+					'updated_on' => getDateTime(),
+					'updated_by' => getAdminId()
+				);
+				$this->Company_model->updateService($serviceId, $updateData);
+
+				// Send welcome email to customer
+				$customerName = trim($company['first_name'] . ' ' . $company['last_name']);
+				if (empty($customerName)) {
+					$customerName = $company['name'];
+				}
+
+				send_cpanel_welcome_email(
+					$company['email'],
+					$customerName,
+					$service['hosting_domain'],
+					$cpUsername,
+					$password,
+					$serverInfo['hostname']
+				);
+
+				echo json_encode(array(
+					'success' => true,
+					'message' => 'cPanel account created successfully. Welcome email sent to customer.'
+				));
+			} else {
+				echo json_encode(array(
+					'success' => false,
+					'message' => 'Failed to create cPanel account: ' . $result['error']
+				));
+			}
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('create_cpanel_account', 'cPanel account creation', $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Error creating cPanel account'));
+		}
+		exit;
+	}
+
+	/**
+	 * Sync cPanel account info from WHM server
+	 * @param int $serviceId Service ID
+	 */
+	public function sync_cpanel_account($serviceId = null)
+	{
+		$this->processRestCall();
+		header('Content-Type: application/json');
+
+		if (empty($serviceId) || !is_numeric($serviceId)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid service ID'));
+			exit;
+		}
+
+		try {
+			// Get service details
+			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
+
+			if (empty($service)) {
+				echo json_encode(array('success' => false, 'message' => 'Service not found'));
+				exit;
+			}
+
+			if (empty($service['cp_username'])) {
+				echo json_encode(array('success' => false, 'message' => 'No cPanel username configured'));
+				exit;
+			}
+
+			// Get server info
+			$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($serviceId, $service['company_id']);
+
+			if (empty($serverInfo)) {
+				echo json_encode(array('success' => false, 'message' => 'Server information not found'));
+				exit;
+			}
+
+			// Get account info from WHM
+			$result = whm_get_account_info($serverInfo, $service['cp_username']);
+
+			if ($result['success']) {
+				// Update sync status
+				$updateData = array(
+					'is_synced' => 1,
+					'updated_on' => getDateTime(),
+					'updated_by' => getAdminId()
+				);
+				$this->Company_model->updateService($serviceId, $updateData);
+
+				$accountData = isset($result['data']['acct'][0]) ? $result['data']['acct'][0] : array();
+
+				echo json_encode(array(
+					'success' => true,
+					'message' => 'cPanel account info synced successfully',
+					'account_info' => $accountData
+				));
+			} else {
+				// Mark as not synced if account not found
+				$updateData = array(
+					'is_synced' => 0,
+					'updated_on' => getDateTime(),
+					'updated_by' => getAdminId()
+				);
+				$this->Company_model->updateService($serviceId, $updateData);
+
+				echo json_encode(array(
+					'success' => false,
+					'message' => 'Account not found on server: ' . $result['error']
+				));
+			}
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('sync_cpanel_account', 'cPanel sync', $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Error syncing cPanel account'));
+		}
+		exit;
+	}
+
+	/**
+	 * Suspend cPanel account
+	 * @param int $serviceId Service ID
+	 */
+	public function suspend_cpanel_account($serviceId = null)
+	{
+		$this->processRestCall();
+		header('Content-Type: application/json');
+
+		if (empty($serviceId) || !is_numeric($serviceId)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid service ID'));
+			exit;
+		}
+
+		try {
+			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
+
+			if (empty($service) || empty($service['cp_username'])) {
+				echo json_encode(array('success' => false, 'message' => 'Service or cPanel username not found'));
+				exit;
+			}
+
+			$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($serviceId, $service['company_id']);
+
+			if (empty($serverInfo)) {
+				echo json_encode(array('success' => false, 'message' => 'Server information not found'));
+				exit;
+			}
+
+			$result = whm_suspend_account($serverInfo, $service['cp_username'], 'Suspended by administrator');
+
+			if ($result['success']) {
+				// Update service status to suspended (3)
+				$updateData = array(
+					'status' => 3,
+					'updated_on' => getDateTime(),
+					'updated_by' => getAdminId()
+				);
+				$this->Company_model->updateService($serviceId, $updateData);
+
+				echo json_encode(array('success' => true, 'message' => 'cPanel account suspended successfully'));
+			} else {
+				echo json_encode(array('success' => false, 'message' => 'Failed to suspend: ' . $result['error']));
+			}
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('suspend_cpanel_account', 'cPanel suspend', $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Error suspending cPanel account'));
+		}
+		exit;
+	}
+
+	/**
+	 * Unsuspend cPanel account
+	 * @param int $serviceId Service ID
+	 */
+	public function unsuspend_cpanel_account($serviceId = null)
+	{
+		$this->processRestCall();
+		header('Content-Type: application/json');
+
+		if (empty($serviceId) || !is_numeric($serviceId)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid service ID'));
+			exit;
+		}
+
+		try {
+			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
+
+			if (empty($service) || empty($service['cp_username'])) {
+				echo json_encode(array('success' => false, 'message' => 'Service or cPanel username not found'));
+				exit;
+			}
+
+			$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($serviceId, $service['company_id']);
+
+			if (empty($serverInfo)) {
+				echo json_encode(array('success' => false, 'message' => 'Server information not found'));
+				exit;
+			}
+
+			$result = whm_unsuspend_account($serverInfo, $service['cp_username']);
+
+			if ($result['success']) {
+				// Update service status to active (1)
+				$updateData = array(
+					'status' => 1,
+					'updated_on' => getDateTime(),
+					'updated_by' => getAdminId()
+				);
+				$this->Company_model->updateService($serviceId, $updateData);
+
+				echo json_encode(array('success' => true, 'message' => 'cPanel account unsuspended successfully'));
+			} else {
+				echo json_encode(array('success' => false, 'message' => 'Failed to unsuspend: ' . $result['error']));
+			}
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('unsuspend_cpanel_account', 'cPanel unsuspend', $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Error unsuspending cPanel account'));
+		}
+		exit;
+	}
+
+	/**
+	 * Terminate cPanel account
+	 * @param int $serviceId Service ID
+	 */
+	public function terminate_cpanel_account($serviceId = null)
+	{
+		$this->processRestCall();
+		header('Content-Type: application/json');
+
+		if (empty($serviceId) || !is_numeric($serviceId)) {
+			echo json_encode(array('success' => false, 'message' => 'Invalid service ID'));
+			exit;
+		}
+
+		try {
+			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
+
+			if (empty($service) || empty($service['cp_username'])) {
+				echo json_encode(array('success' => false, 'message' => 'Service or cPanel username not found'));
+				exit;
+			}
+
+			$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($serviceId, $service['company_id']);
+
+			if (empty($serverInfo)) {
+				echo json_encode(array('success' => false, 'message' => 'Server information not found'));
+				exit;
+			}
+
+			$result = whm_terminate_account($serverInfo, $service['cp_username']);
+
+			if ($result['success']) {
+				// Update service status to terminated (4) and clear cp_username
+				$updateData = array(
+					'status' => 4,
+					'cp_username' => null,
+					'is_synced' => 0,
+					'updated_on' => getDateTime(),
+					'updated_by' => getAdminId()
+				);
+				$this->Company_model->updateService($serviceId, $updateData);
+
+				echo json_encode(array('success' => true, 'message' => 'cPanel account terminated successfully'));
+			} else {
+				echo json_encode(array('success' => false, 'message' => 'Failed to terminate: ' . $result['error']));
+			}
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('terminate_cpanel_account', 'cPanel terminate', $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Error terminating cPanel account'));
+		}
+		exit;
 	}
 
 }

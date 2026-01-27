@@ -214,5 +214,51 @@ class Order_model extends CI_Model{
 		}
 	}
 
+	/**
+	 * Update order_services record
+	 * @param int $orderServiceId Order service ID
+	 * @param array $data Data to update
+	 * @return bool Success status
+	 */
+	function updateOrderService($orderServiceId, $data) {
+		if (!is_numeric($orderServiceId) || $orderServiceId <= 0 || empty($data)) {
+			return false;
+		}
+
+		try {
+			$this->db->where('id', intval($orderServiceId));
+			return $this->db->update('order_services', $data);
+		} catch (Exception $e) {
+			log_message('error', 'updateOrderService error: ' . $e->getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * Get product_services info by pricing ID
+	 * Used to get cp_package for auto-provisioning
+	 * @param int $pricingId product_service_pricing.id
+	 * @return array Product service info including cp_package
+	 */
+	function getProductServiceByPricingId($pricingId) {
+		if (!is_numeric($pricingId) || $pricingId <= 0) {
+			return array();
+		}
+
+		try {
+			$sql = "SELECT ps.*, psp.id as pricing_id, psp.price
+				FROM product_service_pricing psp
+				JOIN product_services ps ON psp.product_service_id = ps.id
+				WHERE psp.id = ? AND psp.status = 1";
+
+			$result = $this->db->query($sql, array(intval($pricingId)))->row_array();
+
+			return !empty($result) ? $result : array();
+		} catch (Exception $e) {
+			log_message('error', 'getProductServiceByPricingId error: ' . $e->getMessage());
+			return array();
+		}
+	}
+
 }
 ?>

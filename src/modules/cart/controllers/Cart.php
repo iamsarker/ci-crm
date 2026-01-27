@@ -137,7 +137,7 @@ class Cart extends WHMAZ_Controller
 					$billingCycle = $this->Common_model->get_data_by_id("billing_cycle", $row['billing_cycle_id']);
 
 					$item['order_id'] = $orderId;
-					$item['company_id'] = $userId;
+					$item['company_id'] = $companyId;
 					$item['first_pay_amount'] = $row['total'];
 					$item['recurring_amount'] = $row['total'];
 					$item['is_synced'] = 1;
@@ -173,8 +173,15 @@ class Cart extends WHMAZ_Controller
 						$item['description'] = $row['note'];
 						$item['product_service_pricing_id'] = $row['product_service_pricing_id'];
 						$item['product_service_type_key'] = $this->Common_model->getProductServiceTypeKeyByPricingId($row['product_service_pricing_id']);
+						$item['is_synced'] = 0; // Will be set to 1 after successful provisioning
 
-						$this->Order_model->saveOrderService($item);
+						$orderServiceId = $this->Order_model->saveOrderService($item);
+
+						// Auto-provision cPanel account for hosting services
+						$hostingTypes = array('SHARED_HOSTING', 'RESELLER_HOSTING');
+						if (!empty($orderServiceId) && in_array($item['product_service_type_key'], $hostingTypes) && !empty($item['hosting_domain'])) {
+							$this->provisionCpanelAccount($orderServiceId, $item, $companyId);
+						}
 					}
 
 					$this->Order_model->saveInvoiceItem($invoiceItem);
@@ -472,6 +479,98 @@ class Cart extends WHMAZ_Controller
 			echo $this->AppResponse(1, "Cart item has been added successfully");
 		} else {
 			echo $this->AppResponse(0, "Cart item cannot add!");
+		}
+	}
+
+	/**
+	 * Auto-provision cPanel account for hosting services
+	 * Called after saving order_service for SHARED_HOSTING or RESELLER_HOSTING types
+	 *
+	 * @param int $orderServiceId The ID of the order_service record
+	 * @param array $serviceItem The service item data
+	 * @param int $companyId The company ID
+	 * @return bool Success status
+	 */
+	private function provisionCpanelAccount($orderServiceId, $serviceItem, $companyId)
+	{
+		try {
+			// Get server info for this service
+			$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($orderServiceId, $companyId);
+
+			if (empty($serverInfo) || empty($serverInfo['hostname'])) {
+				log_message('error', 'Auto-provisioning failed: No server configured for order_service #' . $orderServiceId);
+				return false;
+			}
+
+			// Get product service info to get cp_package
+			$productInfo = $this->Order_model->getProductServiceByPricingId($serviceItem['product_service_pricing_id']);
+
+			if (empty($productInfo)) {
+				log_message('error', 'Auto-provisioning failed: Product info not found for order_service #' . $orderServiceId);
+				return false;
+			}
+
+			$cpPackage = !empty($productInfo['cp_package']) ? $productInfo['cp_package'] : 'default';
+
+			// Get company info for email
+			$this->load->model('Company_model');
+			$company = $this->Company_model->getDetail($companyId);
+
+			if (empty($company) || empty($company['email'])) {
+				log_message('error', 'Auto-provisioning failed: Company info not found for order_service #' . $orderServiceId);
+				return false;
+			}
+
+			// Generate cPanel username from domain
+			$cpUsername = generate_cpanel_username($serviceItem['hosting_domain'], $serverInfo);
+
+			// Generate secure password
+			$cpPassword = generate_secure_password(16, true);
+
+			// Create cPanel account via WHM API
+			$result = whm_create_account(
+				$serverInfo,
+				$serviceItem['hosting_domain'],
+				$cpUsername,
+				$cpPassword,
+				$cpPackage,
+				$company['email']
+			);
+
+			if ($result['success']) {
+				// Update order_service with cp_username and mark as active and synced
+				$updateData = array(
+					'cp_username' => $cpUsername,
+					'is_synced' => 1,
+					'status' => 1 // Active
+				);
+				$this->Order_model->updateOrderService($orderServiceId, $updateData);
+
+				// Send welcome email to customer
+				$customerName = trim($company['first_name'] . ' ' . $company['last_name']);
+				if (empty($customerName)) {
+					$customerName = $company['name'];
+				}
+
+				send_cpanel_welcome_email(
+					$company['email'],
+					$customerName,
+					$serviceItem['hosting_domain'],
+					$cpUsername,
+					$cpPassword,
+					$serverInfo['hostname']
+				);
+
+				log_message('info', 'Auto-provisioning successful for order_service #' . $orderServiceId . ' - cPanel user: ' . $cpUsername);
+				return true;
+			} else {
+				// Log the error but don't fail the order
+				log_message('error', 'Auto-provisioning failed for order_service #' . $orderServiceId . ': ' . $result['error']);
+				return false;
+			}
+		} catch (Exception $e) {
+			log_message('error', 'Auto-provisioning exception for order_service #' . $orderServiceId . ': ' . $e->getMessage());
+			return false;
 		}
 	}
 

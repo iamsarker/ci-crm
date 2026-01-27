@@ -178,5 +178,111 @@ class Company_model extends CI_Model{
 			return 0;
 		}
 	}
+
+	// ============================================
+	// Service Management Methods (cPanel Integration)
+	// ============================================
+
+	/**
+	 * Get service detail for management modal
+	 * Includes product info, service type, and cp_package
+	 * @param int $serviceId Service ID
+	 * @param int $companyId Company ID for security validation
+	 * @return array Service details
+	 */
+	function getServiceDetail($serviceId, $companyId) {
+		if (!is_numeric($serviceId) || !is_numeric($companyId) || $serviceId <= 0 || $companyId <= 0) {
+			return array();
+		}
+
+		try {
+			$sql = "SELECT
+					os.id,
+					os.order_id,
+					os.company_id,
+					os.hosting_domain,
+					os.cp_username,
+					os.product_service_type_key,
+					os.is_synced,
+					os.status,
+					os.first_pay_amount,
+					os.recurring_amount,
+					os.reg_date,
+					os.next_due_date,
+					ps.product_name as product_name,
+					ps.cp_package,
+					pst.key_name as product_type_key,
+					pst.servce_type_name as product_type_name
+				FROM order_services os
+				LEFT JOIN product_service_pricing psp ON os.product_service_pricing_id = psp.id
+				LEFT JOIN product_services ps ON psp.product_service_id = ps.id
+				LEFT JOIN product_service_types pst ON ps.product_service_type_id = pst.id
+				WHERE os.id = ? AND os.company_id = ?";
+
+			$result = $this->db->query($sql, array(intval($serviceId), intval($companyId)))->row_array();
+
+			return !empty($result) ? $result : array();
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('getServiceDetail', $this->db->last_query(), $e->getMessage());
+			return array();
+		}
+	}
+
+	/**
+	 * Get service detail for cPanel operations (without company validation)
+	 * Used by controller after admin authentication
+	 * @param int $serviceId Service ID
+	 * @return array Service details with server info
+	 */
+	function getServiceDetailForCpanel($serviceId) {
+		if (!is_numeric($serviceId) || $serviceId <= 0) {
+			return array();
+		}
+
+		try {
+			$sql = "SELECT
+					os.id,
+					os.order_id,
+					os.company_id,
+					os.hosting_domain,
+					os.cp_username,
+					os.product_service_type_key,
+					os.is_synced,
+					os.status,
+					ps.cp_package,
+					ps.server_id
+				FROM order_services os
+				LEFT JOIN product_service_pricing psp ON os.product_service_pricing_id = psp.id
+				LEFT JOIN product_services ps ON psp.product_service_id = ps.id
+				WHERE os.id = ?";
+
+			$result = $this->db->query($sql, array(intval($serviceId)))->row_array();
+
+			return !empty($result) ? $result : array();
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('getServiceDetailForCpanel', $this->db->last_query(), $e->getMessage());
+			return array();
+		}
+	}
+
+	/**
+	 * Update service record
+	 * @param int $serviceId Service ID
+	 * @param array $data Data to update
+	 * @return bool Success status
+	 */
+	function updateService($serviceId, $data) {
+		if (!is_numeric($serviceId) || $serviceId <= 0 || empty($data)) {
+			return false;
+		}
+
+		try {
+			$this->db->where('id', intval($serviceId));
+			return $this->db->update('order_services', $data);
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('updateService', $this->db->last_query(), $e->getMessage());
+			return false;
+		}
+	}
 }
 ?>

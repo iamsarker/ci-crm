@@ -56,8 +56,13 @@
 				$reqCol = $request['columns'][$i];
 				$str = $reqCol['search']['value'];
 				if ( $reqCol['searchable'] == 'true' && $str != '' ) {
-					array_push($bindings, '%' . $str . '%');
-					$columnSearch[] = "`".$reqCol['data']."` LIKE ? ";
+					if ( is_numeric($str) ) {
+						array_push($bindings, $str);
+						$columnSearch[] = "`".$reqCol['data']."` = ? ";
+					} else {
+						array_push($bindings, '%' . $str . '%');
+						$columnSearch[] = "`".$reqCol['data']."` LIKE ? ";
+					}
 				}
 			}
 		}
