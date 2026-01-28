@@ -1798,7 +1798,7 @@ CREATE TABLE IF NOT EXISTS `email_templates` (
 	`subject` varchar(255) NOT NULL,
 	`body` text NOT NULL,
 	`category` varchar(20) NOT NULL DEFAULT 'GENERAL' COMMENT 'DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, GENERAL',
-	`is_active` tinyint(4) NOT NULL DEFAULT 1,
+	`status` tinyint(4) NOT NULL DEFAULT 1,
 	`inserted_on` datetime DEFAULT NULL,
 	`inserted_by` bigint(20) DEFAULT NULL,
 	`updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
@@ -1809,19 +1809,19 @@ CREATE TABLE IF NOT EXISTS `email_templates` (
 	UNIQUE KEY `unq_template_key` (`template_key`)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO `email_templates` (`template_key`, `template_name`, `subject`, `body`, `category`, `is_active`, `inserted_on`) VALUES
+INSERT INTO `email_templates` (`template_key`, `template_name`, `subject`, `body`, `category`, `status`, `inserted_on`) VALUES
 ('dunning_reminder_1', 'Dunning - First Reminder', 'Invoice #{invoice_no} - Payment Reminder', '<p>Dear {client_name},</p><p>This is a friendly reminder that your invoice <strong>#{invoice_no}</strong> for <strong>{currency} {amount_due}</strong> was due on <strong>{due_date}</strong>.</p><p>Please make payment at your earliest convenience to avoid any service interruption.</p><p><a href=\"{invoice_url}\">Click here to view and pay your invoice</a></p><p>If you have already made this payment, please disregard this notice.</p><p>Thank you,<br>{site_name}</p>', 'DUNNING', 1, NOW()),
 ('dunning_reminder_2', 'Dunning - Second Reminder', 'Invoice #{invoice_no} - Payment Overdue ({days_overdue} days)', '<p>Dear {client_name},</p><p>Your invoice <strong>#{invoice_no}</strong> for <strong>{currency} {amount_due}</strong> is now <strong>{days_overdue} days overdue</strong>.</p><p>We kindly request that you settle this payment as soon as possible to prevent any disruption to your services.</p><p><a href=\"{invoice_url}\">Click here to view and pay your invoice</a></p><p>If you are experiencing any difficulties with payment, please contact our support team.</p><p>Regards,<br>{site_name}</p>', 'DUNNING', 1, NOW()),
 ('dunning_reminder_3', 'Dunning - Final Warning Before Suspension', 'URGENT: Invoice #{invoice_no} - Service Suspension Warning', '<p>Dear {client_name},</p><p><strong>This is an urgent notice.</strong></p><p>Your invoice <strong>#{invoice_no}</strong> for <strong>{currency} {amount_due}</strong> remains unpaid and is now <strong>{days_overdue} days overdue</strong>.</p><p>If payment is not received promptly, your services will be <strong>suspended</strong>.</p><p><a href=\"{invoice_url}\">Click here to pay now and avoid service interruption</a></p><p>Please contact us immediately if you need assistance.</p><p>Regards,<br>{site_name}</p>', 'DUNNING', 1, NOW()),
 
-INSERT INTO `email_templates` (`template_key`, `template_name`, `subject`, `body`, `category`, `is_active`, `inserted_on`) VALUES
+INSERT INTO `email_templates` (`template_key`, `template_name`, `subject`, `body`, `category`, `status`, `inserted_on`) VALUES
 ('invoice_created', 'Invoice Created', 'New Invoice #{invoice_no} - {currency} {amount_due}', '<p>Dear {client_name},</p><p>A new invoice has been generated for your account.</p><p><strong>Invoice No:</strong> #{invoice_no}<br><strong>Amount:</strong> {currency} {amount_due}<br><strong>Due Date:</strong> {due_date}</p><p><a href=\"{invoice_url}\">Click here to view and pay your invoice</a></p><p>Thank you for your business.</p><p>Regards,<br>{site_name}</p>', 'INVOICE', 1, NOW()),
 ('invoice_paid', 'Invoice Paid Confirmation', 'Payment Received - Invoice #{invoice_no}', '<p>Dear {client_name},</p><p>Thank you! We have received your payment for invoice <strong>#{invoice_no}</strong>.</p><p><strong>Amount Paid:</strong> {currency} {amount_due}<br><strong>Date:</strong> {invoice_date}</p><p><a href=\"{invoice_url}\">Click here to view your invoice</a></p><p>Thank you for your business.</p><p>Regards,<br>{site_name}</p>', 'INVOICE', 1, NOW());
 
-INSERT INTO `email_templates` (`template_key`, `template_name`, `subject`, `body`, `category`, `is_active`, `inserted_on`) VALUES
+INSERT INTO `email_templates` (`template_key`, `template_name`, `subject`, `body`, `category`, `status`, `inserted_on`) VALUES
 ('order_confirmation', 'Order Confirmation', 'Order Confirmed - #{invoice_no}', '<p>Dear {client_name},</p><p>Thank you for your order! Your order has been received and is being processed.</p><p>You will receive further updates once your order has been reviewed.</p><p>Thank you for choosing {site_name}.</p><p>Regards,<br>{site_name}</p>', 'ORDER', 1, NOW());
 
-INSERT INTO `email_templates` (`template_key`, `template_name`, `subject`, `body`, `category`, `is_active`, `inserted_on`) VALUES
+INSERT INTO `email_templates` (`template_key`, `template_name`, `subject`, `body`, `category`, `status`, `inserted_on`) VALUES
 ('welcome_email', 'Welcome Email', 'Welcome to {site_name}', '<p>Dear {client_name},</p><p>Welcome to <strong>{site_name}</strong>! Your account has been created successfully.</p><p>You can log in to your client area at: <a href=\"{site_url}\">{site_url}</a></p><p>Thank you for choosing us.</p><p>Regards,<br>{site_name}</p>', 'AUTH', 1, NOW()),
 ('password_reset', 'Password Reset', 'Password Reset Request - {site_name}', '<p>Dear {client_name},</p><p>We received a request to reset your password for your account at {site_name}.</p><p><a href=\"{invoice_url}\">Click here to reset your password</a></p><p>If you did not request this, please ignore this email.</p><p>Regards,<br>{site_name}</p>', 'AUTH', 1, NOW());
 
