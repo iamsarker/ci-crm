@@ -9,6 +9,7 @@ class General_setting extends WHMAZADMIN_Controller {
 		parent::__construct();
 		$this->load->model('Appsetting_model');
 		$this->load->model('Dunningrule_model');
+		$this->load->model('Emailtemplate_model');
 		$this->load->model('Common_model');
 		if (!$this->isLogin()) {
 			redirect('/whmazadmin/authenticate/login', 'refresh');
@@ -94,6 +95,7 @@ class General_setting extends WHMAZADMIN_Controller {
 		// Load existing settings
 		$data['detail'] = $this->Appsetting_model->getSettings();
 		$data['dunning_rules'] = $this->Dunningrule_model->loadAllData();
+		$data['dunning_email_templates'] = $this->Emailtemplate_model->loadByCategory('DUNNING');
 		$data['active_tab'] = $this->input->get('tab') === 'dunning' ? 'dunning' : 'general';
 
 		$this->load->view('whmazadmin/general_setting_manage', $data);

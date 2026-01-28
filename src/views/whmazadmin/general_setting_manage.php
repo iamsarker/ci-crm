@@ -274,7 +274,13 @@
 														?>
 														<span class="badge <?= $badge_class ?>"><?= htmlspecialchars($rule['action_type'], ENT_QUOTES, 'UTF-8') ?></span>
 													</td>
-													<td><?= htmlspecialchars($rule['email_template'] ?? '-', ENT_QUOTES, 'UTF-8') ?></td>
+													<td>
+													<?php if (!empty($rule['email_template'])) { ?>
+														<code><?= htmlspecialchars($rule['email_template'], ENT_QUOTES, 'UTF-8') ?></code>
+													<?php } else { ?>
+														<span class="text-muted">-</span>
+													<?php } ?>
+												</td>
 													<td class="text-center">
 														<?php if (intval($rule['is_active']) === 1) { ?>
 															<span class="badge bg-success">Yes</span>
@@ -363,8 +369,15 @@
 
 					<div class="form-group mb-3">
 						<label for="dr_email_template">Email Template</label>
-						<input name="email_template" type="text" class="form-control" id="dr_email_template" placeholder="e.g., overdue_reminder_1"/>
-						<small class="text-muted">Template name for email action (optional).</small>
+						<select name="email_template" class="form-select" id="dr_email_template">
+							<option value="">-- None --</option>
+							<?php if (!empty($dunning_email_templates)) { ?>
+								<?php foreach ($dunning_email_templates as $tpl) { ?>
+									<option value="<?= htmlspecialchars($tpl['template_key'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($tpl['template_name'], ENT_QUOTES, 'UTF-8') ?></option>
+								<?php } ?>
+							<?php } ?>
+						</select>
+						<small class="text-muted">Select a DUNNING category email template. <a href="<?=base_url()?>whmazadmin/email_template/index" target="_blank">Manage templates</a></small>
 					</div>
 
 					<div class="form-check mb-3">
