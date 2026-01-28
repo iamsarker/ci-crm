@@ -75,8 +75,8 @@
 								</div>
 
 								<div class="form-check mb-3">
-									<input name="is_active" type="checkbox" class="form-check-input" id="is_active" value="1" <?= (!isset($detail['is_active']) || $detail['is_active'] == 1) ? 'checked' : '' ?>/>
-									<label for="is_active" class="form-check-label">Active</label>
+									<input name="status" type="checkbox" class="form-check-input" id="status" value="1" <?= (!isset($detail['status']) || $detail['status'] == 1) ? 'checked' : '' ?>/>
+									<label for="status" class="form-check-label">Active</label>
 								</div>
 							</div>
 						</div>

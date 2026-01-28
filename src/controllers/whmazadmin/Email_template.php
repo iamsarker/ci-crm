@@ -43,7 +43,7 @@ class Email_template extends WHMAZADMIN_Controller {
 					'subject'       => $this->input->post('subject'),
 					'body'          => $this->input->post('body'),
 					'category'      => $this->input->post('category'),
-					'is_active'     => $this->input->post('is_active') ? 1 : 0,
+					'status'        => $this->input->post('status') ? 1 : 0,
 				);
 
 				if ($id > 0) {
@@ -94,9 +94,9 @@ class Email_template extends WHMAZADMIN_Controller {
 			$params = $this->input->get();
 
 			$bindings = array();
-			$where = "deleted_on IS NULL";
+			$where = '';
 
-			$sqlQuery = ssp_sql_query($params, "email_templates", $bindings, $where);
+			$sqlQuery = ssp_sql_query($params, "email_templates", $bindings, $where, "deleted_on IS NULL");
 
 			$data = $this->Emailtemplate_model->getDataTableRecords($sqlQuery, $bindings);
 

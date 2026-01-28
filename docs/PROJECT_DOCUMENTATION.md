@@ -86,6 +86,7 @@ src/controllers/whmazadmin/
 ├── Service_group.php         # Service groups
 ├── Service_module.php        # Service modules
 ├── Service_product.php       # Service product management (with cPanel integration)
+├── Email_template.php        # Email template management (dunning, invoice, order, auth, etc.)
 ├── Domain_pricing.php        # Domain pricing
 ├── Order.php                 # Order management
 ├── Invoice.php               # Invoice management
@@ -110,6 +111,7 @@ src/views/whmazadmin/
 ├── service_category/
 ├── service_group/
 ├── service_product/          # Service product views (list + manage)
+├── email_template/           # Email template views (list + manage with Quill editor)
 ├── domain_pricing/
 ├── order/
 ├── invoice/
@@ -494,6 +496,37 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 - `/whmazadmin/service_product/delete_records/{encoded_id}` - Soft delete
 - `/whmazadmin/service_product/ssp_list_api` - Server-side DataTables API
 - `/whmazadmin/service_product/get_server_packages/{server_id}` - AJAX endpoint for cPanel packages
+
+#### 4.6 Email Template Management
+**Controller:** `whmazadmin/Email_template.php`
+**Model:** `Emailtemplate_model.php`
+**Views:**
+- `src/views/whmazadmin/email_template_list.php` - Template listing with server-side DataTable
+- `src/views/whmazadmin/email_template_manage.php` - Add/edit template with Quill rich text editor
+**Database Table:** `email_templates`
+
+**Features:**
+- Full CRUD for email templates with server-side DataTable pagination
+- Rich text editor (Quill) for email body composition
+- Template categories: DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, GENERAL
+- Unique `template_key` for programmatic access (e.g., `dunning_reminder_1`)
+- Placeholder system: `{client_name}`, `{invoice_no}`, `{amount_due}`, `{due_date}`, `{days_overdue}`, `{invoice_url}`, `{currency}`, `{site_name}`, `{site_url}`, etc.
+- Active/inactive toggle per template
+- Soft delete support
+- Integrated with dunning rules (General Settings > Dunning tab dropdown)
+
+**Default Templates (10):**
+- DUNNING: First reminder, second reminder, final warning, service suspended, service terminated
+- INVOICE: Invoice created, payment received
+- ORDER: Order confirmation
+- AUTH: Welcome email, password reset
+
+**Key URLs:**
+- `/whmazadmin/email_template` - Template listing
+- `/whmazadmin/email_template/manage` - Add new template
+- `/whmazadmin/email_template/manage/{encoded_id}` - Edit template
+- `/whmazadmin/email_template/delete_records/{encoded_id}` - Soft delete
+- `/whmazadmin/email_template/ssp_list_api` - Server-side DataTables API
 
 ---
 
@@ -1609,6 +1642,6 @@ For HMVC documentation: https://github.com/jenssegers/codeigniter-hmvc
 
 ---
 
-**Documentation Version:** 1.1
-**Last Updated:** 2026-01-27
+**Documentation Version:** 1.2
+**Last Updated:** 2026-01-28
 **Project Status:** Active Development

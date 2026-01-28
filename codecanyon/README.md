@@ -2,7 +2,7 @@
 
 > **The Ultimate WHMCS Alternative** - A comprehensive web hosting automation platform and client management system built with CodeIgniter 3.x
 
-[![Version](https://img.shields.io/badge/version-1.0.3-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.4-blue.svg)](CHANGELOG.md)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-8892BF.svg)](https://php.net)
 [![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.1.13-EE4623.svg)](https://codeigniter.com)
 [![License](https://img.shields.io/badge/license-Commercial-green.svg)](LICENSE.txt)
@@ -133,7 +133,8 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 - Product/Service modules
 - **Service product management with cPanel/WHM integration**
 - Domain extension pricing
-- Email templates
+- **Email template management** (database-driven with Quill editor, categories, placeholders)
+- **Dunning rules management** (automated overdue payment collection workflow)
 - System settings
 
 ### 🔐 **Security Features**
@@ -681,7 +682,20 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
 
 ## 📋 Changelog
 
-### Version 1.0.3 (January 2026) - Feature Update
+### Version 1.0.4 (January 2026) - Email Templates & Dunning
+
+**New Features:**
+- Email Template Management system with full CRUD and server-side DataTable
+- Quill rich text editor for email body composition
+- 7 template categories: DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, GENERAL
+- Placeholder system for dynamic content (`{client_name}`, `{invoice_no}`, `{amount_due}`, etc.)
+- 10 default email templates (5 dunning, 2 invoice, 1 order, 2 auth)
+- Dunning Rules Management in General Settings with dedicated "Dunning" tab
+- Dunning rule CRUD via AJAX modal (step number, days after due, action type, email template)
+- Dunning workflow preview visualization
+- `ssp_helper.php` enhanced with `$extraWhere` parameter for additional WHERE conditions
+
+### Version 1.0.3 (January 2026) - Service Products & cPanel
 
 **New Features:**
 - Service product management with full CRUD and server-side DataTable

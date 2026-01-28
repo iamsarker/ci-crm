@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.4] - 2026-01-28
+
+### New Feature - Email Template Management & Dunning System
+
+#### Email Template Management
+- Added full CRUD for email templates (`email_templates` table)
+- **New Files:**
+  - `src/models/Emailtemplate_model.php` - Email template model with SSP support
+  - `src/controllers/whmazadmin/Email_template.php` - Admin controller
+  - `src/views/whmazadmin/email_template_list.php` - Template listing with server-side DataTable
+  - `src/views/whmazadmin/email_template_manage.php` - Add/edit with Quill rich text editor
+- Template categories: DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, GENERAL
+- Unique template keys for programmatic access (e.g., `dunning_reminder_1`)
+- Placeholder system: `{client_name}`, `{invoice_no}`, `{amount_due}`, `{due_date}`, `{days_overdue}`, `{invoice_url}`, `{currency}`, `{site_name}`, `{site_url}`
+- 10 default templates included (5 dunning, 2 invoice, 1 order, 2 auth)
+- **SQL File:** `crm_email_templates.sql`
+
+#### Dunning Rules Management
+- Added dunning rules configuration in General Settings (new "Dunning" tab)
+- **New Files:**
+  - `src/models/Dunningrule_model.php` - Dunning rule model
+- AJAX-based CRUD via modal (step number, days after due, action type, email template dropdown)
+- Action types: EMAIL, SUSPEND, TERMINATE
+- Dunning workflow preview visualization
+- Email template dropdown filtered by DUNNING category with link to template management
+- Duplicate step number validation
+- **Database Tables:** `dunning_rules`, `dunning_log`
+
+#### Enhancements
+- Updated `ssp_helper.php` with `$extraWhere` parameter for additional WHERE conditions (soft delete filter)
+- General Settings page now has two tabs: General Setting and Dunning
+
+---
+
 ## [1.0.3] - 2026-01-27
 
 ### New Feature - Service Product Management
@@ -571,6 +605,12 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.0.4] - 2026-01-28 - Feature Update
+- Added Email Template Management (CRUD with Quill editor, categories, placeholders, 10 defaults)
+- Added Dunning Rules Management in General Settings (configurable steps, email template integration)
+- Added `dunning_rules`, `dunning_log`, `email_templates` tables
+- Updated SSP helper with `$extraWhere` parameter
+
 ### [1.0.3] - 2026-01-27 - Feature Update
 - Added Service Product Management (CRUD with server-side DataTable)
 - Added cPanel/WHM integration (dynamic package dropdown, auto-populate description)
@@ -729,6 +769,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.0.3
-**Release Date:** January 27, 2026
+**Current Version:** 1.0.4
+**Release Date:** January 28, 2026
 **Status:** Stable Production Release (Feature Update)

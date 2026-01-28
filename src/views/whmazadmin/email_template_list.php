@@ -68,7 +68,7 @@ $(function(){
 				}
 			},
 			{
-				"title": "Active?", "data": "is_active", "width": "8%",
+				"title": "Active?", "data": "status", "width": "8%",
 				"className": "text-center",
 				"orderable": false,
 				"searchable": false,

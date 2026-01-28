@@ -237,12 +237,23 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ## Version Information
 
-- **Documentation Version:** 1.4
-- **Last Updated:** 2026-01-27
+- **Documentation Version:** 1.5
+- **Last Updated:** 2026-01-28
 - **Project Status:** Active Development
 - **Maintained By:** TongBari (https://tongbari.com/)
 
-### Recent Updates (v1.4 - 2026-01-27)
+### Recent Updates (v1.5 - 2026-01-28)
+- Added Email Template Management system (controller: `Email_template`, model: `Emailtemplate_model`, views: `email_template_list`, `email_template_manage`)
+- Email templates with Quill rich text editor, categories (DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, GENERAL), unique template keys, placeholder system
+- Added `email_templates` table with 10 default templates (5 dunning, 2 invoice, 1 order, 2 auth)
+- Added Dunning Rules Management in General Settings (new "Dunning" tab)
+- Dunning rule CRUD with AJAX modal (step number, days after due, action type, email template dropdown)
+- Dunning workflow preview visualization on settings page
+- Added `dunning_rules` and `dunning_log` tables
+- Updated `ssp_helper.php` with `$extraWhere` parameter for additional WHERE conditions (e.g., soft delete filter)
+- Integrated dunning rules with email template dropdown (filtered by DUNNING category)
+
+### Previous Updates (v1.4 - 2026-01-27)
 - Added Service Product CRUD (controller: `Service_product`, model: `Serviceproduct_model`, views: `service_product_list`, `service_product_manage`)
 - Added server-side DataTable pagination for service product list via `product_service_view` database view
 - Added cPanel/WHM integration: dynamic cPanel package dropdown based on server selection (for SHARED_HOSTING/RESELLER_HOSTING with cpanel module)

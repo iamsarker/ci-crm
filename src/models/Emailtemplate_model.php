@@ -22,7 +22,7 @@ class Emailtemplate_model extends CI_Model {
 	 * Load templates by category
 	 */
 	function loadByCategory($category) {
-		$sql = "SELECT id, template_key, template_name FROM {$this->table} WHERE category = ? AND is_active = 1 AND deleted_on IS NULL ORDER BY template_name ASC";
+		$sql = "SELECT id, template_key, template_name FROM {$this->table} WHERE category = ? AND status = 1 AND deleted_on IS NULL ORDER BY template_name ASC";
 		return $this->db->query($sql, array($category))->result_array();
 	}
 
@@ -43,7 +43,7 @@ class Emailtemplate_model extends CI_Model {
 	 * Get template by key
 	 */
 	function getByKey($template_key) {
-		$sql = "SELECT * FROM {$this->table} WHERE template_key = ? AND is_active = 1 AND deleted_on IS NULL";
+		$sql = "SELECT * FROM {$this->table} WHERE template_key = ? AND status = 1 AND deleted_on IS NULL";
 		$data = $this->db->query($sql, array($template_key))->result_array();
 
 		return !empty($data) ? $data[0] : array();
@@ -140,8 +140,9 @@ class Emailtemplate_model extends CI_Model {
 	/**
 	 * SSP: Count filtered records
 	 */
-	function countDataTableFilterRecords($query, $bindings) {
-		$data = $this->db->query($query, $bindings)->result_array();
+	function countDataTableFilterRecords($where, $bindings) {
+		$sql = "SELECT COUNT(*) as cnt FROM {$this->table} $where";
+		$data = $this->db->query($sql, $bindings)->result_array();
 		return !empty($data) ? intval($data[0]['cnt']) : 0;
 	}
 

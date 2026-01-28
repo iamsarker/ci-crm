@@ -143,8 +143,8 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 ### 4. Email Templates
 - [x] Email sending functionality
-- [ ] Email template management UI
-- [ ] Template variables system
+- [x] Email template management UI (CRUD with Quill rich text editor, categories, server-side DataTable)
+- [x] Template variables system (placeholders: {client_name}, {invoice_no}, {amount_due}, {due_date}, {days_overdue}, etc.)
 - [ ] Multi-language email templates
 - [ ] Email queue system
 - [ ] Email logs
@@ -430,7 +430,8 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 ### Phase 6: Communication System (Priority: MEDIUM)
 **Timeline:** 1-2 months
-- [ ] Email template management
+- [x] Email template management (CRUD with categories, placeholders, Quill editor, 10 default templates)
+- [x] Dunning rules management (configurable steps, integrated with email templates)
 - [ ] Email queue system
 - [ ] SMS notification system
 - [ ] Newsletter system
@@ -498,7 +499,7 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 | **Payment Gateways** | ✅ 50+ | 🔄 Framework | ✅ 10+ |
 | **Registrar APIs** | ✅ 25+ | 🔄 Framework | ✅ 5+ |
 | **Server Modules** | ✅ 100+ | 🔄 Framework | ✅ 5+ |
-| **Email Templates** | ✅ Full | 🔄 Basic | ✅ Full |
+| **Email Templates** | ✅ Full | 🔄 Partial (UI + variables done) | ✅ Full |
 | **Automation** | ✅ Full | 🔄 Partial | ✅ Full |
 | **Reports** | ✅ Full | 🔄 Basic | ✅ Full |
 | **API** | ✅ Yes | ❌ No | 🔄 Planned |
@@ -657,5 +658,5 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 **Project Vision:** Become the best open-source alternative to WHMCS for small to medium web hosting businesses.
 
-**Last Updated:** 2026-01-27
-**Version:** 1.1
+**Last Updated:** 2026-01-28
+**Version:** 1.2

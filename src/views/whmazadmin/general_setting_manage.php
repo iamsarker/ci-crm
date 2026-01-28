@@ -240,7 +240,8 @@
 							<i class="fa fa-info-circle"></i> <strong>Dunning rules</strong> define the automated actions taken when an invoice becomes overdue. Each step executes after a specified number of days past the due date. Rules are processed in step order.
 						</div>
 
-						<div class="d-flex justify-content-end mb-3">
+						<div class="d-flex justify-content-between mb-3">
+							<a href="<?=base_url()?>whmazadmin/email_template/index" class="btn btn-sm btn-outline-primary"><i class="fa fa-envelope"></i>&nbsp;Manage Email Templates</a>
 							<button type="button" class="btn btn-sm btn-secondary" onclick="openDunningModal(0)"><i class="fa fa-plus-square"></i>&nbsp;Add Rule</button>
 						</div>
 

@@ -1,8 +1,8 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.0.0
-**Last Updated:** January 25, 2026
+**Version:** 1.0.4
+**Last Updated:** January 28, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
 ---
@@ -33,6 +33,8 @@
 - [Order Management](#order-management)
 - [Package Management](#package-management)
 - [Service Product Management](#service-product-management)
+- [Email Template Management](#email-template-management)
+- [Dunning Rules Management](#dunning-rules-management)
 - [Domain Pricing Management](#domain-pricing-management)
 - [Invoice Management](#invoice-management)
 - [Payment Management](#payment-management)
@@ -1288,6 +1290,201 @@ The admin dashboard provides comprehensive business insights:
 
 ---
 
+## Email Template Management
+
+### Overview
+
+Email Template Management allows you to create, edit, and manage all email templates used throughout the system. Templates support rich text editing via the Quill editor and a placeholder system for dynamic content.
+
+**Access:** `whmazadmin/email_template`
+
+### Email Template List
+
+1. **Access Email Templates**
+   - Go to "Settings" → "Email Templates"
+   - View all templates with server-side pagination
+
+2. **Template List Columns**
+   - Template Name
+   - Template Key (unique identifier, displayed in `<code>` format)
+   - Subject
+   - Category (color-coded badge)
+   - Status (Active/Inactive)
+   - Last Updated
+   - Actions (Edit, Delete)
+
+3. **Category Color Codes**
+   - **DUNNING** — Yellow/Warning badge
+   - **INVOICE** — Blue/Info badge
+   - **ORDER** — Primary badge
+   - **AUTH** — Secondary badge
+   - **SUPPORT** — Green/Success badge
+   - **SERVICE** — Teal badge
+   - **GENERAL** — Dark badge
+
+### Creating an Email Template
+
+1. **Click "Add"**
+   - Opens the email template form
+
+2. **Template Information**
+   - **Template Name:** Display name (e.g., "First Payment Reminder")
+   - **Template Key:** Unique identifier used in code (e.g., `dunning_first_reminder`). Must be alphanumeric with underscores/dashes only. Cannot be duplicated.
+   - **Category:** Select from DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, or GENERAL
+   - **Subject:** Email subject line (supports placeholders)
+   - **Status:** Active checkbox (checked = active)
+
+3. **Email Body**
+   - Rich text editor (Quill) with formatting toolbar
+   - Supports: bold, italic, underline, strikethrough, lists, links, colors, alignment, and more
+   - Write your email content with placeholders for dynamic data
+
+4. **Available Placeholders**
+   - `{client_name}` — Customer's full name
+   - `{invoice_no}` — Invoice number
+   - `{amount_due}` — Outstanding amount
+   - `{due_date}` — Invoice due date
+   - `{days_overdue}` — Number of days past due
+   - `{invoice_url}` — Direct link to the invoice
+   - `{currency}` — Currency symbol/code
+   - `{site_name}` — Your website/company name
+   - `{site_url}` — Your website URL
+
+5. **Save Template**
+   - Click "Save"
+   - Template available for use in the system
+
+### Editing Email Templates
+
+1. **Find Template**
+   - Search or browse in the template list
+   - Click "Manage" button (wrench icon)
+
+2. **Modify Details**
+   - Update any field except template_key (should remain consistent)
+   - Edit the email body using the Quill editor
+   - Toggle active status
+
+3. **Save Changes**
+   - Click "Save"
+   - Changes effective immediately
+
+### Deleting Email Templates
+
+- Click the "Delete" button (trash icon) in the template list
+- Confirm deletion in the SweetAlert2 popup dialog
+- Templates are soft-deleted (can be recovered from database)
+
+### Default Templates
+
+The system comes with 10 pre-configured email templates:
+
+| Template Key | Category | Purpose |
+|-------------|----------|---------|
+| `dunning_first_reminder` | DUNNING | First payment reminder |
+| `dunning_second_reminder` | DUNNING | Second payment reminder |
+| `dunning_final_notice` | DUNNING | Final notice before action |
+| `dunning_suspension_notice` | DUNNING | Service suspension notification |
+| `dunning_termination_notice` | DUNNING | Service termination notification |
+| `invoice_generated` | INVOICE | New invoice notification |
+| `invoice_payment_confirmation` | INVOICE | Payment received confirmation |
+| `order_confirmation` | ORDER | Order placed confirmation |
+| `auth_welcome` | AUTH | Welcome email for new customers |
+| `auth_password_reset` | AUTH | Password reset instructions |
+
+**Files:**
+- Controller: `src/controllers/whmazadmin/Email_template.php`
+- Model: `src/models/Emailtemplate_model.php`
+- Views: `src/views/whmazadmin/email_template/email_template_list.php`, `email_template_manage.php`
+- Database Table: `email_templates`
+
+---
+
+## Dunning Rules Management
+
+### Overview
+
+Dunning rules automate the process of collecting overdue payments by defining a sequence of actions (email reminders, service suspension, termination) that occur at specified intervals after an invoice becomes overdue.
+
+**Access:** `whmazadmin/general_setting/manage?tab=dunning`
+
+### Accessing Dunning Rules
+
+1. **Navigate to General Settings**
+   - Go to "Settings" → "General Settings"
+   - Click the "Dunning" tab
+
+2. **Dunning Tab Overview**
+   - Information alert explaining the dunning system
+   - "Manage Email Templates" shortcut link (opens email template management)
+   - "Add Rule" button
+   - Rules table with all configured dunning steps
+   - Workflow preview card showing the dunning sequence visually
+
+### Creating a Dunning Rule
+
+1. **Click "Add Rule"**
+   - Opens the dunning rule modal dialog
+
+2. **Rule Configuration**
+   - **Step Number:** Sequential order of the rule (e.g., 1, 2, 3). Must be unique — the system validates for duplicates.
+   - **Days After Due:** Number of days after the invoice due date to trigger this action (e.g., 3, 7, 14, 30)
+   - **Action Type:** Select from:
+     - **EMAIL** — Send a reminder email to the customer
+     - **SUSPEND** — Suspend the customer's service
+     - **TERMINATE** — Terminate the customer's service
+   - **Email Template:** Select a dunning email template from the dropdown (populated from DUNNING category templates). Only shown when action type involves email notification.
+   - **Active:** Checkbox to enable/disable the rule
+
+3. **Save Rule**
+   - Click "Save"
+   - Rule added to the dunning workflow
+   - Workflow preview updates automatically
+
+### Action Type Color Codes
+
+- **EMAIL** — Blue badge
+- **SUSPEND** — Yellow/Warning badge
+- **TERMINATE** — Red/Danger badge
+
+### Editing Dunning Rules
+
+1. **Click Edit** (pencil icon) on the rule row
+2. Modal opens pre-filled with current values
+3. Modify any field
+4. Click "Save"
+
+### Deleting Dunning Rules
+
+1. **Click Delete** (trash icon) on the rule row
+2. Confirm deletion in the SweetAlert2 popup
+3. Rule permanently removed
+
+### Workflow Preview
+
+The Dunning tab includes a visual workflow preview card that shows all active rules in sequence:
+- Each step displayed as a card with step number, days after due, and action type
+- Color-coded by action type (blue for email, yellow for suspend, red for terminate)
+- Helps visualize the complete dunning sequence at a glance
+
+### Example Dunning Configuration
+
+| Step | Days After Due | Action | Template |
+|------|---------------|--------|----------|
+| 1 | 3 days | EMAIL | First Payment Reminder |
+| 2 | 7 days | EMAIL | Second Payment Reminder |
+| 3 | 14 days | EMAIL | Final Notice |
+| 4 | 21 days | SUSPEND | Suspension Notice |
+| 5 | 30 days | TERMINATE | Termination Notice |
+
+**Files:**
+- Controller: `src/controllers/whmazadmin/General_setting.php` (dunning AJAX methods)
+- Model: `src/models/Dunningrule_model.php`
+- View: `src/views/whmazadmin/general_setting_manage.php` (Dunning tab)
+- Database Tables: `dunning_rules`, `dunning_log`
+
+---
+
 ## Domain Pricing Management
 
 ### Accessing Domain Pricing
@@ -1906,14 +2103,12 @@ The General Settings page allows you to configure all core application settings 
 - Check spam folder if not received
 
 **Email Templates:**
-- Customize email templates
-- Available templates:
-  - Welcome email
-  - Invoice generated
-  - Payment received
-  - Ticket reply
-  - Service suspended
-  - Domain renewal reminder
+- Managed via the dedicated Email Template Management page (`whmazadmin/email_template`)
+- Database-driven templates with Quill rich text editor
+- Available categories: DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, GENERAL
+- 10 default templates included (5 dunning, 2 invoice, 1 order, 2 auth)
+- Placeholder system for dynamic content (`{client_name}`, `{invoice_no}`, etc.)
+- See [Email Template Management](#email-template-management) for full details
 
 ### Invoice Settings
 
@@ -2399,20 +2594,25 @@ a {
 
 ### Customizing Email Templates
 
-1. **Locate Email Templates**
-   - Templates in `application/views/emails/`
-   - Separate files for each email type
+1. **Access Email Template Management**
+   - Go to Admin Portal → "Settings" → "Email Templates"
+   - Or navigate to `whmazadmin/email_template`
 
 2. **Edit Template**
-   - Open template file
-   - Modify HTML and text
-   - Use variables: {customer_name}, {invoice_number}, etc.
+   - Click "Manage" on the template you want to customize
+   - Use the Quill rich text editor to modify the email body
+   - Use placeholders like `{client_name}`, `{invoice_no}`, `{amount_due}`, etc.
    - Save changes
 
-3. **Test Email**
+3. **Create New Template**
+   - Click "Add" to create a new template
+   - Assign a unique template key, category, subject, and body
+   - See [Email Template Management](#email-template-management) for full details
+
+4. **Test Email**
    - Send test email
    - Verify formatting
-   - Check all variables replaced correctly
+   - Check all placeholders replaced correctly
 
 ### Adding Custom Pages
 
@@ -2757,7 +2957,7 @@ This guide covered:
 ---
 
 **Document Information:**
-- Version: 1.0.3
-- Last Updated: January 27, 2026
+- Version: 1.0.4
+- Last Updated: January 28, 2026
 - Product: WHMAZ - CI-CRM
 - Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.
