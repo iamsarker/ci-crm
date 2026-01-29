@@ -113,7 +113,7 @@ class Cart_model extends CI_Model
 		// SQL Injection Fix: Cast to integer and use parameterized query
 		$id = (int)$id;
 
-		$sql = "SELECT psp.price as item_price, psp.currency_id, bc.id billing_cycle_id, bc.cycle_name
+		$sql = "SELECT psp.price as item_price, psp.currency_id, psp.product_service_id, bc.id billing_cycle_id, bc.cycle_name
 			FROM product_service_pricing psp
 			JOIN billing_cycle bc on psp.billing_cycle_id=bc.id
 			WHERE psp.id=? and psp.status=1 ";

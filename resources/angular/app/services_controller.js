@@ -14,7 +14,9 @@ app.controller('ServiceProductCtrl', function ($scope, $http, $timeout, $rootSco
 		$scope.sericeId = sericeId;
 		$scope.sericeName = name;
 
-		$("#hostingDomainModal").modal({backdrop: 'static', keyboard: false}, "show");
+		var modalEl = document.getElementById('hostingDomainModal');
+		var modal = bootstrap.Modal.getOrCreateInstance(modalEl, {backdrop: 'static', keyboard: false});
+		modal.show();
 
     };
 
@@ -34,6 +36,7 @@ app.controller('ServiceProductCtrl', function ($scope, $http, $timeout, $rootSco
 					"item": $scope.sericeName,
 					"hosting_domain": $scope.hosting_domain,
 					"hosting_domain_type": $scope.hosting_domain_type,
+					"quantity": 1,
 				}
 			);
 			req.then(function (resp) {
@@ -41,7 +44,9 @@ app.controller('ServiceProductCtrl', function ($scope, $http, $timeout, $rootSco
 				if( resp.code == 1 ){
 					toastSuccess(resp.msg);
 
-					$("#hostingDomainModal").modal("hide");
+					var modalEl = document.getElementById('hostingDomainModal');
+					var modal = bootstrap.Modal.getInstance(modalEl);
+					if (modal) modal.hide();
 
 					if( $scope.hosting_domain_type.trim() == "1" ){
 						let redirectUrl = BASE_URL + 'cart/domain?type=register&domkeyword='+$scope.hosting_domain;
@@ -186,9 +191,9 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 			{
 				"serviceId": domPriceId,
 				"item": fullDomain + " - Domain Registration",
-				"service_type": 1, // 0=DNS, 1=REGISTER, 2=TRANSFER
 				"hosting_domain": fullDomain,
 				"hosting_domain_type": 1, // 0=DNS, 1=REGISTER, 2=TRANSFER
+				"quantity": 1,
 			}
 		);
 		req.then(function (resp) {

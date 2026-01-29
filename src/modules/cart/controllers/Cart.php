@@ -174,6 +174,7 @@ class Cart extends WHMAZ_Controller
 						$item['status'] = 0; // 0=pending, 1=active, 2=expired, 3=suspended, 4=terminated
 						$item['hosting_domain'] = $row['hosting_domain'];
 						$item['description'] = $row['note'];
+						$item['product_service_id'] = !empty($row['product_service_id']) ? $row['product_service_id'] : 0;
 						$item['product_service_pricing_id'] = $row['product_service_pricing_id'];
 						$item['product_service_type_key'] = $this->Common_model->getProductServiceTypeKeyByPricingId($row['product_service_pricing_id']);
 						$item['is_synced'] = 0; // Will be set to 1 after successful provisioning
@@ -188,10 +189,11 @@ class Cart extends WHMAZ_Controller
 					}
 
 					// New invoice_item fields
+					$qty = !empty($row['quantity']) ? intval($row['quantity']) : 1;
 					$invoiceItem['ref_id'] = ($refId > 0) ? $refId : null;
 					$invoiceItem['billing_cycle_id'] = $row['billing_cycle_id'];
-					$invoiceItem['quantity'] = 1;
-					$invoiceItem['unit_price'] = $row['sub_total'];
+					$invoiceItem['quantity'] = $qty;
+					$invoiceItem['unit_price'] = ($qty > 0) ? ($row['sub_total'] / $qty) : $row['sub_total'];
 					$invoiceItem['discount'] = 0;
 					$invoiceItem['billing_period_start'] = getDateAddDay(0);
 					$invoiceItem['billing_period_end'] = ($billingCycle->cycle_days > 0) ? getDateAddDay($billingCycle->cycle_days) : null;
@@ -468,24 +470,29 @@ class Cart extends WHMAZ_Controller
 		if ($type == 2) {
 			$cartArr['product_service_pricing_id'] = $orderId;
 			$itemPrice = $this->Cart_model->getCartServicePrice($orderId);
+			$cartArr['product_service_id'] = !empty($itemPrice['product_service_id']) ? $itemPrice['product_service_id'] : 0;
 		} else {
 			$cartArr['dom_pricing_id'] = $orderId;
 			$itemPrice = $this->Cart_model->getCartDomainPrice($orderId);
+			$cartArr['product_service_id'] = 0;
 		}
+
+		$quantity = !empty($postData['quantity']) ? intval($postData['quantity']) : 1;
 
 		$cartArr['note'] = $postData['item'];
 		$cartArr['hosting_domain_type'] = $postData['hosting_domain_type'];
 		$cartArr['hosting_domain'] = $postData['hosting_domain'];
-		$cartArr['sub_total'] = $itemPrice['item_price'];
+		$cartArr['sub_total'] = $itemPrice['item_price'] * $quantity;
 		$cartArr['billing_cycle_id'] = $itemPrice['billing_cycle_id'];
 		$cartArr['billing_cycle'] = $itemPrice['cycle_name'];
 		$cartArr['currency_id'] = $itemPrice['currency_id'];
 		$cartArr['currency_code'] = getCurrencyCode();
 		$cartArr['tax'] = 0;
 		$cartArr['vat'] = 0;
+		$cartArr['quantity'] = $quantity;
 		$cartArr['inserted_on'] = getDateTime();
 		$cartArr['inserted_by'] = getCustomerId();
-		$cartArr['total'] = $itemPrice['item_price'];
+		$cartArr['total'] = $itemPrice['item_price'] * $quantity;
 
 		if ($this->Cart_model->saveCart($cartArr)) {
 			echo $this->AppResponse(1, "Cart item has been added successfully");

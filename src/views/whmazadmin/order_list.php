@@ -51,8 +51,24 @@
 				"columns": [
 					{ "title": "Order#", "data": "order_no", render: function(data){return escapeXSS(data);} },
 					{ "title": "Company name", "data": "company_name", render: function(data){return escapeXSS(data);} },
+					{
+						"title": "Items", "data": "service_count", "orderable": false, "searchable": false,
+						render: function (data, type, row) {
+							var parts = [];
+							if (parseInt(row.service_count) > 0) parts.push(row.service_count + ' service(s)');
+							if (parseInt(row.domain_count) > 0) parts.push(row.domain_count + ' domain(s)');
+							return parts.length > 0 ? escapeXSS(parts.join(', ')) : '<span class="text-muted">-</span>';
+						}
+					},
 					{ "title": "Discount", "data": "discount_amount" },
 					{ "title": "Total", "data": "total_amount" },
+					{
+						"title": "Recurring", "data": "services_recurring_total", "orderable": false, "searchable": false,
+						render: function (data, type, row) {
+							var total = parseFloat(row.services_recurring_total || 0) + parseFloat(row.domains_recurring_total || 0);
+							return total > 0 ? total.toFixed(2) : '<span class="text-muted">-</span>';
+						}
+					},
 					{ "title": "Currency", "data": "currency_code", render: function(data){return escapeXSS(data);} },
 					{ "title": "Order date", "data": "order_date", "searchable": true },
 					{

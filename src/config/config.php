@@ -488,7 +488,12 @@ $config['csrf_exclude_uris'] = array(
 	'whmazadmin/ticket/recent_list_api',
 	'clientarea/summary_api',
 	'tickets/ticket_list_api',
-	'billing/invoice_list_api'
+	'billing/invoice_list_api',
+	// Cart Angular JSON API endpoints (require authentication)
+	'cart/addToCartAjax/.*',
+	'cart/checkoutSubmit',
+	'cart/delete/.*',
+	'cart/delete_all'
 );
 
 /*

@@ -53,8 +53,30 @@
 					{ "title": "Order#", "data": "order_no", render: function(data){return escapeXSS(data);} },
 					{ "title": "Company name", "data": "company_name", render: function(data){return escapeXSS(data);} },
 					{ "title": "Total", "data": "total" },
+					{
+						"title": "Paid", "data": "total_paid",
+						render: function (data, type, row) {
+							var paid = parseFloat(data || 0);
+							if (paid <= 0) return '<span class="text-muted">0.00</span>';
+							return '<span class="text-success">' + paid.toFixed(2) + '</span>';
+						}
+					},
+					{
+						"title": "Balance", "data": "balance_due",
+						render: function (data, type, row) {
+							var balance = parseFloat(data || 0);
+							if (balance <= 0) return '<span class="text-success">0.00</span>';
+							return '<span class="text-danger">' + balance.toFixed(2) + '</span>';
+						}
+					},
 					{ "title": "Currency", "data": "currency_code", render: function(data){return escapeXSS(data);} },
 					{ "title": "Due date", "data": "due_date", "searchable": true },
+					{
+						"title": "Last payment", "data": "last_payment_date", "searchable": false,
+						render: function (data) {
+							return data ? escapeXSS(data) : '<span class="text-muted">-</span>';
+						}
+					},
 					{ "title": "invoice_uuid", "data": "invoice_uuid", "orderable": false, "searchable": false, "visible":false },
 					{ "title": "company_id", "data": "company_id", "orderable": false, "searchable": false, "visible":false },
 					{

@@ -54,9 +54,8 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<h5 class="modal-title" id="exampleModalLabel">Domain Information</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-							<span aria-hidden="true">&times;</span>
-						</button>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+							</button>
 					</div>
 					<div class="modal-body">
 						<form>
@@ -65,7 +64,7 @@
 								<input type="text" class="form-control" id="hosting_domain" placeholder="tongbari.com" ng-model="hosting_domain" />
 							</div>
 							<div class="form-group">
-								<div class="btn-group btn-group-toggle" data-toggle="buttons">
+								<div class="btn-group btn-group-toggle" data-bs-toggle="buttons">
 									<label class="btn btn-info active">
 										<input type="radio" name="domain_type" id="domain_type1" value="0" ng-model="hosting_domain_type" autocomplete="off" checked> Update DNS
 									</label>
@@ -80,7 +79,7 @@
 						</form>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 						<button type="button" class="btn btn-primary" ng-click="addToCartApiCall()">Proceed</button>
 					</div>
 				</div>
@@ -97,7 +96,7 @@
 </script>
 <script src="<?=base_url()?>resources/angular/app/app.directives.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/app/app.services.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/app/services_controller.js?v=1.0.0"></script>
+<script src="<?=base_url()?>resources/angular/app/services_controller.js?v=1.0.1"></script>
 <script>
 	<?php $alert_success = $this->session->flashdata('alert_success'); ?>
 	<?php if ($alert_success) { ?>
