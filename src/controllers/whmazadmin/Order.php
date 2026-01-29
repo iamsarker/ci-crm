@@ -90,7 +90,7 @@ class Order extends WHMAZADMIN_Controller
 				);
 
 				$order = $this->saveOrderTable($form_data);
-				$this->saveOrderItemTable($order, $form_data);
+				$savedItemIds = $this->saveOrderItemTable($order, $form_data);
 
 				if( !empty($form_data['billing_cycle_id']) && $form_data['billing_cycle_id'] > 0 ){
 					$billingCycle = $this->Common_model->get_data_by_id("billing_cycle", $form_data['billing_cycle_id']);
@@ -99,7 +99,7 @@ class Order extends WHMAZADMIN_Controller
 				}
 
 				$invoice = $this->saveInvoiceTable($order, $billingCycle);
-				$this->saveInvoiceItemTable($invoice, $form_data, $billingCycle);
+				$this->saveInvoiceItemTable($invoice, $form_data, $billingCycle, $savedItemIds);
 
 				if( $order['id'] > 0 && $invoice['id'] > 0 ){
 					$this->session->set_flashdata('alert_success', 'Order has been saved successfully.');
@@ -175,6 +175,8 @@ class Order extends WHMAZADMIN_Controller
 
 	public function saveOrderItemTable($order, $form_data){
 
+		$savedIds = array('domain_id' => 0, 'service_id' => 0);
+
 		$item['order_id'] = $order['id'];
 		$item['company_id'] = $order['company_id'];
 		$item['is_synced'] = 0;
@@ -182,6 +184,7 @@ class Order extends WHMAZADMIN_Controller
 		$item['reg_date'] = getDateAddDay(0);
 		$item['exp_date'] = getDateAddYear($form_data['reg_period']);
 		$item['next_due_date'] = getDateAddYear($form_data['reg_period']);
+		$item['auto_renew'] = 1;
 		$item['inserted_on'] = getDateTime();
 		$item['inserted_by'] = getAdminId();
 
@@ -221,7 +224,7 @@ class Order extends WHMAZADMIN_Controller
 
 			}
 
-			$this->Order_model->saveOrderDomain($domain_arr);
+			$savedIds['domain_id'] = $this->Order_model->saveOrderDomain($domain_arr);
 
 		}
 
@@ -239,8 +242,10 @@ class Order extends WHMAZADMIN_Controller
 			$service_arr['product_service_pricing_id'] = $hostingPrices['id'];
 			$service_arr['product_service_id'] = $form_data['product_service_id'];
 
-			$this->Order_model->saveOrderService($service_arr);
+			$savedIds['service_id'] = $this->Order_model->saveOrderService($service_arr);
 		}
+
+		return $savedIds;
 	}
 
 	public function saveInvoiceTable($order, $billing_cycle){
@@ -268,9 +273,11 @@ class Order extends WHMAZADMIN_Controller
 		return $invoice;
 	}
 
-	public function saveInvoiceItemTable($invoice, $form_data, $billingCycle){
+	public function saveInvoiceItemTable($invoice, $form_data, $billingCycle, $savedItemIds = array()){
 
 		$invoiceItem['invoice_id'] = $invoice['id'];
+
+		$cycleDays = !empty($billingCycle) && isset($billingCycle->cycle_days) ? $billingCycle->cycle_days : 0;
 
 		if( !empty($form_data['domain']) && $form_data['domain'] != "") {
 			$invoiceItem['item'] = 'Domain registration';
@@ -281,6 +288,13 @@ class Order extends WHMAZADMIN_Controller
 			$invoiceItem['sub_total'] = $form_data['domain_amount'];
 			$invoiceItem['total'] = $form_data['domain_amount'];
 			$invoiceItem['item_type'] = 1; // domain
+			$invoiceItem['ref_id'] = !empty($savedItemIds['domain_id']) ? $savedItemIds['domain_id'] : null;
+			$invoiceItem['billing_cycle_id'] = null;
+			$invoiceItem['quantity'] = 1;
+			$invoiceItem['unit_price'] = $form_data['domain_amount'];
+			$invoiceItem['discount'] = 0;
+			$invoiceItem['billing_period_start'] = getDateAddDay(0);
+			$invoiceItem['billing_period_end'] = getDateAddYear($form_data['reg_period']);
 			$invoiceItem['inserted_on'] = getDateTime();
 			$invoiceItem['inserted_by'] = $invoice['inserted_by'];
 
@@ -298,6 +312,13 @@ class Order extends WHMAZADMIN_Controller
 			$invoiceItem['sub_total'] = $form_data['package_amount'];
 			$invoiceItem['total'] = $form_data['package_amount'];
 			$invoiceItem['item_type'] = 2; // product service or hosting
+			$invoiceItem['ref_id'] = !empty($savedItemIds['service_id']) ? $savedItemIds['service_id'] : null;
+			$invoiceItem['billing_cycle_id'] = !empty($form_data['billing_cycle_id']) ? $form_data['billing_cycle_id'] : null;
+			$invoiceItem['quantity'] = 1;
+			$invoiceItem['unit_price'] = $form_data['package_amount'];
+			$invoiceItem['discount'] = 0;
+			$invoiceItem['billing_period_start'] = getDateAddDay(0);
+			$invoiceItem['billing_period_end'] = ($cycleDays > 0) ? getDateAddDay($cycleDays) : null;
 			$invoiceItem['inserted_on'] = getDateTime();
 
 			$this->Order_model->saveInvoiceItem($invoiceItem);

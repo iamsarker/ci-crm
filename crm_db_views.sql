@@ -1,22 +1,68 @@
 
--- invoice_view
+-- invoice_view: includes total_paid and balance_due from invoice_txn
 
-create or replace view invoice_view AS
-SELECT DISTINCT i.id, i.invoice_uuid, i.company_id, i.order_id, i.currency_id, i.currency_code, i.invoice_no, i.sub_total, i.tax, i.vat, i.total, i.due_date, i.order_date, i.cancel_date, i.refund_date, i.remarks, i.status, i.pay_status, i.inserted_on, i.updated_on,
-c.name company_name, c.mobile company_mobile, c.email company_email, c.address company_address, c.city company_city, c.state company_state, c.zip_code company_zipcode, c.country, c.phone company_phone, o.order_uuid, o.order_no
+CREATE OR REPLACE VIEW invoice_view AS
+SELECT DISTINCT i.id, i.invoice_uuid, i.company_id, i.order_id, i.currency_id, i.currency_code,
+    i.invoice_no, i.sub_total, i.tax, i.vat, i.total, i.due_date, i.order_date,
+    i.cancel_date, i.refund_date, i.remarks, i.status, i.pay_status,
+    i.need_api_call, i.inserted_on, i.updated_on,
+    c.name company_name, c.mobile company_mobile, c.email company_email,
+    c.address company_address, c.city company_city, c.state company_state,
+    c.zip_code company_zipcode, c.country, c.phone company_phone,
+    o.order_uuid, o.order_no,
+    COALESCE(t.total_paid, 0) AS total_paid,
+    (i.total - COALESCE(t.total_paid, 0)) AS balance_due,
+    t.last_payment_date
 FROM invoices i
-JOIN companies c on i.company_id=c.id
-JOIN orders o on i.order_id=o.id;
+JOIN companies c ON i.company_id = c.id
+JOIN orders o ON i.order_id = o.id
+LEFT JOIN (
+    SELECT invoice_id,
+        SUM(CASE WHEN type = 'payment' AND status = 1 THEN amount
+                 WHEN type = 'refund'  AND status = 1 THEN -amount
+                 WHEN type = 'credit'  AND status = 1 THEN amount
+                 ELSE 0 END) AS total_paid,
+        MAX(CASE WHEN status = 1 THEN txn_date END) AS last_payment_date
+    FROM invoice_txn
+    WHERE deleted_on IS NULL
+    GROUP BY invoice_id
+) t ON i.id = t.invoice_id;
 
 
--- order_view
+-- order_view: includes service/domain counts and recurring totals
 
-CREATE or REPLACE view order_view AS
-SELECT o.id, o.order_uuid, o.order_no, o.company_id, o.currency_id, o.currency_code, o.order_date, o.amount, o.vat_amount, o.tax_amount, o.coupon_code, o.coupon_amount, o.discount_amount, o.total_amount, o.payment_gateway_id, o.remarks, o.instructions, o.status, o.inserted_on, o.updated_on,
-c.name company_name, c.email company_email, c.mobile company_mobile, c.phone company_phone, c.address company_address, c.country, c.zip_code company_zipcode, c.city company_city, c.state company_state, p.name payment_gateway_name, p.icon_fa_unicode payment_gateway_fa_icon
-FROM orders o 
-JOIN companies c on o.company_id=c.id 
-JOIN payment_gateway p on o.payment_gateway_id=p.id
+CREATE OR REPLACE VIEW order_view AS
+SELECT o.id, o.order_uuid, o.order_no, o.company_id, o.currency_id, o.currency_code,
+    o.order_date, o.amount, o.vat_amount, o.tax_amount, o.coupon_code, o.coupon_amount,
+    o.discount_amount, o.total_amount, o.payment_gateway_id, o.remarks, o.instructions,
+    o.status, o.inserted_on, o.updated_on,
+    c.name company_name, c.email company_email, c.mobile company_mobile,
+    c.phone company_phone, c.address company_address, c.country,
+    c.zip_code company_zipcode, c.city company_city, c.state company_state,
+    p.name payment_gateway_name, p.icon_fa_unicode payment_gateway_fa_icon,
+    COALESCE(sv.service_count, 0) AS service_count,
+    COALESCE(dm.domain_count, 0) AS domain_count,
+    COALESCE(sv.total_recurring, 0) AS services_recurring_total,
+    COALESCE(dm.total_recurring, 0) AS domains_recurring_total
+FROM orders o
+JOIN companies c ON o.company_id = c.id
+JOIN payment_gateway p ON o.payment_gateway_id = p.id
+LEFT JOIN (
+    SELECT order_id,
+        COUNT(*) AS service_count,
+        SUM(recurring_amount) AS total_recurring
+    FROM order_services
+    WHERE deleted_on IS NULL
+    GROUP BY order_id
+) sv ON o.id = sv.order_id
+LEFT JOIN (
+    SELECT order_id,
+        COUNT(*) AS domain_count,
+        SUM(recurring_amount) AS total_recurring
+    FROM order_domains
+    WHERE deleted_on IS NULL
+    GROUP BY order_id
+) dm ON o.id = dm.order_id
 
 
 -- product_service_view or package_view

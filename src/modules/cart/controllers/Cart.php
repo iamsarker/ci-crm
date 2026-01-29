@@ -145,8 +145,11 @@ class Cart extends WHMAZ_Controller
 					$item['reg_date'] = getDateAddDay(0);
 					$item['exp_date'] = getDateAddDay($billingCycle->cycle_days);
 					$item['next_due_date'] = getDateAddDay($billingCycle->cycle_days);
+					$item['auto_renew'] = 1;
 					$item['inserted_on'] = getDateTime();
 					$item['inserted_by'] = $userId;
+
+					$refId = 0;
 
 					$invoiceItem['invoice_id'] = $invoiceId;
 					$invoiceItem['item'] = $row['note'];
@@ -164,7 +167,7 @@ class Cart extends WHMAZ_Controller
 						$item['reg_period'] = 1; // 1 year by default
 						$item['status'] = 0; // 0=pending reg, 1=active, 2=expired, 3=grace, 4=cancelled, 5=pending transfer
 
-						$this->Order_model->saveOrderDomain($item);
+						$refId = $this->Order_model->saveOrderDomain($item);
 
 					} else {
 						$item['billing_cycle_id'] = $row['billing_cycle_id'];
@@ -175,14 +178,23 @@ class Cart extends WHMAZ_Controller
 						$item['product_service_type_key'] = $this->Common_model->getProductServiceTypeKeyByPricingId($row['product_service_pricing_id']);
 						$item['is_synced'] = 0; // Will be set to 1 after successful provisioning
 
-						$orderServiceId = $this->Order_model->saveOrderService($item);
+						$refId = $this->Order_model->saveOrderService($item);
 
 						// Auto-provision cPanel account for hosting services
 						$hostingTypes = array('SHARED_HOSTING', 'RESELLER_HOSTING');
-						if (!empty($orderServiceId) && in_array($item['product_service_type_key'], $hostingTypes) && !empty($item['hosting_domain'])) {
-							$this->provisionCpanelAccount($orderServiceId, $item, $companyId);
+						if (!empty($refId) && in_array($item['product_service_type_key'], $hostingTypes) && !empty($item['hosting_domain'])) {
+							$this->provisionCpanelAccount($refId, $item, $companyId);
 						}
 					}
+
+					// New invoice_item fields
+					$invoiceItem['ref_id'] = ($refId > 0) ? $refId : null;
+					$invoiceItem['billing_cycle_id'] = $row['billing_cycle_id'];
+					$invoiceItem['quantity'] = 1;
+					$invoiceItem['unit_price'] = $row['sub_total'];
+					$invoiceItem['discount'] = 0;
+					$invoiceItem['billing_period_start'] = getDateAddDay(0);
+					$invoiceItem['billing_period_end'] = ($billingCycle->cycle_days > 0) ? getDateAddDay($billingCycle->cycle_days) : null;
 
 					$this->Order_model->saveInvoiceItem($invoiceItem);
 
