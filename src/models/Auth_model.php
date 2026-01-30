@@ -57,7 +57,6 @@ class Auth_model extends CI_Model{
 
 			$userdata = $query->row();
 			if (password_verify($password,$userdata->password)) {
-				// SECURITY: Clear failed attempts on successful login
 				$this->Loginattempt_model->clearAllAttempts($email, $ip);
 
 				$resp = array();
@@ -124,7 +123,6 @@ class Auth_model extends CI_Model{
 
 			$data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
-
 			$uniqueVarificationCode = uniqid().$data['email'].uniqid().time();
 			$verification_code = hash('sha256', 'TB'.$uniqueVarificationCode);
 			$data['verify_hash'] = $verification_code;
@@ -154,12 +152,8 @@ class Auth_model extends CI_Model{
 			$this->db->where('email', $username);
 			$query=$this->db->get();
 			if ($query->num_rows()){
-				$this->sendpassword($username);
-
-//			var_dump($query->num_rows());
-//			exit();
+				$this->sendPassword($username);
 			}
-
 
 			return 0;
 		} catch (Exception $e) {
@@ -168,11 +162,10 @@ class Auth_model extends CI_Model{
 			return 0;
 		}
 
-
 	}
 
 
-	 function sendpassword($email) {
+	 function sendPassword($email) {
 		 $return = array();
 
 		try {
@@ -182,38 +175,24 @@ class Auth_model extends CI_Model{
 			$row = $query1->result();
 
 			if ($query1->num_rows() > 0) {
-				// SECURITY FIX: Generate secure random password instead of hardcoded "1"
-				$passwordplain = bin2hex(random_bytes(8)); // Generate 16-character random password
-				$newpass = password_hash($passwordplain, PASSWORD_DEFAULT);
+				$passwordPlain = bin2hex(random_bytes(16));
+				$newPass = password_hash($passwordPlain, PASSWORD_DEFAULT);
 
-				// SECURITY FIX: Use prepared statement to prevent SQL injection
 				$sql = "UPDATE `users` SET `password` = ? WHERE `users`.`email` = ?";
-				$query = $this->db->query($sql, array($newpass, $email));
+				$query = $this->db->query($sql, array($newPass, $email));
 				if ($query){
-					$this->sendResetPassEmail($row, $email, $passwordplain);
+					$this->sendResetPassEmail($row, $email, $passwordPlain);
 
-//				if (!$mail->send()) {
-//					$return['status_code'] = 0;
-//					$return['msg'] = "Failed to send password, please try again!";
-//				} else {
-//					echo $this->email->print_debugger();
-//					$return['status_code'] = 1;
-//					$return['msg'] = "Password sent to your email!";
-//				}
 				}else {
 					$return['status_code'] = -1;
 					$return['msg'] = "Unable to update the password";
 				}
-//
-
-
 
 				return $return;
 
 			}
 		} catch (Exception $e) {
-			// SECURITY: Log database error
-			ErrorHandler::log_database_error('sendpassword', $this->db->last_query(), $e->getMessage());
+			ErrorHandler::log_database_error('sendPassword', $this->db->last_query(), $e->getMessage());
 			$return['status_code'] = -99;
 			$return['msg'] = "Database error occurred";
 			return $return;
@@ -237,11 +216,9 @@ class Auth_model extends CI_Model{
 		$this->email->set_newline("\r\n");
 		$this->email->from($appSettings->email, $appSettings->company_name);
 
-		// SECURITY FIX: Only send to the user, not to multiple addresses
 		$this->email->to($emailTo);
 		$this->email->subject("Password Reset - Tong Bari");
 
-		// SECURITY FIX: Use the actual generated password, not hardcoded "123"
 		$userName = !empty($info[0]->first_name) ? $info[0]->first_name : 'User';
 		$body = 'Dear ' . htmlspecialchars($userName) . ',<br><br>';
 		$body .= 'You have requested to reset your password.<br><br>';
@@ -254,7 +231,7 @@ class Auth_model extends CI_Model{
 		$this->email->message($body);
 
 		if( $this->email->send() ){
-			//$this->session->set_flashdata('alert', successAlert('Invoice has been created successfully'));
+			$this->session->set_flashdata('alert', successAlert('Password reset email has been sent'));
 		} else{
 			echo "0";
 		}

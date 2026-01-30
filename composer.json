@@ -11,10 +11,10 @@
 		"source": "https://github.com/bcit-ci/CodeIgniter"
 	},
 	"require": {
-		"php": ">=5.4"
+		"php": ">=7.4"
 	},
 	"suggest": {
-		"paragonie/random_compat": "Provides better randomness in PHP 5.x"
+		"paragonie/random_compat": "Provides better randomness in PHP 7.x"
 	},
 	"require-dev": {
 		"mikey179/vfsStream": "1.1.*",
