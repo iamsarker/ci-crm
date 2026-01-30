@@ -4,6 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 class Billing extends WHMAZ_Controller
 {
 	var $img_path;
+	var $upload_dir;
 
 	function __construct()
 	{
