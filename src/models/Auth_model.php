@@ -190,7 +190,7 @@ class Auth_model extends CI_Model{
 				$sql = "UPDATE `users` SET `password` = ? WHERE `users`.`email` = ?";
 				$query = $this->db->query($sql, array($newpass, $email));
 				if ($query){
-					$this->sendEditPaidInvoiceEmail($row, $email, $passwordplain);
+					$this->sendResetPassEmail($row, $email, $passwordplain);
 
 //				if (!$mail->send()) {
 //					$return['status_code'] = 0;
@@ -220,7 +220,7 @@ class Auth_model extends CI_Model{
 		}
 	}
 
-	function sendEditPaidInvoiceEmail($info, $emailTo, $passwordplain){
+	function sendResetPassEmail($info, $emailTo, $passwordplain){
 		$appSettings = $this->db->query("SELECT * from app_settings");
 		$rowData = $appSettings->result();
 		$this->load->library('email');
@@ -236,7 +236,7 @@ class Auth_model extends CI_Model{
 		);
 		$this->email->initialize($config);
 		$this->email->set_newline("\r\n");
-		$this->email->from($rowData[0]->email, 'Tong Bari');
+		$this->email->from($rowData[0]->email, $rowData[0]->company_name);
 
 		// SECURITY FIX: Only send to the user, not to multiple addresses
 		$this->email->to($emailTo);
@@ -250,7 +250,7 @@ class Auth_model extends CI_Model{
 		$body .= 'Please login and change this password immediately for security reasons.<br><br>';
 		$body .= 'If you did not request this password reset, please contact us immediately.<br><br>';
 		$body .= 'Thanks & Regards<br>';
-		$body .= 'Tong Bari Team';
+		$body .= $rowData[0]->company_name . ' Support';
 
 		$this->email->message($body);
 
