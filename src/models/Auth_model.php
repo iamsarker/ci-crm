@@ -221,22 +221,21 @@ class Auth_model extends CI_Model{
 	}
 
 	function sendResetPassEmail($info, $emailTo, $passwordplain){
-		$appSettings = $this->db->query("SELECT * from app_settings");
-		$rowData = $appSettings->result();
+		$appSettings = getAppSettings();
 		$this->load->library('email');
 		$this->email->clear();
 
 		$config = Array(
 			'wordwrap' => TRUE,
-			'smtp_host' => $rowData[0]->smtp_host,
-			'smtp_port' => $rowData[0]->smtp_port,
-			'smtp_user' => $rowData[0]->smtp_username,
-			'smtp_pass' => $rowData[0]->smtp_authkey,
+			'smtp_host' => $appSettings->smtp_host,
+			'smtp_port' => $appSettings->smtp_port,
+			'smtp_user' => $appSettings->smtp_username,
+			'smtp_pass' => $appSettings->smtp_authkey,
 			'mailtype'  => 'html'
 		);
 		$this->email->initialize($config);
 		$this->email->set_newline("\r\n");
-		$this->email->from($rowData[0]->email, $rowData[0]->company_name);
+		$this->email->from($appSettings->email, $appSettings->company_name);
 
 		// SECURITY FIX: Only send to the user, not to multiple addresses
 		$this->email->to($emailTo);
@@ -250,7 +249,7 @@ class Auth_model extends CI_Model{
 		$body .= 'Please login and change this password immediately for security reasons.<br><br>';
 		$body .= 'If you did not request this password reset, please contact us immediately.<br><br>';
 		$body .= 'Thanks & Regards<br>';
-		$body .= $rowData[0]->company_name . ' Support';
+		$body .= $appSettings->company_name . ' Support';
 
 		$this->email->message($body);
 

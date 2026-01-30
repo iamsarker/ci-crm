@@ -335,6 +335,14 @@
 		);
 	}
 
+	function getAppSettings(){
+		$ci = & get_instance();
+		$ci->load->database();
+		$query = $ci->db->query("SELECT * FROM app_settings LIMIT 1");
+		$data = $query->result();
+		return !empty($data) ? $data[0] : null;
+	}
+
 	function buildSuccessResponse($data, $msg){
 		$resp["code"] = 200;
 		$resp["msg"] = $msg;
