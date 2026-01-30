@@ -5,16 +5,23 @@
 		<div class="mx-wd-300 wd-sm-450 ht-100p d-flex flex-column align-items-center justify-content-center">
 		  <div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
 			<div class="wd-200p">
-				<form method="post" action="">
+				<form method="post" action="<?=base_url('auth/resetpassword/' . $token)?>">
 					<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
-					<h3 class="tx-color-01 mg-b-5">Reset your password</h3>
-					<p class="tx-color-03 tx-16 mg-b-40">Enter your email and we'll send you a reset link.</p>
+					<h3 class="tx-color-01 mg-b-5">Set New Password</h3>
+					<p class="tx-color-03 tx-16 mg-b-40">Enter your new password below.</p>
 
-					<div class="wd-200p d-flex flex-column flex-sm-row">
-						<input type="text"  name="username" class="form-control wd-sm-250 flex-fill" placeholder="Enter username/email address">
-						<button class="btn btn-primary ms-1">Reset Password</button>
+					<div class="form-group mg-b-20">
+						<label>New Password</label>
+						<input type="password" name="password" class="form-control" placeholder="Enter new password" required minlength="8">
 					</div>
-					<span class="tx-12 tx-color-03">Back to <a href="<?=base_url()?>auth/login">Login page</a></span>
+					<div class="form-group mg-b-20">
+						<label>Confirm Password</label>
+						<input type="password" name="confirm_password" class="form-control" placeholder="Confirm new password" required minlength="8">
+					</div>
+					<button class="btn btn-primary btn-block">Reset Password</button>
+					<div class="mg-t-10">
+						<span class="tx-12 tx-color-03">Back to <a href="<?=base_url()?>auth/login">Login page</a></span>
+					</div>
 				</form>
 			</div>
 		  </div><!-- sign-wrapper -->
