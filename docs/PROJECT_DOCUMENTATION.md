@@ -206,8 +206,9 @@ The Client Portal is built using HMVC modules and provides customer-facing funct
 - `/auth/login` - Customer login
 - `/auth/register` - New customer registration
 - `/auth/logout` - Logout
-- `/auth/forgot_password` - Password recovery
-- `/auth/verify_email` - Email verification
+- `/auth/forgetpaswrd` - Password recovery
+- `/auth/resetpassword/{token}` - Password reset with token
+- `/auth/verify/{hash}` - Email verification after registration
 
 ### 2. Shopping Cart
 **Module:** `src/modules/cart/`
@@ -269,7 +270,7 @@ The Client Portal is built using HMVC modules and provides customer-facing funct
 - Recent tickets
 - Account summary
 - Profile management
-- Password change
+- Change password page (`/clientarea/changePassword`) with email notification on change
 - Contact information update
 - Quick actions
 
@@ -961,6 +962,7 @@ src/modules/*/views/
 │   └── view_checkout.php
 ├── clientarea/views/
 │   ├── clientarea_index.php
+│   ├── clientarea_changepassword.php
 │   ├── clientarea_services.php
 │   └── clientarea_domains.php
 └── supports/views/
@@ -1396,6 +1398,9 @@ $result = whm_list_packages($serverInfo);
 - `invoice_status_badge($status)` - Invoice status HTML
 - `order_status_badge($status)` - Order status HTML
 - `ticket_status_badge($status)` - Ticket status HTML
+
+**Email Functions:**
+- `sendHtmlEmail($to, $subject, $htmlBody, $fromEmail, $fromName)` - Send HTML email via raw SMTP socket (bypasses CI3 email library line-length issues)
 
 **Utility Functions:**
 - `generate_uuid()` - Generate unique identifier

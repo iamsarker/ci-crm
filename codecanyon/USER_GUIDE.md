@@ -1,8 +1,8 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.0.4
-**Last Updated:** January 28, 2026
+**Version:** 1.0.5
+**Last Updated:** January 31, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
 ---
@@ -293,12 +293,17 @@ After first login, immediately:
 
 ### Email Verification
 
-After registration:
-- Check your email inbox
-- Look for email from system (check spam folder if not found)
-- Click verification link
-- Account will be activated
-- You can now login
+After registration, a verification email is automatically sent to your registered email address:
+
+1. Check your email inbox (and spam/junk folder)
+2. Open the email from the system titled "Email Verification - [Company Name]"
+3. Click the "Verify My Email" link
+4. You will be redirected to the login page with a success message
+5. Your account is now activated — you can login
+
+**Important:** You cannot login until your email is verified. If you try to login before verifying, you will see a message asking you to check your email.
+
+**Verification URL format:** `https://yourdomain.com/auth/verify/{verification_hash}`
 
 ---
 
@@ -356,11 +361,13 @@ The customer dashboard provides a quick overview of your account:
    - Save changes
 
 3. **Change Password**
-   - Go to "Security" or "Change Password" tab
-   - Enter current password
-   - Enter new password
-   - Confirm new password
-   - Save changes
+   - Navigate to `/clientarea/changePassword` or click "Change Password" in your account menu
+   - Enter your current password
+   - Enter new password (minimum 8 characters)
+   - Confirm new password (must match)
+   - Click "Change Password"
+   - A confirmation email will be sent to your registered email address notifying you of the password change
+   - If you did not initiate the change, contact support immediately
 
 ![Profile Settings](screenshots/customer-profile.png)
 *[Screenshot Placeholder: Customer profile settings page]*
@@ -2957,7 +2964,7 @@ This guide covered:
 ---
 
 **Document Information:**
-- Version: 1.0.4
-- Last Updated: January 28, 2026
+- Version: 1.0.5
+- Last Updated: January 31, 2026
 - Product: WHMAZ - CI-CRM
 - Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.

@@ -237,12 +237,19 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ## Version Information
 
-- **Documentation Version:** 1.5
-- **Last Updated:** 2026-01-28
+- **Documentation Version:** 1.6
+- **Last Updated:** 2026-01-31
 - **Project Status:** Active Development
 - **Maintained By:** TongBari (https://tongbari.com/)
 
-### Recent Updates (v1.5 - 2026-01-28)
+### Recent Updates (v1.6 - 2026-01-31)
+- Added `sendHtmlEmail()` raw SMTP helper function in `whmaz_helper.php` (bypasses CI3 email library line-length wrapping issue)
+- Added email verification after registration: `sendVerificationEmail()` in Auth_model, `verify($hash)` endpoint in Auth controller
+- Added Change Password page in Client Portal (`/clientarea/changePassword`) with email notification on password change
+- New view: `clientarea_changepassword.php`, new model method: `Clientarea_model::changePassword()`
+- Removed duplicate toast/flashdata script blocks from 21 module view files (centralized in `templates/customer/footer.php`)
+
+### Previous Updates (v1.5 - 2026-01-28)
 - Added Email Template Management system (controller: `Email_template`, model: `Emailtemplate_model`, views: `email_template_list`, `email_template_manage`)
 - Email templates with Quill rich text editor, categories (DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, GENERAL), unique template keys, placeholder system
 - Added `email_templates` table with 10 default templates (5 dunning, 2 invoice, 1 order, 2 auth)

@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.5] - 2026-01-31
+
+### New Features - Email System & Account Security
+
+#### Raw SMTP Email Helper
+- Added `sendHtmlEmail()` function to `whmaz_helper.php` — raw PHP SMTP email sender bypassing CI3's email library
+- Fixes CI3 email library line-length wrapping issue that broke long URLs (e.g., password reset links)
+- Uses base64 Content-Transfer-Encoding to avoid line-length issues entirely
+- Supports SSL and STARTTLS encryption, AUTH LOGIN authentication
+- Auto-reads SMTP settings from `app_settings` table
+- Error logging via CI's `log_message()`
+
+#### Email Verification After Registration
+- Registration now sends a verification email with a clickable link
+- New `sendVerificationEmail()` method in `Auth_model.php`
+- New `verify($hash)` endpoint in `Auth.php` controller (`/auth/verify/{hash}`)
+- Users must verify email before logging in (status `2` → `1`)
+- Uses `sendHtmlEmail()` helper for reliable email delivery
+
+#### Change Password (Client Portal)
+- New Change Password page at `/clientarea/changePassword`
+- **New View:** `src/modules/clientarea/views/clientarea_changepassword.php`
+- Validates current password before allowing change
+- Minimum 8-character password requirement with confirm match
+- Sends email notification to user after successful password change
+- New `changePassword()` method in `Clientarea_model.php`
+
+#### Code Cleanup
+- Removed duplicate toast/flashdata script blocks from 21 module view files
+- Toast messages now rendered from a single location: `templates/customer/footer.php`
+- 14 standalone toast script blocks removed entirely
+- 7 mixed script blocks had only toast lines removed (preserved other JS)
+
+#### Modified Files
+- `src/helpers/whmaz_helper.php` — Added `sendHtmlEmail()` function
+- `src/models/Auth_model.php` — Updated `sendResetLinkEmail()` to use `sendHtmlEmail()`, added `sendVerificationEmail()`
+- `src/modules/auth/controllers/Auth.php` — Added `verify()` endpoint, updated `register()` to send verification email
+- `src/modules/clientarea/controllers/Clientarea.php` — Added `changePassword()` method
+- `src/models/Clientarea_model.php` — Added `changePassword()` method
+- `src/modules/clientarea/views/clientarea_changepassword.php` — **New file** (change password page)
+- 21 module view files — Removed duplicate toast/flashdata code
+
+---
+
 ## [1.0.4] - 2026-01-28
 
 ### New Feature - Email Template Management & Dunning System
@@ -605,6 +649,12 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.0.5] - 2026-01-31 - Feature Update
+- Added raw SMTP `sendHtmlEmail()` helper (fixes CI3 email line-length wrapping issue)
+- Added email verification after registration with verify endpoint
+- Added Change Password page in Client Portal with email notification
+- Removed duplicate toast/flashdata code from 21 module view files (centralized in footer)
+
 ### [1.0.4] - 2026-01-28 - Feature Update
 - Added Email Template Management (CRUD with Quill editor, categories, placeholders, 10 defaults)
 - Added Dunning Rules Management in General Settings (configurable steps, email template integration)
@@ -769,6 +819,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.0.4
-**Release Date:** January 28, 2026
+**Current Version:** 1.0.5
+**Release Date:** January 31, 2026
 **Status:** Stable Production Release (Feature Update)
