@@ -152,7 +152,8 @@ class Auth_model extends CI_Model{
 
 			if ($query->num_rows() > 0) {
 				$user = $query->row();
-				$token = bin2hex(random_bytes(32));
+				$text = trim(gen_uuid().'whmaz'.gen_uuid());
+				$token = preg_replace('/[^a-z0-9]/i', '', $text);
 
 				$sql = "UPDATE users SET pass_reset_key = ?, pass_reset_expiry = NOW() + INTERVAL 1 HOUR WHERE id = ?";
 				$this->db->query($sql, array($token, $user->id));
@@ -170,45 +171,27 @@ class Auth_model extends CI_Model{
 	function sendResetLinkEmail($user, $token)
 	{
 		$appSettings = getAppSettings();
-		$this->load->library('email');
-		$this->email->clear();
-
-		$config = array(
-			'protocol'   => 'smtp',
-			'smtp_host'  => $appSettings->smtp_host,
-			'smtp_port'  => $appSettings->smtp_port,
-			'smtp_user'  => $appSettings->smtp_username,
-			'smtp_pass'  => $appSettings->smtp_authkey,
-			'smtp_crypto' => !empty($appSettings->smtp_crypto) ? $appSettings->smtp_crypto : 'tls',
-			'mailtype'   => 'html',
-			'charset'    => 'UTF-8',
-			'wordwrap'   => FALSE
-		);
-		$this->email->initialize($config);
-		$this->email->set_newline("\r\n");
-		$this->email->from($appSettings->email, $appSettings->company_name);
-		$this->email->to($user->email);
-		$this->email->subject("Password Reset - " . $appSettings->company_name);
 
 		$resetLink = base_url('auth/resetpassword/' . $token);
-		$userName = !empty($user->first_name) ? $user->first_name : 'User';
+		$userName = !empty($user->first_name) ? htmlspecialchars($user->first_name) : 'User';
 
-		$body = 'Dear ' . htmlspecialchars($userName) . ',<br><br>';
+		$body = 'Dear ' . $userName . ',<br><br>';
 		$body .= 'We received a request to reset your password.<br><br>';
 		$body .= 'Click the link below to set a new password:<br>';
-		$body .= '<a href="' . $resetLink . '">' . $resetLink . '</a><br><br>';
+		$body .= '<a href="' . $resetLink . '">Reset Your Password</a><br><br>';
 		$body .= 'This link will expire in 1 hour.<br><br>';
 		$body .= 'If you did not request this, please ignore this email.<br><br>';
 		$body .= 'Thanks & Regards<br>';
 		$body .= $appSettings->company_name . ' Support';
 
-		$this->email->message($body);
-		$this->email->send();
+		$subject = "Password Reset - " . $appSettings->company_name;
+
+		return sendHtmlEmail($user->email, $subject, $body);
 	}
 
 	public function validateResetToken($token)
 	{
-$sql = "SELECT id, email, first_name FROM users WHERE pass_reset_key = ? AND pass_reset_expiry > NOW() AND status = 1";
+		$sql = "SELECT id, email, first_name FROM users WHERE pass_reset_key = ? AND pass_reset_expiry > NOW() AND status = 1";
 		$query = $this->db->query($sql, array($token));
 
 		if ($query->num_rows() == 0) {
@@ -217,13 +200,9 @@ $sql = "SELECT id, email, first_name FROM users WHERE pass_reset_key = ? AND pas
 		return $query->row();
 	}
 
-	public function resetPassword($token, $newPassword)
+	public function resetPassword($user, $newPassword)
 	{
 		try {
-			$user = $this->validateResetToken($token);
-			if (!$user) {
-				return false;
-			}
 
 			$hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 			$sql = "UPDATE users SET password = ?, pass_reset_key = NULL, pass_reset_expiry = NULL WHERE id = ?";

@@ -410,6 +410,166 @@
 	}
 
 	/**
+	 * Send HTML email via raw SMTP socket connection.
+	 * Bypasses CI3 email library to avoid line-length wrapping issues
+	 * that break long URLs (e.g., password reset links).
+	 *
+	 * @param string $to        Recipient email
+	 * @param string $subject   Email subject
+	 * @param string $htmlBody  HTML email body
+	 * @param string|null $fromEmail  Sender email (defaults to app_settings)
+	 * @param string|null $fromName   Sender name (defaults to app_settings)
+	 * @return bool True on success, false on failure
+	 */
+	if ( ! function_exists('sendHtmlEmail'))
+	{
+		function sendHtmlEmail($to, $subject, $htmlBody, $fromEmail = null, $fromName = null)
+		{
+			$appSettings = getAppSettings();
+
+			$smtpHost   = $appSettings->smtp_host;
+			$smtpPort   = (int) $appSettings->smtp_port;
+			$smtpUser   = $appSettings->smtp_username;
+			$smtpPass   = $appSettings->smtp_authkey;
+			$smtpCrypto = !empty($appSettings->smtp_crypto) ? $appSettings->smtp_crypto : 'tls';
+
+			$fromEmail = $fromEmail ?: $appSettings->email;
+			$fromName  = $fromName  ?: $appSettings->company_name;
+
+			// Build MIME message
+			$boundary = md5(uniqid(time()));
+			$headers  = "MIME-Version: 1.0\r\n";
+			$headers .= "From: " . mb_encode_mimeheader($fromName, 'UTF-8') . " <{$fromEmail}>\r\n";
+			$headers .= "To: <{$to}>\r\n";
+			$headers .= "Subject: " . mb_encode_mimeheader($subject, 'UTF-8') . "\r\n";
+			$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+			$headers .= "Content-Transfer-Encoding: base64\r\n";
+
+			// Base64 encode the body to avoid any line-length issues
+			$encodedBody = chunk_split(base64_encode($htmlBody), 76, "\r\n");
+
+			$message = $headers . "\r\n" . $encodedBody;
+
+			// Determine connection prefix
+			$prefix = '';
+			if ($smtpCrypto === 'ssl') {
+				$prefix = 'ssl://';
+			}
+
+			$errno  = 0;
+			$errstr = '';
+			$socket = @fsockopen($prefix . $smtpHost, $smtpPort, $errno, $errstr, 30);
+
+			if (!$socket) {
+				log_message('error', "sendHtmlEmail: Could not connect to {$smtpHost}:{$smtpPort} - {$errstr}");
+				return false;
+			}
+
+			// Helper to read SMTP response
+			$getResponse = function() use ($socket) {
+				$response = '';
+				while ($line = fgets($socket, 512)) {
+					$response .= $line;
+					// If 4th char is a space, it's the last line of the response
+					if (isset($line[3]) && $line[3] === ' ') break;
+				}
+				return $response;
+			};
+
+			// Helper to send command and check response
+			$sendCmd = function($cmd, $expectedCode) use ($socket, $getResponse) {
+				fwrite($socket, $cmd . "\r\n");
+				$resp = $getResponse();
+				if ((int)substr($resp, 0, 3) !== $expectedCode) {
+					log_message('error', "sendHtmlEmail: SMTP error on '{$cmd}' - Response: " . trim($resp));
+					return false;
+				}
+				return $resp;
+			};
+
+			// Read server greeting
+			$getResponse();
+
+			// EHLO
+			if ($sendCmd('EHLO ' . gethostname(), 250) === false) {
+				fclose($socket);
+				return false;
+			}
+
+			// STARTTLS if needed
+			if ($smtpCrypto === 'tls') {
+				if ($sendCmd('STARTTLS', 220) === false) {
+					fclose($socket);
+					return false;
+				}
+				if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT)) {
+					log_message('error', 'sendHtmlEmail: STARTTLS crypto negotiation failed');
+					fclose($socket);
+					return false;
+				}
+				// Re-EHLO after STARTTLS
+				if ($sendCmd('EHLO ' . gethostname(), 250) === false) {
+					fclose($socket);
+					return false;
+				}
+			}
+
+			// AUTH LOGIN
+			if ($sendCmd('AUTH LOGIN', 334) === false) {
+				fclose($socket);
+				return false;
+			}
+			if ($sendCmd(base64_encode($smtpUser), 334) === false) {
+				fclose($socket);
+				return false;
+			}
+			if ($sendCmd(base64_encode($smtpPass), 235) === false) {
+				fclose($socket);
+				return false;
+			}
+
+			// MAIL FROM
+			if ($sendCmd('MAIL FROM:<' . $fromEmail . '>', 250) === false) {
+				fclose($socket);
+				return false;
+			}
+
+			// RCPT TO
+			if ($sendCmd('RCPT TO:<' . $to . '>', 250) === false) {
+				fclose($socket);
+				return false;
+			}
+
+			// DATA
+			if ($sendCmd('DATA', 354) === false) {
+				fclose($socket);
+				return false;
+			}
+
+			// Send message body (dot-stuffing: lines starting with . get an extra .)
+			$lines = explode("\r\n", $message);
+			foreach ($lines as $line) {
+				if (isset($line[0]) && $line[0] === '.') {
+					$line = '.' . $line;
+				}
+				fwrite($socket, $line . "\r\n");
+			}
+
+			// End DATA with <CRLF>.<CRLF>
+			if ($sendCmd('.', 250) === false) {
+				fclose($socket);
+				return false;
+			}
+
+			// QUIT
+			$sendCmd('QUIT', 221);
+			fclose($socket);
+
+			return true;
+		}
+	}
+
+	/**
 	 * SECURITY: Sanitize HTML content for safe display
 	 *
 	 * Allows safe HTML tags (formatting, links, lists) while removing

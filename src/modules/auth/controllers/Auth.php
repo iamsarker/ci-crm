@@ -168,7 +168,9 @@ class Auth extends WHMAZ_Controller
 			return;
 		}
 
+		$token = str_replace(' ', '', urldecode($token));
 		$user = $this->Auth_model->validateResetToken($token);
+
 		if (!$user) {
 			$this->session->set_flashdata('alert_error', 'This reset link is invalid or has expired.');
 			redirect('/auth/login', 'refresh');
@@ -193,7 +195,8 @@ class Auth extends WHMAZ_Controller
 				return;
 			}
 
-			$result = $this->Auth_model->resetPassword($token, $password);
+			$result = $this->Auth_model->resetPassword($user, $password);
+
 			if ($result) {
 				$this->session->set_flashdata('alert_success', 'Your password has been reset successfully. Please login.');
 			} else {
@@ -201,10 +204,10 @@ class Auth extends WHMAZ_Controller
 			}
 			redirect('/auth/login', 'refresh');
 			return;
+		} else {
+			$data['token'] = $token;
+			$this->load->view('auth_resetpassword', $data);
 		}
-
-		$data['token'] = $token;
-		$this->load->view('auth_resetpassword', $data);
 	}
 
 	public function change_currency($id, $code)
