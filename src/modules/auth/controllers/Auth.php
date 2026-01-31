@@ -128,7 +128,12 @@ class Auth extends WHMAZ_Controller
 			$newUserReq = xss_cleaner($this->input->post('reg'));
 			$resp = $this->Auth_model->newRegistration($newUserReq);
 			if ($resp['success'] == 1) {
-				$this->session->set_flashdata('alert_success', 'Registration has been completed successfully. A confirmation link has been sent through email.');
+				$this->Auth_model->sendVerificationEmail(
+					$resp['email'],
+					!empty($newUserReq['first_name']) ? $newUserReq['first_name'] : '',
+					$resp['verification_code']
+				);
+				$this->session->set_flashdata('alert_success', 'Registration has been completed successfully. A confirmation link has been sent to your email.');
 			} else {
 				$this->session->set_flashdata('alert_error', 'Failed to register. Try Again');
 			}
@@ -208,6 +213,25 @@ class Auth extends WHMAZ_Controller
 			$data['token'] = $token;
 			$this->load->view('auth_resetpassword', $data);
 		}
+	}
+
+	public function verify($hash = null)
+	{
+		if (empty($hash)) {
+			redirect('/auth/login', 'refresh');
+			return;
+		}
+
+		$hash = xss_cleaner($hash);
+		$result = $this->Auth_model->verifyUser($hash);
+
+		if ($result == 1) {
+			$this->session->set_flashdata('alert_success', 'Your email has been verified successfully. You can now login.');
+		} else {
+			$this->session->set_flashdata('alert_error', 'Invalid or expired verification link.');
+		}
+
+		redirect('/auth/login', 'refresh');
 	}
 
 	public function change_currency($id, $code)

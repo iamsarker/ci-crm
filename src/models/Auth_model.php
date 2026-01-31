@@ -189,6 +189,25 @@ class Auth_model extends CI_Model{
 		return sendHtmlEmail($user->email, $subject, $body);
 	}
 
+	function sendVerificationEmail($email, $firstName, $verificationCode)
+	{
+		$appSettings = getAppSettings();
+		$verifyLink = base_url('auth/verify/' . $verificationCode);
+		$userName = !empty($firstName) ? htmlspecialchars($firstName) : 'User';
+
+		$body = 'Dear ' . $userName . ',<br><br>';
+		$body .= 'Thank you for registering with us.<br><br>';
+		$body .= 'Please click the link below to verify your email address and activate your account:<br>';
+		$body .= '<a href="' . $verifyLink . '">Verify My Email</a><br><br>';
+		$body .= 'If you did not create this account, please ignore this email.<br><br>';
+		$body .= 'Thanks & Regards<br>';
+		$body .= $appSettings->company_name . ' Support';
+
+		$subject = "Email Verification - " . $appSettings->company_name;
+
+		return sendHtmlEmail($email, $subject, $body);
+	}
+
 	public function validateResetToken($token)
 	{
 		$sql = "SELECT id, email, first_name FROM users WHERE pass_reset_key = ? AND pass_reset_expiry > NOW() AND status = 1";
