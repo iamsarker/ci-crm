@@ -101,10 +101,10 @@ class Service_product extends WHMAZADMIN_Controller {
 				}
 
 				if($this->Serviceproduct_model->saveData($form_data)){
-					$this->session->set_flashdata('alert_success', 'Service product has been saved successfully.');
+					$this->session->set_flashdata('admin_success', 'Service product has been saved successfully.');
 					redirect("whmazadmin/service_product/index");
 				}else {
-					$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
+					$this->session->set_flashdata('admin_error', 'Something went wrong. Try again');
 				}
 			}
 
@@ -173,7 +173,7 @@ class Service_product extends WHMAZADMIN_Controller {
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Serviceproduct_model->saveData($entity);
-		$this->session->set_flashdata('alert_success', 'Service product has been deleted successfully.');
+		$this->session->set_flashdata('admin_success', 'Service product has been deleted successfully.');
 
 		redirect('whmazadmin/service_product/index');
 	}

@@ -42,28 +42,28 @@ class Authenticate extends WHMAZADMIN_Controller
 
 			} else if ($resp['status_code'] == -100) {
 				// SECURITY: Rate limiting - too many failed attempts
-				$this->session->set_flashdata('alert_error', $resp['message']);
+				$this->session->set_flashdata('admin_error', $resp['message']);
 			} else if ($resp['status_code'] == -1) {
 				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
 				$msg = 'Invalid username or account not active.';
 				if ($remaining > 0 && $remaining <= 3) {
 					$msg .= " ({$remaining} attempts remaining)";
 				}
-				$this->session->set_flashdata('alert_error', $msg);
+				$this->session->set_flashdata('admin_error', $msg);
 			} else if ($resp['status_code'] == -2) {
 				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
 				$msg = 'Please Enter your current email address !!!';
 				if ($remaining > 0 && $remaining <= 3) {
 					$msg .= " ({$remaining} attempts remaining)";
 				}
-				$this->session->set_flashdata('alert_error', $msg);
+				$this->session->set_flashdata('admin_error', $msg);
 			} else {
 				$remaining = isset($resp['remaining_attempts']) ? $resp['remaining_attempts'] : '';
 				$msg = 'Invalid username/password. Try Again';
 				if ($remaining > 0 && $remaining <= 3) {
 					$msg .= " ({$remaining} attempts remaining)";
 				}
-				$this->session->set_flashdata('alert_error', $msg);
+				$this->session->set_flashdata('admin_error', $msg);
 			}
 
 		}
@@ -77,7 +77,7 @@ class Authenticate extends WHMAZADMIN_Controller
 		$this->session->unset_userdata('ADMIN', $resp);
 		$this->session->unset_userdata('ADMIN');
 		$this->session->sess_destroy();
-		$this->session->set_flashdata('alert_error', 'Logout success !!!');
+		$this->session->set_flashdata('admin_error', 'Logout success !!!');
 		redirect('/whmazadmin/authenticate/login', 'refresh');
 	}
 

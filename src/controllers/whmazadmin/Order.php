@@ -102,10 +102,10 @@ class Order extends WHMAZADMIN_Controller
 				$this->saveInvoiceItemTable($invoice, $form_data, $billingCycle, $savedItemIds);
 
 				if( $order['id'] > 0 && $invoice['id'] > 0 ){
-					$this->session->set_flashdata('alert_success', 'Order has been saved successfully.');
+					$this->session->set_flashdata('admin_success', 'Order has been saved successfully.');
 					redirect("whmazadmin/order/index");
 				} else {
-					$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
+					$this->session->set_flashdata('admin_error', 'Something went wrong. Try again');
 				}
 			}
 
@@ -333,7 +333,7 @@ class Order extends WHMAZADMIN_Controller
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Expensecategory_model->saveData($entity);
-		$this->session->set_flashdata('alert_success', 'Order has been deleted successfully.');
+		$this->session->set_flashdata('admin_success', 'Order has been deleted successfully.');
 
 		redirect('whmazadmin/order/index');
 	}

@@ -88,10 +88,10 @@ class Package extends WHMAZADMIN_Controller {
 				}
 
 				if($this->Package_model->savePricingData($form_data)){
-					$this->session->set_flashdata('alert_success', 'Package pricing has been saved successfully.');
+					$this->session->set_flashdata('admin_success', 'Package pricing has been saved successfully.');
 					redirect("whmazadmin/package/index");
 				}else {
-					$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
+					$this->session->set_flashdata('admin_error', 'Something went wrong. Try again');
 				}
 			}
 
@@ -119,7 +119,7 @@ class Package extends WHMAZADMIN_Controller {
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Package_model->savePricingData($entity);
-		$this->session->set_flashdata('alert_success', 'Package pricing has been deleted successfully.');
+		$this->session->set_flashdata('admin_success', 'Package pricing has been deleted successfully.');
 
 		redirect('whmazadmin/package/index');
 	}

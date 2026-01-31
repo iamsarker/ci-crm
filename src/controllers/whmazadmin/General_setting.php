@@ -40,7 +40,7 @@ class General_setting extends WHMAZADMIN_Controller {
 					if ($logo_upload['success']) {
 						$logo_name = $logo_upload['file_name'];
 					} else {
-						$this->session->set_flashdata('alert_error', 'Logo upload failed: ' . $logo_upload['error']);
+						$this->session->set_flashdata('admin_error', 'Logo upload failed: ' . $logo_upload['error']);
 						redirect('whmazadmin/general_setting/manage');
 						return;
 					}
@@ -53,7 +53,7 @@ class General_setting extends WHMAZADMIN_Controller {
 					if ($favicon_upload['success']) {
 						$favicon_name = $favicon_upload['file_name'];
 					} else {
-						$this->session->set_flashdata('alert_error', 'Favicon upload failed: ' . $favicon_upload['error']);
+						$this->session->set_flashdata('admin_error', 'Favicon upload failed: ' . $favicon_upload['error']);
 						redirect('whmazadmin/general_setting/manage');
 						return;
 					}
@@ -83,9 +83,9 @@ class General_setting extends WHMAZADMIN_Controller {
 
 				$resp = $this->Appsetting_model->saveData($form_data);
 				if ($resp['success'] == 1) {
-					$this->session->set_flashdata('alert_success', 'General settings have been saved successfully.');
+					$this->session->set_flashdata('admin_success', 'General settings have been saved successfully.');
 				} else {
-					$this->session->set_flashdata('alert_error', 'Something went wrong. Please try again.');
+					$this->session->set_flashdata('admin_error', 'Something went wrong. Please try again.');
 				}
 
 				redirect('whmazadmin/general_setting/manage');

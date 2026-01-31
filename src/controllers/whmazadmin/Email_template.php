@@ -31,7 +31,7 @@ class Email_template extends WHMAZADMIN_Controller {
 
 				// Check duplicate template_key
 				if ($this->Emailtemplate_model->isKeyExists($template_key, $id)) {
-					$this->session->set_flashdata('alert_error', 'Template key "' . htmlspecialchars($template_key) . '" already exists.');
+					$this->session->set_flashdata('admin_error', 'Template key "' . htmlspecialchars($template_key) . '" already exists.');
 					redirect('whmazadmin/email_template/manage' . (!empty($id_val) ? '/' . $id_val : ''));
 					return;
 				}
@@ -56,13 +56,13 @@ class Email_template extends WHMAZADMIN_Controller {
 
 				$resp = $this->Emailtemplate_model->saveData($form_data);
 				if ($resp['success'] == 1) {
-					$this->session->set_flashdata('alert_success', 'Email template has been saved successfully.');
+					$this->session->set_flashdata('admin_success', 'Email template has been saved successfully.');
 					redirect('whmazadmin/email_template/index');
 				} else {
-					$this->session->set_flashdata('alert_error', 'Something went wrong. Please try again.');
+					$this->session->set_flashdata('admin_error', 'Something went wrong. Please try again.');
 				}
 			} else {
-				$this->session->set_flashdata('alert_error', 'Validation error. Please check the form.');
+				$this->session->set_flashdata('admin_error', 'Validation error. Please check the form.');
 			}
 		}
 
@@ -78,9 +78,9 @@ class Email_template extends WHMAZADMIN_Controller {
 	public function delete_records($id_val) {
 		$resp = $this->Emailtemplate_model->deleteData(safe_decode($id_val));
 		if ($resp['success'] == 1) {
-			$this->session->set_flashdata('alert_success', 'Email template has been deleted successfully.');
+			$this->session->set_flashdata('admin_success', 'Email template has been deleted successfully.');
 		} else {
-			$this->session->set_flashdata('alert_error', 'Failed to delete email template.');
+			$this->session->set_flashdata('admin_error', 'Failed to delete email template.');
 		}
 		redirect('whmazadmin/email_template/index');
 	}

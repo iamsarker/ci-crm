@@ -46,10 +46,10 @@ class Expense_category extends WHMAZADMIN_Controller {
 				}
 
 				if($this->Expensecategory_model->saveData($form_data)){
-					$this->session->set_flashdata('alert_success', 'Expense category has been saved successfully.');
+					$this->session->set_flashdata('admin_success', 'Expense category has been saved successfully.');
 					redirect("whmazadmin/Expense_category/index");
 				}else {
-					$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
+					$this->session->set_flashdata('admin_error', 'Something went wrong. Try again');
 				}
 			}
 
@@ -72,7 +72,7 @@ class Expense_category extends WHMAZADMIN_Controller {
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Expensecategory_model->saveData($entity);
-		$this->session->set_flashdata('alert_success', 'Expense category has been deleted successfully.');
+		$this->session->set_flashdata('admin_success', 'Expense category has been deleted successfully.');
 
 		redirect('whmazadmin/Expense_category/index');
 	}

@@ -55,10 +55,10 @@ class Currency extends WHMAZADMIN_Controller {
 				}
 
 				if($this->Currency_model->saveData($form_data)){
-					$this->session->set_flashdata('alert_success', 'Currency data has been saved successfully.');
+					$this->session->set_flashdata('admin_success', 'Currency data has been saved successfully.');
 					redirect("whmazadmin/currency/index");
 				}else {
-					$this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
+					$this->session->set_flashdata('admin_error', 'Something went wrong. Try again');
 				}
 			}
 
@@ -81,7 +81,7 @@ class Currency extends WHMAZADMIN_Controller {
 		$entity["deleted_by"] = getAdminId();
 
 		$this->Currency_model->saveData($entity);
-		$this->session->set_flashdata('alert_success', 'Currency data has been deleted successfully.');
+		$this->session->set_flashdata('admin_success', 'Currency data has been deleted successfully.');
 
 		redirect('whmazadmin/currency/index');
 	}
