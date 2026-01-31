@@ -154,6 +154,52 @@ class Clientarea extends WHMAZ_Controller {
 		$this->load->view('clientarea_domain_detail', $data);
 	}
 
+	public function changePassword()
+	{
+		if (!$this->input->post()) {
+			$this->load->view('clientarea_changepassword');
+			return;
+		}
+
+		$currentPassword = $this->input->post('current_password');
+		$newPassword     = $this->input->post('new_password');
+		$confirmPassword = $this->input->post('confirm_password');
+
+		if (strlen($newPassword) < 8) {
+			$this->session->set_flashdata('alert_error', 'New password must be at least 8 characters.');
+			redirect('/clientarea/changePassword', 'refresh');
+			return;
+		}
+
+		if ($newPassword !== $confirmPassword) {
+			$this->session->set_flashdata('alert_error', 'New passwords do not match.');
+			redirect('/clientarea/changePassword', 'refresh');
+			return;
+		}
+
+		$result = $this->Clientarea_model->changePassword(getCustomerId(), $currentPassword, $newPassword);
+
+		if ($result['success']) {
+			$appSettings = getAppSettings();
+			$userName = !empty($result['first_name']) ? htmlspecialchars($result['first_name']) : 'User';
+
+			$body = 'Dear ' . $userName . ',<br><br>';
+			$body .= 'Your password has been changed successfully.<br><br>';
+			$body .= 'If you did not make this change, please contact us immediately.<br><br>';
+			$body .= 'Thanks & Regards<br>';
+			$body .= $appSettings->company_name . ' Support';
+
+			$subject = "Password Changed - " . $appSettings->company_name;
+			sendHtmlEmail($result['email'], $subject, $body);
+
+			$this->session->set_flashdata('alert_success', 'Password changed successfully.');
+			redirect('/clientarea/changePassword', 'refresh');
+		} else {
+			$this->session->set_flashdata('alert_error', $result['msg']);
+			redirect('/clientarea/changePassword', 'refresh');
+		}
+	}
+
 	public function summary_api() {
 		// Send CSRF headers for Angular to update token
 		$this->sendCsrfHeaders();

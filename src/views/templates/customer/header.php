@@ -188,6 +188,7 @@
 				  <div class="dropdown-menu dropdown-menu-end tx-13">
 					  <div class="avatar avatar-lg mg-b-15"><img src="<?=base_url()?>/resources/assets/img/default.jpg" class="rounded-circle" alt=""></div>
 					  <h6 class="tx-semibold mg-b-5"><?=$user['first_name'].' '.$user['last_name']?></h6>
+					  <a href="<?=base_url()?>clientarea/changePassword" class="dropdown-item"><i data-feather="key"></i>Change Password</a>
 					  <div class="dropdown-divider"></div>
 					  <a href="<?=base_url()?>auth/logout" class="dropdown-item"><i data-feather="log-out"></i>Sign Out</a>
 				  </div><!-- dropdown-menu -->

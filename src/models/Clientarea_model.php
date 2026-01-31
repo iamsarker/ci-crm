@@ -53,6 +53,28 @@ class Clientarea_model extends CI_Model{
 		return $num_results;
 	}
 
+	function changePassword($userId, $currentPassword, $newPassword)
+	{
+		$sql = "SELECT password, first_name, email FROM users WHERE id = ? AND status = 1";
+		$query = $this->db->query($sql, array($userId));
+
+		if ($query->num_rows() == 0) {
+			return ['success' => false, 'msg' => 'User not found.'];
+		}
+
+		$user = $query->row();
+
+		if (!password_verify($currentPassword, $user->password)) {
+			return ['success' => false, 'msg' => 'Current password is incorrect.'];
+		}
+
+		$hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+		$sql = "UPDATE users SET password = ? WHERE id = ?";
+		$this->db->query($sql, array($hashedPassword, $userId));
+
+		return ['success' => true, 'email' => $user->email, 'first_name' => $user->first_name];
+	}
+
 	function isEmailExists($email){
 		$this->db->select('id');
 		$this->db->from('users');
