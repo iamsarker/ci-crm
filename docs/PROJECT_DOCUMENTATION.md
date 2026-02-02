@@ -325,6 +325,7 @@ The Admin Portal provides complete system administration capabilities through tr
 
 **Features:**
 - Admin login (username or email + password)
+- Password reset via email token (1-hour expiry)
 - Role-based access control (RBAC)
 - Department assignment for support staff
 - Session tracking with IP logging
@@ -335,7 +336,23 @@ The Admin Portal provides complete system administration capabilities through tr
 **Key URLs:**
 - `/whmazadmin/authenticate/login` - Admin login page
 - `/whmazadmin/authenticate/logout` - Admin logout
+- `/whmazadmin/authenticate/forgetpaswrd` - Password reset request
+- `/whmazadmin/authenticate/resetpassword/{token}` - Reset password with token
 - `/whmazadmin/authenticate/profile` - Admin profile
+
+**Password Reset Flow:**
+1. Admin submits email/username at `/whmazadmin/authenticate/forgetpaswrd`
+2. `Adminauth_model::forgetpaswrd()` generates token, stores in `admin_users.pass_reset_key` with 1-hour expiry (`pass_reset_expiry`)
+3. Reset email sent via `Adminauth_model::sendResetLinkEmail()`
+4. Admin clicks link → `Adminauth_model::validateResetToken()` validates token and expiry
+5. New password submitted (min 8 chars + confirmation) → `Adminauth_model::resetPassword()` hashes and saves
+6. Token cleared, admin redirected to login with success message
+
+**Flash Message Keys (Admin Portal):**
+- `admin_success` - Success toast (handled centrally in `whmazadmin/include/footer.php`)
+- `admin_error` - Error toast (handled centrally in `whmazadmin/include/footer.php`)
+- `alert_success` - Success toast for other admin pages
+- `alert_error` - Error toast for other admin pages
 
 **Session Storage:**
 - Session key: `ADMIN`
@@ -1160,7 +1177,7 @@ Available in footer for both admin and client portals
 |-------|---------|
 | `users` | Customer user accounts |
 | `user_logins` | Customer login session tracking |
-| `admin_users` | Admin staff accounts |
+| `admin_users` | Admin staff accounts (includes `pass_reset_key`, `pass_reset_expiry` for password reset) |
 | `admin_logins` | Admin login session tracking |
 | `admin_roles` | Role-based access control |
 | `companies` | Customer companies/organizations |
@@ -1294,11 +1311,19 @@ Available in footer for both admin and client portals
 #### Admin Authentication Flow
 1. **Login Process:**
    - Admin submits username/email + password
-   - `Adminauth_model::validate_admin_login()` checks credentials
+   - `Adminauth_model::doLogin()` checks credentials
    - Password verification using `password_verify()`
    - Session created with key `ADMIN`
    - Login tracked in `admin_logins` table
    - Role permissions loaded
+
+2. **Password Reset Process:**
+   - Admin requests reset via `/whmazadmin/authenticate/forgetpaswrd`
+   - `Adminauth_model::forgetpaswrd()` generates token with 1-hour expiry
+   - Reset link emailed to admin's email address
+   - Admin clicks link → token validated by `Adminauth_model::validateResetToken()`
+   - New password (min 8 chars) hashed and saved via `Adminauth_model::resetPassword()`
+   - Token and expiry cleared from `admin_users` table
 
 2. **Base Controller:** `WHMAZADMIN_Controller`
    - Extends `MX_Controller` (HMVC)
@@ -1647,6 +1672,6 @@ For HMVC documentation: https://github.com/jenssegers/codeigniter-hmvc
 
 ---
 
-**Documentation Version:** 1.2
-**Last Updated:** 2026-01-28
+**Documentation Version:** 1.3
+**Last Updated:** 2026-02-02
 **Project Status:** Active Development

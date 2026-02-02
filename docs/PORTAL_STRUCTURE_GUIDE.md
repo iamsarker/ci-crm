@@ -86,7 +86,7 @@ src/modules/
 ### Controller Structure
 ```
 src/controllers/whmazadmin/
-├── Authenticate.php          # Admin login/logout
+├── Authenticate.php          # Admin login/logout/password reset
 ├── Dashboard.php             # Admin dashboard with statistics
 ├── Company.php               # Customer company management
 ├── Currency.php              # Currency settings
@@ -113,7 +113,9 @@ src/controllers/whmazadmin/
 ### View Structure
 ```
 src/views/whmazadmin/
-├── login/                    # Admin login views
+├── admin_login.php            # Admin login view
+├── admin_forgetpass.php       # Admin forgot password view
+├── admin_resetpassword.php    # Admin reset password view
 ├── dashboard/                # Dashboard views
 ├── company/                  # Company management views
 ├── currency/                 # Currency views
@@ -145,7 +147,7 @@ src/views/whmazadmin/
 ### Admin Portal Features
 | Controller | Purpose | Key URLs |
 |-----------|---------|----------|
-| **Authenticate** | Admin Auth | `/whmazadmin/authenticate/login` |
+| **Authenticate** | Admin Auth | `/whmazadmin/authenticate/login`, `/whmazadmin/authenticate/forgetpaswrd`, `/whmazadmin/authenticate/resetpassword/{token}` |
 | **Dashboard** | Statistics & Overview | `/whmazadmin/dashboard` |
 | **Company** | Customer Management | `/whmazadmin/company`, `/whmazadmin/company/create` |
 | **Currency** | Currency Settings | `/whmazadmin/currency` |
@@ -234,11 +236,20 @@ class Dashboard extends WHMAZADMIN_Controller {
 ### Admin Portal Authentication
 1. Admin visits `/whmazadmin/authenticate/login`
 2. Submits username/email + password
-3. `Adminauth_model::validate_admin_login()` validates
+3. `Adminauth_model::doLogin()` validates
 4. Session created with key `ADMIN`
 5. Tracked in `admin_logins` table
 6. Role permissions loaded
 7. Redirected to `/whmazadmin/dashboard`
+
+### Admin Portal Password Reset
+1. Admin visits `/whmazadmin/authenticate/forgetpaswrd`
+2. Submits username/email
+3. `Adminauth_model::forgetpaswrd()` generates token, stores in `admin_users.pass_reset_key` with 1-hour expiry
+4. Reset link emailed via `sendResetLinkEmail()` pointing to `/whmazadmin/authenticate/resetpassword/{token}`
+5. Admin clicks link, `Adminauth_model::validateResetToken()` validates token and expiry
+6. Admin submits new password (min 8 chars + confirm)
+7. `Adminauth_model::resetPassword()` hashes password, clears token, redirects to login
 
 ---
 
@@ -316,6 +327,8 @@ $route['domain-suggestion/(:any)'] = 'cart/get_domain_suggestions/$1';
 
 ### Admin Portal
 - **Login:** `/whmazadmin/authenticate/login`
+- **Forgot Password:** `/whmazadmin/authenticate/forgetpaswrd`
+- **Reset Password:** `/whmazadmin/authenticate/resetpassword/{token}`
 - **Dashboard:** `/whmazadmin/dashboard`
 - **Customers:** `/whmazadmin/company`
 - **Orders:** `/whmazadmin/order`
@@ -325,4 +338,4 @@ $route['domain-suggestion/(:any)'] = 'cart/get_domain_suggestions/$1';
 
 ---
 
-**Last Updated:** 2026-01-28
+**Last Updated:** 2026-02-02
