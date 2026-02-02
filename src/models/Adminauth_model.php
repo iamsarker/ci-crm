@@ -108,5 +108,75 @@ class Adminauth_model extends CI_Model{
 
 		return $num_results;
 	}
+
+	public function forgetpaswrd($email)
+	{
+		try {
+			$sql = "SELECT id, first_name, email FROM admin_users WHERE (email = ? OR username = ?) AND status = 1";
+			$query = $this->db->query($sql, array($email, $email));
+
+			if ($query->num_rows() > 0) {
+				$user = $query->row();
+				$text = trim(gen_uuid().'whmaz'.gen_uuid());
+				$token = preg_replace('/[^a-z0-9]/i', '', $text);
+
+				$sql = "UPDATE admin_users SET pass_reset_key = ?, pass_reset_expiry = NOW() + INTERVAL 1 HOUR WHERE id = ?";
+				$this->db->query($sql, array($token, $user->id));
+
+				$this->sendResetLinkEmail($user, $token);
+			}
+
+			return 1;
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('admin_forgetpaswrd', $this->db->last_query(), $e->getMessage());
+			return 0;
+		}
+	}
+
+	function sendResetLinkEmail($user, $token)
+	{
+		$appSettings = getAppSettings();
+
+		$resetLink = base_url('whmazadmin/authenticate/resetpassword/' . $token);
+		$userName = !empty($user->first_name) ? htmlspecialchars($user->first_name) : 'User';
+
+		$body = 'Dear ' . $userName . ',<br><br>';
+		$body .= 'We received a request to reset your admin password.<br><br>';
+		$body .= 'Click the link below to set a new password:<br>';
+		$body .= '<a href="' . $resetLink . '">Reset Your Password</a><br><br>';
+		$body .= 'This link will expire in 1 hour.<br><br>';
+		$body .= 'If you did not request this, please ignore this email.<br><br>';
+		$body .= 'Thanks & Regards<br>';
+		$body .= $appSettings->company_name . ' Support';
+
+		$subject = "Admin Password Reset - " . $appSettings->company_name;
+
+		return sendHtmlEmail($user->email, $subject, $body);
+	}
+
+	public function validateResetToken($token)
+	{
+		$sql = "SELECT id, email, first_name FROM admin_users WHERE pass_reset_key = ? AND pass_reset_expiry > NOW() AND status = 1";
+		$query = $this->db->query($sql, array($token));
+
+		if ($query->num_rows() == 0) {
+			return false;
+		}
+		return $query->row();
+	}
+
+	public function resetPassword($user, $newPassword)
+	{
+		try {
+			$hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+			$sql = "UPDATE admin_users SET password = ?, pass_reset_key = NULL, pass_reset_expiry = NULL WHERE id = ?";
+			$this->db->query($sql, array($hashedPassword, $user->id));
+
+			return true;
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('admin_resetPassword', $this->db->last_query(), $e->getMessage());
+			return false;
+		}
+	}
 }
 ?>

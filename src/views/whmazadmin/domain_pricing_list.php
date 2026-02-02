@@ -29,14 +29,6 @@
       $(function(){
         	'use strict'
 
-			// SECURITY: Show flash messages as toast with XSS protection
-			<?php if ($this->session->flashdata('alert_success')) { ?>
-				toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
-			<?php } ?>
-			<?php if ($this->session->flashdata('alert_error')) { ?>
-				toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
-			<?php } ?>
-
 			$('#listDataTable').DataTable({
 				"responsive": true,
 				"processing": true,

@@ -34,5 +34,5 @@
 	</div>
 </div>
 
-<?php $this->load->view('whmazadmin/include/footer');?>
 <?php $this->load->view('whmazadmin/include/footer_script');?>
+<?php $this->load->view('whmazadmin/include/footer');?>

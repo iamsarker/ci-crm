@@ -129,14 +129,6 @@
 $(function(){
 	'use strict'
 
-	// Show flash messages as toast
-	<?php if ($this->session->flashdata('alert_success')) { ?>
-		toastSuccess(<?= json_encode($this->session->flashdata('alert_success')) ?>);
-	<?php } ?>
-	<?php if ($this->session->flashdata('alert_error')) { ?>
-		toastError(<?= json_encode($this->session->flashdata('alert_error')) ?>);
-	<?php } ?>
-
 	// Mappings from PHP
 	var serviceTypeKeys = <?= json_encode($service_type_keys) ?>;
 	var moduleKeys = <?= json_encode($module_keys) ?>;

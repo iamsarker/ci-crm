@@ -83,21 +83,61 @@ class Authenticate extends WHMAZADMIN_Controller
 
 	public function forgetpaswrd()
 	{
+		if ($this->input->post()) {
+			$username = xssCleaner($this->input->post('username'));
+			$this->Adminauth_model->forgetpaswrd($username);
+			$this->session->set_flashdata('admin_success', 'If that email exists in our system, a password reset link has been sent.');
+		}
+		$this->load->view('whmazadmin/admin_forgetpass');
+	}
+
+	public function resetpassword($token = null)
+	{
+		if (empty($token)) {
+			redirect('/whmazadmin/authenticate/login', 'refresh');
+			return;
+		}
+
+		$token = str_replace(' ', '', urldecode($token));
+		$user = $this->Adminauth_model->validateResetToken($token);
+
+		if (!$user) {
+			$this->session->set_flashdata('admin_error', 'This reset link is invalid or has expired.');
+			redirect('/whmazadmin/authenticate/login', 'refresh');
+			return;
+		}
 
 		if ($this->input->post()) {
-			$username = xss_cleaner($this->input->post('username'));
-			$resp = $this->Adminauth_model->forgetpaswrd($username);
+			$password = $this->input->post('password');
+			$confirm  = $this->input->post('confirm_password');
 
-//			if($findemail){
-//				$this->usermodel->sendpassword($findemail);
-//			}else{
-//				$this->session->set_flashdata('msg',' Email not found!');
-			var_dump($resp);
-			exit();
+			if (strlen($password) < 8) {
+				$this->session->set_flashdata('admin_error', 'Password must be at least 8 characters.');
+				$data['token'] = $token;
+				$this->load->view('whmazadmin/admin_resetpassword', $data);
+				return;
+			}
 
+			if ($password !== $confirm) {
+				$this->session->set_flashdata('admin_error', 'Passwords do not match.');
+				$data['token'] = $token;
+				$this->load->view('whmazadmin/admin_resetpassword', $data);
+				return;
+			}
+
+			$result = $this->Adminauth_model->resetPassword($user, $password);
+
+			if ($result) {
+				$this->session->set_flashdata('admin_success', 'Your password has been reset successfully. Please login.');
+			} else {
+				$this->session->set_flashdata('admin_error', 'This reset link is invalid or has expired.');
+			}
+			redirect('/whmazadmin/authenticate/login', 'refresh');
+			return;
+		} else {
+			$data['token'] = $token;
+			$this->load->view('whmazadmin/admin_resetpassword', $data);
 		}
-		$this->load->view('auth_forgetpass');
-
 	}
 
 }
