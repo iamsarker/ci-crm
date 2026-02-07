@@ -33,6 +33,7 @@
 					  <div class="form-group">
 						<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5">New Password <span class="tx-danger">*</span></label>
 						<input type="password" name="new_password" class="form-control" required minlength="8" placeholder="Min. 8 characters">
+						<small class="tx-12 tx-color-03">Must contain uppercase (A-Z), lowercase (a-z), and number (0-9)</small>
 					  </div>
 
 					  <div class="form-group">

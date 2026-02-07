@@ -171,6 +171,12 @@ class Clientarea extends WHMAZ_Controller {
 			return;
 		}
 
+		if (!preg_match('/[A-Z]/', $newPassword) || !preg_match('/[a-z]/', $newPassword) || !preg_match('/[0-9]/', $newPassword)) {
+			$this->session->set_flashdata('alert_error', 'Password must contain at least one uppercase letter, one lowercase letter, and one number.');
+			redirect('/clientarea/changePassword', 'refresh');
+			return;
+		}
+
 		if ($newPassword !== $confirmPassword) {
 			$this->session->set_flashdata('alert_error', 'New passwords do not match.');
 			redirect('/clientarea/changePassword', 'refresh');
