@@ -101,6 +101,7 @@
 					<div class="avatar avatar-lg mg-b-15"><img src="<?=base_url()?>/resources/assets/img/default.jpg" class="rounded-circle" alt=""></div>
 					<h6 class="tx-semibold mg-b-5"><?=$admin['first_name'].' '.$admin['last_name']?></h6>
 					<div class="dropdown-divider"></div>
+					<a href="<?=base_url()?>whmazadmin/dashboard/changePassword" class="dropdown-item"><i data-feather="key"></i>Change Password</a>
 					<a href="<?=base_url()?>whmazadmin/authenticate/logout" class="dropdown-item"><i data-feather="log-out"></i>Sign Out</a>
 				</div><!-- dropdown-menu -->
 			</div><!-- dropdown -->

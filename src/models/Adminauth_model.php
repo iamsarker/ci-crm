@@ -178,5 +178,35 @@ class Adminauth_model extends CI_Model{
 			return false;
 		}
 	}
+
+	/**
+	 * Change password for admin user (requires current password verification)
+	 *
+	 * @param int $adminId Admin user ID
+	 * @param string $currentPassword Current password
+	 * @param string $newPassword New password
+	 * @return array ['success' => bool, 'msg' => string, 'email' => string, 'first_name' => string]
+	 */
+	public function changePassword($adminId, $currentPassword, $newPassword)
+	{
+		$sql = "SELECT password, first_name, email FROM admin_users WHERE id = ? AND status = 1";
+		$query = $this->db->query($sql, array($adminId));
+
+		if ($query->num_rows() == 0) {
+			return ['success' => false, 'msg' => 'Admin user not found.'];
+		}
+
+		$user = $query->row();
+
+		if (!password_verify($currentPassword, $user->password)) {
+			return ['success' => false, 'msg' => 'Current password is incorrect.'];
+		}
+
+		$hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+		$sql = "UPDATE admin_users SET password = ? WHERE id = ?";
+		$this->db->query($sql, array($hashedPassword, $adminId));
+
+		return ['success' => true, 'email' => $user->email, 'first_name' => $user->first_name];
+	}
 }
 ?>

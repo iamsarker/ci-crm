@@ -26,4 +26,56 @@ class Dashboard extends WHMAZADMIN_Controller
 		echo json_encode($this->Dashboard_model->loadSummaryData());
 	}
 
+	public function changePassword()
+	{
+		if (!$this->input->post()) {
+			$this->load->view('whmazadmin/dashboard_changepassword');
+			return;
+		}
+
+		$currentPassword = $this->input->post('current_password');
+		$newPassword     = $this->input->post('new_password');
+		$confirmPassword = $this->input->post('confirm_password');
+
+		if (strlen($newPassword) < 8) {
+			$this->session->set_flashdata('admin_error', 'New password must be at least 8 characters.');
+			redirect('/whmazadmin/dashboard/changePassword', 'refresh');
+			return;
+		}
+
+		if (!preg_match('/[A-Z]/', $newPassword) || !preg_match('/[a-z]/', $newPassword) || !preg_match('/[0-9]/', $newPassword)) {
+			$this->session->set_flashdata('admin_error', 'Password must contain at least one uppercase letter, one lowercase letter, and one number.');
+			redirect('/whmazadmin/dashboard/changePassword', 'refresh');
+			return;
+		}
+
+		if ($newPassword !== $confirmPassword) {
+			$this->session->set_flashdata('admin_error', 'New passwords do not match.');
+			redirect('/whmazadmin/dashboard/changePassword', 'refresh');
+			return;
+		}
+
+		$result = $this->Adminauth_model->changePassword(getAdminId(), $currentPassword, $newPassword);
+
+		if ($result['success']) {
+			$appSettings = getAppSettings();
+			$userName = !empty($result['first_name']) ? htmlspecialchars($result['first_name']) : 'Admin';
+
+			$body = 'Dear ' . $userName . ',<br><br>';
+			$body .= 'Your admin password has been changed successfully.<br><br>';
+			$body .= 'If you did not make this change, please contact us immediately.<br><br>';
+			$body .= 'Thanks & Regards<br>';
+			$body .= $appSettings->company_name . ' Support';
+
+			$subject = "Admin Password Changed - " . $appSettings->company_name;
+			sendHtmlEmail($result['email'], $subject, $body);
+
+			$this->session->set_flashdata('admin_success', 'Password changed successfully.');
+			redirect('/whmazadmin/dashboard/changePassword', 'refresh');
+		} else {
+			$this->session->set_flashdata('admin_error', $result['msg']);
+			redirect('/whmazadmin/dashboard/changePassword', 'refresh');
+		}
+	}
+
 }
