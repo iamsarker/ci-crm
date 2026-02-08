@@ -157,7 +157,7 @@ class Support_model extends CI_Model{
 		return $data;
 	}
 
-	function loadKBList($limit) {
+	function loadKBList($limit, $offset = 0) {
 		// SECURITY FIX: Use prepared statement for LIMIT to prevent SQL injection
 		$sql = " SELECT k.id, k.title, k.slug, k.article, k.tags, k.total_view, k.useful, k.upvote, k.downvote, CONCAT('[', GROUP_CONCAT(JSON_OBJECT( 'id',kc.id, 'title', kc.cat_title, 'slug', kc.slug)), ']') as kb_cats
 			FROM kbs k
@@ -169,13 +169,68 @@ class Support_model extends CI_Model{
 
 		$bindings = array();
 		if (is_numeric($limit) && $limit > 0) {
-			$sql .= " LIMIT ?";
+			$sql .= " LIMIT ?, ?";
+			$bindings[] = intval($offset);
 			$bindings[] = intval($limit);
 		}
 
 		$data = $this->db->query($sql, $bindings)->result_array();
 
 		return $data;
+	}
+
+	function countKBList() {
+		$sql = "SELECT COUNT(DISTINCT k.id) as total
+			FROM kbs k
+			JOIN kb_cat_mapping kcm on k.id=kcm.kb_id
+			WHERE k.status=1";
+		$data = $this->db->query($sql)->result_array();
+		return !empty($data) ? intval($data[0]['total']) : 0;
+	}
+
+	function loadKBListByCategory($catId, $limit = -1, $offset = 0) {
+		if (!is_numeric($catId) || $catId <= 0) {
+			return array();
+		}
+
+		$sql = "SELECT k.id, k.title, k.slug, k.article, k.tags, k.total_view, k.useful, k.upvote, k.downvote
+			FROM kbs k
+			JOIN kb_cat_mapping kcm on k.id=kcm.kb_id
+			WHERE kcm.kb_cat_id=? AND k.status=1
+			ORDER BY k.sort_order ASC";
+
+		$bindings = array(intval($catId));
+		if (is_numeric($limit) && $limit > 0) {
+			$sql .= " LIMIT ?, ?";
+			$bindings[] = intval($offset);
+			$bindings[] = intval($limit);
+		}
+
+		$data = $this->db->query($sql, $bindings)->result_array();
+		return $data;
+	}
+
+	function countKBListByCategory($catId) {
+		if (!is_numeric($catId) || $catId <= 0) {
+			return 0;
+		}
+
+		$sql = "SELECT COUNT(k.id) as total
+			FROM kbs k
+			JOIN kb_cat_mapping kcm on k.id=kcm.kb_id
+			WHERE kcm.kb_cat_id=? AND k.status=1";
+		$data = $this->db->query($sql, array(intval($catId)))->result_array();
+		return !empty($data) ? intval($data[0]['total']) : 0;
+	}
+
+	function getKBCategoryById($catId) {
+		if (!is_numeric($catId) || $catId <= 0) {
+			return array();
+		}
+
+		$sql = "SELECT id, cat_title, slug, description FROM kb_cats WHERE id=? AND status=1";
+		$data = $this->db->query($sql, array(intval($catId)))->result_array();
+		return !empty($data) ? $data[0] : array();
 	}
 
 	function loadKbDetails($id, $slug) {
@@ -199,21 +254,77 @@ class Support_model extends CI_Model{
 	}
 
 
-	function loadAnnouncements($limit) {
+	function loadAnnouncements($limit, $offset = 0) {
 		// SECURITY FIX: Use prepared statement for LIMIT to prevent SQL injection
-		$sql = " SELECT a.id, a.title, a.slug, a.description, a.tags, a.total_view
+		$sql = " SELECT a.id, a.title, a.slug, a.description, a.tags, a.total_view, a.publish_date
 			FROM announcements a
 			WHERE a.status=1 and a.is_published=1
 			ORDER BY a.publish_date DESC ";
 
 		$bindings = array();
 		if (is_numeric($limit) && $limit > 0) {
-			$sql .= " LIMIT ?";
+			$sql .= " LIMIT ?, ?";
+			$bindings[] = intval($offset);
 			$bindings[] = intval($limit);
 		}
 
 		$data = $this->db->query($sql, $bindings)->result_array();
 		return $data;
+	}
+
+	function countAnnouncements() {
+		$sql = "SELECT COUNT(id) as total FROM announcements WHERE status=1 AND is_published=1";
+		$data = $this->db->query($sql)->result_array();
+		return !empty($data) ? intval($data[0]['total']) : 0;
+	}
+
+	function getAnnouncementArchive() {
+		$sql = "SELECT
+				YEAR(publish_date) as `year`,
+				MONTH(publish_date) as `month`,
+				DATE_FORMAT(publish_date, '%Y-%m') as `year_month`,
+				DATE_FORMAT(publish_date, '%M %Y') as `month_name`,
+				COUNT(id) as `total`
+			FROM announcements
+			WHERE status=1 AND is_published=1
+			GROUP BY YEAR(publish_date), MONTH(publish_date)
+			ORDER BY `year` DESC, `month` DESC";
+		$data = $this->db->query($sql)->result_array();
+		return $data;
+	}
+
+	function loadAnnouncementsByMonth($year, $month, $limit = -1, $offset = 0) {
+		if (!is_numeric($year) || !is_numeric($month)) {
+			return array();
+		}
+
+		$sql = "SELECT a.id, a.title, a.slug, a.description, a.tags, a.total_view, a.publish_date
+			FROM announcements a
+			WHERE a.status=1 AND a.is_published=1
+			AND YEAR(a.publish_date) = ? AND MONTH(a.publish_date) = ?
+			ORDER BY a.publish_date DESC";
+
+		$bindings = array(intval($year), intval($month));
+		if (is_numeric($limit) && $limit > 0) {
+			$sql .= " LIMIT ?, ?";
+			$bindings[] = intval($offset);
+			$bindings[] = intval($limit);
+		}
+
+		$data = $this->db->query($sql, $bindings)->result_array();
+		return $data;
+	}
+
+	function countAnnouncementsByMonth($year, $month) {
+		if (!is_numeric($year) || !is_numeric($month)) {
+			return 0;
+		}
+
+		$sql = "SELECT COUNT(id) as total FROM announcements
+			WHERE status=1 AND is_published=1
+			AND YEAR(publish_date) = ? AND MONTH(publish_date) = ?";
+		$data = $this->db->query($sql, array(intval($year), intval($month)))->result_array();
+		return !empty($data) ? intval($data[0]['total']) : 0;
 	}
 
 	function loadAnnouncementDetail($id, $slug) {

@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.6] - 2026-02-08
+
+### New Features - Public Knowledge Base & Announcements UI
+
+#### Knowledge Base (Public Pages - No Auth Required)
+- **KB List Page** (`/supports/KB`) - Modern card-based category grid with article list
+  - Category cards with article counts in a responsive grid layout
+  - Searchable article list with icons, tags, and view counts
+  - Sidebar with category navigation
+  - Server-side pagination (10 articles per page)
+- **KB Category Page** (`/supports/kb_category/{id}/{slug}`) - Filter articles by category
+  - Active category highlighting in sidebar
+  - Breadcrumb navigation
+  - Pagination support
+- **KB Detail Page** (`/supports/view_kb/{id}/{slug}`) - Article view with rating
+  - Article content with meta info (tags, views)
+  - Helpful rating buttons (thumbs up/down)
+  - Category sidebar navigation
+
+#### Announcements (Public Pages - No Auth Required)
+- **Announcement List Page** (`/supports/announcements`) - Clean list view
+  - List view with icons and view counts
+  - Year-month archive sidebar grouping with counts
+  - Server-side pagination
+- **Announcement Archive Page** (`/supports/announcements_archive/{year}/{month}`) - Filter by month
+  - Month-filtered announcements
+  - Active month highlighting in sidebar
+  - Pagination support
+- **Announcement Detail Page** (`/supports/view_announcement/{id}/{slug}`) - Full announcement view
+  - Social share buttons (Facebook, Twitter, LinkedIn, Copy Link)
+  - Archive sidebar navigation
+
+#### Model Enhancements
+- Added `loadKBList($limit, $offset)` - Pagination support for KB list
+- Added `countKBList()` - Total KB count
+- Added `loadKBListByCategory($catId, $limit, $offset)` - Paginated category filter
+- Added `countKBListByCategory($catId)` - Category article count
+- Added `getKBCategoryById($catId)` - Get category details
+- Added `loadAnnouncements($limit, $offset)` - Pagination support
+- Added `countAnnouncements()` - Total announcements count
+- Added `getAnnouncementArchive()` - Year-month grouping with counts
+- Added `loadAnnouncementsByMonth($year, $month, $limit, $offset)` - Month filter
+- Added `countAnnouncementsByMonth($year, $month)` - Month count
+
+#### Controller Updates
+- Updated `Supports.php` controller with pagination parameters
+- Added `kb_category($catId, $slug, $page)` method
+- Added `announcements_archive($year, $month, $page)` method
+- Configurable `$per_page = 10` property
+
+#### New View Files
+- `support_kb_category.php` - KB articles filtered by category
+- `support_announcement_archive.php` - Announcements filtered by month
+
+#### Modified Files
+- `src/modules/supports/controllers/Supports.php` - Added pagination and new methods
+- `src/models/Support_model.php` - Added pagination and archive methods
+- `src/modules/supports/views/support_kb_list.php` - Complete UI redesign
+- `src/modules/supports/views/support_kb_details.php` - Improved layout
+- `src/modules/supports/views/support_announcement_list.php` - List view with archive sidebar
+- `src/modules/supports/views/support_announcement_detail.php` - Share buttons, archive sidebar
+
+---
+
 ## [1.0.5] - 2026-01-31
 
 ### New Features - Email System & Account Security
@@ -649,6 +713,14 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.0.6] - 2026-02-08 - Feature Update
+- Added public Knowledge Base pages with modern card-based UI (no authentication required)
+- Added KB category filtering with pagination
+- Added public Announcements pages with year-month archive grouping
+- Added announcement archive filtering by month
+- Added server-side pagination for KB and Announcements (10 items per page)
+- Added social share buttons on announcement detail page
+
 ### [1.0.5] - 2026-01-31 - Feature Update
 - Added raw SMTP `sendHtmlEmail()` helper (fixes CI3 email line-length wrapping issue)
 - Added email verification after registration with verify endpoint
@@ -819,6 +891,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.0.5
-**Release Date:** January 31, 2026
+**Current Version:** 1.0.6
+**Release Date:** February 8, 2026
 **Status:** Stable Production Release (Feature Update)

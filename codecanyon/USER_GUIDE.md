@@ -1,8 +1,8 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.0.5
-**Last Updated:** January 31, 2026
+**Version:** 1.0.6
+**Last Updated:** February 8, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
 ---
@@ -794,20 +794,26 @@ Available payment methods (configured by administrator):
 
 ## Knowledge Base
 
+The Knowledge Base is publicly accessible without login, making it easy for visitors to find answers.
+
 ### Browsing Articles
 
 1. **Access Knowledge Base**
-   - Go to "Support" → "Knowledge Base"
-   - Or click "Help" in navigation
+   - URL: `/supports/KB`
+   - No login required (public page)
 
-2. **Browse by Category**
-   - Getting Started
-   - Account Management
-   - Billing & Payments
-   - Domain Management
-   - Technical Support
-   - Troubleshooting
-   - FAQs
+2. **KB List Page Features**
+   - **Search Box:** Filter articles by keyword in real-time
+   - **Category Cards:** Visual grid of categories with article counts
+   - **Article List:** All articles with icons, tags, and view counts
+   - **Sidebar:** Category navigation with article counts
+   - **Pagination:** 10 articles per page with page navigation
+
+3. **Browse by Category**
+   - Click on any category card or sidebar link
+   - URL: `/supports/kb_category/{id}/{slug}`
+   - Shows articles filtered by that category
+   - Active category highlighted in sidebar
 
 ![Knowledge Base](screenshots/knowledge-base.png)
 *[Screenshot Placeholder: Knowledge base categories and popular articles]*
@@ -815,30 +821,85 @@ Available payment methods (configured by administrator):
 ### Searching for Articles
 
 1. **Use Search Box**
+   - Located at the top of the KB list page
    - Enter keywords or question
-   - Search across all articles
-   - Results ranked by relevance
+   - Articles filter in real-time as you type
+   - Results show title, tags, and view count
 
-2. **Filter Results**
-   - Filter by category
-   - Sort by relevance or date
-   - View most popular articles
+2. **Filter by Category**
+   - Click category card in the grid
+   - Or use sidebar category links
+   - Each category shows article count
 
 ### Reading Articles
 
-**Article Page Includes:**
-- Article title
-- Category
-- Last updated date
-- Article content with formatting
-- Related articles
-- Helpful rating (yes/no)
+**Article Detail Page** (`/supports/view_kb/{id}/{slug}`):
 
-**Helpful Features:**
-- Print article
-- Share article
-- Rate article (helpful/not helpful)
-- Contact support if article doesn't help
+**Article Information:**
+- Article title with icon
+- Tags for categorization
+- View count
+
+**Article Content:**
+- Rich formatted content
+- Sanitized HTML for security
+
+**Rating System:**
+- "Was this article helpful?" prompt
+- Thumbs up/down buttons with vote counts
+- Helps identify useful content
+
+**Sidebar Navigation:**
+- KB category links
+- Quick access to other categories
+- Support navigation
+
+---
+
+## Announcements
+
+Announcements are publicly accessible without login, keeping visitors informed of important updates.
+
+### Viewing Announcements
+
+1. **Access Announcements**
+   - URL: `/supports/announcements`
+   - No login required (public page)
+
+2. **Announcement List Features**
+   - **List View:** All announcements with icons and view counts
+   - **Archive Sidebar:** Year-month grouping (e.g., "February 2026 (5)")
+   - **Pagination:** 10 announcements per page
+
+3. **Browse by Archive**
+   - Click on any month in the Archive sidebar
+   - URL: `/supports/announcements_archive/{year}/{month}`
+   - Shows announcements from that specific month
+   - Active month highlighted in sidebar
+
+### Reading Announcements
+
+**Announcement Detail Page** (`/supports/view_announcement/{id}/{slug}`):
+
+**Announcement Information:**
+- Title with icon
+- Tags (if any)
+- View count
+
+**Content:**
+- Full announcement content
+- Sanitized HTML for security
+
+**Share Buttons:**
+- Facebook share
+- Twitter share
+- LinkedIn share
+- Copy link to clipboard
+
+**Archive Navigation:**
+- Year-month archive links in sidebar
+- Quick access to other months
+- Support navigation
 
 ---
 
@@ -2964,7 +3025,7 @@ This guide covered:
 ---
 
 **Document Information:**
-- Version: 1.0.5
-- Last Updated: January 31, 2026
+- Version: 1.0.6
+- Last Updated: February 8, 2026
 - Product: WHMAZ - CI-CRM
 - Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.

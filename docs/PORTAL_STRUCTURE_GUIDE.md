@@ -44,10 +44,16 @@ src/modules/
 │   ├── controllers/
 │   ├── models/
 │   └── views/
-├── supports/           # Customer support interface
+├── supports/           # Knowledge Base & Announcements (PUBLIC - No Auth)
 │   ├── controllers/
 │   ├── models/
 │   └── views/
+│       ├── support_kb_list.php              # KB list with category cards
+│       ├── support_kb_details.php           # Single KB article
+│       ├── support_kb_category.php          # KB by category
+│       ├── support_announcement_list.php    # Announcements with archive
+│       ├── support_announcement_detail.php  # Single announcement
+│       └── support_announcement_archive.php # By month filter
 ├── report/             # Customer reports
 │   ├── controllers/
 │   ├── models/
@@ -67,7 +73,7 @@ src/modules/
 | **billing** | Invoices & Payments | `/billing/invoices`, `/billing/pay` |
 | **clientarea** | Dashboard | `/clientarea/dashboard`, `/clientarea/profile` |
 | **tickets** | Support Tickets | `/tickets/create`, `/tickets/view` |
-| **supports** | Support Center | `/supports/` |
+| **supports** | Knowledge Base & Announcements (Public) | `/supports/KB`, `/supports/view_kb/{id}/{slug}`, `/supports/kb_category/{id}/{slug}`, `/supports/announcements`, `/supports/view_announcement/{id}/{slug}`, `/supports/announcements_archive/{year}/{month}` |
 | **report** | Reports | `/report/invoices`, `/report/services` |
 
 ---
@@ -338,4 +344,4 @@ $route['domain-suggestion/(:any)'] = 'cart/get_domain_suggestions/$1';
 
 ---
 
-**Last Updated:** 2026-02-02
+**Last Updated:** 2026-02-08

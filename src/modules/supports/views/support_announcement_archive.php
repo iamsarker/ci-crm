@@ -9,11 +9,17 @@
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb breadcrumb-style1 mg-b-10">
             <li class="breadcrumb-item"><a href="<?=base_url()?>">Home</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Announcements</li>
+            <li class="breadcrumb-item"><a href="<?=base_url()?>supports/announcements">Announcements</a></li>
+            <li class="breadcrumb-item active" aria-current="page"><?=$month_name?></li>
           </ol>
         </nav>
-        <h4 class="mg-b-0 tx-spacing--1">Announcements</h4>
-        <p class="tx-color-03 mg-b-0">Stay updated with our latest news and updates (<?=$total?> total)</p>
+        <h4 class="mg-b-0 tx-spacing--1">Announcements - <?=$month_name?></h4>
+        <p class="tx-color-03 mg-b-0"><?=$total?> announcements in this period</p>
+      </div>
+      <div class="mg-t-15 mg-sm-t-0">
+        <a href="<?=base_url()?>supports/announcements" class="btn btn-sm btn-outline-secondary">
+          <i class="fa fa-arrow-left"></i> All Announcements
+        </a>
       </div>
     </div>
 
@@ -21,39 +27,81 @@
       <!-- Main Content -->
       <div class="col-lg-8 col-md-12">
 
-        <!-- Announcements List -->
-        <div class="card">
-          <ul class="list-group list-group-flush">
-            <?php if(!empty($results)) { ?>
-              <?php foreach($results as $row) { ?>
-              <li class="list-group-item pd-y-15">
-                <div class="d-flex align-items-center">
-                  <div class="wd-40 ht-40 bg-light d-flex align-items-center justify-content-center rounded mg-r-15">
-                    <i class="fa fa-bullhorn tx-primary"></i>
+        <!-- Announcements Grid -->
+        <div class="row row-xs">
+          <?php foreach($results as $row) { ?>
+          <div class="col-md-6 mg-b-20">
+            <div class="card h-100 card-hover">
+              <div class="card-body pd-20">
+                <div class="d-flex align-items-start">
+                  <div class="wd-50 ht-50 bg-primary tx-white d-flex align-items-center justify-content-center rounded mg-r-15 flex-shrink-0">
+                    <i class="fa fa-bullhorn fa-lg"></i>
                   </div>
                   <div class="flex-1">
-                    <h6 class="mg-b-3">
-                      <a href="<?=base_url()?>supports/view_announcement/<?=$row['id']?>/<?=$row['slug']?>" class="tx-dark tx-semibold">
+                    <h6 class="mg-b-5">
+                      <a href="<?=base_url()?>supports/view_announcement/<?=$row['id']?>/<?=$row['slug']?>" class="tx-dark">
                         <?=htmlspecialchars($row['title'])?>
                       </a>
                     </h6>
                     <?php if(!empty($row['tags'])) { ?>
-                    <div class="tx-12 tx-color-03">
+                    <div class="tx-12 tx-color-03 mg-b-10">
                       <i class="fa fa-tags"></i> <?=htmlspecialchars($row['tags'])?>
                     </div>
                     <?php } ?>
-                  </div>
-                  <div class="tx-12 tx-color-03">
-                    <i class="fa fa-eye"></i> <?=$row['total_view'] ?? 0?>
+                    <div class="tx-12 tx-color-03">
+                      <i class="fa fa-eye"></i> <?=$row['total_view'] ?? 0?> views
+                    </div>
                   </div>
                 </div>
-              </li>
-              <?php } ?>
-            <?php } else { ?>
-              <li class="list-group-item pd-y-25 tx-center tx-color-03">
-                <i class="fa fa-bullhorn fa-2x mg-b-10"></i>
-                <p class="mg-b-0">No announcements at this time</p>
-              </li>
+              </div>
+              <div class="card-footer bg-transparent pd-y-10">
+                <a href="<?=base_url()?>supports/view_announcement/<?=$row['id']?>/<?=$row['slug']?>" class="btn btn-sm btn-outline-primary">
+                  Read More <i class="fa fa-arrow-right mg-l-5"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <?php } ?>
+        </div>
+
+        <?php if(empty($results)) { ?>
+        <div class="card">
+          <div class="card-body pd-40 tx-center">
+            <i class="fa fa-bullhorn fa-3x tx-gray-400 mg-b-20"></i>
+            <h5 class="tx-color-03">No Announcements</h5>
+            <p class="tx-color-03 mg-b-0">There are no announcements for this period.</p>
+          </div>
+        </div>
+        <?php } ?>
+
+        <!-- List View -->
+        <?php if(!empty($results)) { ?>
+        <h5 class="mg-t-30 mg-b-15"><i class="fa fa-list tx-primary"></i> All Announcements</h5>
+        <div class="card">
+          <ul class="list-group list-group-flush">
+            <?php foreach($results as $row) { ?>
+            <li class="list-group-item pd-y-15">
+              <div class="d-flex align-items-center">
+                <div class="wd-40 ht-40 bg-light d-flex align-items-center justify-content-center rounded mg-r-15">
+                  <i class="fa fa-bullhorn tx-primary"></i>
+                </div>
+                <div class="flex-1">
+                  <h6 class="mg-b-3">
+                    <a href="<?=base_url()?>supports/view_announcement/<?=$row['id']?>/<?=$row['slug']?>" class="tx-dark tx-semibold">
+                      <?=htmlspecialchars($row['title'])?>
+                    </a>
+                  </h6>
+                  <?php if(!empty($row['tags'])) { ?>
+                  <div class="tx-12 tx-color-03">
+                    <i class="fa fa-tags"></i> <?=htmlspecialchars($row['tags'])?>
+                  </div>
+                  <?php } ?>
+                </div>
+                <div class="tx-12 tx-color-03">
+                  <i class="fa fa-eye"></i> <?=$row['total_view'] ?? 0?>
+                </div>
+              </div>
+            </li>
             <?php } ?>
           </ul>
 
@@ -64,7 +112,7 @@
               <span class="tx-12 tx-color-03">
                 Page <?=$current_page?> of <?=$total_pages?>
               </span>
-              <nav aria-label="Announcements pagination">
+              <nav aria-label="Archive pagination">
                 <ul class="pagination pagination-sm mg-b-0">
                   <!-- Previous -->
                   <li class="page-item <?=($current_page <= 1) ? 'disabled' : ''?>">
@@ -109,6 +157,7 @@
           </div>
           <?php } ?>
         </div>
+        <?php } ?>
 
       </div>
 
@@ -122,12 +171,14 @@
           </div>
           <ul class="list-group list-group-flush">
             <?php if(!empty($archive)) { ?>
-              <?php foreach ($archive as $item) { ?>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
-                <a href="<?=base_url()?>supports/announcements_archive/<?=$item['year']?>/<?=$item['month']?>">
-                  <i class="fa fa-folder-open tx-color-03 mg-r-5"></i><?=$item['month_name']?>
+              <?php foreach ($archive as $item) {
+                $isActive = ($item['year'] == $year && $item['month'] == $month);
+              ?>
+              <li class="list-group-item d-flex justify-content-between align-items-center <?=$isActive ? 'active' : ''?>">
+                <a href="<?=base_url()?>supports/announcements_archive/<?=$item['year']?>/<?=$item['month']?>" class="<?=$isActive ? 'tx-white' : ''?>">
+                  <i class="fa fa-folder-open mg-r-5 <?=$isActive ? '' : 'tx-color-03'?>"></i><?=$item['month_name']?>
                 </a>
-                <span class="badge rounded-pill bg-secondary"><?=$item['total']?></span>
+                <span class="badge rounded-pill <?=$isActive ? 'bg-white tx-primary' : 'bg-secondary'?>"><?=$item['total']?></span>
               </li>
               <?php } ?>
             <?php } else { ?>
@@ -146,3 +197,11 @@
 
 <?php $this->load->view('templates/customer/footer');?>
 <?php $this->load->view('templates/customer/footer_script');?>
+
+<style>
+.card-hover:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  transition: all 0.2s ease;
+}
+</style>
