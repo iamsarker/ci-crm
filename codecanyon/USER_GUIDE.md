@@ -1,8 +1,8 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.0.6
-**Last Updated:** February 8, 2026
+**Version:** 1.0.7
+**Last Updated:** February 9, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
 ---
@@ -182,8 +182,11 @@ https://yourdomain.com/whmazadmin
 **Login Page Elements:**
 - Email address field
 - Password field
-- "Remember Me" checkbox
+- Google reCAPTCHA checkbox (if configured in General Settings)
 - "Forgot Password?" link
+
+**reCAPTCHA Protection:**
+If Google reCAPTCHA is configured in the admin General Settings, the admin login page will display a reCAPTCHA checkbox to prevent automated brute force attacks. Complete the "I'm not a robot" verification before clicking Sign In.
 
 ![Admin Login Page](screenshots/admin-login.png)
 *[Screenshot Placeholder: Admin portal login page]*
@@ -195,6 +198,7 @@ https://yourdomain.com/whmazadmin
 - **Session Security:** Secure session management with database storage
 - **Password Security:** bcrypt hashing with strong password requirements
 - **Login Attempt Limiting:** Protection against brute force attacks
+- **Google reCAPTCHA:** Bot protection on registration and admin login pages
 
 ---
 
@@ -3025,7 +3029,7 @@ This guide covered:
 ---
 
 **Document Information:**
-- Version: 1.0.6
-- Last Updated: February 8, 2026
+- Version: 1.0.7
+- Last Updated: February 9, 2026
 - Product: WHMAZ - CI-CRM
 - Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.

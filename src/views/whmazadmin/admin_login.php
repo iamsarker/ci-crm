@@ -1,4 +1,7 @@
 <?php $this->load->view('whmazadmin/include/login_header');?>
+<?php if (!empty($captcha_site_key)) { ?>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<?php } ?>
 
 <div class="content content-fixed content-profile content-wrapper">
       <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
@@ -25,6 +28,11 @@
 							</div>
 							<input type="password" class="form-control" name="password" placeholder="Enter your password">
 						</div>
+						<?php if (!empty($captcha_site_key)) { ?>
+						<div class="form-group">
+							<div class="g-recaptcha" data-sitekey="<?= htmlspecialchars($captcha_site_key, ENT_QUOTES, 'UTF-8') ?>"></div>
+						</div>
+						<?php } ?>
 						<button class="btn btn-brand-02 btn-block">Sign In</button>
 					</form>
 				</div>

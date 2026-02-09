@@ -616,6 +616,7 @@ public function methodName($params) {
 Added Google reCAPTCHA v2 ("I'm not a robot" checkbox) to protect against automated bot submissions:
 - **User Registration Page** - Prevents automated bot registrations and spam accounts
 - **Domain Search Page** - Protects domain availability lookups from abuse
+- **Admin Login Page** - Prevents automated brute force attacks on admin accounts
 
 ### Components Implemented:
 
@@ -706,6 +707,8 @@ if (!empty($captcha_site_key) && !empty($captcha_secret_key)) {
 | src/models/Appsetting_model.php | Model for retrieving app settings including reCAPTCHA keys |
 | src/controllers/whmazadmin/General_setting.php | Admin UI for managing reCAPTCHA keys |
 | src/views/whmazadmin/general_setting_manage.php | Admin form for reCAPTCHA configuration |
+| src/controllers/whmazadmin/Authenticate.php | Added reCAPTCHA verification for admin login |
+| src/views/whmazadmin/admin_login.php | Added reCAPTCHA script and widget to admin login page |
 
 ### Security Benefits:
 
@@ -724,9 +727,10 @@ if (!empty($captcha_site_key) && !empty($captcha_secret_key)) {
 
 ### Future Enhancements:
 
-- Add reCAPTCHA to login page (optional, for brute force protection)
+- ~~Add reCAPTCHA to login page (optional, for brute force protection)~~ ✅ IMPLEMENTED for Admin Login
 - Consider reCAPTCHA v3 for invisible verification
 - Add reCAPTCHA to contact/support forms
+- Add reCAPTCHA to customer login page (optional)
 
 ---
 
@@ -997,6 +1001,6 @@ function sanitize_html($html) {
 
 ---
 
-**Last Updated**: 2026-01-26
-**Version**: 1.4
+**Last Updated**: 2026-02-09
+**Version**: 1.5
 **Security Standard**: CodeCanyon Approved

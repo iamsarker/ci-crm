@@ -8,6 +8,7 @@ class Authenticate extends WHMAZADMIN_Controller
 	{
 		parent::__construct();
 		$this->load->model('Adminauth_model');
+		$this->load->model('Appsetting_model');
 	}
 
 	public function index()
@@ -19,7 +20,49 @@ class Authenticate extends WHMAZADMIN_Controller
 	{
 		$redirectUrl = isset($_GET["redirect-url"]) ? $_GET["redirect-url"] : "";
 
+		// Get app settings for reCAPTCHA keys
+		$app_settings = $this->Appsetting_model->getSettings();
+		$captcha_site_key = !empty($app_settings['captcha_site_key']) ? $app_settings['captcha_site_key'] : '';
+		$captcha_secret_key = !empty($app_settings['captcha_secret_key']) ? $app_settings['captcha_secret_key'] : '';
+
 		if ($this->input->post()) {
+
+			// Verify reCAPTCHA only if keys are configured
+			if (!empty($captcha_site_key) && !empty($captcha_secret_key)) {
+				$recaptcha_response = $this->input->post('g-recaptcha-response');
+				if (empty($recaptcha_response)) {
+					$this->session->set_flashdata('admin_error', 'Please complete the reCAPTCHA verification.');
+					$data['captcha_site_key'] = $captcha_site_key;
+					$this->load->view('whmazadmin/admin_login', $data);
+					return;
+				}
+
+				$verify_url = 'https://www.google.com/recaptcha/api/siteverify';
+				$post_data = array(
+					'secret' => $captcha_secret_key,
+					'response' => $recaptcha_response,
+					'remoteip' => $this->input->ip_address()
+				);
+
+				$options = array(
+					'http' => array(
+						'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+						'method'  => 'POST',
+						'content' => http_build_query($post_data)
+					)
+				);
+
+				$context  = stream_context_create($options);
+				$result = file_get_contents($verify_url, false, $context);
+				$recaptcha_result = json_decode($result, true);
+
+				if (!$recaptcha_result['success']) {
+					$this->session->set_flashdata('admin_error', 'reCAPTCHA verification failed. Please try again.');
+					$data['captcha_site_key'] = $captcha_site_key;
+					$this->load->view('whmazadmin/admin_login', $data);
+					return;
+				}
+			}
 
 			$username = xssCleaner($this->input->post('username'));
 			$password = xssCleaner($this->input->post('password'));
@@ -67,7 +110,8 @@ class Authenticate extends WHMAZADMIN_Controller
 			}
 
 		}
-		$this->load->view('whmazadmin/admin_login');
+		$data['captcha_site_key'] = $captcha_site_key;
+		$this->load->view('whmazadmin/admin_login', $data);
 	}
 
 

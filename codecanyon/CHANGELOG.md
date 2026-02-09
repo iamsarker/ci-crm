@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.7] - 2026-02-09
+
+### Security Enhancement - Admin Login reCAPTCHA
+
+#### Google reCAPTCHA on Admin Login
+- Added Google reCAPTCHA v2 protection to Admin Portal login page
+- Prevents automated brute force attacks on admin accounts
+- Uses same reCAPTCHA configuration as user registration (from `app_settings` table)
+- reCAPTCHA widget only appears if keys are configured in General Settings
+
+#### Modified Files
+- `src/controllers/whmazadmin/Authenticate.php` - Added reCAPTCHA verification in login method
+- `src/views/whmazadmin/admin_login.php` - Added reCAPTCHA script and widget
+
+---
+
 ## [1.0.6] - 2026-02-08
 
 ### New Features - Public Knowledge Base & Announcements UI
@@ -713,6 +729,11 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.0.7] - 2026-02-09 - Security Enhancement
+- Added Google reCAPTCHA v2 to Admin Portal login page
+- Protects admin accounts from automated brute force attacks
+- Uses existing reCAPTCHA configuration from General Settings
+
 ### [1.0.6] - 2026-02-08 - Feature Update
 - Added public Knowledge Base pages with modern card-based UI (no authentication required)
 - Added KB category filtering with pagination
@@ -891,6 +912,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.0.6
-**Release Date:** February 8, 2026
-**Status:** Stable Production Release (Feature Update)
+**Current Version:** 1.0.7
+**Release Date:** February 9, 2026
+**Status:** Stable Production Release (Security Enhancement)
