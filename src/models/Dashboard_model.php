@@ -106,8 +106,75 @@ class Dashboard_model extends CI_Model{
 			'email'=>$email
 		));
 		$num_results = $this->db->count_all_results();
-		
+
 		return $num_results;
+	}
+
+	/**
+	 * Get top domain selling prices
+	 * Returns domain extensions with their registration, transfer and renewal prices
+	 */
+	function getDomainPrices($limit = 10) {
+		$sql = "SELECT de.extension, dp.price as reg_price, dp.transfer, dp.renewal,
+					   c.code as currency_code, c.symbol as currency_symbol
+				FROM dom_pricing dp
+				JOIN dom_extensions de ON dp.dom_extension_id = de.id
+				JOIN currencies c ON dp.currency_id = c.id
+				WHERE dp.status = 1 AND de.status = 1
+				ORDER BY de.extension ASC
+				LIMIT ?";
+
+		$data = $this->db->query($sql, array(intval($limit)))->result_array();
+		return $data;
+	}
+
+	/**
+	 * Get last 12 months expenses
+	 * Returns monthly expense totals for chart display
+	 */
+	function getLast12MonthsExpenses() {
+		$sql = "SELECT
+					DATE_FORMAT(expense_date, '%Y-%m') as month_key,
+					DATE_FORMAT(expense_date, '%b %Y') as month_label,
+					SUM(exp_amount) as total_amount
+				FROM expenses
+				WHERE status = 1
+					AND expense_date >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+				GROUP BY DATE_FORMAT(expense_date, '%Y-%m')
+				ORDER BY month_key ASC";
+
+		$data = $this->db->query($sql)->result_array();
+
+		// Fill in missing months with zero values
+		$result = array();
+		$labels = array();
+		$amounts = array();
+
+		// Generate last 12 months
+		for ($i = 11; $i >= 0; $i--) {
+			$monthKey = date('Y-m', strtotime("-$i months"));
+			$monthLabel = date('M Y', strtotime("-$i months"));
+			$labels[] = $monthLabel;
+
+			// Find matching data
+			$found = false;
+			foreach ($data as $row) {
+				if ($row['month_key'] == $monthKey) {
+					$amounts[] = floatval($row['total_amount']);
+					$found = true;
+					break;
+				}
+			}
+			if (!$found) {
+				$amounts[] = 0;
+			}
+		}
+
+		return array(
+			'labels' => $labels,
+			'amounts' => $amounts,
+			'total' => array_sum($amounts)
+		);
 	}
 }
 ?>

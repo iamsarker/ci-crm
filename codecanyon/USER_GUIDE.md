@@ -1,7 +1,7 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.0.7
+**Version:** 1.0.8
 **Last Updated:** February 9, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
@@ -926,35 +926,45 @@ The admin dashboard provides comprehensive business insights:
 
 ### Dashboard Widgets
 
-**Revenue Chart:**
-- Daily/Monthly/Yearly revenue graph
-- Compare periods
-- Identify trends
-- Export data
+**Summary Cards (Top Row):**
+- **Customers:** Total active customer count
+- **Orders:** Total active orders count
+- **Tickets:** Total open support tickets count
+- **Invoices:** Total invoices count
 
-**Recent Orders:**
-- Latest 10 orders
-- Status indicator
-- Quick actions (view, approve, suspend)
-- Link to full order management
+**Pending Orders:**
+- Latest pending orders list
+- Order number and amount
+- Payment status indicator (Paid/Due/Partial)
+- Link to order details
+
+**Recent Support Tickets:**
+- Latest support tickets
+- Priority indicator (Low/Medium/High/Critical)
+- Status badges (Opened/Answered/Customer Reply/Closed)
+- Quick link to ticket view
 
 **Recent Invoices:**
-- Latest unpaid/recent invoices
-- Amount and due date
-- Payment status
-- Quick payment recording
+- Latest invoices with amounts
+- Due date display
+- Payment status badges
+- Link to invoice details
 
-**Recent Tickets:**
-- Open support tickets
-- Priority indicator
-- Time since last update
-- Quick reply link
+**Last 12 Months Expenses (Chart):**
+- Interactive bar chart showing monthly expense totals
+- Displays data using Chart.js visualization
+- Shows total expenses sum in header
+- Auto-fills missing months with zero values
+- Refresh button to reload data
+- Link to expenses management page
 
-**Sales Statistics:**
-- Orders by status (pie chart)
-- Revenue by package (bar chart)
-- Customer growth (line graph)
-- Payment method distribution
+**Domain Selling Prices:**
+- Table showing domain extension pricing
+- Columns: Extension, Register, Transfer, Renewal
+- Color-coded prices for easy reading
+- Currency symbol from configuration
+- Scrollable list (up to 10 extensions)
+- Link to domain pricing management
 
 ### Quick Actions
 
@@ -3029,7 +3039,7 @@ This guide covered:
 ---
 
 **Document Information:**
-- Version: 1.0.7
+- Version: 1.0.8
 - Last Updated: February 9, 2026
 - Product: WHMAZ - CI-CRM
 - Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.

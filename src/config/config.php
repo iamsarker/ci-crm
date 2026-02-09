@@ -483,6 +483,8 @@ $config['csrf_exclude_uris'] = array(
 	// Angular JSON API endpoints (authenticated, read-only operations)
 	// CSRF is less relevant for JSON APIs; these endpoints require authentication
 	'whmazadmin/dashboard/summary_api',
+	'whmazadmin/dashboard/domain_prices_api',
+	'whmazadmin/dashboard/expenses_chart_api',
 	'whmazadmin/order/recent_list_api',
 	'whmazadmin/invoice/recent_list_api',
 	'whmazadmin/ticket/recent_list_api',

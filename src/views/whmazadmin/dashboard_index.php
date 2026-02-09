@@ -173,31 +173,80 @@
 		</div>
 
 		<div class="row row-xs">
-			<div class="col-sm-12 col-md-8 col-xl-8 mt-3" ng-init="getRecentInvoices()">
+			<div class="col-sm-12 col-md-8 col-xl-8 mt-3" ng-init="getExpensesChart()">
 				<div class="card ht-100p">
 					<div class="card-header d-flex align-items-center justify-content-between bg-warning-light">
 						<h6 class="mg-b-0">Last 12 months expenses</h6>
 						<div class="d-flex align-items-center tx-18">
-							<a href="#" ng-click="getRecentInvoices()" class="link-03 lh-0"><i class="icon ion-md-refresh"></i></a>
+							<span class="tx-12 tx-color-03 mg-r-10" ng-if="expensesData">
+								Total: <strong>{{expensesData.total | number:2}}</strong>
+							</span>
+							<a href="#" ng-click="getExpensesChart()" class="link-03 lh-0"><i class="icon ion-md-refresh"></i></a>
 						</div>
 					</div>
-					<div class="card-body">
-						Column chart
+					<div class="card-body" style="min-height: 300px; position: relative;">
+						<div ng-if="loadingExpenses" class="text-center" style="padding-top: 100px;">
+							<img src="<?=base_url()?>resources/assets/img/working.gif" style="height: 30px" />
+							<p class="tx-color-03 mg-t-10">Loading chart...</p>
+						</div>
+						<div ng-if="!loadingExpenses && expensesData && expensesData.total == 0" class="text-center" style="padding-top: 100px;">
+							<i class="icon ion-md-analytics tx-60 tx-color-03"></i>
+							<p class="tx-color-03 mg-t-10">No expense data available</p>
+						</div>
+						<canvas id="expensesChart" ng-show="!loadingExpenses && expensesData && expensesData.total > 0" style="width: 100%; height: 280px;"></canvas>
+					</div>
+					<div class="card-footer text-center tx-13">
+						<a href="<?=base_url()?>whmazadmin/expense/index" class="link-03">View all expenses <i class="icon ion-md-arrow-forward mg-l-5"></i></a>
 					</div>
 				</div>
 			</div>
 
-			<div class="col-sm-12 col-md-4 col-xl-4 mt-3" ng-init="getRecentInvoices()">
+			<div class="col-sm-12 col-md-4 col-xl-4 mt-3" ng-init="getDomainPrices()">
 				<div class="card ht-100p">
 					<div class="card-header d-flex align-items-center justify-content-between bg-warning-light">
 						<h6 class="mg-b-0">Domain selling prices</h6>
 						<div class="d-flex align-items-center tx-18">
-							<a href="#" ng-click="getRecentInvoices()" class="link-03 lh-0"><i class="icon ion-md-refresh"></i></a>
+							<a href="#" ng-click="getDomainPrices()" class="link-03 lh-0"><i class="icon ion-md-refresh"></i></a>
 						</div>
 					</div>
 
-					<div class="card-body">
-						List
+					<div class="card-body pd-0" style="max-height: 340px; overflow-y: auto;">
+						<div ng-if="loadingDomainPrices" class="text-center pd-y-20">
+							<img src="<?=base_url()?>resources/assets/img/working.gif" style="height: 25px" />
+						</div>
+						<div ng-if="!loadingDomainPrices && domainPrices.length == 0" class="text-center pd-y-40">
+							<i class="icon ion-md-globe tx-40 tx-color-03"></i>
+							<p class="tx-color-03 mg-t-10 mg-b-0">No domain prices configured</p>
+						</div>
+						<table class="table table-sm table-hover mg-b-0" ng-if="!loadingDomainPrices && domainPrices.length > 0">
+							<thead class="thead-light">
+								<tr>
+									<th class="pd-l-15">Extension</th>
+									<th class="text-end">Register</th>
+									<th class="text-end">Transfer</th>
+									<th class="text-end pd-r-15">Renewal</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="domain in domainPrices track by $index">
+									<td class="pd-l-15">
+										<span class="badge bg-primary">{{domain.extension}}</span>
+									</td>
+									<td class="text-end">
+										<span class="tx-success">{{domain.currency_symbol}}{{domain.reg_price | number:2}}</span>
+									</td>
+									<td class="text-end">
+										<span class="tx-info">{{domain.currency_symbol}}{{domain.transfer | number:2}}</span>
+									</td>
+									<td class="text-end pd-r-15">
+										<span class="tx-warning">{{domain.currency_symbol}}{{domain.renewal | number:2}}</span>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="card-footer text-center tx-13">
+						<a href="<?=base_url()?>whmazadmin/domain_pricing/index" class="link-03">Manage domain pricing <i class="icon ion-md-arrow-forward mg-l-5"></i></a>
 					</div>
 
 				</div>

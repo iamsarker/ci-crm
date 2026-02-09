@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.8] - 2026-02-09
+
+### Feature Enhancement - Admin Dashboard Widgets
+
+#### Last 12 Months Expenses Chart
+- Added interactive bar chart using Chart.js to visualize monthly expenses
+- Displays total expenses summary in card header
+- Auto-fills missing months with zero values for consistent display
+- Empty state handling when no expense data available
+- Refresh button to reload chart data
+- Link to expenses management page
+
+#### Domain Selling Prices Widget
+- Added domain pricing table showing registration, transfer, and renewal prices
+- Displays domain extensions with color-coded pricing (green/blue/orange)
+- Scrollable list supporting up to 10 domain extensions
+- Shows currency symbol from database configuration
+- Link to domain pricing management page
+
+#### Technical Implementation
+- Added `getDomainPrices()` method in Dashboard_model
+- Added `getLast12MonthsExpenses()` method in Dashboard_model
+- Added `domain_prices_api` endpoint in Dashboard controller
+- Added `expenses_chart_api` endpoint in Dashboard controller
+- Updated AngularJS controller with chart rendering logic
+- Integrated Chart.js library in admin footer scripts
+
+#### Modified Files
+- `src/models/Dashboard_model.php` - Added 2 new methods for data retrieval
+- `src/controllers/whmazadmin/Dashboard.php` - Added 2 API endpoints
+- `resources/angular/app/admindashboard_controller.js` - Added chart functions
+- `src/views/whmazadmin/dashboard_index.php` - Updated widget UI
+- `src/views/whmazadmin/include/footer_script.php` - Added Chart.js include
+- `src/config/config.php` - Added API endpoints to CSRF exclusion
+
+---
+
 ## [1.0.7] - 2026-02-09
 
 ### Security Enhancement - Admin Login reCAPTCHA & Clickjacking Protection
@@ -737,6 +774,11 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.0.8] - 2026-02-09 - Feature Enhancement
+- Added Last 12 Months Expenses chart to admin dashboard (Chart.js bar chart)
+- Added Domain Selling Prices widget with pricing table
+- Integrated Chart.js for data visualization
+
 ### [1.0.7] - 2026-02-09 - Security Enhancement
 - Added Google reCAPTCHA v2 to Admin Portal login page
 - Protects admin accounts from automated brute force attacks
@@ -921,6 +963,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.0.7
+**Current Version:** 1.0.8
 **Release Date:** February 9, 2026
-**Status:** Stable Production Release (Security Enhancement)
+**Status:** Stable Production Release (Feature Enhancement)

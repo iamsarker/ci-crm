@@ -17,6 +17,7 @@
 <script src="<?=base_url()?>resources/lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
 <script src="<?=base_url()?>resources/lib/select2/js/select2.min.js"></script>
 <script src="<?=base_url()?>resources/lib/sweetalert2/sweetalert2.all.min.js"></script>
+<script src="<?=base_url()?>resources/lib/chart.js/Chart.bundle.min.js"></script>
 
 <script src="<?=base_url()?>resources/angular/angular.min.js?v=1.0.0"></script>
 

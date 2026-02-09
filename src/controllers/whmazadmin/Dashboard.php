@@ -26,6 +26,31 @@ class Dashboard extends WHMAZADMIN_Controller
 		echo json_encode($this->Dashboard_model->loadSummaryData());
 	}
 
+	/**
+	 * API endpoint for domain selling prices
+	 */
+	public function domain_prices_api() {
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
+		$limit = $this->input->post('limit') ? intval($this->input->post('limit')) : 10;
+		$data = $this->Dashboard_model->getDomainPrices($limit);
+
+		echo json_encode($data);
+	}
+
+	/**
+	 * API endpoint for last 12 months expenses chart data
+	 */
+	public function expenses_chart_api() {
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
+		$data = $this->Dashboard_model->getLast12MonthsExpenses();
+
+		echo json_encode($data);
+	}
+
 	public function changePassword()
 	{
 		if (!$this->input->post()) {
