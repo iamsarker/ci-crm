@@ -91,6 +91,21 @@
 				;
 
 		}
+
+		// SECURITY: Clickjacking protection - Frame busting script
+		// This provides defense-in-depth in addition to X-Frame-Options header
+		(function() {
+			if (self !== top) {
+				// Page is in an iframe - attempt to break out
+				try {
+					top.location.href = self.location.href;
+				} catch (e) {
+					// Cross-origin iframe - can't redirect, hide content instead
+					document.documentElement.style.display = 'none';
+					document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:50px;">This page cannot be displayed in a frame for security reasons.</h1>';
+				}
+			}
+		})();
 	</script>
   </head>
   <body class="page-profile">

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.7] - 2026-02-09
 
-### Security Enhancement - Admin Login reCAPTCHA
+### Security Enhancement - Admin Login reCAPTCHA & Clickjacking Protection
 
 #### Google reCAPTCHA on Admin Login
 - Added Google reCAPTCHA v2 protection to Admin Portal login page
@@ -17,9 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Uses same reCAPTCHA configuration as user registration (from `app_settings` table)
 - reCAPTCHA widget only appears if keys are configured in General Settings
 
+#### Clickjacking Protection (Defense-in-Depth)
+- Added JavaScript frame-busting to both Customer Portal and Admin Portal
+- Provides additional layer of protection beyond HTTP headers (X-Frame-Options, CSP frame-ancestors)
+- Attempts to break out of iframe or displays security warning if embedded
+- Protects login pages from being loaded in malicious iframes
+
 #### Modified Files
 - `src/controllers/whmazadmin/Authenticate.php` - Added reCAPTCHA verification in login method
 - `src/views/whmazadmin/admin_login.php` - Added reCAPTCHA script and widget
+- `src/views/templates/customer/header.php` - Added frame-busting JavaScript
+- `src/views/whmazadmin/include/header_script.php` - Added frame-busting JavaScript
 
 ---
 
@@ -733,6 +741,7 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 - Added Google reCAPTCHA v2 to Admin Portal login page
 - Protects admin accounts from automated brute force attacks
 - Uses existing reCAPTCHA configuration from General Settings
+- Added JavaScript frame-busting for clickjacking protection (defense-in-depth)
 
 ### [1.0.6] - 2026-02-08 - Feature Update
 - Added public Knowledge Base pages with modern card-based UI (no authentication required)

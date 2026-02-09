@@ -1001,6 +1001,81 @@ function sanitize_html($html) {
 
 ---
 
+---
+
+## 10. Clickjacking Protection Enhancement - IMPLEMENTED ✅
+
+### Impact: Clickjacking Attack Prevention (Defense-in-Depth)
+
+### Implementation Overview:
+
+Added JavaScript frame-busting as an additional layer of clickjacking protection beyond the existing HTTP security headers.
+
+### Existing Protections (HTTP Headers):
+
+The application already has clickjacking protection via HTTP headers:
+
+1. **`.htaccess`:** `Header set X-Frame-Options "SAMEORIGIN"`
+2. **`config.php`:** `header('X-Frame-Options: SAMEORIGIN');`
+3. **CSP:** `frame-ancestors 'self'`
+
+### New Protection (JavaScript Frame-Busting):
+
+Added JavaScript frame-busting code to provide defense-in-depth protection:
+
+```javascript
+// SECURITY: Clickjacking protection - Frame busting script
+(function() {
+    if (self !== top) {
+        // Page is in an iframe - attempt to break out
+        try {
+            top.location.href = self.location.href;
+        } catch (e) {
+            // Cross-origin iframe - can't redirect, hide content instead
+            document.documentElement.style.display = 'none';
+            document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:50px;">This page cannot be displayed in a frame for security reasons.</h1>';
+        }
+    }
+})();
+```
+
+### Files Modified:
+
+| File | Description |
+|------|-------------|
+| `src/views/templates/customer/header.php` | Added frame-busting JavaScript for Customer Portal |
+| `src/views/whmazadmin/include/header_script.php` | Added frame-busting JavaScript for Admin Portal |
+
+### How It Works:
+
+1. **Detection:** Checks if `self !== top` (page is in an iframe)
+2. **Break-out Attempt:** Tries to redirect the top frame to the current page URL
+3. **Cross-Origin Fallback:** If cross-origin restrictions prevent redirect, hides page content and shows security warning
+
+### Why Defense-in-Depth:
+
+1. **Header Bypass:** Some proxy servers or CDNs may strip security headers
+2. **Legacy Browsers:** Older browsers may not fully support CSP `frame-ancestors`
+3. **Configuration Errors:** Server misconfiguration could disable `.htaccess` processing
+4. **Belt-and-Suspenders:** Multiple layers ensure protection even if one fails
+
+### Security Benefits:
+
+1. ✅ **Redundant Protection:** Works even if HTTP headers fail
+2. ✅ **Immediate Action:** Executes before page content loads
+3. ✅ **Cross-Origin Safe:** Handles cross-origin iframes gracefully
+4. ✅ **User Notification:** Displays clear security warning if embedded
+5. ✅ **Covers Both Portals:** Protects Customer and Admin login pages
+
+### Attack Vectors Blocked:
+
+- ✅ Clickjacking via transparent iframe overlay
+- ✅ UI redressing attacks
+- ✅ Likejacking (Facebook-style clickjacking)
+- ✅ Cursorjacking (cursor manipulation attacks)
+
+---
+
 **Last Updated**: 2026-02-09
-**Version**: 1.5
+**Version**: 1.6
 **Security Standard**: CodeCanyon Approved

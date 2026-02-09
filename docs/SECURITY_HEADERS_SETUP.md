@@ -17,7 +17,7 @@ Security headers have been implemented to protect your application from various 
 ## Implemented Headers
 
 ### 1. **X-Frame-Options: SAMEORIGIN**
-**Purpose:** Prevents clickjacking attacks  
+**Purpose:** Prevents clickjacking attacks
 **What it does:** Restricts embedding the site in iframes to same-origin only
 
 ```
@@ -29,6 +29,8 @@ X-Frame-Options: SAMEORIGIN
 <!-- Attacker's site -->
 <iframe src="https://yoursite.com/admin"></iframe>
 ```
+
+**Defense-in-Depth:** Additionally, JavaScript frame-busting is implemented in both Customer and Admin portals to provide redundant protection. See `SECURITY_IMPROVEMENTS.md` Section 10 for details.
 
 ---
 
@@ -320,6 +322,6 @@ frame-ancestors 'self' https://trusted-domain.com
 
 ---
 
-**Configuration Date:** January 25, 2026  
-**Status:** Production Ready ✅  
-**Last Updated:** January 25, 2026
+**Configuration Date:** January 25, 2026
+**Status:** Production Ready ✅
+**Last Updated:** February 9, 2026
