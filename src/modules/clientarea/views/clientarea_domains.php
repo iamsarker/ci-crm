@@ -4,23 +4,26 @@
     <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
         <div class="row">
             <div class="col-md-3 col-sm-12">
-                <div class="card card-widget card-contacts">
-                    <div class="card-header">
-                        <h6 class="card-title mg-b-0"><i class="fa fa-tachometer-alt"></i>&nbsp;Invoice Summary</h6>
-                        <nav class="nav"></nav>
+                <div class="card detail-sidebar-card">
+                    <div class="card-header detail-sidebar-header">
+                        <h6 class="card-title mg-b-0"><i class="fa fa-chart-pie mg-r-5"></i>Invoice Summary</h6>
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            Total&nbsp;<span class="badge rounded-pill bg-info float-right"><?=($summary['paid']+$summary['due']+$summary['partialy'])?></span>
+                        <li class="list-group-item summary-item">
+                            <span class="summary-label"><i class="fa fa-file-invoice"></i> Total Invoices</span>
+                            <span class="badge rounded-pill bg-info"><?=($summary['paid']+$summary['due']+$summary['partialy'])?></span>
                         </li>
-                        <li class="list-group-item">
-                            Paid&nbsp;<span class="badge rounded-pill bg-success float-right"><?=$summary['paid']?></span>
+                        <li class="list-group-item summary-item">
+                            <span class="summary-label"><i class="fa fa-check-circle text-success"></i> Paid</span>
+                            <span class="badge rounded-pill bg-success"><?=$summary['paid']?></span>
                         </li>
-                        <li class="list-group-item">
-                            Due&nbsp;<span class="badge rounded-pill bg-danger float-right"><?=$summary['due']?></span>
+                        <li class="list-group-item summary-item">
+                            <span class="summary-label"><i class="fa fa-exclamation-circle text-danger"></i> Due</span>
+                            <span class="badge rounded-pill bg-danger"><?=$summary['due']?></span>
                         </li>
-                        <li class="list-group-item">
-                            Partial&nbsp;<span class="badge rounded-pill bg-warning float-right"><?=$summary['partialy']?></span>
+                        <li class="list-group-item summary-item">
+                            <span class="summary-label"><i class="fa fa-clock text-warning"></i> Partial</span>
+                            <span class="badge rounded-pill bg-warning"><?=$summary['partialy']?></span>
                         </li>
                     </ul>
                 </div>

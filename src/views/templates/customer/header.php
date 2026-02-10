@@ -181,9 +181,9 @@
 				<?php }?>
             </ul>
           </li>
-          <li class="nav-item"><a href="<?=base_url()?>Supports/announcements" class="nav-link"><i data-feather="box"></i> Announcement</a></li>
-          <li class="nav-item"><a href="<?=base_url()?>Supports/KB" class="nav-link"><i data-feather="archive"></i> Knowledgebase</a></li>
-          <li class="nav-item"><a href="<?=base_url()?>contactus" class="nav-link"><i data-feather="archive"></i> Contact us</a></li>
+          <li class="nav-item"><a href="<?=base_url()?>supports/announcements" class="nav-link"><i data-feather="box"></i> Announcement</a></li>
+          <li class="nav-item"><a href="<?=base_url()?>supports/KB" class="nav-link"><i data-feather="archive"></i> Knowledgebase</a></li>
+          <li class="nav-item"><a href="<?=base_url()?>supports/contactus" class="nav-link"><i data-feather="archive"></i> Contact us</a></li>
           <?php }?>
 
         </ul>
