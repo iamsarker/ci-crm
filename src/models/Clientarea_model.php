@@ -246,5 +246,22 @@ class Clientarea_model extends CI_Model{
 		$sql = "SELECT country_code, country_name FROM countries WHERE status = 1 ORDER BY country_name ASC";
 		return $this->db->query($sql)->result_array();
 	}
+
+	/**
+	 * Update EPP code in database
+	 */
+	function updateEppCode($domainId, $companyId, $eppCode) {
+		if (!is_numeric($domainId) || !is_numeric($companyId) || $domainId <= 0 || $companyId <= 0) {
+			return false;
+		}
+
+		$this->db->where('id', intval($domainId));
+		$this->db->where('company_id', intval($companyId));
+
+		return $this->db->update('order_domains', array(
+			'epp_code' => $eppCode,
+			'updated_on' => date('Y-m-d H:i:s')
+		));
+	}
 }
 ?>

@@ -939,4 +939,191 @@ class Clientarea extends WHMAZ_Controller {
 
 		return array('success' => false, 'msg' => $errorMsg);
 	}
+
+	/**
+	 * Send EPP/Auth code to customer email
+	 */
+	public function send_epp_code() {
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
+		if (!$this->input->post()) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid request method'));
+			return;
+		}
+
+		$domainId = $this->input->post('domain_id');
+		$companyId = getCompanyId();
+
+		if (!is_numeric($domainId) || $domainId <= 0) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid domain ID'));
+			return;
+		}
+
+		$domainInfo = $this->Clientarea_model->getDomainRegistrarInfo($domainId, $companyId);
+
+		if (empty($domainInfo)) {
+			echo json_encode(array('success' => false, 'msg' => 'Domain not found or access denied'));
+			return;
+		}
+
+		$eppCode = '';
+
+		// First check if EPP code is stored in database
+		if (!empty($domainInfo['epp_code'])) {
+			$eppCode = $domainInfo['epp_code'];
+		}
+		// If not in DB and registrar is configured, try to fetch from API
+		elseif (!empty($domainInfo['dom_register_id']) && !empty($domainInfo['platform'])) {
+			$apiResult = $this->getEppCodeFromApi($domainInfo);
+			if ($apiResult['success'] && !empty($apiResult['epp_code'])) {
+				$eppCode = $apiResult['epp_code'];
+				// Save to database for future use
+				$this->Clientarea_model->updateEppCode($domainId, $companyId, $eppCode);
+			} else {
+				echo json_encode(array('success' => false, 'msg' => $apiResult['msg'] ?? 'Failed to retrieve EPP code from registrar'));
+				return;
+			}
+		}
+
+		if (empty($eppCode)) {
+			echo json_encode(array('success' => false, 'msg' => 'EPP code not available. Please contact support.'));
+			return;
+		}
+
+		// Get customer email
+		$customerEmail = $this->session->userdata('user_email');
+		$customerName = $this->session->userdata('first_name') ?? 'Customer';
+
+		if (empty($customerEmail)) {
+			echo json_encode(array('success' => false, 'msg' => 'Customer email not found'));
+			return;
+		}
+
+		// Send email with EPP code
+		$appSettings = getAppSettings();
+		$domain = $domainInfo['domain'];
+
+		$subject = "EPP/Auth Code for " . $domain . " - " . $appSettings->company_name;
+
+		$body = "Dear " . htmlspecialchars($customerName) . ",<br><br>";
+		$body .= "You have requested the EPP/Authorization code for your domain: <strong>" . htmlspecialchars($domain) . "</strong><br><br>";
+		$body .= "Your EPP Code is: <strong style='font-size: 18px; color: #0168fa;'>" . htmlspecialchars($eppCode) . "</strong><br><br>";
+		$body .= "<em>Please keep this code secure. It is required for transferring your domain to another registrar.</em><br><br>";
+		$body .= "If you did not request this code, please contact us immediately.<br><br>";
+		$body .= "Thanks & Regards,<br>";
+		$body .= $appSettings->company_name . " Support";
+
+		if (sendHtmlEmail($customerEmail, $subject, $body)) {
+			echo json_encode(array('success' => true, 'msg' => 'EPP code has been sent to your email address (' . $customerEmail . ')'));
+		} else {
+			echo json_encode(array('success' => false, 'msg' => 'Failed to send email. Please try again or contact support.'));
+		}
+	}
+
+	/**
+	 * Get EPP code from registrar API
+	 */
+	private function getEppCodeFromApi($domainInfo) {
+		$platform = strtoupper($domainInfo['platform'] ?? '');
+
+		switch ($platform) {
+			case 'STARGATE':
+				return $this->getEppCodeStargate($domainInfo);
+			case 'NAMECHEAP':
+				return $this->getEppCodeNamecheap($domainInfo);
+			default:
+				return array('success' => false, 'msg' => 'Unsupported registrar platform');
+		}
+	}
+
+	/**
+	 * Get EPP code from Stargate (ResellerClub) API
+	 */
+	private function getEppCodeStargate($domainInfo) {
+		if (empty($domainInfo['domain_order_id'])) {
+			return array('success' => false, 'msg' => 'Domain order ID not found for registrar');
+		}
+
+		$baseUrl = rtrim(strval($domainInfo['api_base_url'] ?? ''), '/');
+		$authUserId = strval($domainInfo['auth_userid'] ?? '');
+		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
+		$orderId = strval($domainInfo['domain_order_id'] ?? '');
+
+		// Stargate API endpoint for getting domain secret/auth code
+		$url = $baseUrl . '/details.json?auth-userid=' . urlencode($authUserId)
+			. '&api-key=' . urlencode($apiKey)
+			. '&order-id=' . urlencode($orderId)
+			. '&options=OrderDetails';
+
+		$response = $this->makeApiRequest($url, array(), 'GET');
+
+		if ($response === false) {
+			return array('success' => false, 'msg' => 'Failed to connect to registrar API');
+		}
+
+		$result = json_decode($response, true);
+
+		if (isset($result['domsecret'])) {
+			return array('success' => true, 'epp_code' => strval($result['domsecret']));
+		}
+
+		// Try alternate key names
+		if (isset($result['authcode'])) {
+			return array('success' => true, 'epp_code' => strval($result['authcode']));
+		}
+
+		if (isset($result['status']) && strtolower($result['status']) == 'error') {
+			$errorMsg = isset($result['message']) ? $result['message'] : 'API Error';
+			return array('success' => false, 'msg' => $errorMsg);
+		}
+
+		return array('success' => false, 'msg' => 'EPP code not available from registrar');
+	}
+
+	/**
+	 * Get EPP code from Namecheap API
+	 */
+	private function getEppCodeNamecheap($domainInfo) {
+		$domain = strval($domainInfo['domain'] ?? '');
+		$apiUser = strval($domainInfo['auth_userid'] ?? '');
+		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
+		$clientIp = strval($this->input->ip_address());
+		$baseUrl = strval($domainInfo['api_base_url'] ?? '');
+
+		$url = $baseUrl . '?ApiUser=' . urlencode($apiUser)
+			. '&ApiKey=' . urlencode($apiKey)
+			. '&UserName=' . urlencode($apiUser)
+			. '&Command=namecheap.domains.getInfo'
+			. '&ClientIp=' . urlencode($clientIp)
+			. '&DomainName=' . urlencode($domain);
+
+		$response = $this->makeApiRequest($url, array(), 'GET');
+
+		if ($response === false) {
+			return array('success' => false, 'msg' => 'Failed to connect to Namecheap API');
+		}
+
+		$xml = @simplexml_load_string($response);
+		if ($xml === false) {
+			return array('success' => false, 'msg' => 'Invalid API response');
+		}
+
+		$status = (string)$xml->attributes()->Status;
+		if (strtolower($status) != 'ok') {
+			$errorMsg = 'API Error';
+			if (isset($xml->Errors->Error)) {
+				$errorMsg = (string)$xml->Errors->Error;
+			}
+			return array('success' => false, 'msg' => $errorMsg);
+		}
+
+		// Get EPP code from response
+		if (isset($xml->CommandResponse->DomainGetInfoResult->DomainDetails->EPPCode)) {
+			$eppCode = (string)$xml->CommandResponse->DomainGetInfoResult->DomainDetails->EPPCode;
+			return array('success' => true, 'epp_code' => $eppCode);
+		}
+
+		return array('success' => false, 'msg' => 'EPP code not available from Namecheap');
+	}
 }

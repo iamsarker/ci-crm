@@ -849,6 +849,9 @@ CREATE TABLE `dom_registers` (
   `domain_check_api` text NOT NULL,
   `suggestion_api` text DEFAULT NULL,
   `domain_reg_api` text DEFAULT NULL,
+  `ns_update_api` text DEFAULT NULL,
+  `contact_details_api` text DEFAULT NULL,
+  `contact_update_api` text DEFAULT NULL,
   `price_list_api` text DEFAULT NULL,
   `auth_userid` varchar(50) NOT NULL,
   `auth_apikey` varchar(100) NOT NULL,
@@ -868,10 +871,10 @@ CREATE TABLE `dom_registers` (
 -- Dumping data for table `dom_registers`
 --
 
-INSERT INTO `dom_registers` (`id`, `name`, `platform`, `api_base_url`, `domain_check_api`, `suggestion_api`, `domain_reg_api`, `price_list_api`, `auth_userid`, `auth_apikey`, `is_selected`, `def_ns1`, `def_ns2`, `def_ns3`, `def_ns4`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Resell.Biz', 'STARGATE', 'https://httpapi.com/api/domains', 'https://httpapi.com/api/domains/available.json?', 'https://httpapi.com/api/domains/v5/suggest-names.json?', 'https://httpapi.com/api/domains/register.xml?', 'test', '572394', 'IPE8mDT7ZoyQc6FmIzRp5b3lxfvabPOA', 1, '', '', '', '', 1, NULL, NULL, '2026-01-24 20:51:34', 1),
-(2, 'Namecheap', 'NAMECHEAP', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', '', 'tongbaritest', '993d950d882041ed90eea8158abec1d3', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2024-08-12 01:02:26', NULL),
-(3, 'Resellerclub', 'STARGATE', 'https://test.httpapi.com/api/domains', 'https://domaincheck.httpapi.com/api/domains/available.json?', 'https://test.httpapi.com/api/domains/v5/suggest-names.json?', 'https://test.httpapi.com/api/domains/register.xml?', 'test', '1256356', '6lY8CY2bnstSAqL04lr2y9oovt8CljT9', 0, 'test', '', '', '', 1, NULL, NULL, '2026-01-24 20:04:16', 1);
+INSERT INTO `dom_registers` (`id`, `name`, `platform`, `api_base_url`, `domain_check_api`, `suggestion_api`, `domain_reg_api`, `ns_update_api`, `contact_details_api`, `contact_update_api`, `price_list_api`, `auth_userid`, `auth_apikey`, `is_selected`, `def_ns1`, `def_ns2`, `def_ns3`, `def_ns4`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(1, 'Resell.Biz', 'STARGATE', 'https://httpapi.com/api/domains', 'https://httpapi.com/api/domains/available.json?', 'https://httpapi.com/api/domains/v5/suggest-names.json?', 'https://httpapi.com/api/domains/register.xml?', 'https://httpapi.com/api/domains/modify-ns.json', 'https://httpapi.com/api/domains/details-by-name.json', 'https://httpapi.com/api/domains/modify-contact.json', 'test', '572394', 'IPE8mDT7ZoyQc6FmIzRp5b3lxfvabPOA', 1, '', '', '', '', 1, NULL, NULL, '2026-01-24 20:51:34', 1),
+(2, 'Namecheap', 'NAMECHEAP', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', '', 'tongbaritest', '993d950d882041ed90eea8158abec1d3', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2024-08-12 01:02:26', NULL),
+(3, 'Resellerclub', 'STARGATE', 'https://test.httpapi.com/api/domains', 'https://domaincheck.httpapi.com/api/domains/available.json?', 'https://test.httpapi.com/api/domains/v5/suggest-names.json?', 'https://test.httpapi.com/api/domains/register.xml?', 'https://test.httpapi.com/api/domains/modify-ns.json', 'https://test.httpapi.com/api/domains/details-by-name.json', 'https://test.httpapi.com/api/domains/modify-contact.json', 'test', '1256356', '6lY8CY2bnstSAqL04lr2y9oovt8CljT9', 0, 'test', '', '', '', 1, NULL, NULL, '2026-01-24 20:04:16', 1);
 
 -- --------------------------------------------------------
 
@@ -1449,6 +1452,17 @@ CREATE TABLE `order_domains` (
   `ns2` varchar(150) DEFAULT NULL,
   `ns3` varchar(150) DEFAULT NULL,
   `ns4` varchar(150) DEFAULT NULL,
+  `contact_name` varchar(150) DEFAULT NULL,
+  `contact_company` varchar(150) DEFAULT NULL,
+  `contact_email` varchar(150) DEFAULT NULL,
+  `contact_phone` varchar(50) DEFAULT NULL,
+  `contact_address1` varchar(255) DEFAULT NULL,
+  `contact_address2` varchar(255) DEFAULT NULL,
+  `contact_city` varchar(100) DEFAULT NULL,
+  `contact_state` varchar(100) DEFAULT NULL,
+  `contact_zip` varchar(20) DEFAULT NULL,
+  `contact_country` varchar(5) DEFAULT NULL,
+  `last_contact_sync` datetime DEFAULT NULL,
   `status` tinyint(4) NOT NULL COMMENT '0=pending reg, 1=active, 2=expired, 3=grace, 4=cancelled, 5=pending transfer, 6=deleted',
   `remarks` varchar(255) DEFAULT NULL,
   `inserted_on` datetime DEFAULT NULL,

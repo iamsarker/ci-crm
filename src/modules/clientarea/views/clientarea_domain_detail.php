@@ -300,7 +300,7 @@
                                     <div class="col-md-3">
                                         <div class="contact-input-item">
                                             <label for="contact_country">Country</label>
-                                            <select class="form-control" id="contact_country">
+                                            <select class="form-select" id="contact_country">
                                                 <option value="">Select Country</option>
                                                 <?php foreach($countries as $country): ?>
                                                 <option value="<?= htmlspecialchars($country['country_code'], ENT_QUOTES, 'UTF-8') ?>"
