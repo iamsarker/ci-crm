@@ -1,100 +1,126 @@
 <?php $this->load->view('templates/customer/header');?>
 
-	 <div class="content content-fixed content-wrapper" >
-      <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
-        
-
+<div class="content content-fixed content-wrapper">
+    <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
         <div class="row">
-          <div class="col-md-3 col-sm-12">
-            
-            <div class="card card-widget card-contacts">
-              <div class="card-header">
-			    <h6 class="card-title mg-b-0"><i class="fa fa-tachometer-alt"></i>&nbsp;Invoice Summary</h6>
-                <nav class="nav">
-
-                </nav>
-              </div>
-				<ul class="list-group list-group-flush">
-					<li class="list-group-item">
-						Total&nbsp;<span class="badge rounded-pill bg-info float-right"><?=($summary['paid']+$summary['due']+$summary['partialy'])?></span>
-					</li>
-					<li class="list-group-item">
-						Paid&nbsp;<span class="badge rounded-pill bg-success float-right"><?=$summary['paid']?></span>
-					</li>
-					<li class="list-group-item">
-						Due&nbsp;<span class="badge rounded-pill bg-danger float-right"><?=$summary['due']?></span>
-					</li>
-					<li class="list-group-item">
-						Partial&nbsp;<span class="badge rounded-pill bg-warning float-right"><?=$summary['partialy']?></span>
-					</li>
-				</ul>
+            <div class="col-md-3 col-sm-12">
+                <div class="card card-widget card-contacts">
+                    <div class="card-header">
+                        <h6 class="card-title mg-b-0"><i class="fa fa-tachometer-alt"></i>&nbsp;Invoice Summary</h6>
+                        <nav class="nav"></nav>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            Total&nbsp;<span class="badge rounded-pill bg-info float-right"><?=($summary['paid']+$summary['due']+$summary['partialy'])?></span>
+                        </li>
+                        <li class="list-group-item">
+                            Paid&nbsp;<span class="badge rounded-pill bg-success float-right"><?=$summary['paid']?></span>
+                        </li>
+                        <li class="list-group-item">
+                            Due&nbsp;<span class="badge rounded-pill bg-danger float-right"><?=$summary['due']?></span>
+                        </li>
+                        <li class="list-group-item">
+                            Partial&nbsp;<span class="badge rounded-pill bg-warning float-right"><?=$summary['partialy']?></span>
+                        </li>
+                    </ul>
+                </div>
+                <?php $this->load->view('templates/customer/invoice_nav');?>
             </div>
 
-            <?php $this->load->view('templates/customer/invoice_nav');?>
+            <div class="col-md-9 col-sm-12">
+                <div class="page-header-card">
+                    <h3><i class="fa fa-server mg-r-10"></i>My Services</h3>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb breadcrumb-style1 mg-b-0">
+                            <li class="breadcrumb-item"><a href="<?=base_url()?>clientarea">Portal home</a></li>
+                            <li class="breadcrumb-item active"><a>My Services</a></li>
+                        </ol>
+                    </nav>
+                </div>
 
-
+                <div class="card services-card">
+                    <div class="card-body">
+                        <?php if(!empty($results)): ?>
+                        <table id="example1" class="table services-table">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Order Date</th>
+                                    <th>Expiry Date</th>
+                                    <th>Service Details</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach($results as $row): ?>
+                                <tr>
+                                    <td>
+                                        <a href="<?=base_url()?>clientarea/service_detail/<?=$row['id']?>" class="order-link">
+                                            <i class="fa fa-external-link-alt"></i>
+                                            #<?php echo $row['order_id']; ?>
+                                        </a>
+                                    </td>
+                                    <td class="date-cell">
+                                        <i class="fa fa-calendar-plus"></i>
+                                        <?php echo date('M d, Y', strtotime($row['reg_date'])); ?>
+                                    </td>
+                                    <td class="date-cell">
+                                        <i class="fa fa-calendar-times"></i>
+                                        <?php echo date('M d, Y', strtotime($row['exp_date'])); ?>
+                                    </td>
+                                    <td>
+                                        <div class="service-description">
+                                            <span class="service-name"><?php echo $row['description']; ?></span>
+                                            <?php if(!empty($row['hosting_domain'])): ?>
+                                            <span class="service-domain">
+                                                <i class="fa fa-globe"></i>
+                                                <?php echo $row['hosting_domain']; ?>
+                                            </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                    <td><?php echo getServiceStatus($row['status']); ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                        <?php else: ?>
+                        <div class="empty-state">
+                            <i class="fa fa-inbox"></i>
+                            <h5>No Services Found</h5>
+                            <p>You don't have any active services yet.</p>
+                        </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
         </div>
-
-
-
-
-        <div class="col-md-9 col-sm-12">
-			<h3>My Services</h3>
-			<hr class="mg-5" />
-			<nav aria-label="breadcrumb">
-				<ol class="breadcrumb breadcrumb-style1 mg-b-0">
-					<li class="breadcrumb-item"><a href="<?=base_url()?>clientarea">Portal home</a></li>
-					<li class="breadcrumb-item active"><a>My Services</a></li>
-				</ol>
-			</nav>
-          <div data-label="Example" class="df-example demo-table mg-t-25">
-            <table id="example1" class="table table-hover">
-              <thead>
-                  <tr>
-                      <th class="wd-15p">Order#</th>
-                      <th class="wd-15p">Order Date</th>
-                      <th class="wd-15p">Expiry Date</th>
-                      <th class="wd-25p">Description</th>
-                      <th class="wd-15p">Status</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  <?php foreach($results as $row){ ?>
-                      <tr>
-                          <td class="wd-15p" style="cursor: pointer;" onclick="viewServiceDetail(<?=$row['id']?>)">#<?php echo $row['order_id']; ?></td>
-                          <td><?php echo $row['reg_date']; ?></td>
-                          <td><?php echo $row['exp_date']; ?></td>
-                          <td><?php echo $row['description']; ?> - <?php echo $row['hosting_domain']; ?></td>
-                          <td><?php echo getServiceStatus($row['status']); ?></td>
-                      </tr>
-                  <?php } ?>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-		
-    </div><!-- container -->
-  </div><!-- content -->
+    </div>
+</div>
 
 <?php $this->load->view('templates/customer/footer_script');?>
 <script>
-      $(function(){
-        'use strict'
+$(function(){
+    'use strict';
+
+    if($('#example1 tbody tr').length > 0) {
         $('#example1').DataTable({
-          "aaSorting": [],
-          language: {
-            searchPlaceholder: 'Search...',
-            sSearch: '',
-            lengthMenu: '_MENU_ items/page',
-          }
+            "aaSorting": [],
+            "responsive": true,
+            "language": {
+                searchPlaceholder: 'Search services...',
+                sSearch: '<i class="fa fa-search"></i>',
+                lengthMenu: 'Show _MENU_ services',
+                info: 'Showing _START_ to _END_ of _TOTAL_ services',
+                infoEmpty: 'No services found',
+                paginate: {
+                    previous: '<i class="fa fa-chevron-left"></i>',
+                    next: '<i class="fa fa-chevron-right"></i>'
+                }
+            },
+            "dom": '<"d-flex justify-content-between align-items-center mb-3"lf>t<"d-flex justify-content-between align-items-center mt-3"ip>',
         });
-
-      });
-
-      function viewServiceDetail(tid) {
-		window.location = "<?=base_url()?>clientarea/service_detail/"+tid;
-	  }
-
-    </script>
+    }
+});
+</script>
 <?php $this->load->view('templates/customer/footer');?>

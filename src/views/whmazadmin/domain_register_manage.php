@@ -105,6 +105,30 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="ns_update_api">Nameserver Update API Endpoint</label>
+                        <input name="ns_update_api" type="text" class="form-control" id="ns_update_api"
+                               value="<?= htmlspecialchars($detail['ns_update_api'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                               placeholder="https://api.registrar.com/domains/modify-ns"/>
+                        <small class="form-text text-muted">API endpoint for updating domain nameservers</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact_details_api">Contact Details API Endpoint</label>
+                        <input name="contact_details_api" type="text" class="form-control" id="contact_details_api"
+                               value="<?= htmlspecialchars($detail['contact_details_api'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                               placeholder="https://api.registrar.com/domains/details"/>
+                        <small class="form-text text-muted">API endpoint for fetching domain contact details</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact_update_api">Contact Update API Endpoint</label>
+                        <input name="contact_update_api" type="text" class="form-control" id="contact_update_api"
+                               value="<?= htmlspecialchars($detail['contact_update_api'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
+                               placeholder="https://api.registrar.com/domains/modify-contact"/>
+                        <small class="form-text text-muted">API endpoint for updating domain contact information</small>
+                    </div>
+
+                    <div class="form-group">
                         <label for="price_list_api">Price List API Endpoint</label>
                         <input name="price_list_api" type="text" class="form-control" id="price_list_api"
                                value="<?= htmlspecialchars($detail['price_list_api'] ?? '', ENT_QUOTES, 'UTF-8') ?>"
