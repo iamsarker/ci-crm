@@ -7,6 +7,96 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.9] - 2026-02-11
+
+### UI Enhancement - Client Portal Beautification
+
+#### Complete Client Portal Redesign
+- Modern, professional UI for all client portal pages
+- Consistent blue-purple gradient theme (`#0168fa` to `#6f42c1`) across all pages
+- All CSS externalized to `resources/assets/css/custom.css` (CodeCanyon compliant)
+- Responsive design with mobile-friendly layouts
+- Fixed footer positioning with flexbox layout
+
+#### Dashboard (clientarea_index.php)
+- Redesigned welcome banner with gradient background
+- Modern stat cards for Services, Domains, Tickets, and Invoices
+- Activity cards for recent tickets and invoices with styled list items
+- Quick action buttons with hover effects
+- Refresh buttons for real-time data updates
+
+#### Services List Page (clientarea_services.php)
+- Styled page header with gradient background
+- Modern table design with hover effects
+- Clickable order links with pill-style buttons
+- Service description with domain info
+- Date cells with calendar icons
+- Invoice summary sidebar with styled header
+
+#### Domains List Page (clientarea_domains.php)
+- Consistent gradient header matching other pages
+- Domain name cells with globe icons
+- Registration and expiry dates with icons
+- Invoice summary sidebar with styled header
+- Empty state design for no domains
+
+#### Domain Detail Page (clientarea_domain_detail.php)
+- Nameserver management section with DNS type selector
+- Contact information form with country dropdown
+- Sync from registrar API button
+- Send EPP Code functionality with AJAX
+- Styled sidebar with domain information
+
+#### Invoices List Page (billing_invoices.php)
+- Modern table with styled invoice links
+- Amount cells with currency highlighting
+- Status badges with appropriate colors
+- Action buttons with hover animations
+- Invoice summary sidebar
+
+#### View Invoice Page (billing_viewinvoice.php)
+- Fixed footer overlap issue
+- Proper content-footer spacing with flexbox
+
+#### Tickets List Page (tickets.php)
+- Styled ticket links with hover effects
+- Priority and status badges
+- Department badges
+- Ticket subject with ellipsis for long titles
+- Invoice summary sidebar
+
+#### View Ticket Page (viewticket.php)
+- Ticket information sidebar with styled labels
+- Reply form card with Quill editor wrapper
+- Conversation thread with message bubbles
+- Color-coded messages (customer: blue, staff: green, original: purple)
+- Message avatars with gradient backgrounds
+- Helpful/Not Helpful feedback buttons
+- Attachment view buttons
+- Responsive message layout
+
+#### Technical Implementation
+- Added 400+ lines of CSS to `custom.css`
+- Flexbox layout for footer positioning
+- CSS transitions and hover effects
+- Media queries for responsive design
+
+#### Modified Files
+- `resources/assets/css/custom.css` - All new styles (CodeCanyon compliant)
+- `src/modules/clientarea/views/clientarea_index.php` - Dashboard redesign
+- `src/modules/clientarea/views/clientarea_services.php` - Services list
+- `src/modules/clientarea/views/clientarea_domains.php` - Domains list
+- `src/modules/clientarea/views/clientarea_domain_detail.php` - Domain detail
+- `src/modules/billing/views/billing_invoices.php` - Invoices list
+- `src/modules/billing/views/billing_viewinvoice.php` - View invoice
+- `src/modules/tickets/views/tickets.php` - Tickets list
+- `src/modules/tickets/views/viewticket.php` - View ticket
+- `src/modules/clientarea/controllers/Clientarea.php` - Domain API methods
+- `src/models/Clientarea_model.php` - Domain model methods
+- `src/views/templates/customer/domain_nav.php` - EPP code functionality
+
+---
+
 ## [1.0.8] - 2026-02-09
 
 ### Feature Enhancement - Admin Dashboard Widgets
@@ -774,6 +864,15 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.0.9] - 2026-02-11 - UI Enhancement
+- Complete client portal UI beautification
+- Modern dashboard with welcome banner and stat cards
+- Redesigned services, domains, invoices, and tickets list pages
+- Enhanced view ticket page with conversation thread styling
+- Consistent gradient theme across all client portal pages
+- All CSS externalized (CodeCanyon compliant)
+- Fixed footer positioning issue
+
 ### [1.0.8] - 2026-02-09 - Feature Enhancement
 - Added Last 12 Months Expenses chart to admin dashboard (Chart.js bar chart)
 - Added Domain Selling Prices widget with pricing table
@@ -963,6 +1062,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.0.8
-**Release Date:** February 9, 2026
-**Status:** Stable Production Release (Feature Enhancement)
+**Current Version:** 1.0.9
+**Release Date:** February 11, 2026
+**Status:** Stable Production Release (UI Enhancement)

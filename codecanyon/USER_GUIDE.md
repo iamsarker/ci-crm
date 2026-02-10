@@ -1,8 +1,8 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.0.8
-**Last Updated:** February 9, 2026
+**Version:** 1.0.9
+**Last Updated:** February 11, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
 ---
@@ -315,28 +315,36 @@ After registration, a verification email is automatically sent to your registere
 
 ### Dashboard Overview
 
-The customer dashboard provides a quick overview of your account:
+The customer dashboard provides a comprehensive overview of your account with a modern, professional design:
 
-**Widgets:**
-- **Active Services:** Number of active hosting/service orders
-- **Pending Invoices:** Unpaid invoices count and total amount
-- **Open Tickets:** Number of active support tickets
-- **Account Balance:** Current credit balance (if applicable)
+**Welcome Banner:**
+- Personalized greeting with your name
+- Quick description of available features
+- Quick action buttons:
+  - Register Domain
+  - Order Service
+  - Open Ticket
 
-**Quick Actions:**
-- Place New Order
-- Open Support Ticket
-- View Invoices
-- Search Knowledge Base
+**Stat Cards (Top Row):**
+- **Active Services:** Number of active hosting/service orders with server icon
+- **Registered Domains:** Total domain count with globe icon
+- **Support Tickets:** Number of support tickets with headset icon
+- **Total Invoices:** Invoice count with invoice icon
 
-**Recent Activity:**
-- Recent orders
-- Recent invoices
-- Recent support tickets
-- Recent announcements
+Each stat card features:
+- Gradient icon backgrounds
+- Real-time count display
+- Click to navigate to detailed list
+- Hover animation effects
+
+**Recent Activity Section:**
+- **Recent Support Tickets:** Latest tickets with priority and status badges
+- **Recent Invoices:** Latest invoices with amounts and payment status
+- View All links to full lists
+- Refresh buttons for real-time updates
 
 ![Customer Dashboard](screenshots/customer-dashboard.png)
-*[Screenshot Placeholder: Customer dashboard with widgets and quick actions]*
+*[Screenshot Placeholder: Customer dashboard with welcome banner and stat cards]*
 
 ### Navigation Menu
 
@@ -764,15 +772,35 @@ Available payment methods (configured by administrator):
 
 1. **Open Ticket**
    - Click on ticket from list
-   - View full conversation history
+   - View full conversation history in a modern thread layout
 
-2. **Add Reply**
-   - Scroll to bottom
-   - Type your message
-   - Attach files if needed
-   - Click "Reply"
+2. **Ticket Information Sidebar**
+   - Status badge showing current ticket state
+   - Department assignment
+   - Priority level with color-coded badge
+   - Submitted date
+   - Last updated date
 
-3. **Email Notifications**
+3. **Conversation Thread**
+   - Messages displayed as styled bubbles
+   - Color-coded by sender:
+     - **Blue border:** Your messages (customer)
+     - **Green border:** Staff/Admin replies
+     - **Purple border:** Original ticket message
+   - Each message shows:
+     - Sender name with avatar
+     - Timestamp
+     - Message content with rich text support
+     - Helpful/Not Helpful feedback buttons
+     - Attachment links (if any)
+
+4. **Add Reply**
+   - Use the rich text editor (Quill) at the top
+   - Format text with bold, italic, lists, links, etc.
+   - Attach files (GIF, JPG, PNG, PDF, TXT - max 5MB)
+   - Click "Send Reply" button
+
+5. **Email Notifications**
    - You receive email when support replies
    - Click link in email to view ticket
    - Reply via portal (not by email reply)
@@ -3039,7 +3067,7 @@ This guide covered:
 ---
 
 **Document Information:**
-- Version: 1.0.8
-- Last Updated: February 9, 2026
+- Version: 1.0.9
+- Last Updated: February 11, 2026
 - Product: WHMAZ - CI-CRM
 - Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.

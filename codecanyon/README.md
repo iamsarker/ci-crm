@@ -2,7 +2,7 @@
 
 > **The Ultimate WHMCS Alternative** - A comprehensive web hosting automation platform and client management system built with CodeIgniter 3.x
 
-[![Version](https://img.shields.io/badge/version-1.0.4-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.9-blue.svg)](CHANGELOG.md)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-8892BF.svg)](https://php.net)
 [![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.1.13-EE4623.svg)](https://codeigniter.com)
 [![License](https://img.shields.io/badge/license-Commercial-green.svg)](LICENSE.txt)
@@ -41,11 +41,13 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 - ✅ **Complete Business Automation** - From order placement to invoice generation
 - ✅ **Dual Portal System** - Separate client and admin interfaces
 - ✅ **Modern & Responsive** - Built with Bootstrap 5, works on all devices
+- ✅ **Beautiful Client Portal** - Professional UI with modern gradients and animations
 - ✅ **Secure by Design** - CSRF protection, XSS prevention, SQL injection prevention
-- ✅ **Domain Management** - ResellerClub/Resell.biz integration
+- ✅ **Domain Management** - ResellerClub/Resell.biz/Namecheap integration
 - ✅ **Extensible Architecture** - HMVC modular design for easy customization
 - ✅ **Production Ready** - Battle-tested code, ready to deploy
 - ✅ **Well Documented** - Comprehensive guides for users and developers
+- ✅ **CodeCanyon Compliant** - All CSS externalized, no inline styles
 
 ---
 
@@ -681,6 +683,46 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
 ---
 
 ## 📋 Changelog
+
+### Version 1.0.9 (February 2026) - Client Portal UI Enhancement
+
+**UI Redesign:**
+- Complete client portal beautification with modern, professional design
+- Dashboard redesign with welcome banner and stat cards
+- Services, domains, invoices, and tickets list pages with consistent styling
+- View ticket page with conversation thread and message bubbles
+- Consistent blue-purple gradient theme across all pages
+- All CSS externalized to `custom.css` (CodeCanyon compliant)
+- Fixed footer positioning with flexbox layout
+- Responsive design with mobile-friendly layouts
+- Domain detail page with nameserver management and contact sync
+
+### Version 1.0.8 (February 2026) - Admin Dashboard Widgets
+
+**New Features:**
+- Last 12 Months Expenses chart (Chart.js bar chart)
+- Domain Selling Prices widget with pricing table
+- Chart.js integration for data visualization
+
+### Version 1.0.7 (February 2026) - Security Enhancement
+
+**Security:**
+- Google reCAPTCHA v2 on Admin Portal login
+- JavaScript frame-busting for clickjacking protection
+
+### Version 1.0.6 (February 2026) - Public KB & Announcements
+
+**New Features:**
+- Public Knowledge Base pages (no auth required)
+- Public Announcements with archive filtering
+- Server-side pagination for KB and announcements
+
+### Version 1.0.5 (January 2026) - Email & Account Security
+
+**New Features:**
+- Raw SMTP email helper for reliable delivery
+- Email verification after registration
+- Change Password page in Client Portal
 
 ### Version 1.0.4 (January 2026) - Email Templates & Dunning
 
