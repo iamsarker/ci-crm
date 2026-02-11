@@ -1,7 +1,7 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.1.0
+**Version:** 1.2.0
 **Last Updated:** February 11, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
@@ -493,6 +493,37 @@ Each stat card features:
 
 ![Service Management](screenshots/service-details.png)
 *[Screenshot Placeholder: Service details page with actions]*
+
+### cPanel Usage Sync (Real-Time)
+
+For hosting services with cPanel, you can sync real-time usage statistics from your cPanel account.
+
+**Viewing Service Details:**
+1. Go to "Services" → "My Services"
+2. Click on a hosting service to view details
+3. The **Package / Usage** card shows your resource usage
+
+**Syncing cPanel Usage:**
+1. In the Service Detail page, find the "Package / Usage" card
+2. Click the **sync button** (rotating arrow icon) in the card header
+3. Wait for the sync to complete (button will spin while syncing)
+4. Usage data will update automatically:
+   - **Disk Space** - Used vs allocated storage
+   - **Bandwidth** - Monthly data transfer usage
+   - **Email Accounts** - Number of email accounts created
+   - **Databases** - Number of MySQL databases
+   - **Addon Domains** - Additional domains hosted
+
+**Usage Information:**
+- Progress bars show percentage of resources used
+- Green/blue bars indicate normal usage
+- Warning colors appear when approaching limits
+- "Last synced" timestamp shows when data was last updated
+
+**Note:** The sync button requires:
+- An active cPanel account linked to the service
+- Server connection configured by administrator
+- cPanel username set in the service configuration
 
 ---
 

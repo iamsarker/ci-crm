@@ -7,6 +7,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] - 2026-02-11
+
+### Enhancement - cPanel Real-Time Usage Sync
+
+#### cPanel Usage Statistics Sync
+- Real-time sync of hosting account usage from cPanel/WHM servers
+- Sync button in Service Detail page "Package / Usage" section
+- Fetches live data: Disk space, Bandwidth, Email accounts, Databases, Addon domains, Subdomains
+- Progress bars with percentage visualization
+- Last sync timestamp display
+- Data saved to database for persistence between page loads
+
+#### New Helper Functions
+- `whm_cpanel_api2_call()` - Call cPanel API2 functions via WHM API
+- `whm_get_account_stats()` - Fetch complete account usage statistics
+
+#### New Model Methods
+- `saveCpanelUsageStats()` - Save cPanel stats to order_services table
+- `getCpanelUsageStats()` - Retrieve stored cPanel stats with percentage calculations
+
+#### New API Endpoint
+- `clientarea/sync_cpanel_usage` - AJAX endpoint for syncing cPanel data
+
+#### Service Detail Page Beautification
+- Modern page header with gradient background and breadcrumbs
+- Domain banner with hostname, product name, and status badge
+- Sidebar with DNS card and quick actions
+- Order details card with icons
+- Usage/package card with real-time sync capability
+- Conditional description and instructions cards
+- Responsive design for mobile devices
+
+#### Database Changes
+New columns in `order_services` table:
+- `cp_disk_used`, `cp_disk_limit` - Disk usage in MB
+- `cp_bandwidth_used`, `cp_bandwidth_limit` - Bandwidth in MB
+- `cp_email_accounts`, `cp_email_limit` - Email account count
+- `cp_databases`, `cp_database_limit` - Database count
+- `cp_addon_domains`, `cp_addon_limit` - Addon domain count
+- `cp_subdomains`, `cp_subdomain_limit` - Subdomain count
+- `cp_last_sync` - Last sync timestamp
+
+#### Modified Files
+- `src/helpers/cpanel_helper.php` - New API2 call function and stats fetcher
+- `src/models/Clientarea_model.php` - Save/get cPanel usage methods
+- `src/modules/clientarea/controllers/Clientarea.php` - Sync endpoint
+- `src/modules/clientarea/views/clientarea_service_detail.php` - Complete redesign with sync
+- `resources/assets/css/custom.css` - Service detail page styles
+
+---
+
 ## [1.1.0] - 2026-02-11
 
 ### Enhancement - Ticket System & Security Fixes

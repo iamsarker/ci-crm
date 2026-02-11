@@ -2,7 +2,7 @@
 
 > **The Ultimate WHMCS Alternative** - A comprehensive web hosting automation platform and client management system built with CodeIgniter 3.x
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](CHANGELOG.md)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-8892BF.svg)](https://php.net)
 [![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.1.13-EE4623.svg)](https://codeigniter.com)
 [![License](https://img.shields.io/badge/license-Commercial-green.svg)](LICENSE.txt)
@@ -134,6 +134,7 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 - Server management
 - Product/Service modules
 - **Service product management with cPanel/WHM integration**
+- **Real-time cPanel usage sync** (disk, bandwidth, emails, databases, addon domains)
 - Domain extension pricing
 - **Email template management** (database-driven with Quill editor, categories, placeholders)
 - **Dunning rules management** (automated overdue payment collection workflow)
@@ -667,7 +668,11 @@ A: Single license = Single domain. Extended license available for multiple domai
 A: Yes! Sample Nginx configuration available in documentation.
 
 **Q: Can I integrate with cPanel/WHM?**
-A: Yes! cPanel/WHM integration is built-in. The system can list hosting packages from your WHM servers via API, and service products can be linked to cPanel packages with auto-populated descriptions.
+A: Yes! cPanel/WHM integration is built-in. Features include:
+- List hosting packages from WHM servers via API
+- Link service products to cPanel packages with auto-populated descriptions
+- **Real-time usage sync** - Customers can sync disk, bandwidth, emails, databases, addon domains from cPanel
+- Single sign-on to cPanel and Webmail
 
 ### Licensing & Usage
 

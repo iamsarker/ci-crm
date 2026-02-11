@@ -30,12 +30,82 @@ class Clientarea extends WHMAZ_Controller {
 		$data['detail'] = $this->Order_model->loadOrderServiceById(getCompanyId(), $id);
 
 		if( !empty($data['detail']) && !empty($data['detail']['product_service_pricing_id']) && is_numeric($data['detail']['product_service_pricing_id'])){
-			$data['dns'] = $this->Clientarea_model->getServerDnsInfo($data['detail']['product_service_pricing_id'])[0];
+			$dnsResult = $this->Clientarea_model->getServerDnsInfo($data['detail']['product_service_pricing_id']);
+			$data['dns'] = !empty($dnsResult) ? $dnsResult[0] : array();
 		} else {
 			$data['dns'] = array();
 		}
 
+		// Get cPanel usage stats if available
+		$data['cpanel_stats'] = $this->Clientarea_model->getCpanelUsageStats($id, getCompanyId());
+
 		$this->load->view('clientarea_service_detail', $data);
+	}
+
+	/**
+	 * Sync cPanel usage stats via AJAX
+	 */
+	public function sync_cpanel_usage() {
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
+		if (!$this->input->post()) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid request method'));
+			return;
+		}
+
+		$serviceId = $this->input->post('service_id');
+		$companyId = getCompanyId();
+
+		if (!is_numeric($serviceId) || $serviceId <= 0) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid service ID'));
+			return;
+		}
+
+		// Get service details
+		$serviceDetail = $this->Order_model->loadOrderServiceById($companyId, $serviceId);
+
+		if (empty($serviceDetail)) {
+			echo json_encode(array('success' => false, 'msg' => 'Service not found or access denied'));
+			return;
+		}
+
+		if (empty($serviceDetail['cp_username'])) {
+			echo json_encode(array('success' => false, 'msg' => 'cPanel username not configured for this service'));
+			return;
+		}
+
+		// Get server info
+		$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($serviceId, $companyId);
+
+		if (empty($serverInfo) || empty($serverInfo['hostname'])) {
+			echo json_encode(array('success' => false, 'msg' => 'Server information not found'));
+			return;
+		}
+
+		// Load cPanel helper
+		$this->load->helper('cpanel');
+
+		// Get usage stats from cPanel
+		$statsResult = whm_get_account_stats($serverInfo, $serviceDetail['cp_username']);
+
+		if (!$statsResult['success']) {
+			echo json_encode(array('success' => false, 'msg' => 'Failed to fetch cPanel stats: ' . ($statsResult['error'] ?? 'Unknown error')));
+			return;
+		}
+
+		// Save stats to database
+		$saveResult = $this->Clientarea_model->saveCpanelUsageStats($serviceId, $companyId, $statsResult['stats']);
+
+		if ($saveResult['success']) {
+			echo json_encode(array(
+				'success' => true,
+				'msg' => 'Usage stats synced successfully',
+				'stats' => $statsResult['stats']
+			));
+		} else {
+			echo json_encode($saveResult);
+		}
 	}
 
 	public function cpanel_single_sign_on($orderId, $serviceDetailId){

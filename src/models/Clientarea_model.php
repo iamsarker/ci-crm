@@ -263,5 +263,103 @@ class Clientarea_model extends CI_Model{
 			'updated_on' => date('Y-m-d H:i:s')
 		));
 	}
+
+	/**
+	 * Save cPanel usage stats to order_services
+	 */
+	function saveCpanelUsageStats($serviceId, $companyId, $stats) {
+		if (!is_numeric($serviceId) || !is_numeric($companyId) || $serviceId <= 0 || $companyId <= 0) {
+			return array('success' => false, 'msg' => 'Invalid service ID');
+		}
+
+		$data = array(
+			'cp_disk_used' => isset($stats['disk_used']) ? floatval($stats['disk_used']) : 0,
+			'cp_disk_limit' => isset($stats['disk_limit']) ? (is_numeric($stats['disk_limit']) ? floatval($stats['disk_limit']) : 0) : 0,
+			'cp_bandwidth_used' => isset($stats['bandwidth_used']) ? floatval($stats['bandwidth_used']) : 0,
+			'cp_bandwidth_limit' => isset($stats['bandwidth_limit']) ? (is_numeric($stats['bandwidth_limit']) ? floatval($stats['bandwidth_limit']) : 0) : 0,
+			'cp_email_accounts' => isset($stats['email_accounts']) ? intval($stats['email_accounts']) : 0,
+			'cp_email_limit' => isset($stats['email_limit']) ? (is_numeric($stats['email_limit']) ? intval($stats['email_limit']) : 0) : 0,
+			'cp_databases' => isset($stats['databases']) ? intval($stats['databases']) : 0,
+			'cp_database_limit' => isset($stats['database_limit']) ? (is_numeric($stats['database_limit']) ? intval($stats['database_limit']) : 0) : 0,
+			'cp_addon_domains' => isset($stats['addon_domains']) ? intval($stats['addon_domains']) : 0,
+			'cp_addon_limit' => isset($stats['addon_limit']) ? (is_numeric($stats['addon_limit']) ? intval($stats['addon_limit']) : 0) : 0,
+			'cp_subdomains' => isset($stats['subdomains']) ? intval($stats['subdomains']) : 0,
+			'cp_subdomain_limit' => isset($stats['subdomain_limit']) ? (is_numeric($stats['subdomain_limit']) ? intval($stats['subdomain_limit']) : 0) : 0,
+			'cp_last_sync' => date('Y-m-d H:i:s'),
+			'updated_on' => date('Y-m-d H:i:s')
+		);
+
+		$this->db->where('id', intval($serviceId));
+		$this->db->where('company_id', intval($companyId));
+
+		if ($this->db->update('order_services', $data)) {
+			return array('success' => true, 'msg' => 'Usage stats synced successfully');
+		}
+
+		return array('success' => false, 'msg' => 'Failed to save usage stats');
+	}
+
+	/**
+	 * Get cPanel usage stats for a service
+	 */
+	function getCpanelUsageStats($serviceId, $companyId) {
+		if (!is_numeric($serviceId) || !is_numeric($companyId) || $serviceId <= 0 || $companyId <= 0) {
+			return array();
+		}
+
+		$sql = "SELECT cp_disk_used, cp_disk_limit, cp_bandwidth_used, cp_bandwidth_limit,
+					   cp_email_accounts, cp_email_limit, cp_databases, cp_database_limit,
+					   cp_addon_domains, cp_addon_limit, cp_subdomains, cp_subdomain_limit,
+					   cp_last_sync
+				FROM order_services
+				WHERE id = ? AND company_id = ?";
+
+		$result = $this->db->query($sql, array(intval($serviceId), intval($companyId)))->row_array();
+
+		if (empty($result)) {
+			return array();
+		}
+
+		// Calculate percentages
+		$stats = array(
+			'disk_used' => floatval($result['cp_disk_used'] ?? 0),
+			'disk_limit' => $result['cp_disk_limit'] > 0 ? floatval($result['cp_disk_limit']) : 'unlimited',
+			'disk_percent' => 0,
+			'bandwidth_used' => floatval($result['cp_bandwidth_used'] ?? 0),
+			'bandwidth_limit' => $result['cp_bandwidth_limit'] > 0 ? floatval($result['cp_bandwidth_limit']) : 'unlimited',
+			'bandwidth_percent' => 0,
+			'email_accounts' => intval($result['cp_email_accounts'] ?? 0),
+			'email_limit' => $result['cp_email_limit'] > 0 ? intval($result['cp_email_limit']) : 'unlimited',
+			'email_percent' => 0,
+			'databases' => intval($result['cp_databases'] ?? 0),
+			'database_limit' => $result['cp_database_limit'] > 0 ? intval($result['cp_database_limit']) : 'unlimited',
+			'database_percent' => 0,
+			'addon_domains' => intval($result['cp_addon_domains'] ?? 0),
+			'addon_limit' => $result['cp_addon_limit'] > 0 ? intval($result['cp_addon_limit']) : 'unlimited',
+			'addon_percent' => 0,
+			'subdomains' => intval($result['cp_subdomains'] ?? 0),
+			'subdomain_limit' => $result['cp_subdomain_limit'] > 0 ? intval($result['cp_subdomain_limit']) : 'unlimited',
+			'last_sync' => $result['cp_last_sync'] ?? null
+		);
+
+		// Calculate percentages
+		if ($stats['disk_limit'] !== 'unlimited' && $stats['disk_limit'] > 0) {
+			$stats['disk_percent'] = min(100, round(($stats['disk_used'] / $stats['disk_limit']) * 100, 1));
+		}
+		if ($stats['bandwidth_limit'] !== 'unlimited' && $stats['bandwidth_limit'] > 0) {
+			$stats['bandwidth_percent'] = min(100, round(($stats['bandwidth_used'] / $stats['bandwidth_limit']) * 100, 1));
+		}
+		if ($stats['email_limit'] !== 'unlimited' && $stats['email_limit'] > 0) {
+			$stats['email_percent'] = min(100, round(($stats['email_accounts'] / $stats['email_limit']) * 100, 1));
+		}
+		if ($stats['database_limit'] !== 'unlimited' && $stats['database_limit'] > 0) {
+			$stats['database_percent'] = min(100, round(($stats['databases'] / $stats['database_limit']) * 100, 1));
+		}
+		if ($stats['addon_limit'] !== 'unlimited' && $stats['addon_limit'] > 0) {
+			$stats['addon_percent'] = min(100, round(($stats['addon_domains'] / $stats['addon_limit']) * 100, 1));
+		}
+
+		return $stats;
+	}
 }
 ?>

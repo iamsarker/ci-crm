@@ -280,6 +280,30 @@ The Client Portal is built using HMVC modules and provides customer-facing funct
 - Status badges with color-coded icons
 - Empty state styling with dashed borders
 
+**Service Detail Page (`/clientarea/service_detail/{id}`):**
+- Modern page header with gradient background and breadcrumbs
+- Domain banner with hostname, product name, and status badge
+- Sidebar with Server DNS card and quick actions
+- Order details card with icons (registration date, expiry, renewal amount, billing cycle)
+- **Package/Usage card with real-time cPanel sync:**
+  - Disk space usage with progress bar
+  - Bandwidth usage with progress bar
+  - Email accounts count
+  - Databases count
+  - Addon domains count
+  - Sync button to fetch live data from cPanel
+  - Last sync timestamp display
+- Conditional description and instructions cards
+- cPanel Single Sign-On button
+- Webmail Single Sign-On button
+
+**cPanel Sync API Endpoint:**
+- URL: `/clientarea/sync_cpanel_usage` (POST)
+- Parameters: `service_id`
+- Returns: JSON with success status and usage stats
+- Uses `whm_get_account_stats()` from cpanel_helper
+- Saves stats to `order_services` table for persistence
+
 ### 6. Support Ticket System (Client Side)
 **Module:** `src/modules/tickets/` and `src/modules/supports/`
 
@@ -1240,6 +1264,19 @@ Available in footer for both admin and client portals
 | `product_service_pricing_id` | INT(11) | Foreign key to `product_service_pricing` table |
 | `product_service_type_key` | VARCHAR(150) | Service type identifier key (e.g., 'SHARED_HOSTING', 'RESELLER_HOSTING') |
 | `cp_username` | VARCHAR(50) | cPanel username for hosting accounts (used for SSO) |
+| `cp_disk_used` | DECIMAL(10,2) | cPanel disk usage in MB |
+| `cp_disk_limit` | DECIMAL(10,2) | cPanel disk limit in MB (0=unlimited) |
+| `cp_bandwidth_used` | DECIMAL(10,2) | cPanel bandwidth usage in MB |
+| `cp_bandwidth_limit` | DECIMAL(10,2) | cPanel bandwidth limit in MB (0=unlimited) |
+| `cp_email_accounts` | INT | Number of email accounts |
+| `cp_email_limit` | INT | Email account limit (0=unlimited) |
+| `cp_databases` | INT | Number of MySQL databases |
+| `cp_database_limit` | INT | Database limit (0=unlimited) |
+| `cp_addon_domains` | INT | Number of addon domains |
+| `cp_addon_limit` | INT | Addon domain limit (0=unlimited) |
+| `cp_subdomains` | INT | Number of subdomains |
+| `cp_subdomain_limit` | INT | Subdomain limit (0=unlimited) |
+| `cp_last_sync` | DATETIME | Last cPanel sync timestamp |
 | `billing_cycle_id` | INT(11) | Foreign key to `billing_cycle` table |
 | `description` | TEXT | Service description |
 | `first_pay_amount` | DOUBLE | Initial payment amount |
@@ -1403,14 +1440,38 @@ DataTables server-side processing for large datasets
 
 **Functions:**
 - `whm_api_call($serverInfo, $function, $params)` - Make WHM API calls to remote servers
-- `whm_list_packages($serverInfo)` - List all hosting packages from a WHM server (returns name, quota, bandwidth, FTP, SQL, email, addon domains, subdomains, shell access, CGI)
+- `whm_cpanel_api2_call($serverInfo, $cpanelUser, $module, $function, $params)` - Call cPanel API2 functions via WHM
+- `whm_list_packages($serverInfo)` - List all hosting packages from a WHM server
+- `whm_get_account_stats($serverInfo, $username)` - Get cPanel account usage statistics (disk, bandwidth, emails, databases, addon domains, subdomains)
+- `whm_get_account_info($serverInfo, $username)` - Get cPanel account summary
+- `whm_create_account($serverInfo, $domain, $username, $password, $plan, $email)` - Create cPanel account
+- `whm_suspend_account($serverInfo, $username, $reason)` - Suspend cPanel account
+- `whm_unsuspend_account($serverInfo, $username)` - Unsuspend cPanel account
+- `whm_terminate_account($serverInfo, $username, $keepDns)` - Remove cPanel account
+- `whm_change_password($serverInfo, $username, $newPassword)` - Change cPanel password
+- `generate_cpanel_username($domain, $serverInfo)` - Generate valid cPanel username from domain
 
-**Usage:**
+**Usage - List Packages:**
 ```php
 $this->load->helper('cpanel');
 $serverInfo = $this->Server_model->getDetail($serverId);
 $result = whm_list_packages($serverInfo);
 // Returns: array('success' => true, 'packages' => array(...))
+```
+
+**Usage - Get Account Stats (Real-time Sync):**
+```php
+$this->load->helper('cpanel');
+$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($serviceId, $companyId);
+$result = whm_get_account_stats($serverInfo, $cpanelUsername);
+// Returns: array('success' => true, 'stats' => array(
+//   'disk_used', 'disk_limit', 'disk_percent',
+//   'bandwidth_used', 'bandwidth_limit', 'bandwidth_percent',
+//   'email_accounts', 'email_limit', 'email_percent',
+//   'databases', 'database_limit', 'database_percent',
+//   'addon_domains', 'addon_limit', 'addon_percent',
+//   'subdomains', 'subdomain_limit', 'last_sync'
+// ))
 ```
 
 #### whmaz_helper.php (50+ functions)

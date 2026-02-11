@@ -1631,6 +1631,354 @@ footer.footer {
 }
 
 /* ==========================================================================
+   Client Area - Service Detail Page Styles
+   ========================================================================== */
+
+/* Service Domain Banner */
+.service-domain-banner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
+    border-radius: 12px;
+    padding: 25px 30px;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(1, 104, 250, 0.3);
+}
+
+.service-domain-banner .domain-icon {
+    width: 70px;
+    height: 70px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+}
+
+.service-domain-banner .domain-info {
+    flex: 1;
+}
+
+.service-domain-banner .domain-name {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0 0 5px 0;
+    color: #fff;
+}
+
+.service-domain-banner .domain-product {
+    opacity: 0.85;
+    font-size: 14px;
+}
+
+.service-domain-banner .domain-status {
+    flex-shrink: 0;
+}
+
+.service-domain-banner .domain-status .badge {
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 20px;
+}
+
+/* DNS Card */
+.service-dns-card .card-body {
+    padding: 0;
+}
+
+.dns-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.dns-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid #e9ecef;
+    transition: background 0.2s ease;
+}
+
+.dns-item:last-child {
+    border-bottom: none;
+}
+
+.dns-item:hover {
+    background: #f8fafc;
+}
+
+.dns-item-highlight {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
+}
+
+.dns-item-highlight:hover {
+    background: linear-gradient(135deg, #e8f4ff 0%, #dbeeff 100%);
+}
+
+.dns-label {
+    font-size: 13px;
+    color: #5a6b82;
+}
+
+.dns-value {
+    font-size: 13px;
+    color: #1c273c;
+    font-family: monospace;
+    background: #f1f5f9;
+    padding: 3px 8px;
+    border-radius: 4px;
+}
+
+/* Service Detail Cards */
+.service-detail-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    overflow: hidden;
+    height: 100%;
+}
+
+.service-detail-header {
+    background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
+    color: #fff;
+    padding: 15px 20px;
+    border: none;
+}
+
+.service-detail-header h5 {
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.service-detail-header h5 i {
+    opacity: 0.9;
+}
+
+.service-detail-header-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #0dcaf0 100%);
+}
+
+.service-detail-header-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+}
+
+.service-detail-header-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #ffca2c 100%);
+    color: #1c273c;
+}
+
+.service-detail-header-warning h5 {
+    color: #1c273c;
+}
+
+/* Detail List */
+.detail-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-item-highlight {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f4ff 100%);
+    margin: 0 -20px;
+    padding: 14px 20px;
+}
+
+.detail-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #e8f4ff 0%, #dbeeff 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0168fa;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.detail-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.detail-label {
+    font-size: 12px;
+    color: #7987a1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-value {
+    font-size: 14px;
+    color: #1c273c;
+    font-weight: 500;
+}
+
+/* Usage List */
+.usage-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.usage-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.usage-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.usage-label {
+    font-size: 13px;
+    color: #5a6b82;
+}
+
+.usage-label i {
+    color: #0168fa;
+}
+
+.usage-value {
+    font-size: 12px;
+    color: #7987a1;
+    font-family: monospace;
+}
+
+.usage-progress {
+    height: 8px;
+    border-radius: 4px;
+    background: #e9ecef;
+}
+
+.usage-progress .progress-bar {
+    border-radius: 4px;
+}
+
+.bg-purple {
+    background-color: #6f42c1 !important;
+}
+
+/* Usage Sync Info */
+.usage-sync-info {
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border-left: 3px solid #0168fa;
+}
+
+.usage-sync-info small {
+    display: flex;
+    align-items: center;
+}
+
+.usage-sync-info .text-warning {
+    color: #f59f00 !important;
+}
+
+/* Sync Button in Header */
+.service-detail-header #syncCpanelBtn {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.service-detail-header #syncCpanelBtn:hover {
+    background-color: #fff;
+    transform: rotate(180deg);
+}
+
+.service-detail-header #syncCpanelBtn:disabled {
+    transform: none;
+    opacity: 0.7;
+}
+
+/* Product Description */
+.product-description {
+    font-size: 14px;
+    color: #5a6b82;
+    line-height: 1.7;
+}
+
+.product-description ul {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+
+.product-description li {
+    margin-bottom: 5px;
+}
+
+/* Service Instructions */
+.service-instructions {
+    font-size: 14px;
+    color: #5a6b82;
+    line-height: 1.7;
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+/* Responsive Adjustments for Service Detail */
+@media (max-width: 768px) {
+    .service-domain-banner {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .service-domain-banner .domain-info {
+        order: 1;
+    }
+
+    .service-domain-banner .domain-icon {
+        order: 0;
+    }
+
+    .service-domain-banner .domain-status {
+        order: 2;
+        margin-top: 10px;
+    }
+
+    .service-domain-banner .domain-name {
+        font-size: 18px;
+    }
+
+    .detail-item-highlight {
+        margin: 0 -15px;
+        padding: 14px 15px;
+    }
+}
+
+/* ==========================================================================
    Client Area - View Ticket Page Styles
    ========================================================================== */
 
@@ -1975,5 +2323,499 @@ footer.footer {
 
     .btn-reply-submit {
         width: 100%;
+    }
+}
+
+/* ==========================================================================
+   Cart Services Page Styles
+   ========================================================================== */
+
+/* Page Header - Cart */
+.page-header-cart {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 25px 30px;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.page-header-cart h3 {
+    color: #fff;
+    font-weight: 600;
+}
+
+.page-header-cart .breadcrumb {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+}
+
+.page-header-cart .breadcrumb-item a {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.page-header-cart .breadcrumb-item.active {
+    color: #fff;
+}
+
+.page-header-cart .breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Services Intro Banner */
+.services-intro-banner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fd 100%);
+    border: 1px solid #e1e8f0;
+    border-radius: 12px;
+    padding: 20px 25px;
+}
+
+.services-intro-banner .intro-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.services-intro-banner .intro-icon i {
+    font-size: 24px;
+    color: #fff;
+}
+
+.services-intro-banner .intro-content h4 {
+    margin: 0 0 5px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1c273c;
+}
+
+.services-intro-banner .intro-content p {
+    margin: 0;
+    font-size: 14px;
+    color: #5a6b82;
+}
+
+/* Plan Cards */
+.plan-card {
+    background: #fff;
+    border: 1px solid #e1e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.plan-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+}
+
+.plan-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    text-align: center;
+}
+
+.plan-name {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.plan-body {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.plan-description {
+    font-size: 13px;
+    color: #5a6b82;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex: 1;
+}
+
+.plan-description ul {
+    padding-left: 18px;
+    margin: 0;
+}
+
+.plan-description li {
+    margin-bottom: 5px;
+}
+
+/* Price Display */
+.plan-pricing {
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #f8f9ff;
+    border-radius: 8px;
+}
+
+.price-display {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 5px;
+}
+
+.price-amount {
+    font-size: 32px;
+    font-weight: 700;
+    color: #667eea;
+    line-height: 1;
+}
+
+.price-currency {
+    font-size: 16px;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.price-cycle {
+    font-size: 14px;
+    color: #7987a1;
+}
+
+/* Plan Select */
+.plan-select {
+    margin-bottom: 15px;
+}
+
+.plan-select .select-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: #7987a1;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.plan-select .form-select {
+    border: 1px solid #e1e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.plan-select .form-select:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+/* Plan Footer */
+.plan-footer {
+    padding: 0 20px 20px;
+}
+
+.btn-choose-plan {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    transition: all 0.3s ease;
+    color: #fff;
+}
+
+.btn-choose-plan:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: #fff;
+}
+
+/* Empty State */
+.empty-state-card {
+    text-align: center;
+    padding: 60px 30px;
+    background: #fff;
+    border: 2px dashed #e1e8f0;
+    border-radius: 12px;
+}
+
+.empty-state-card .empty-icon {
+    width: 80px;
+    height: 80px;
+    background: #f8f9ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.empty-state-card .empty-icon i {
+    font-size: 32px;
+    color: #667eea;
+}
+
+.empty-state-card h4 {
+    margin: 0 0 10px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1c273c;
+}
+
+.empty-state-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #7987a1;
+}
+
+/* Domain Modal Styles */
+.domain-modal-content {
+    border: none;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.domain-modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 25px 30px;
+    border: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.domain-modal-header .modal-header-icon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.domain-modal-header .modal-header-icon i {
+    font-size: 22px;
+    color: #fff;
+}
+
+.domain-modal-header .modal-header-text {
+    flex: 1;
+}
+
+.domain-modal-header .modal-title {
+    color: #fff;
+    font-weight: 600;
+    margin: 0 0 5px;
+}
+
+.domain-modal-header .modal-subtitle {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 13px;
+    margin: 0;
+}
+
+.domain-modal-header .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+}
+
+.domain-modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+.domain-modal-body {
+    padding: 30px;
+}
+
+.domain-input-section {
+    margin-bottom: 25px;
+}
+
+.domain-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1c273c;
+    margin-bottom: 10px;
+}
+
+.domain-input-wrapper {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #e1e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.domain-input-wrapper:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.domain-prefix {
+    background: #f8f9ff;
+    padding: 12px 15px;
+    font-size: 14px;
+    color: #7987a1;
+    border-right: 1px solid #e1e8f0;
+}
+
+.domain-input {
+    border: none;
+    border-radius: 0;
+    padding: 12px 15px;
+    font-size: 15px;
+}
+
+.domain-input:focus {
+    box-shadow: none;
+}
+
+.domain-hint {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #7987a1;
+}
+
+.domain-type-section {
+    margin-bottom: 10px;
+}
+
+.domain-type-options {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.domain-type-option {
+    flex: 1;
+    min-width: 140px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.domain-type-option input[type="radio"] {
+    display: none;
+}
+
+.domain-type-option .option-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+    background: #f8f9ff;
+    border: 2px solid #e1e8f0;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.domain-type-option:hover .option-content {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.domain-type-option.active .option-content {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+}
+
+.domain-type-option .option-icon {
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.domain-type-option .option-icon i {
+    font-size: 16px;
+    color: #667eea;
+}
+
+.domain-type-option .option-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.domain-type-option .option-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1c273c;
+}
+
+.domain-type-option .option-desc {
+    font-size: 11px;
+    color: #7987a1;
+}
+
+.domain-modal-footer {
+    padding: 20px 30px;
+    background: #f8f9ff;
+    border-top: 1px solid #e1e8f0;
+}
+
+.domain-modal-footer .btn {
+    padding: 10px 20px;
+    font-weight: 500;
+    border-radius: 8px;
+}
+
+.domain-modal-footer .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.domain-modal-footer .btn-primary:hover {
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Responsive - Cart Services */
+@media (max-width: 768px) {
+    .services-intro-banner {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .plan-card {
+        margin-bottom: 15px;
+    }
+
+    .domain-type-options {
+        flex-direction: column;
+    }
+
+    .domain-type-option {
+        min-width: 100%;
+    }
+
+    .domain-modal-header {
+        flex-wrap: wrap;
+    }
+
+    .domain-modal-header .btn-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
     }
 }

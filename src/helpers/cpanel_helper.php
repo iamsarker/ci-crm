@@ -575,6 +575,246 @@ if (!function_exists('whm_modify_account')) {
 }
 
 /**
+ * Call cPanel API2 function via WHM API
+ *
+ * @param array $serverInfo Server information with hostname, username, access_hash
+ * @param string $cpanelUser cPanel username to execute the function for
+ * @param string $module API2 module name (e.g., 'Email', 'MysqlFE', 'AddonDomain')
+ * @param string $function API2 function name (e.g., 'listpops', 'listdbs')
+ * @param array $params Additional parameters for the API function
+ * @return array Response with success status and data
+ */
+if (!function_exists('whm_cpanel_api2_call')) {
+    function whm_cpanel_api2_call($serverInfo, $cpanelUser, $module, $function, $params = array()) {
+        // Validate server info
+        if (empty($serverInfo) || empty($serverInfo['hostname']) || empty($serverInfo['username']) || empty($serverInfo['access_hash'])) {
+            return array(
+                'success' => false,
+                'error' => 'Invalid server configuration'
+            );
+        }
+
+        // Build API2 URL
+        $url = "https://" . $serverInfo['hostname'] . ":2087/json-api/cpanel";
+
+        // Add required parameters for API2
+        $params['cpanel_jsonapi_user'] = $cpanelUser;
+        $params['cpanel_jsonapi_module'] = $module;
+        $params['cpanel_jsonapi_func'] = $function;
+        $params['cpanel_jsonapi_apiversion'] = 2;
+        $params['api.version'] = 1;
+
+        $url .= '?' . http_build_query($params);
+
+        // Initialize cURL
+        $curl = curl_init();
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 60);
+
+        // Decode access hash
+        $accessHash = preg_replace("'(\r|\n)'", "", base64_decode(base64_decode($serverInfo['access_hash'])));
+
+        // Set authorization header
+        $headers = array(
+            "Authorization: WHM " . $serverInfo['username'] . ":" . $accessHash
+        );
+
+        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($curl, CURLOPT_URL, $url);
+
+        $result = curl_exec($curl);
+        $curlError = curl_error($curl);
+        curl_close($curl);
+
+        if ($result === false) {
+            log_message('error', 'WHM API2 cURL error: ' . $curlError);
+            return array(
+                'success' => false,
+                'error' => 'Failed to connect to server: ' . $curlError
+            );
+        }
+
+        log_message('debug', 'WHM API2 Response for ' . $module . '::' . $function . ': ' . substr($result, 0, 500));
+
+        $response = json_decode($result, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            log_message('error', 'WHM API2 JSON decode error: ' . json_last_error_msg());
+            return array(
+                'success' => false,
+                'error' => 'Invalid response from server'
+            );
+        }
+
+        return array('success' => true, 'data' => $response);
+    }
+}
+
+/**
+ * Get cPanel account usage statistics (bandwidth, disk, email, databases, addon domains)
+ *
+ * @param array $serverInfo Server information with hostname, username, access_hash
+ * @param string $username cPanel username
+ * @return array Response with usage stats or error
+ */
+if (!function_exists('whm_get_account_stats')) {
+    function whm_get_account_stats($serverInfo, $username) {
+        // Get account summary first for basic info
+        $accountInfo = whm_api_call($serverInfo, 'accountsummary', array('user' => $username));
+
+        if (!$accountInfo['success']) {
+            return $accountInfo;
+        }
+
+        $stats = array(
+            'disk_used' => 0,
+            'disk_limit' => 'unlimited',
+            'disk_percent' => 0,
+            'bandwidth_used' => 0,
+            'bandwidth_limit' => 'unlimited',
+            'bandwidth_percent' => 0,
+            'email_accounts' => 0,
+            'email_limit' => 'unlimited',
+            'email_percent' => 0,
+            'databases' => 0,
+            'database_limit' => 'unlimited',
+            'database_percent' => 0,
+            'addon_domains' => 0,
+            'addon_limit' => 'unlimited',
+            'addon_percent' => 0,
+            'subdomains' => 0,
+            'subdomain_limit' => 'unlimited',
+            'ftp_accounts' => 0,
+            'ftp_limit' => 'unlimited',
+            'parked_domains' => 0,
+            'parked_limit' => 'unlimited',
+            'last_sync' => date('Y-m-d H:i:s')
+        );
+
+        // Parse account summary data
+        if (isset($accountInfo['data']['data']['acct'][0])) {
+            $acct = $accountInfo['data']['data']['acct'][0];
+
+            // Disk usage (in MB)
+            if (isset($acct['diskused'])) {
+                $stats['disk_used'] = floatval(preg_replace('/[^0-9.]/', '', $acct['diskused']));
+            }
+            if (isset($acct['disklimit'])) {
+                $limit = $acct['disklimit'];
+                if (strtolower($limit) !== 'unlimited' && $limit !== '0' && $limit !== 0) {
+                    $stats['disk_limit'] = floatval(preg_replace('/[^0-9.]/', '', $limit));
+                    if ($stats['disk_limit'] > 0) {
+                        $stats['disk_percent'] = min(100, round(($stats['disk_used'] / $stats['disk_limit']) * 100, 1));
+                    }
+                }
+            }
+
+            // Email accounts limit from package
+            if (isset($acct['maxpop'])) {
+                $stats['email_limit'] = $acct['maxpop'] == 'unlimited' || $acct['maxpop'] == 0 ? 'unlimited' : intval($acct['maxpop']);
+            }
+
+            // Database limit
+            if (isset($acct['maxsql'])) {
+                $stats['database_limit'] = $acct['maxsql'] == 'unlimited' || $acct['maxsql'] == 0 ? 'unlimited' : intval($acct['maxsql']);
+            }
+
+            // Addon domains limit
+            if (isset($acct['maxaddons'])) {
+                $stats['addon_limit'] = $acct['maxaddons'] == 'unlimited' || $acct['maxaddons'] == 0 ? 'unlimited' : intval($acct['maxaddons']);
+            }
+
+            // Subdomain limit
+            if (isset($acct['maxsub'])) {
+                $stats['subdomain_limit'] = $acct['maxsub'] == 'unlimited' || $acct['maxsub'] == 0 ? 'unlimited' : intval($acct['maxsub']);
+            }
+
+            // FTP limit
+            if (isset($acct['maxftp'])) {
+                $stats['ftp_limit'] = $acct['maxftp'] == 'unlimited' || $acct['maxftp'] == 0 ? 'unlimited' : intval($acct['maxftp']);
+            }
+
+            // Parked domains limit
+            if (isset($acct['maxparked'])) {
+                $stats['parked_limit'] = $acct['maxparked'] == 'unlimited' || $acct['maxparked'] == 0 ? 'unlimited' : intval($acct['maxparked']);
+            }
+        }
+
+        // Get bandwidth usage
+        $bwResult = whm_api_call($serverInfo, 'showbw', array('searchtype' => 'user', 'search' => $username));
+        if ($bwResult['success'] && isset($bwResult['data']['data']['acct'][0])) {
+            $bwData = $bwResult['data']['data']['acct'][0];
+            if (isset($bwData['totalbytes'])) {
+                // Convert bytes to MB
+                $stats['bandwidth_used'] = round(floatval($bwData['totalbytes']) / (1024 * 1024), 2);
+            }
+            if (isset($bwData['limit'])) {
+                $limit = $bwData['limit'];
+                if ($limit > 0) {
+                    // Convert bytes to MB
+                    $stats['bandwidth_limit'] = round(floatval($limit) / (1024 * 1024), 2);
+                    if ($stats['bandwidth_limit'] > 0) {
+                        $stats['bandwidth_percent'] = min(100, round(($stats['bandwidth_used'] / $stats['bandwidth_limit']) * 100, 1));
+                    }
+                }
+            }
+        }
+
+        // Get email account count using API2 via WHM
+        $emailResult = whm_cpanel_api2_call($serverInfo, $username, 'Email', 'listpops');
+        if ($emailResult['success'] && isset($emailResult['data']['cpanelresult']['data'])) {
+            $emailData = $emailResult['data']['cpanelresult']['data'];
+            if (is_array($emailData)) {
+                $stats['email_accounts'] = count($emailData);
+            }
+        }
+
+        // Get database count using API2
+        $dbResult = whm_cpanel_api2_call($serverInfo, $username, 'MysqlFE', 'listdbs');
+        if ($dbResult['success'] && isset($dbResult['data']['cpanelresult']['data'])) {
+            $dbData = $dbResult['data']['cpanelresult']['data'];
+            if (is_array($dbData)) {
+                $stats['databases'] = count($dbData);
+            }
+        }
+
+        // Get addon domains count using API2
+        $addonResult = whm_cpanel_api2_call($serverInfo, $username, 'AddonDomain', 'listaddondomains');
+        if ($addonResult['success'] && isset($addonResult['data']['cpanelresult']['data'])) {
+            $addonData = $addonResult['data']['cpanelresult']['data'];
+            if (is_array($addonData)) {
+                $stats['addon_domains'] = count($addonData);
+            }
+        }
+
+        // Get subdomain count using API2
+        $subResult = whm_cpanel_api2_call($serverInfo, $username, 'SubDomain', 'listsubdomains');
+        if ($subResult['success'] && isset($subResult['data']['cpanelresult']['data'])) {
+            $subData = $subResult['data']['cpanelresult']['data'];
+            if (is_array($subData)) {
+                $stats['subdomains'] = count($subData);
+            }
+        }
+
+        // Calculate percentages for items with limits
+        if ($stats['email_limit'] !== 'unlimited' && $stats['email_limit'] > 0) {
+            $stats['email_percent'] = min(100, round(($stats['email_accounts'] / $stats['email_limit']) * 100, 1));
+        }
+        if ($stats['database_limit'] !== 'unlimited' && $stats['database_limit'] > 0) {
+            $stats['database_percent'] = min(100, round(($stats['databases'] / $stats['database_limit']) * 100, 1));
+        }
+        if ($stats['addon_limit'] !== 'unlimited' && $stats['addon_limit'] > 0) {
+            $stats['addon_percent'] = min(100, round(($stats['addon_domains'] / $stats['addon_limit']) * 100, 1));
+        }
+
+        return array('success' => true, 'stats' => $stats);
+    }
+}
+
+/**
  * List all hosting packages on a WHM server
  *
  * @param array $serverInfo Server information with hostname, username, access_hash
