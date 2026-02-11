@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 29, 2026 at 08:25 AM
+-- Generation Time: Feb 10, 2026 at 11:08 PM
 -- Server version: 10.11.11-MariaDB-cll-lve
 -- PHP Version: 8.3.20
 
@@ -28,30 +28,37 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `add_to_carts` (
-	`id` bigint(20) NOT NULL,
-	`user_id` int(11) NOT NULL DEFAULT 0,
-	`customer_session_id` bigint(20) DEFAULT NULL,
-	`item_type` tinyint(4) NOT NULL COMMENT '1=domain, 2=product_service',
-	`product_service_id` int(11) NOT NULL DEFAULT 0,
-	`note` text DEFAULT NULL,
-	`hosting_domain` varchar(200) DEFAULT NULL,
-	`hosting_domain_type` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0=DNS,1=REGISTER,2=TRANSFER',
-	`sub_total` decimal(15,2) NOT NULL DEFAULT 0.00,
-	`tax` decimal(15,2) NOT NULL DEFAULT 0.00,
-	`vat` decimal(15,2) NOT NULL DEFAULT 0.00,
-	`total` decimal(15,2) NOT NULL DEFAULT 0.00,
-	`quantity` int(11) NOT NULL DEFAULT 1,
-	`product_service_pricing_id` int(11) NOT NULL DEFAULT 0,
-	`dom_pricing_id` int(11) NOT NULL DEFAULT 0,
-	`currency_id` int(11) NOT NULL,
-	`currency_code` varchar(3) DEFAULT NULL,
-	`billing_cycle_id` int(11) NOT NULL,
-	`billing_cycle` varchar(12) DEFAULT NULL,
-	`inserted_on` datetime DEFAULT NULL,
-	`inserted_by` int(11) DEFAULT NULL,
-	`updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-	`updated_by` int(11) DEFAULT NULL
+  `id` bigint(20) NOT NULL,
+  `user_id` int(11) NOT NULL DEFAULT 0,
+  `customer_session_id` bigint(20) DEFAULT NULL,
+  `item_type` tinyint(4) NOT NULL COMMENT '1=domain, 2=product_service',
+  `product_service_id` int(11) NOT NULL DEFAULT 0,
+  `note` text DEFAULT NULL,
+  `hosting_domain` varchar(200) DEFAULT NULL,
+  `hosting_domain_type` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0=DNS,1=REGISTER,2=TRANSFER',
+  `sub_total` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `tax` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `vat` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `total` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `product_service_pricing_id` int(11) NOT NULL DEFAULT 0,
+  `dom_pricing_id` int(11) NOT NULL DEFAULT 0,
+  `currency_id` int(11) NOT NULL,
+  `currency_code` varchar(3) DEFAULT NULL,
+  `billing_cycle_id` int(11) NOT NULL,
+  `billing_cycle` varchar(12) DEFAULT NULL,
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `add_to_carts`
+--
+
+INSERT INTO `add_to_carts` (`id`, `user_id`, `customer_session_id`, `item_type`, `product_service_id`, `note`, `hosting_domain`, `hosting_domain_type`, `sub_total`, `tax`, `vat`, `total`, `quantity`, `product_service_pricing_id`, `dom_pricing_id`, `currency_id`, `currency_code`, `billing_cycle_id`, `billing_cycle`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(15, 0, 1769704314539, 2, 3, '3GB_SHARED', 'tongbari.com', 0, 25.95, 0.00, 0.00, 25.95, 1, 5, 0, 1, 'USD', 4, 'Yearly', '2026-01-29 16:31:54', 0, '2026-01-29 16:31:54', NULL);
 
 -- --------------------------------------------------------
 
@@ -149,7 +156,13 @@ INSERT INTO `admin_logins` (`id`, `admin_id`, `login_time`, `session_val`, `term
 (73, 1, '2026-01-27 14:06:40', '0', '127.0.0.1', NULL, 1),
 (74, 1, '2026-01-27 16:31:03', '0', '127.0.0.1', NULL, 1),
 (75, 1, '2026-01-28 01:57:53', '0', '127.0.0.1', NULL, 1),
-(76, 1, '2026-01-29 03:27:26', '0', '127.0.0.1', NULL, 1);
+(76, 1, '2026-01-29 03:27:26', '0', '127.0.0.1', NULL, 1),
+(77, 1, '2026-01-30 14:48:04', '0', '::1', NULL, 1),
+(78, 1, '2026-01-30 15:23:38', '0', '::1', NULL, 1),
+(79, 1, '2026-02-07 05:04:05', '0', '127.0.0.1', NULL, 1),
+(80, 1, '2026-02-08 01:15:56', '0', '127.0.0.1', NULL, 1),
+(81, 1, '2026-02-09 01:22:21', '0', '127.0.0.1', NULL, 1),
+(82, 1, '2026-02-08 19:59:25', '0', '103.159.72.16', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -272,7 +285,7 @@ CREATE TABLE `announcements` (
 --
 
 INSERT INTO `announcements` (`id`, `title`, `slug`, `description`, `is_published`, `publish_date`, `tags`, `status`, `total_view`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(1, 'test announcement', 'test-announcement', '<p>test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement <strong>jashdk</strong> jksadnkfs. </p><p><br></p><p>test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk.</p><p><br></p><p><br></p><p><br></p>', 1, NULL, 'test, testtag', 1, 0, NULL, NULL, '2026-01-23 15:34:28', 1, NULL, NULL);
+(1, 'test announcement', 'test-announcement', '<p>test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement <strong>jashdk</strong> jksadnkfs. </p><p><br></p><p>test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk.</p><p><br></p><p><br></p><p><br></p>', 1, '2026-01-23', 'test, testtag', 1, 0, '2026-01-23 15:34:28', NULL, '2026-01-23 15:34:28', 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -312,7 +325,7 @@ CREATE TABLE `app_settings` (
 --
 
 INSERT INTO `app_settings` (`id`, `site_name`, `site_desc`, `admin_url`, `favicon`, `logo`, `company_name`, `company_address`, `zip_code`, `license_auth`, `license_hash`, `email`, `fax`, `phone`, `smtp_host`, `smtp_port`, `smtp_username`, `smtp_authkey`, `captcha_site_key`, `captcha_secret_key`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Tong Bari | Solution under one roof', 'Tong Bari | Solution under one roof', '', 'favicon_ed6d384d93d183751bb364d239d05738.png', 'logo_49f80162b47b6fc2187384384ee08f1e.jpg', 'Tong Bari', 'Dhaka', '1219', NULL, NULL, 'support@tongbari.com', '2345', '12345', '', '', 'test@admin.com', '12345', '6Lej8lUsAAAAAASMAoMFwiMIvx1_Qkh8pKVLJ6Qo', '6Lej8lUsAAAAAEVPLbN0Yyqyb8_Zoiqtlu0s9bOw', NULL, NULL, '2026-01-25 21:24:09', 1);
+(1, 'Tong Bari | Solution under one roof', 'Tong Bari | Solution under one roof', '', 'favicon_ed6d384d93d183751bb364d239d05738.png', 'logo_49f80162b47b6fc2187384384ee08f1e.jpg', 'Tong Bari', 'Dhaka', '1219', NULL, NULL, 'support@tongbari.com', '2345', '12345', 'mail.tongbari.com', '587', 'support@tongbari.com', 'pz3jlnMaW3k=', '6Lej8lUsAAAAAASMAoMFwiMIvx1_Qkh8pKVLJ6Qo', '6Lej8lUsAAAAAEVPLbN0Yyqyb8_Zoiqtlu0s9bOw', NULL, NULL, '2026-01-30 23:13:55', 1);
 
 -- --------------------------------------------------------
 
@@ -817,7 +830,7 @@ CREATE TABLE `dom_pricing` (
 
 INSERT INTO `dom_pricing` (`id`, `dom_extension_id`, `currency_id`, `reg_period`, `price`, `transfer`, `renewal`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (1, 1, 1, 1, 12.99, 12.99, 12.99, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:45', NULL, NULL, NULL),
-(2, 1, 2, 1, 1460, 1460, 1460, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(2, 1, 2, 1, 1550, 1550, 1550, 1, '2020-09-05 08:17:52', NULL, '2026-02-09 07:44:46', 1, NULL, NULL),
 (3, 2, 1, 1, 13.25, 13.25, 13.25, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
 (4, 2, 2, 1, 1510, 1510, 1510, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
 (5, 3, 1, 1, 13.85, 13.85, 13.85, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
@@ -872,9 +885,8 @@ CREATE TABLE `dom_registers` (
 --
 
 INSERT INTO `dom_registers` (`id`, `name`, `platform`, `api_base_url`, `domain_check_api`, `suggestion_api`, `domain_reg_api`, `ns_update_api`, `contact_details_api`, `contact_update_api`, `price_list_api`, `auth_userid`, `auth_apikey`, `is_selected`, `def_ns1`, `def_ns2`, `def_ns3`, `def_ns4`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Resell.Biz', 'STARGATE', 'https://httpapi.com/api/domains', 'https://httpapi.com/api/domains/available.json?', 'https://httpapi.com/api/domains/v5/suggest-names.json?', 'https://httpapi.com/api/domains/register.xml?', 'https://httpapi.com/api/domains/modify-ns.json', 'https://httpapi.com/api/domains/details-by-name.json', 'https://httpapi.com/api/domains/modify-contact.json', 'test', '572394', 'IPE8mDT7ZoyQc6FmIzRp5b3lxfvabPOA', 1, '', '', '', '', 1, NULL, NULL, '2026-01-24 20:51:34', 1),
-(2, 'Namecheap', 'NAMECHEAP', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', '', 'tongbaritest', '993d950d882041ed90eea8158abec1d3', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2024-08-12 01:02:26', NULL),
-(3, 'Resellerclub', 'STARGATE', 'https://test.httpapi.com/api/domains', 'https://domaincheck.httpapi.com/api/domains/available.json?', 'https://test.httpapi.com/api/domains/v5/suggest-names.json?', 'https://test.httpapi.com/api/domains/register.xml?', 'https://test.httpapi.com/api/domains/modify-ns.json', 'https://test.httpapi.com/api/domains/details-by-name.json', 'https://test.httpapi.com/api/domains/modify-contact.json', 'test', '1256356', '6lY8CY2bnstSAqL04lr2y9oovt8CljT9', 0, 'test', '', '', '', 1, NULL, NULL, '2026-01-24 20:04:16', 1);
+(1, 'Resell.Biz', 'STARGATE', 'https://httpapi.com/api/domains', 'https://httpapi.com/api/domains/available.json?', 'https://httpapi.com/api/domains/v5/suggest-names.json?', 'https://httpapi.com/api/domains/register.xml?', 'https://httpapi.com/api/domains/modify-ns.json', 'https://httpapi.com/api/domains/details-by-name.json', 'https://httpapi.com/api/domains/modify-contact.json', 'test', '572394', 'IPE8mDT7ZoyQc6FmIzRp5b3lxfvabPOA', 1, 'ns1.whmaz.com', 'ns2.whmaz.com', '', '', 1, NULL, NULL, '2026-02-10 16:48:26', 1),
+(2, 'Namecheap', 'NAMECHEAP', 'https://api.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', '', 'tongbaritest', '993d950d882041ed90eea8158abec1d3', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2026-02-10 16:49:03', NULL);
 
 -- --------------------------------------------------------
 
@@ -1033,6 +1045,28 @@ CREATE TABLE `expense_vendors` (
 INSERT INTO `expense_vendors` (`id`, `vendor_name`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (1, 'Digital Ocean', NULL, 1, NULL, NULL, '2020-08-22 01:42:20', NULL, NULL, NULL),
 (2, 'Knownhost', 'Hosting provider', 1, '2024-08-03 09:09:54', 1, '2024-08-03 03:10:05', 1, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `expense_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `expense_view` (
+`id` int(11)
+,`expense_type_id` int(11)
+,`expense_vendor_id` int(11)
+,`exp_amount` double
+,`paid_amount` double
+,`expense_date` date
+,`attachment` varchar(255)
+,`remarks` text
+,`status` tinyint(4)
+,`inserted_on` datetime
+,`updated_on` timestamp
+,`expense_type` varchar(255)
+,`vendor_name` varchar(255)
+);
 
 -- --------------------------------------------------------
 
@@ -1236,6 +1270,50 @@ INSERT INTO `invoice_txn` (`id`, `invoice_id`, `payment_gateway_id`, `transactio
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `invoice_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `invoice_view` (
+`id` bigint(20)
+,`invoice_uuid` varchar(40)
+,`company_id` bigint(20)
+,`order_id` bigint(20)
+,`currency_id` int(11)
+,`currency_code` varchar(3)
+,`invoice_no` varchar(20)
+,`sub_total` decimal(15,2)
+,`tax` decimal(15,2)
+,`vat` decimal(15,2)
+,`total` decimal(15,2)
+,`due_date` date
+,`order_date` date
+,`cancel_date` date
+,`refund_date` date
+,`remarks` text
+,`status` tinyint(4)
+,`pay_status` varchar(8)
+,`need_api_call` tinyint(4)
+,`inserted_on` datetime
+,`updated_on` timestamp
+,`company_name` varchar(150)
+,`company_mobile` varchar(16)
+,`company_email` varchar(255)
+,`company_address` varchar(255)
+,`company_city` varchar(100)
+,`company_state` varchar(100)
+,`company_zipcode` varchar(10)
+,`country` varchar(100)
+,`company_phone` varchar(16)
+,`order_uuid` varchar(40)
+,`order_no` bigint(20)
+,`total_paid` decimal(37,2)
+,`balance_due` decimal(38,2)
+,`last_payment_date` date
+);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `kbs`
 --
 
@@ -1267,7 +1345,16 @@ CREATE TABLE `kbs` (
 INSERT INTO `kbs` (`id`, `title`, `slug`, `article`, `tags`, `total_view`, `useful`, `upvote`, `downvote`, `sort_order`, `is_hidden`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (1, 'Hello World', 'hello-world', '<p>Hello World. <b>This is knowledge base article</b></p>', 'Hello, World, Hello World', 0, 0, 0, 0, 1, 0, 1, NULL, NULL, '2024-08-04 17:08:26', 1, NULL, NULL),
 (2, 'Test', 'test', '<p>THis is test. <b>This is knowledge base article</b></p>', 'test', 0, 0, 0, 0, 1, 0, 1, NULL, NULL, '2024-08-04 17:08:45', 1, NULL, NULL),
-(3, 'How to register domain', 'how-to-register-domain', '<h2>How to register domain.</h2>', 'asdfasd', 0, 0, 0, 0, 1, 0, 1, '2024-08-04 17:25:40', 1, '2024-08-05 07:06:06', 1, NULL, NULL);
+(3, 'How to register domain', 'how-to-register-domain', '<h2>How to register domain.</h2>', 'asdfasd', 0, 0, 0, 0, 1, 0, 1, '2024-08-04 17:25:40', 1, '2024-08-05 07:06:06', 1, NULL, NULL),
+(4, 'vps server management', 'vps-server-management', '<p>vps-server-management. vps-server-management</p>', '', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:17:22', 1, NULL, NULL, NULL, NULL),
+(5, 'vps server login', 'vps-server-login', '<p>vps server login. vps server login</p>', 'vps', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:18:14', 1, NULL, NULL, NULL, NULL),
+(6, 'How to create Database in CPanel', 'how-to-create-database-in-cpanel', '<p>How to create Database in CPanel</p>', 'cpanel, database', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:20:46', 1, NULL, NULL, NULL, NULL),
+(7, 'How to create database user with password in cpanel', 'how-to-create-database-user-with-password-in-cpanel', '<p>How to create database user with password in cpanel</p>', 'cpanel, database', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:21:45', 1, NULL, NULL, NULL, NULL),
+(8, 'How to allow remote access to cpanel database', 'how-to-allow-remote-access-to-cpanel-database', '<p>How to allow remote access to cpanel database</p>', 'cpanel, database', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:23:17', 1, NULL, NULL, NULL, NULL),
+(9, 'How to change password of cpanel database user', 'how-to-change-password-of-cpanel-database-user', '<p>How to change password of cpanel database user</p>', 'cpanel, database', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:24:07', 1, NULL, NULL, NULL, NULL),
+(10, 'How to create subdomain in cpanel', 'how-to-create-subdomain-in-cpanel', '<p>How to create subdomain in cpanel</p>', 'cpanel, subdomain', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:24:57', 1, NULL, NULL, NULL, NULL),
+(11, 'How to create email account in cpanel', 'how-to-create-email-account-in-cpanel', '<p>How to create email account in cpanel</p>', 'cpanel, email account', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:26:04', 1, NULL, NULL, NULL, NULL),
+(12, 'How to login in email account in cpanel', 'how-to-login-in-email-account-in-cpanel', '<p>How to login in email account in cpanel</p>', 'cpanel, email account', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:27:15', 1, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1298,7 +1385,8 @@ CREATE TABLE `kb_cats` (
 INSERT INTO `kb_cats` (`id`, `parent_id`, `cat_title`, `slug`, `description`, `is_hidden`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (1, 0, 'Hosting Services', 'hosting-services', 'How to purchase/renew shared hosting. How to purchase/renew reseller hosting.', 0, 1, '2024-08-05 07:02:44', 1, NULL, NULL, NULL, NULL),
 (2, 0, 'Domain Management', 'domain-management', 'How to register domain. How to transfer domain. How to manage domain', 0, 1, '2024-08-05 07:02:44', 1, NULL, NULL, NULL, NULL),
-(3, 0, 'VPS Server', 'vps-server', 'VPS server (Managed & Un-managed)', 0, 1, '2024-08-05 07:02:44', 1, NULL, NULL, NULL, NULL);
+(3, 0, 'VPS Server', 'vps-server', 'VPS server (Managed & Un-managed)', 0, 1, '2024-08-05 07:02:44', 1, NULL, NULL, NULL, NULL),
+(4, 0, 'Database', 'database', 'Database', 0, 1, '2026-02-08 01:19:24', 1, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1321,7 +1409,16 @@ INSERT INTO `kb_cat_mapping` (`id`, `kb_id`, `kb_cat_id`) VALUES
 (6, 1, 2),
 (7, 2, 1),
 (8, 2, 2),
-(12, 3, 2);
+(12, 3, 2),
+(15, 4, 3),
+(16, 5, 3),
+(17, 6, 4),
+(18, 7, 4),
+(19, 8, 4),
+(20, 9, 4),
+(21, 10, 1),
+(22, 11, 1),
+(23, 12, 1);
 
 -- --------------------------------------------------------
 
@@ -1338,6 +1435,18 @@ CREATE TABLE `login_attempts` (
   `is_successful` tinyint(1) NOT NULL DEFAULT 0,
   `attempt_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `login_attempts`
+--
+
+INSERT INTO `login_attempts` (`id`, `identifier`, `identifier_type`, `ip_address`, `user_agent`, `is_successful`, `attempt_time`) VALUES
+(13, '198.135.49.154', 'ip', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:20:01'),
+(14, 'tset@g.c', 'email', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:20:01'),
+(15, '198.135.49.154', 'ip', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:22:04'),
+(16, 'abm.ataullah@gmail.com', 'email', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:22:04'),
+(17, '198.135.49.154', 'ip', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:22:14'),
+(18, 'sohag.jobair@gmail.com', 'email', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:22:14');
 
 -- --------------------------------------------------------
 
@@ -1477,23 +1586,23 @@ CREATE TABLE `order_domains` (
 -- Dumping data for table `order_domains`
 --
 
-INSERT INTO `order_domains` (`id`, `order_id`, `company_id`, `dom_register_id`, `dom_pricing_id`, `order_type`, `epp_code`, `domain`, `first_pay_amount`, `recurring_amount`, `reg_date`, `reg_period`, `exp_date`, `next_due_date`, `is_synced`, `last_sync_dt`, `domain_cust_id`, `domain_order_id`, `dns_management`, `email_forwarding`, `id_protection`, `auto_renew`, `dns_type`, `ns1`, `ns2`, `ns3`, `ns4`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(702, 702, 1, 2, 1, 1, NULL, 'erpboi.com', 12.99, 12.99, '2023-11-29', 1, '2025-11-29', '2025-11-29', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 0, '', '2024-08-10 07:56:40', 1, '2024-12-25 03:32:42', NULL, NULL, NULL),
-(705, 705, 1, 1, 1, 1, '', 'finboi.com', 12.99, 12.99, '2024-08-11', 1, '2025-08-11', '2025-08-11', 0, NULL, NULL, 107940477, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 0, '', '2024-08-11 02:26:38', 1, '2024-08-21 01:43:41', NULL, NULL, NULL),
-(707, 707, 2, 1, 1, 1, '', 'skydigitalbd.com', 12.99, 12.99, '2022-08-22', 1, '2025-08-21', '2025-08-21', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 1, '', '2024-08-21 03:32:52', 1, '2024-11-16 02:32:33', NULL, NULL, NULL),
-(710, 710, 8, 0, 0, 3, '', 'ultimateapparelsourcing.com.bd', 0.00, 0.00, '2020-08-10', 1, '2020-08-10', '2020-08-10', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 1, '', '2024-08-22 02:21:52', 1, '2024-11-16 02:32:43', NULL, NULL, NULL),
-(711, 711, 6, 0, 5, 1, '', 'authorservice.org', 13.85, 13.85, '2020-08-19', 1, '2025-08-19', '2025-08-19', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 0, '', '2024-08-30 05:50:05', 1, '2024-11-16 02:32:10', NULL, NULL, NULL),
-(712, 712, 6, 0, 1, 1, '', 'truefarmersagro.com', 12.99, 12.99, '2024-03-04', 1, '2025-03-04', '2025-03-04', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 0, '', '2024-08-30 06:28:13', 1, '2024-11-16 02:32:07', NULL, NULL, NULL),
-(713, 713, 5, 0, 0, 1, '', 'authorservice.org', 0.00, 0.00, '2024-08-30', 1, '2024-08-30', '2024-08-30', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 1, '', '2024-08-30 07:11:19', 1, '2026-01-27 14:27:09', NULL, NULL, NULL),
-(714, 714, 9, 1, 1, 1, '', 'snkbd.com', 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2024-11-16 02:31:41', NULL, NULL, NULL),
-(715, 715, 9, 1, 1, 1, '', 'shaikhandkhanservices.com', 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2024-11-16 15:28:42', NULL, NULL, NULL),
-(716, 716, 10, 1, 1, 1, '', 'apparelglowltd.com', 12.99, 12.99, '2022-11-26', 1, '2024-11-26', '2024-11-26', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 1, '', '2024-11-21 16:03:43', 1, '2024-11-21 15:11:02', NULL, NULL, NULL),
-(717, 717, 2, 1, 1, 1, '', 'koreshikhi.com', 12.99, 12.99, '2024-11-22', 1, '2025-11-22', '2025-11-22', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 1, '', '2024-11-22 15:47:27', 1, '2024-11-22 15:48:02', NULL, NULL, NULL),
-(718, 718, 11, 1, 1, 1, '', 'alakabhattacharjee.com', 12.99, 12.99, '2016-03-29', 1, '2024-03-29', '2024-03-29', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 1, '', '2024-11-22 16:36:57', 1, '2024-11-22 15:48:04', NULL, NULL, NULL),
-(719, 719, 2, 1, 1, 1, '', 'bcsaaa.com', 12.99, 12.99, '2024-12-25', 1, '2025-12-25', '2025-12-25', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 0, '', '2024-12-25 04:29:58', 1, '2024-12-25 03:29:58', NULL, NULL, NULL),
-(720, 721, 12, 1, 1, 1, '', 'alisoftbd.com', 12.99, 12.99, '2024-05-04', 1, '2026-05-04', '2026-05-04', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 0, '', '2025-05-03 05:59:08', 1, '2025-05-06 00:34:03', NULL, NULL, NULL),
-(722, 723, 13, 0, 0, 1, '', 'dwa.com.bd', 0.00, 0.00, '2025-05-06', 1, '2024-12-03', '2024-12-03', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 1, '', '2025-05-06 02:25:47', 1, '2025-05-06 00:35:06', NULL, NULL, NULL),
-(723, 724, 14, 1, 1, 1, '', 'brandnstitch.com', 12.99, 12.99, '2025-08-12', 1, '2026-08-12', '2026-08-12', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, 0, '', '2025-08-12 03:41:24', 1, '2025-08-12 01:41:24', NULL, NULL, NULL);
+INSERT INTO `order_domains` (`id`, `order_id`, `company_id`, `dom_register_id`, `dom_pricing_id`, `order_type`, `epp_code`, `domain`, `first_pay_amount`, `recurring_amount`, `reg_date`, `reg_period`, `exp_date`, `next_due_date`, `is_synced`, `last_sync_dt`, `domain_cust_id`, `domain_order_id`, `dns_management`, `email_forwarding`, `id_protection`, `auto_renew`, `dns_type`, `ns1`, `ns2`, `ns3`, `ns4`, `contact_name`, `contact_company`, `contact_email`, `contact_phone`, `contact_address1`, `contact_address2`, `contact_city`, `contact_state`, `contact_zip`, `contact_country`, `last_contact_sync`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(702, 702, 1, 2, 1, 1, NULL, 'erpboi.com', 12.99, 12.99, '2023-11-29', 1, '2025-11-29', '2025-11-29', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-10 07:56:40', 1, '2024-12-25 03:32:42', NULL, NULL, NULL),
+(705, 705, 1, 1, 1, 1, '', 'finboi.com', 12.99, 12.99, '2024-08-11', 1, '2025-08-11', '2025-08-11', 0, NULL, NULL, 107940477, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-11 02:26:38', 1, '2024-08-21 01:43:41', NULL, NULL, NULL),
+(707, 707, 2, 1, 1, 1, '', 'skydigitalbd.com', 12.99, 12.99, '2022-08-22', 1, '2025-08-21', '2025-08-21', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', 'ns1.whmaz.com', 'ns2.whmaz.com', NULL, NULL, 'Md Ismail', 'Sky Digital Ltd', 'ismail4g@gmail.com', '8801730704604', 'Banasree', '', 'Dhaka', 'Dhaka', '1219', 'BD', '2026-02-10 17:17:42', 1, '', '2024-08-21 03:32:52', 1, '2026-02-10 23:17:42', NULL, NULL, NULL),
+(710, 710, 8, 0, 0, 3, '', 'ultimateapparelsourcing.com.bd', 0.00, 0.00, '2020-08-10', 1, '2020-08-10', '2020-08-10', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-08-22 02:21:52', 1, '2024-11-16 02:32:43', NULL, NULL, NULL),
+(711, 711, 6, 0, 5, 1, '', 'authorservice.org', 13.85, 13.85, '2020-08-19', 1, '2025-08-19', '2025-08-19', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-30 05:50:05', 1, '2024-11-16 02:32:10', NULL, NULL, NULL),
+(712, 712, 6, 0, 1, 1, '', 'truefarmersagro.com', 12.99, 12.99, '2024-03-04', 1, '2025-03-04', '2025-03-04', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-30 06:28:13', 1, '2024-11-16 02:32:07', NULL, NULL, NULL),
+(713, 713, 5, 0, 0, 1, '', 'authorservice.org', 0.00, 0.00, '2024-08-30', 1, '2024-08-30', '2024-08-30', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-08-30 07:11:19', 1, '2026-01-27 14:27:09', NULL, NULL, NULL),
+(714, 714, 9, 1, 1, 1, '', 'snkbd.com', 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2024-11-16 02:31:41', NULL, NULL, NULL),
+(715, 715, 9, 1, 1, 1, '', 'shaikhandkhanservices.com', 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2024-11-16 15:28:42', NULL, NULL, NULL),
+(716, 716, 10, 1, 1, 1, '', 'apparelglowltd.com', 12.99, 12.99, '2022-11-26', 1, '2024-11-26', '2024-11-26', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-21 16:03:43', 1, '2024-11-21 15:11:02', NULL, NULL, NULL),
+(717, 717, 2, 1, 1, 1, '', 'koreshikhi.com', 12.99, 12.99, '2024-11-22', 1, '2025-11-22', '2025-11-22', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-22 15:47:27', 1, '2024-11-22 15:48:02', NULL, NULL, NULL),
+(718, 718, 11, 1, 1, 1, '', 'alakabhattacharjee.com', 12.99, 12.99, '2016-03-29', 1, '2024-03-29', '2024-03-29', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-22 16:36:57', 1, '2024-11-22 15:48:04', NULL, NULL, NULL),
+(719, 719, 2, 1, 1, 1, '', 'bcsaaa.com', 12.99, 12.99, '2024-12-25', 1, '2025-12-25', '2025-12-25', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-12-25 04:29:58', 1, '2024-12-25 03:29:58', NULL, NULL, NULL),
+(720, 721, 12, 1, 1, 1, '', 'alisoftbd.com', 12.99, 12.99, '2024-05-04', 1, '2026-05-04', '2026-05-04', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2025-05-03 05:59:08', 1, '2025-05-06 00:34:03', NULL, NULL, NULL),
+(722, 723, 13, 0, 0, 1, '', 'dwa.com.bd', 0.00, 0.00, '2025-05-06', 1, '2024-12-03', '2024-12-03', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-05-06 02:25:47', 1, '2025-05-06 00:35:06', NULL, NULL, NULL),
+(723, 724, 14, 1, 1, 1, '', 'brandnstitch.com', 12.99, 12.99, '2025-08-12', 1, '2026-08-12', '2026-08-12', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2025-08-12 03:41:24', 1, '2025-08-12 01:41:24', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1549,6 +1658,50 @@ INSERT INTO `order_services` (`id`, `order_id`, `company_id`, `product_service_i
 (712, 723, 13, 5, 9, 'SHARED_HOSTING', 'dwacombd', 4, '', 37.95, 37.95, 'dwa.com.bd', NULL, NULL, 1, '2024-12-03', '2024-12-03', '2025-12-03', 0, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-01-27 14:19:01', NULL, NULL, NULL),
 (713, 724, 14, 20, 27, 'SHARED_HOSTING', 'brandnstitc', 4, '', 65.00, 65.00, 'brandnstitch.com', NULL, NULL, 1, '2025-08-12', '2026-08-12', '2026-08-12', 0, NULL, 0, '', '2025-08-12 03:41:24', 1, '2026-01-27 14:19:22', NULL, NULL, NULL),
 (714, 725, 2, 11, 23, 'SERVER_VPS', NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-12-04', '2025-12-04', '2025-12-04', 0, NULL, 0, '', '2025-12-04 14:32:15', 1, '2026-01-26 16:33:01', NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `order_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `order_view` (
+`id` bigint(20)
+,`order_uuid` varchar(40)
+,`order_no` bigint(20)
+,`company_id` bigint(20)
+,`currency_id` int(11)
+,`currency_code` varchar(3)
+,`order_date` date
+,`amount` decimal(15,2)
+,`vat_amount` decimal(15,2)
+,`tax_amount` decimal(15,2)
+,`coupon_code` varchar(16)
+,`coupon_amount` decimal(15,2)
+,`discount_amount` decimal(15,2)
+,`total_amount` decimal(15,2)
+,`payment_gateway_id` int(11)
+,`remarks` text
+,`instructions` text
+,`status` tinyint(4)
+,`inserted_on` datetime
+,`updated_on` timestamp
+,`company_name` varchar(150)
+,`company_email` varchar(255)
+,`company_mobile` varchar(16)
+,`company_phone` varchar(16)
+,`company_address` varchar(255)
+,`country` varchar(100)
+,`company_zipcode` varchar(10)
+,`company_city` varchar(100)
+,`company_state` varchar(100)
+,`payment_gateway_name` varchar(100)
+,`payment_gateway_fa_icon` varchar(30)
+,`service_count` bigint(21)
+,`domain_count` bigint(21)
+,`services_recurring_total` decimal(37,2)
+,`domains_recurring_total` decimal(37,2)
+);
 
 -- --------------------------------------------------------
 
@@ -1801,6 +1954,33 @@ INSERT INTO `product_service_types` (`id`, `servce_type_name`, `key_name`, `rema
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `product_service_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `product_service_view` (
+`id` int(11)
+,`product_service_group_id` int(11)
+,`server_id` int(11)
+,`product_service_module_id` int(11)
+,`product_service_type_id` int(11)
+,`product_name` varchar(255)
+,`product_desc` text
+,`is_hidden` tinyint(4)
+,`cp_package` varchar(150)
+,`status` tinyint(4)
+,`updated_on` timestamp
+,`group_name` varchar(100)
+,`group_headline` varchar(255)
+,`server_name` varchar(255)
+,`server_hostname` varchar(160)
+,`server_ip` varchar(160)
+,`module_name` varchar(100)
+,`servce_type_name` varchar(150)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `servers`
 --
 
@@ -1926,7 +2106,11 @@ INSERT INTO `tickets` (`id`, `company_id`, `ticket_dept_id`, `order_service_id`,
 (4, 1, 2, 0, 0, 'Top-X Example Top-X Example', '<p>adfsvs sdfdsf</p>', 2, 'test_private_key_tomcat.png', 1, 1, '2020-09-04 17:20:25', NULL, '2020-09-04 16:03:08', NULL),
 (5, 1, 2, 0, 0, 'Top-X Example Top-X Example', '<p>adfsvs sdfdsf</p>', 2, 'test_private_key_tomcat.png', 1, 4, '2020-09-04 17:20:25', NULL, '2020-09-04 16:03:08', NULL),
 (6, 1, 2, 0, 0, 'Top-X Example Top-X Example', '<p>Top-X Example Top-X Example </p>', 2, '1599200685579_view 0.png', 1, 3, '2020-09-04 17:20:25', NULL, '2020-09-04 16:03:08', NULL),
-(7, 1, 1, 0, 0, 'sdfsfg', '<p>fd d dfgfdgfd dfgdgfdg</p>', 3, NULL, 1, 2, '2022-10-01 12:45:00', 1, '2026-01-23 15:23:34', 1);
+(7, 1, 1, 0, 0, 'sdfsfg', '<p>fd d dfgfdgfd dfgdgfdg</p>', 3, NULL, 1, 2, '2022-10-01 12:45:00', 1, '2026-01-23 15:23:34', 1),
+(8, 1, 1, 0, 0, 'ticket security testing. ok now. <script>alert(\"OK\");</script>', '<p>ticket security testing. ok now. <script>alert(\"msg\");</script>', 4, '', 1, 3, '2026-02-11 02:16:00', 1, '2026-02-11 02:28:26', 1),
+(9, 1, 1, 0, 0, 'ticket security testing. ok now. <script>alert(\"attachment\");</script>', '<p>ticket <em><u>security </u></em>testing. <strong>ok now</strong>. &lt;script&gt;alert(\"attachment\");&lt;/script&gt;</p>', 4, '9a8443e219122a09315c2b64a5858a7c.jpg,9949b6b6603b6946583dc3a79eff0f0a.png', 1, 1, '2026-02-11 02:39:00', 1, '2026-02-11 02:39:39', NULL),
+(10, 1, 1, 0, 0, 'testing', '<p>testing <strong><em><u>attachemt</u></em></strong></p>', 4, '1d49f4d037bd624d267f00aaf241f8a7.jpg,f5401f8fa1b30c08a128f1abcb40a6ee.jpg', 1, 1, '2026-02-11 03:25:00', 1, '2026-02-11 03:25:26', NULL),
+(11, 1, 1, 0, 0, 'test', '<p>test</p>', 3, '6f1fd016fa2edada45edd1fad26e17e3.png,f685ce3e44bfae7bfc24e3b5e8430215.jpg', 1, 3, '2026-02-11 04:29:00', 1, '2026-02-11 04:30:35', 1);
 
 -- --------------------------------------------------------
 
@@ -1986,7 +2170,10 @@ INSERT INTO `ticket_replies` (`id`, `ticket_id`, `company_id`, `admin_id`, `mess
 (3, 7, 1, 0, '<p>re-structure</p>', NULL, 5, 1, '2024-03-20 16:28:00', 1, '2024-03-20 15:29:41', 1),
 (4, 7, 1, 0, '<p>attachment</p>', NULL, 0, 1, '2024-03-20 16:30:00', 1, '2024-03-20 15:30:33', NULL),
 (5, 7, 1, 0, '<p>attachments sdfsdf</p>', NULL, 0, 1, '2024-03-20 16:36:00', 1, '2024-03-20 15:36:28', NULL),
-(6, 7, 1, 0, '<p>Admin reply testing</p>', '', 0, 1, '2026-01-23 15:23:34', 1, '2026-01-23 15:23:33', NULL);
+(6, 7, 1, 0, '<p>Admin reply testing</p>', '', 0, 1, '2026-01-23 15:23:34', 1, '2026-01-23 15:23:33', NULL),
+(7, 8, 1, 0, '<p>User reply testing 3</p>', '', 0, 1, '2026-02-11 02:28:00', 1, '2026-02-11 02:32:42', NULL),
+(8, 8, 1, 0, '<p><span style=\"color: rgb(60, 72, 88);\">ticket security testing. ok now. &lt;script&gt;alert(\"reply\");&lt;/script&gt;</span></p>', '', 0, 1, '2026-02-11 02:33:00', 1, '2026-02-11 02:33:18', NULL),
+(9, 11, 1, 0, '<p>reply with <strong>attachment</strong></p>', '2a63f893ffaae646631a88657f4b9b4e.jpg', 0, 1, '2026-02-11 04:30:00', 1, '2026-02-11 04:30:35', NULL);
 
 -- --------------------------------------------------------
 
@@ -2043,28 +2230,30 @@ CREATE TABLE `users` (
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `updated_by` int(11) DEFAULT NULL,
   `deleted_on` datetime DEFAULT NULL,
-  `deleted_by` int(11) DEFAULT NULL
+  `deleted_by` int(11) DEFAULT NULL,
+  `pass_reset_key` varchar(150) DEFAULT NULL,
+  `pass_reset_expiry` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `mobile`, `phone`, `designation`, `password`, `verify_hash`, `verify_data`, `otp_code`, `company_id`, `user_type`, `login_try`, `status`, `profile_pic`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(1, 'Md.', 'Sarker', 'info.errorpoint@gmail.com', '+8801824880161', '+8801824880161', 'Company Owner', '$2y$10$8LvuVUE2IqNUGuuh5VaEK.tmKBT2x.p0K20CtbLVFido5gHJCKscO', 'd0bd456b40118604bafe0f2966cace3db3c4791532357cfa6f28f239a8bd7751', NULL, NULL, 1, 0, 0, 1, '', '2020-08-29 10:25:41', 1, '2024-08-10 03:03:17', NULL, NULL, NULL),
-(3, 'A.K.M', 'Ashrafuzzaman', 'aashrafuzzaman@yahoo.com', '+8801674196502', '+8801674196502', 'Company Owner', '$2y$10$70a6oyF1KBIXUM0DJj.qbuGyD9T1hg.OIiQOpEeOi239y083QbBPa', NULL, NULL, NULL, 7, 0, 0, 1, NULL, '2024-08-10 08:57:10', 1, '2024-08-10 02:58:59', NULL, NULL, NULL),
-(4, 'ABM', 'Ataullah', 'abm.ataullah@gmail.com', '+8801610215271', '+8801610215271', 'Company Owner', '$2y$10$dmRxtkp5n0FK3kttdJaSl.qifFps1GLHPe5fgPzac6zF/gfHImTpK', NULL, NULL, NULL, 6, 0, 0, 1, NULL, '2024-08-10 06:05:41', 1, '2024-08-10 04:05:41', NULL, NULL, NULL),
-(5, 'Mahbub Hasan', 'Shuman', 'shumanmahbub@gmail.com', '+261.345002256', '+261.345002256', 'Company Owner', '$2y$10$R0KgH5m7t5cobqKIE2i3yuO.5IYX/PtJ4m2K2jcOmgtboMvJGpe9C', NULL, NULL, NULL, 4, 0, 0, 1, NULL, '2024-08-10 06:05:45', 1, '2024-08-10 04:05:45', NULL, NULL, NULL),
-(6, 'Shahid', 'Swapon', 'shahid.swapon@gmail.com', '+8801713257212', '+8801713257212', 'Company Owner', '$2y$10$dQCqGjkFEcP.tEApFUtRiehPrHR9Fs2uyWWJW3Kb.SYvt.aS4k7zK', NULL, NULL, NULL, 5, 0, 0, 1, NULL, '2024-08-10 06:05:49', 1, '2024-08-10 04:05:49', NULL, NULL, NULL),
-(7, 'Md', 'Ismail', 'ismail4g@gmail.com', '+8801730704604', '+8801730704604', 'Company Owner', '$2y$10$T5WrLNGOYDTumIzvZXOePezDJSOohoUfv8brThSF9TPX/8gvbyNcS', NULL, NULL, NULL, 2, 0, 0, 1, NULL, '2024-08-10 06:05:52', 1, '2024-08-10 04:05:52', NULL, NULL, NULL),
-(8, 'Md. Shafiqul', 'Islam', 'techlogbd@gmail.com', '+8801636020790', '+8801636020790', 'Company Owner', '$2y$10$60JSl8tHBNfZw/Cf6HLkV.fGFKiu/n031u18BE1cVPT7mZl.0NnEK', NULL, NULL, NULL, 3, 0, 0, 1, NULL, '2024-08-10 06:05:54', 1, '2024-08-10 04:05:54', NULL, NULL, NULL),
-(9, 'James', 'Habib', 'jameshabib02@gmail.com', '8801716057226', '8801716057226', 'Company Owner', '$2y$10$xcmPIh3/py6tg3LRsaNvdOAprXPoYu2TkJn1iFXvQpTbwV12T8lOG', NULL, NULL, NULL, 8, 0, 0, 1, NULL, '2024-08-22 02:19:05', 1, '2024-08-22 00:19:05', NULL, NULL, NULL),
-(10, 'Arifur Rahman', 'Khan', 'arkhan.office@gmail.com', '+8801716382979', '+8801716382979', 'Company Owner', '$2y$10$Zc7QJD.1G.78bFFNoinPUO2q6C7P026jEQfHqniUttInnlNjZXl4C', NULL, NULL, NULL, 9, 0, 0, 1, NULL, '2024-11-05 15:21:16', 1, '2024-11-05 14:21:16', NULL, NULL, NULL),
-(11, 'Masud', 'Rana', 'apparelglowltd@gmail.com', '01715309710', '01715309710', 'Company Owner', '$2y$10$Zs0gv6iq0i4TQpXcUA3pa.Jrpeav7el4u8HAFu.PUyTIbpu.IIOMW', NULL, NULL, NULL, 10, 0, 0, 1, NULL, '2024-11-21 15:59:49', 1, '2024-11-21 14:59:49', NULL, NULL, NULL),
-(12, 'Alaka', 'Bhattacharjee', 'aporajita2001@gmail.com', '+8801731795993', '+8801731795993', 'Company Owner', '$2y$10$pkXufw0rR/unfSzmuhVJx.9f8.FR5Z8veHayJaM50xqbM95iQ.SWy', NULL, NULL, NULL, 11, 0, 0, 1, NULL, '2024-11-22 16:22:00', 1, '2024-11-22 15:22:00', NULL, NULL, NULL),
-(13, 'Zuel', 'Ali', 'alisoftbdinfo@gmail.com', '8801515293030', '8801515293030', 'Company Owner', '$2y$10$SDeaZqAM0VJ2sgOIqkI3Vupbw7sjvc8Eq4g3nYmo65jD2kgAjdRZ2', NULL, NULL, NULL, 12, 0, 0, 1, NULL, '2025-05-03 05:43:20', 1, '2025-05-03 03:43:20', NULL, NULL, NULL),
-(14, 'Zakaria', 'Imtiaz', 'imtiaz71985@gmail.com', '8801980484968', '', 'Company Owner', '$2y$10$eKUBYUhPdKQPqyXJPox2g.vd7AQPxCQY5mAgOJ.Sb0YhtpAp/H87.', NULL, NULL, NULL, 13, 0, 0, 1, NULL, '2025-05-06 02:19:59', 1, '2025-05-06 00:19:58', NULL, NULL, NULL),
-(15, 'Md. Saidul Islam', 'Emon', 'emon072033@gmail.com', '+8801536194103', '+8801536194103', 'Company Owner', '$2y$10$1ASlNutlBBsDK/Z0Xe0AeOOvfZrbH0D2tSTaAUxHcXE2Yhom3BMqW', NULL, NULL, NULL, 14, 0, 0, 1, NULL, '2025-08-12 03:37:39', 1, '2025-08-12 01:37:38', NULL, NULL, NULL);
+INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `mobile`, `phone`, `designation`, `password`, `verify_hash`, `verify_data`, `otp_code`, `company_id`, `user_type`, `login_try`, `status`, `profile_pic`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`, `pass_reset_key`, `pass_reset_expiry`) VALUES
+(1, 'Md.', 'Sarker', 'info.errorpoint@gmail.com', '+8801824880161', '+8801824880161', 'Company Owner', '$2y$10$K5sPdY44CQnB.SSedQ5bTukbhSmxidJYpTLs1MhTBhrx995MR7C4e', 'd0bd456b40118604bafe0f2966cace3db3c4791532357cfa6f28f239a8bd7751', NULL, NULL, 1, 0, 0, 1, '', '2020-08-29 10:25:41', 1, '2026-01-31 16:38:40', NULL, NULL, NULL, NULL, NULL),
+(3, 'A.K.M', 'Ashrafuzzaman', 'aashrafuzzaman@yahoo.com', '+8801674196502', '+8801674196502', 'Company Owner', '$2y$10$70a6oyF1KBIXUM0DJj.qbuGyD9T1hg.OIiQOpEeOi239y083QbBPa', NULL, NULL, NULL, 7, 0, 0, 1, NULL, '2024-08-10 08:57:10', 1, '2024-08-10 02:58:59', NULL, NULL, NULL, NULL, NULL),
+(4, 'ABM', 'Ataullah', 'abm.ataullah@gmail.com', '+8801610215271', '+8801610215271', 'Company Owner', '$2y$10$dmRxtkp5n0FK3kttdJaSl.qifFps1GLHPe5fgPzac6zF/gfHImTpK', NULL, NULL, NULL, 6, 0, 0, 1, NULL, '2024-08-10 06:05:41', 1, '2024-08-10 04:05:41', NULL, NULL, NULL, NULL, NULL),
+(5, 'Mahbub Hasan', 'Shuman', 'shumanmahbub@gmail.com', '+261.345002256', '+261.345002256', 'Company Owner', '$2y$10$R0KgH5m7t5cobqKIE2i3yuO.5IYX/PtJ4m2K2jcOmgtboMvJGpe9C', NULL, NULL, NULL, 4, 0, 0, 1, NULL, '2024-08-10 06:05:45', 1, '2024-08-10 04:05:45', NULL, NULL, NULL, NULL, NULL),
+(6, 'Shahid', 'Swapon', 'shahid.swapon@gmail.com', '+8801713257212', '+8801713257212', 'Company Owner', '$2y$10$dQCqGjkFEcP.tEApFUtRiehPrHR9Fs2uyWWJW3Kb.SYvt.aS4k7zK', NULL, NULL, NULL, 5, 0, 0, 1, NULL, '2024-08-10 06:05:49', 1, '2024-08-10 04:05:49', NULL, NULL, NULL, NULL, NULL),
+(7, 'Md', 'Ismail', 'ismail4g@gmail.com', '+8801730704604', '+8801730704604', 'Company Owner', '$2y$10$T5WrLNGOYDTumIzvZXOePezDJSOohoUfv8brThSF9TPX/8gvbyNcS', NULL, NULL, NULL, 2, 0, 0, 1, NULL, '2024-08-10 06:05:52', 1, '2024-08-10 04:05:52', NULL, NULL, NULL, NULL, NULL),
+(8, 'Md. Shafiqul', 'Islam', 'techlogbd@gmail.com', '+8801636020790', '+8801636020790', 'Company Owner', '$2y$10$60JSl8tHBNfZw/Cf6HLkV.fGFKiu/n031u18BE1cVPT7mZl.0NnEK', NULL, NULL, NULL, 3, 0, 0, 1, NULL, '2024-08-10 06:05:54', 1, '2024-08-10 04:05:54', NULL, NULL, NULL, NULL, NULL),
+(9, 'James', 'Habib', 'jameshabib02@gmail.com', '8801716057226', '8801716057226', 'Company Owner', '$2y$10$xcmPIh3/py6tg3LRsaNvdOAprXPoYu2TkJn1iFXvQpTbwV12T8lOG', NULL, NULL, NULL, 8, 0, 0, 1, NULL, '2024-08-22 02:19:05', 1, '2024-08-22 00:19:05', NULL, NULL, NULL, NULL, NULL),
+(10, 'Arifur Rahman', 'Khan', 'arkhan.office@gmail.com', '+8801716382979', '+8801716382979', 'Company Owner', '$2y$10$Zc7QJD.1G.78bFFNoinPUO2q6C7P026jEQfHqniUttInnlNjZXl4C', NULL, NULL, NULL, 9, 0, 0, 1, NULL, '2024-11-05 15:21:16', 1, '2024-11-05 14:21:16', NULL, NULL, NULL, NULL, NULL),
+(11, 'Masud', 'Rana', 'apparelglowltd@gmail.com', '01715309710', '01715309710', 'Company Owner', '$2y$10$Zs0gv6iq0i4TQpXcUA3pa.Jrpeav7el4u8HAFu.PUyTIbpu.IIOMW', NULL, NULL, NULL, 10, 0, 0, 1, NULL, '2024-11-21 15:59:49', 1, '2024-11-21 14:59:49', NULL, NULL, NULL, NULL, NULL),
+(12, 'Alaka', 'Bhattacharjee', 'aporajita2001@gmail.com', '+8801731795993', '+8801731795993', 'Company Owner', '$2y$10$pkXufw0rR/unfSzmuhVJx.9f8.FR5Z8veHayJaM50xqbM95iQ.SWy', NULL, NULL, NULL, 11, 0, 0, 1, NULL, '2024-11-22 16:22:00', 1, '2024-11-22 15:22:00', NULL, NULL, NULL, NULL, NULL),
+(13, 'Zuel', 'Ali', 'alisoftbdinfo@gmail.com', '8801515293030', '8801515293030', 'Company Owner', '$2y$10$SDeaZqAM0VJ2sgOIqkI3Vupbw7sjvc8Eq4g3nYmo65jD2kgAjdRZ2', NULL, NULL, NULL, 12, 0, 0, 1, NULL, '2025-05-03 05:43:20', 1, '2025-05-03 03:43:20', NULL, NULL, NULL, NULL, NULL),
+(14, 'Zakaria', 'Imtiaz', 'imtiaz71985@gmail.com', '8801980484968', '', 'Company Owner', '$2y$10$eKUBYUhPdKQPqyXJPox2g.vd7AQPxCQY5mAgOJ.Sb0YhtpAp/H87.', NULL, NULL, NULL, 13, 0, 0, 1, NULL, '2025-05-06 02:19:59', 1, '2025-05-06 00:19:58', NULL, NULL, NULL, NULL, NULL),
+(15, 'Md. Saidul Islam', 'Emon', 'emon072033@gmail.com', '+8801536194103', '+8801536194103', 'Company Owner', '$2y$10$4s99C6tURzo8goJk6cCsEu.v3V9ckd3jFm27KQ5NQIk.81hWIxgIe', NULL, NULL, NULL, 14, 0, 0, 1, NULL, '2025-08-12 03:37:39', 1, '2026-02-10 04:15:52', NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2180,7 +2369,14 @@ INSERT INTO `user_logins` (`id`, `user_id`, `login_time`, `session_val`, `termin
 (91, 7, '2026-01-26 13:56:31', '0', '127.0.0.1', NULL, 1),
 (92, 7, '2026-01-26 13:59:06', '0', '127.0.0.1', NULL, 1),
 (93, 7, '2026-01-26 14:01:33', '0', '127.0.0.1', NULL, 1),
-(94, 7, '2026-01-26 15:42:30', '0', '127.0.0.1', NULL, 1);
+(94, 7, '2026-01-26 15:42:30', '0', '127.0.0.1', NULL, 1),
+(95, 7, '2026-01-30 15:18:55', '0', '::1', NULL, 1),
+(96, 1, '2026-01-31 16:44:10', '0', '::1', NULL, 1),
+(97, 1, '2026-01-31 16:47:46', '0', '::1', NULL, 1),
+(98, 15, '2026-02-09 22:16:02', '0', '182.163.99.83', NULL, 1),
+(99, 7, '2026-02-10 15:48:28', '0', '127.0.0.1', NULL, 1),
+(100, 1, '2026-02-10 17:51:37', '0', '127.0.0.1', NULL, 1),
+(101, 1, '2026-02-11 01:47:29', '0', '127.0.0.1', NULL, 1);
 
 --
 -- Indexes for dumped tables
@@ -2518,13 +2714,13 @@ ALTER TABLE `user_logins`
 -- AUTO_INCREMENT for table `add_to_carts`
 --
 ALTER TABLE `add_to_carts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `admin_logins`
 --
 ALTER TABLE `admin_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=77;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- AUTO_INCREMENT for table `admin_roles`
@@ -2668,25 +2864,25 @@ ALTER TABLE `invoice_txn`
 -- AUTO_INCREMENT for table `kbs`
 --
 ALTER TABLE `kbs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `kb_cats`
 --
 ALTER TABLE `kb_cats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `kb_cat_mapping`
 --
 ALTER TABLE `kb_cat_mapping`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -2770,7 +2966,7 @@ ALTER TABLE `sys_cnf`
 -- AUTO_INCREMENT for table `tickets`
 --
 ALTER TABLE `tickets`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `ticket_depts`
@@ -2782,7 +2978,7 @@ ALTER TABLE `ticket_depts`
 -- AUTO_INCREMENT for table `ticket_replies`
 --
 ALTER TABLE `ticket_replies`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -2794,7 +2990,43 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_logins`
 --
 ALTER TABLE `user_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `expense_view`
+--
+DROP TABLE IF EXISTS `expense_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`tong0bari`@`localhost` SQL SECURITY DEFINER VIEW `expense_view`  AS SELECT `e`.`id` AS `id`, `e`.`expense_type_id` AS `expense_type_id`, `e`.`expense_vendor_id` AS `expense_vendor_id`, `e`.`exp_amount` AS `exp_amount`, `e`.`paid_amount` AS `paid_amount`, `e`.`expense_date` AS `expense_date`, `e`.`attachment` AS `attachment`, `e`.`remarks` AS `remarks`, `e`.`status` AS `status`, `e`.`inserted_on` AS `inserted_on`, `e`.`updated_on` AS `updated_on`, `et`.`expense_type` AS `expense_type`, `ev`.`vendor_name` AS `vendor_name` FROM ((`expenses` `e` join `expense_types` `et` on(`e`.`expense_type_id` = `et`.`id`)) join `expense_vendors` `ev` on(`e`.`expense_vendor_id` = `ev`.`id`)) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `invoice_view`
+--
+DROP TABLE IF EXISTS `invoice_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`tong0bari`@`localhost` SQL SECURITY DEFINER VIEW `invoice_view`  AS SELECT DISTINCT `i`.`id` AS `id`, `i`.`invoice_uuid` AS `invoice_uuid`, `i`.`company_id` AS `company_id`, `i`.`order_id` AS `order_id`, `i`.`currency_id` AS `currency_id`, `i`.`currency_code` AS `currency_code`, `i`.`invoice_no` AS `invoice_no`, `i`.`sub_total` AS `sub_total`, `i`.`tax` AS `tax`, `i`.`vat` AS `vat`, `i`.`total` AS `total`, `i`.`due_date` AS `due_date`, `i`.`order_date` AS `order_date`, `i`.`cancel_date` AS `cancel_date`, `i`.`refund_date` AS `refund_date`, `i`.`remarks` AS `remarks`, `i`.`status` AS `status`, `i`.`pay_status` AS `pay_status`, `i`.`need_api_call` AS `need_api_call`, `i`.`inserted_on` AS `inserted_on`, `i`.`updated_on` AS `updated_on`, `c`.`name` AS `company_name`, `c`.`mobile` AS `company_mobile`, `c`.`email` AS `company_email`, `c`.`address` AS `company_address`, `c`.`city` AS `company_city`, `c`.`state` AS `company_state`, `c`.`zip_code` AS `company_zipcode`, `c`.`country` AS `country`, `c`.`phone` AS `company_phone`, `o`.`order_uuid` AS `order_uuid`, `o`.`order_no` AS `order_no`, coalesce(`t`.`total_paid`,0) AS `total_paid`, `i`.`total`- coalesce(`t`.`total_paid`,0) AS `balance_due`, `t`.`last_payment_date` AS `last_payment_date` FROM (((`invoices` `i` join `companies` `c` on(`i`.`company_id` = `c`.`id`)) join `orders` `o` on(`i`.`order_id` = `o`.`id`)) left join (select `invoice_txn`.`invoice_id` AS `invoice_id`,sum(case when `invoice_txn`.`type` = 'payment' and `invoice_txn`.`status` = 1 then `invoice_txn`.`amount` when `invoice_txn`.`type` = 'refund' and `invoice_txn`.`status` = 1 then -`invoice_txn`.`amount` when `invoice_txn`.`type` = 'credit' and `invoice_txn`.`status` = 1 then `invoice_txn`.`amount` else 0 end) AS `total_paid`,max(case when `invoice_txn`.`status` = 1 then `invoice_txn`.`txn_date` end) AS `last_payment_date` from `invoice_txn` where `invoice_txn`.`deleted_on` is null group by `invoice_txn`.`invoice_id`) `t` on(`i`.`id` = `t`.`invoice_id`)) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `order_view`
+--
+DROP TABLE IF EXISTS `order_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`tong0bari`@`localhost` SQL SECURITY DEFINER VIEW `order_view`  AS SELECT `o`.`id` AS `id`, `o`.`order_uuid` AS `order_uuid`, `o`.`order_no` AS `order_no`, `o`.`company_id` AS `company_id`, `o`.`currency_id` AS `currency_id`, `o`.`currency_code` AS `currency_code`, `o`.`order_date` AS `order_date`, `o`.`amount` AS `amount`, `o`.`vat_amount` AS `vat_amount`, `o`.`tax_amount` AS `tax_amount`, `o`.`coupon_code` AS `coupon_code`, `o`.`coupon_amount` AS `coupon_amount`, `o`.`discount_amount` AS `discount_amount`, `o`.`total_amount` AS `total_amount`, `o`.`payment_gateway_id` AS `payment_gateway_id`, `o`.`remarks` AS `remarks`, `o`.`instructions` AS `instructions`, `o`.`status` AS `status`, `o`.`inserted_on` AS `inserted_on`, `o`.`updated_on` AS `updated_on`, `c`.`name` AS `company_name`, `c`.`email` AS `company_email`, `c`.`mobile` AS `company_mobile`, `c`.`phone` AS `company_phone`, `c`.`address` AS `company_address`, `c`.`country` AS `country`, `c`.`zip_code` AS `company_zipcode`, `c`.`city` AS `company_city`, `c`.`state` AS `company_state`, `p`.`name` AS `payment_gateway_name`, `p`.`icon_fa_unicode` AS `payment_gateway_fa_icon`, coalesce(`sv`.`service_count`,0) AS `service_count`, coalesce(`dm`.`domain_count`,0) AS `domain_count`, coalesce(`sv`.`total_recurring`,0) AS `services_recurring_total`, coalesce(`dm`.`total_recurring`,0) AS `domains_recurring_total` FROM ((((`orders` `o` join `companies` `c` on(`o`.`company_id` = `c`.`id`)) join `payment_gateway` `p` on(`o`.`payment_gateway_id` = `p`.`id`)) left join (select `order_services`.`order_id` AS `order_id`,count(0) AS `service_count`,sum(`order_services`.`recurring_amount`) AS `total_recurring` from `order_services` where `order_services`.`deleted_on` is null group by `order_services`.`order_id`) `sv` on(`o`.`id` = `sv`.`order_id`)) left join (select `order_domains`.`order_id` AS `order_id`,count(0) AS `domain_count`,sum(`order_domains`.`recurring_amount`) AS `total_recurring` from `order_domains` where `order_domains`.`deleted_on` is null group by `order_domains`.`order_id`) `dm` on(`o`.`id` = `dm`.`order_id`)) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `product_service_view`
+--
+DROP TABLE IF EXISTS `product_service_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`tong0bari`@`localhost` SQL SECURITY DEFINER VIEW `product_service_view`  AS SELECT DISTINCT `ps`.`id` AS `id`, `ps`.`product_service_group_id` AS `product_service_group_id`, `ps`.`server_id` AS `server_id`, `ps`.`product_service_module_id` AS `product_service_module_id`, `ps`.`product_service_type_id` AS `product_service_type_id`, `ps`.`product_name` AS `product_name`, `ps`.`product_desc` AS `product_desc`, `ps`.`is_hidden` AS `is_hidden`, `ps`.`cp_package` AS `cp_package`, `ps`.`status` AS `status`, `ps`.`updated_on` AS `updated_on`, `psg`.`group_name` AS `group_name`, `psg`.`group_headline` AS `group_headline`, `s`.`name` AS `server_name`, `s`.`hostname` AS `server_hostname`, `s`.`ip_addr` AS `server_ip`, `psm`.`module_name` AS `module_name`, `pst`.`servce_type_name` AS `servce_type_name` FROM ((((`product_services` `ps` join `product_service_groups` `psg` on(`ps`.`product_service_group_id` = `psg`.`id`)) left join `servers` `s` on(`ps`.`server_id` = `s`.`id`)) join `product_service_modules` `psm` on(`ps`.`product_service_module_id` = `psm`.`id`)) join `product_service_types` `pst` on(`ps`.`product_service_type_id` = `pst`.`id`)) ;
 
 -- --------------------------------------------------------
 
