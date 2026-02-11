@@ -343,5 +343,41 @@ class Support_model extends CI_Model{
 		return !empty($data) ? $data[0] : array();
 	}
 
+	/**
+	 * Get active services for a company as dropdown options
+	 * @param int $companyId Company ID
+	 * @return array Dropdown array with service id => display name
+	 */
+	function getActiveServicesDropdown($companyId) {
+		if (!is_numeric($companyId) || $companyId <= 0) {
+			return array('' => '-- None --');
+		}
+
+		$sql = "SELECT
+				os.id,
+				os.hosting_domain,
+				ps.product_name
+			FROM order_services os
+			LEFT JOIN product_service_pricing psp ON os.product_service_pricing_id = psp.id
+			LEFT JOIN product_services ps ON psp.product_service_id = ps.id
+			WHERE os.company_id = ? AND os.status = 1
+			ORDER BY os.id DESC";
+
+		$data = $this->db->query($sql, array(intval($companyId)))->result_array();
+
+		$dropdown = array('' => '-- None --');
+		if (!empty($data)) {
+			foreach ($data as $row) {
+				$displayName = !empty($row['product_name']) ? $row['product_name'] : 'Service #' . $row['id'];
+				if (!empty($row['hosting_domain'])) {
+					$displayName .= ' (' . $row['hosting_domain'] . ')';
+				}
+				$dropdown[$row['id']] = $displayName;
+			}
+		}
+
+		return $dropdown;
+	}
+
 }
 ?>

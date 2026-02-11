@@ -86,11 +86,13 @@
                         $attributes = array('id' => 'replyticketform');
                         echo form_open_multipart("tickets/replyticket/".$tid, $attributes);
                         ?>
+                        <?= csrf_field() ?>
 
                         <div class="form-group mb-4">
                             <div class="ticket-editor-wrapper">
                                 <div id="editor"></div>
                             </div>
+                            <textarea name="message" id="message_hidden" style="display:none;"></textarea>
                             <?php echo form_error('message', '<div class="error mt-2">', '</div>'); ?>
                         </div>
 
@@ -221,7 +223,7 @@
 
         $('#replyticketform').submit(function () {
             var delta = quill.root.innerHTML;
-            $(this).append('<input type="hidden" name="message" value="' + delta + '" /> ');
+            $('#message_hidden').val(delta);
             return true;
         });
 

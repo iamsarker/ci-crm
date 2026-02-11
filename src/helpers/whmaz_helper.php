@@ -590,10 +590,20 @@
 				return '';
 			}
 
+			// Escape dangerous tags so they display as text instead of being removed
+			// This allows users to see what was written without executing it
+			$dangerous_tags = array('script', 'iframe', 'object', 'embed', 'form', 'input', 'button', 'textarea', 'select', 'style', 'link', 'meta', 'base');
+			foreach ($dangerous_tags as $tag) {
+				// Escape opening tags
+				$html = preg_replace('/<\s*' . $tag . '(\s|>)/i', '&lt;' . $tag . '$1', $html);
+				// Escape closing tags
+				$html = preg_replace('/<\s*\/\s*' . $tag . '\s*>/i', '&lt;/' . $tag . '&gt;', $html);
+			}
+
 			// Allowed tags (Quill editor output + common formatting)
 			$allowed_tags = '<p><br><strong><b><em><i><u><s><strike><a><blockquote><pre><code><ul><ol><li><h1><h2><h3><h4><h5><h6><sub><sup><span><div>';
 
-			// First strip all non-allowed tags
+			// Strip all non-allowed tags (dangerous ones are already escaped above)
 			$html = strip_tags($html, $allowed_tags);
 
 			// Remove dangerous attributes using regex
@@ -610,9 +620,6 @@
 			// Remove style attributes with expression/javascript
 			$html = preg_replace('/style\s*=\s*["\'][^"\']*expression\s*\([^"\']*["\']/i', '', $html);
 			$html = preg_replace('/style\s*=\s*["\'][^"\']*javascript:[^"\']*["\']/i', '', $html);
-
-			// Remove any remaining script-like content
-			$html = preg_replace('/<\s*script[^>]*>.*?<\s*\/\s*script\s*>/is', '', $html);
 
 			return $html;
 		}

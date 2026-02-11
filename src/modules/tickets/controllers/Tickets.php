@@ -37,10 +37,12 @@ class Tickets extends WHMAZ_Controller {
             $this->form_validation->set_message('message', 'Message is required');
 
             if ($this->form_validation->run() == true){
-                    if($_FILES['attachment']['size'] > 0){
+                    $image_name = '';
+                    if(isset($_FILES['attachment']) && $_FILES['attachment']['size'][0] > 0) {
                             $image = $this->Common_model->upload_files($this->img_path, gen_uuid(), $_FILES['attachment']);
-							pr($image);
-                            $image_name = implode(",",$image);
+                            if(!empty($image) && is_array($image)){
+                                $image_name = implode(",", $image);
+                            }
                     }
 
                     $form_data = array(
@@ -50,22 +52,34 @@ class Tickets extends WHMAZ_Controller {
                             'priority'      => $this->input->post('priority'),
                             'message'      	=> $this->input->post('message'),
                             'attachment'    => $image_name,
-                            'inserted_on'   	=> date('Y-m-d H:i'),
+                            'inserted_on'   => date('Y-m-d H:i'),
                             'inserted_by'   => getCustomerId(),
-                            'status'       	=> 1
+                            'flag'          => 1,
+                            'status'        => 1
                     );
 
-                    if($this->Common_model->save('tickets', $form_data)){
+                    // Only add order_service_id if a service is selected
+                    $related_service = $this->input->post('related_service');
+                    if (!empty($related_service) && is_numeric($related_service)) {
+                            $form_data['order_service_id'] = intval($related_service);
+                    } else {
+						$form_data['order_service_id'] = 0;
+					}
+
+                    if($this->Common_model->save('tickets', $form_data)) {
                             $this->session->set_flashdata('alert_success', 'Support ticket has been placed successfully.');
                             redirect("tickets/index");
-                    }else {
-                            $this->session->set_flashdata('alert_error', 'Something went wrong. Try again');
+                    } else {
+                            $this->session->set_flashdata('alert_error', 'Something went wrong. Try again. Please check your input.');
                     }
-            }
+            } else {
+				$this->session->set_flashdata('alert_error', 'Form validation error. Input valid data');
+			}
 
             $data['user'] = $user;
             $data['recent'] = $this->Support_model->loadTicketList(getCompanyId(), 3);
             $data['results'] = $this->Common_model->generate_dropdown('ticket_depts','id','name');
+            $data['services'] = $this->Support_model->getActiveServicesDropdown(getCompanyId());
             $data['subview'] = 'fileupload/index';
             $this->load->view('newticket', $data);
 	}
@@ -119,9 +133,12 @@ class Tickets extends WHMAZ_Controller {
             $this->form_validation->set_message('message', 'Message is required');
 
             if ($this->form_validation->run() == true){
-                    if($_FILES['attachment']['size'] > 0){
+                    $image_name = '';
+                    if(isset($_FILES['attachment']) && $_FILES['attachment']['size'][0] > 0){
                             $image = $this->Common_model->upload_files($this->img_path, round(microtime(true) * 100), $_FILES['attachment']);
-                            $image_name = implode(",",$image);
+                            if(!empty($image) && is_array($image)){
+                                $image_name = implode(",", $image);
+                            }
                     }
 
                     $form_data = array(
