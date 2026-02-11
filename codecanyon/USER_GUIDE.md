@@ -1,7 +1,7 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.0.9
+**Version:** 1.1.0
 **Last Updated:** February 11, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
@@ -717,35 +717,48 @@ Available payment methods (configured by administrator):
 1. **Open Ticket Form**
    - Go to "Support" → "Open Ticket"
    - Or click "Get Support" from service details
+   - Modern, beautified form with organized sections
 
-2. **Fill Ticket Information**
-   - **Subject:** Brief description of issue
-   - **Department:** Select appropriate department
+2. **Contact Information Section**
+   - Name (pre-filled, read-only)
+   - Email (pre-filled, read-only)
+
+3. **Ticket Details Section**
+   - **Subject:** Brief description of issue (required)
+   - **Department:** Select appropriate department (required)
      - Technical Support
      - Billing Support
      - Sales
      - General Inquiry
-
-   - **Priority:** Select urgency level
+   - **Related Service:** Select from your active services (optional)
+     - Dropdown shows your active hosting accounts with domain names
+     - Format: "Product Name (domain.com)"
+     - Helps support staff identify the affected service quickly
+   - **Priority:** Select urgency level (required)
      - Low (general questions)
      - Medium (minor issues)
      - High (service affecting)
-     - Urgent (critical, service down)
+     - Critical (urgent, service down)
 
-   - **Related Service:** Select affected service (optional)
+4. **Message Section**
+   - Rich text editor (Quill) with formatting toolbar
+   - Support for bold, italic, underline, lists, links, code blocks
+   - Detailed description of your issue
 
-   - **Message:** Detailed description of issue
+5. **Attachments Section**
+   - Upload screenshots or files
+   - Allowed types: GIF, JPG, PNG, PDF, TXT
+   - Maximum 5MB per file
+   - Multiple attachments supported (click + button to add more)
 
-   - **Attachments:** Upload screenshots or files (optional)
-
-3. **Submit Ticket**
-   - Click "Submit Ticket"
+6. **Submit Ticket**
+   - Click "Submit Ticket" button
    - Ticket number assigned
    - Confirmation email sent
    - Support team notified
 
 ![Create Ticket](screenshots/create-ticket.png)
-*[Screenshot Placeholder: Create support ticket form]*
+*[Screenshot Placeholder: Create support ticket form with modern design]*
 
 ### Managing Tickets
 
@@ -3067,7 +3080,7 @@ This guide covered:
 ---
 
 **Document Information:**
-- Version: 1.0.9
+- Version: 1.1.0
 - Last Updated: February 11, 2026
 - Product: WHMAZ - CI-CRM
 - Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.

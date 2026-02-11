@@ -349,7 +349,8 @@ class Common_model extends CI_Model {
                     continue;
                 }
 
-                $totalfilename[] = $fileName;
+                // Use the actual filename from upload data (CI may modify it)
+                $totalfilename[] = $upload_data['file_name'];
             } else {
                 log_message('error', 'File upload failed: ' . $this->upload->display_errors());
                 // Continue to next file instead of returning false

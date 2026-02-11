@@ -11,7 +11,11 @@ class Tickets extends WHMAZ_Controller {
 		if( !$this->isLogin() ){
 			redirect('/auth/login', 'refresh');
 		}
-		$this->img_path = realpath(APPPATH . '../uploadedfiles/tickets/');
+		// Use absolute path, create directory if it doesn't exist
+		$this->img_path = FCPATH . 'uploadedfiles' . DIRECTORY_SEPARATOR . 'tickets';
+		if (!is_dir($this->img_path)) {
+			@mkdir($this->img_path, 0755, true);
+		}
 	}
 
 	public function index()
@@ -72,9 +76,7 @@ class Tickets extends WHMAZ_Controller {
                     } else {
                             $this->session->set_flashdata('alert_error', 'Something went wrong. Try again. Please check your input.');
                     }
-            } else {
-				$this->session->set_flashdata('alert_error', 'Form validation error. Input valid data');
-			}
+            }
 
             $data['user'] = $user;
             $data['recent'] = $this->Support_model->loadTicketList(getCompanyId(), 3);
@@ -100,9 +102,61 @@ class Tickets extends WHMAZ_Controller {
 	}
         
         
-	public function vtattachments($tid, $filename)
+	public function vtattachments($tid)
 	{
-            
+		// Get filename from query parameter
+		$filename = $this->input->get('file');
+
+		if (empty($filename)) {
+			$this->session->set_flashdata('alert_error', 'No file specified.');
+			redirect("tickets/viewticket/" . $tid);
+			return;
+		}
+
+		// Validate ticket belongs to the logged-in user's company
+		$ticket = $this->Support_model->viewTicket($tid, getCompanyId());
+		if (empty($ticket)) {
+			$this->session->set_flashdata('alert_error', 'Invalid ticket or access denied.');
+			redirect("tickets/index");
+			return;
+		}
+
+		// Sanitize filename to prevent directory traversal
+		$filename = basename($filename);
+		$file_path = $this->img_path . DIRECTORY_SEPARATOR . $filename;
+
+		if (!file_exists($file_path) || !is_readable($file_path)) {
+			$this->session->set_flashdata('alert_error', 'Attachment not found.');
+			redirect("tickets/viewticket/" . $tid);
+			return;
+		}
+
+		// Get MIME type
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		$mime_type = finfo_file($finfo, $file_path);
+		finfo_close($finfo);
+
+		// Allowed MIME types
+		$allowed_mimes = array(
+			'image/gif', 'image/jpeg', 'image/png', 'image/jpg',
+			'application/pdf', 'text/plain'
+		);
+
+		if (!in_array($mime_type, $allowed_mimes)) {
+			$this->session->set_flashdata('alert_error', 'File type not allowed.');
+			redirect("tickets/viewticket/" . $tid);
+			return;
+		}
+
+		// Serve the file
+		header('Content-Type: ' . $mime_type);
+		header('Content-Disposition: inline; filename="' . $filename . '"');
+		header('Content-Length: ' . filesize($file_path));
+		header('Cache-Control: private, max-age=0, must-revalidate');
+		header('Pragma: public');
+
+		readfile($file_path);
+		exit;
 	}
         
 	public function likereplies($tid, $trid, $val)

@@ -2,7 +2,7 @@
 
 > **The Ultimate WHMCS Alternative** - A comprehensive web hosting automation platform and client management system built with CodeIgniter 3.x
 
-[![Version](https://img.shields.io/badge/version-1.0.9-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](CHANGELOG.md)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-8892BF.svg)](https://php.net)
 [![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.1.13-EE4623.svg)](https://codeigniter.com)
 [![License](https://img.shields.io/badge/license-Commercial-green.svg)](LICENSE.txt)

@@ -152,11 +152,16 @@
                                 </a>
                                 <?php endif; ?>
 
-                                <?php if(!empty($obj['attachment'])): ?>
-                                <a target="_blank" href="<?= base_url() ?>tickets/vtattachments/<?= $tid ?>/<?= $obj['attachment'] ?>" class="btn btn-sm btn-outline-primary">
-                                    <i class="fa fa-paperclip mg-r-5"></i>View Attachment
+                                <?php if(!empty($obj['attachment'])):
+                                    $attachments = explode(',', $obj['attachment']);
+                                    foreach($attachments as $attachment):
+                                        $attachment = trim($attachment);
+                                        if(!empty($attachment)):
+                                ?>
+                                <a target="_blank" href="<?= base_url() ?>tickets/vtattachments/<?= $tid ?>?file=<?= urlencode($attachment) ?>" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa fa-paperclip mg-r-5"></i><?= htmlspecialchars($attachment, ENT_QUOTES, 'UTF-8') ?>
                                 </a>
-                                <?php endif; ?>
+                                <?php endif; endforeach; endif; ?>
                             </div>
                         </div>
                     </div>
@@ -180,9 +185,16 @@
                         <?php if(!empty($ticket['attachment'])): ?>
                         <div class="message-footer">
                             <div class="message-actions">
-                                <a target="_blank" href="<?= base_url() ?>tickets/vtattachments/<?= $tid ?>/<?= $ticket['attachment'] ?>" class="btn btn-sm btn-outline-primary">
-                                    <i class="fa fa-paperclip mg-r-5"></i>View Attachment
+                                <?php
+                                    $attachments = explode(',', $ticket['attachment']);
+                                    foreach($attachments as $attachment):
+                                        $attachment = trim($attachment);
+                                        if(!empty($attachment)):
+                                ?>
+                                <a target="_blank" href="<?= base_url() ?>tickets/vtattachments/<?= $tid ?>?file=<?= urlencode($attachment) ?>" class="btn btn-sm btn-outline-primary">
+                                    <i class="fa fa-paperclip mg-r-5"></i><?= htmlspecialchars($attachment, ENT_QUOTES, 'UTF-8') ?>
                                 </a>
+                                <?php endif; endforeach; ?>
                             </div>
                         </div>
                         <?php endif; ?>

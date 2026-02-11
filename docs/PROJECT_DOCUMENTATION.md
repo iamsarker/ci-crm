@@ -266,27 +266,48 @@ The Client Portal is built using HMVC modules and provides customer-facing funct
 - Customer dashboard overview
 - Active services list
 - Active domains list
-- Recent invoices
-- Recent tickets
+- Recent invoices (beautified card-style list with hover effects)
+- Recent tickets (beautified card-style list with status badges)
 - Account summary
 - Profile management
 - Change password page (`/clientarea/changePassword`) with email notification on change
 - Contact information update
 - Quick actions
 
+**UI Enhancements:**
+- Dashboard list items styled with 3px margin, rounded corners, and gradient backgrounds
+- Hover effects with border highlight and shadow
+- Status badges with color-coded icons
+- Empty state styling with dashed borders
+
 ### 6. Support Ticket System (Client Side)
 **Module:** `src/modules/tickets/` and `src/modules/supports/`
 
 **Features:**
-- Create support tickets
+- Create support tickets with modern beautified form
 - View ticket list
-- View ticket details
-- Reply to tickets
-- Upload attachments
+- View ticket details with conversation thread
+- Reply to tickets with Quill rich text editor
+- Upload attachments (multiple files supported)
+- View/download attachments securely
 - Ticket status tracking
-- Priority levels
+- Priority levels (Low, Medium, High, Critical)
 - Department selection
+- Related service selection (from user's active services)
 - Ticket history
+
+**Key URLs:**
+- `/tickets/index` - Ticket listing
+- `/tickets/newticket` - Create new ticket (beautified form)
+- `/tickets/viewticket/{id}` - View ticket with conversation thread
+- `/tickets/replyticket/{id}` - Submit reply
+- `/tickets/vtattachments/{id}?file={filename}` - View attachment securely
+
+**Attachment Handling:**
+- Files stored in `/uploadedfiles/tickets/`
+- Secure download with company validation
+- Allowed types: GIF, JPG, PNG, PDF, TXT (max 5MB)
+- Multiple attachments per ticket/reply supported
 
 ### 7. Customer Reports
 **Module:** `src/modules/report/`
@@ -1402,6 +1423,7 @@ $result = whm_list_packages($serverInfo);
 **Security Functions:**
 - `xss_cleaner($data)` - XSS protection
 - `xssCleaner($data)` - Alternative XSS cleaner
+- `sanitize_html($html)` - Sanitize HTML content from Quill editor; escapes dangerous tags (script, iframe, form, etc.) as visible text instead of removing them; allows safe formatting tags (p, br, strong, em, a, ul, ol, li, h1-h6, etc.); removes event handlers and javascript: URLs
 
 **Session Helpers:**
 - `is_customer_loggedin()` - Customer auth check
@@ -1672,6 +1694,6 @@ For HMVC documentation: https://github.com/jenssegers/codeigniter-hmvc
 
 ---
 
-**Documentation Version:** 1.3
-**Last Updated:** 2026-02-02
+**Documentation Version:** 1.4
+**Last Updated:** 2026-02-11
 **Project Status:** Active Development

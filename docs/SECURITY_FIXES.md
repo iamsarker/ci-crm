@@ -333,6 +333,63 @@ Before deploying to production, test the following:
 - `src/views/whmazadmin/server_manage.php`
 - `src/views/whmazadmin/package_manage.php`
 
+### Views (CSRF tokens added for multipart forms)
+- `src/modules/tickets/views/newticket.php`
+- `src/modules/tickets/views/viewticket.php`
+
+---
+
+## 12. Enhanced HTML Sanitization - **FIXED** ✓
+
+### Issue
+The `sanitize_html()` function was completely removing dangerous tags like `<script>`, which could hide malicious content from support staff reviewing tickets.
+
+### Solution
+Updated `sanitize_html()` to **escape** dangerous tags instead of removing them, so they display as visible text without executing.
+
+### File Fixed
+- `src/helpers/whmaz_helper.php` - sanitize_html()
+
+### Dangerous Tags Now Escaped
+- `script`, `iframe`, `object`, `embed`, `form`, `input`, `button`
+- `textarea`, `select`, `style`, `link`, `meta`, `base`
+
+### Example
+```php
+// Input:  <script>alert("XSS")</script>
+// Output: &lt;script&gt;alert("XSS")&lt;/script&gt;
+// Display: <script>alert("XSS")</script> (visible text, not executed)
+```
+
+---
+
+## 13. Secure File Download Handler - **FIXED** ✓
+
+### Issue
+Ticket attachment viewing had no implementation and lacked security validation.
+
+### Solution
+Implemented secure file download with:
+1. Company validation (user can only access their own ticket attachments)
+2. Directory traversal prevention using `basename()`
+3. MIME type validation (whitelist: gif, jpeg, png, pdf, txt)
+4. Proper file serving with correct headers
+
+### File Fixed
+- `src/modules/tickets/controllers/Tickets.php` - vtattachments()
+
+### Security Measures
+```php
+// 1. Validate ownership
+$ticket = $this->Support_model->viewTicket($tid, getCompanyId());
+
+// 2. Prevent directory traversal
+$filename = basename($this->input->get('file'));
+
+// 3. Validate MIME type
+$allowed_mimes = array('image/gif', 'image/jpeg', 'image/png', 'application/pdf', 'text/plain');
+```
+
 ---
 
 ## Documentation for Buyers
@@ -375,5 +432,6 @@ When selling on CodeCanyon, include the following in your documentation:
 ---
 
 **Generated:** 2026-01-25
+**Last Updated:** 2026-02-11
 **Status:** All critical security issues resolved ✓
 **CodeCanyon Ready:** YES (with production recommendations)

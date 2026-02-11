@@ -122,7 +122,7 @@
                                 <label class="form-label required-field">Subject</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fa fa-heading"></i></span>
-                                    <input name="title" type="text" class="form-control" id="subject" placeholder="Brief description of your issue">
+                                    <input name="title" type="text" class="form-control" id="subject" placeholder="Brief description of your issue" required>
                                 </div>
                                 <?php echo form_error('title', '<div class="error-message"><i class="fa fa-exclamation-circle"></i> ', '</div>'); ?>
                             </div>
@@ -132,7 +132,7 @@
                                     <label class="form-label required-field">Department</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fa fa-building"></i></span>
-                                        <?php echo form_dropdown('ticket_dept_id', $results, '', 'class="form-select" id="ticket_dept_id"'); ?>
+                                        <?php echo form_dropdown('ticket_dept_id', $results, '', 'class="form-select" required id="ticket_dept_id"'); ?>
                                     </div>
                                     <?php echo form_error('ticket_dept_id', '<div class="error-message"><i class="fa fa-exclamation-circle"></i> ', '</div>'); ?>
                                 </div>
@@ -147,7 +147,7 @@
                                     <label class="form-label required-field">Priority</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fa fa-flag"></i></span>
-                                        <select name="priority" class="form-select">
+                                        <select name="priority" class="form-select" required>
                                             <option value="">-- Select Priority --</option>
                                             <option value="1">Low</option>
                                             <option value="2" selected>Medium</option>

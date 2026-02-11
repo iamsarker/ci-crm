@@ -7,6 +7,77 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.0] - 2026-02-11
+
+### Enhancement - Ticket System & Security Fixes
+
+#### New Ticket Page Beautification
+- Complete redesign of "Open New Ticket" page with modern form layout
+- Organized form sections: Contact Information, Ticket Details, Message, Attachments
+- Input groups with icons for all form fields
+- Required field indicators with red asterisks
+- Gradient header with title and subtitle
+- Modern Quill editor wrapper with styled toolbar
+- Improved attachment upload with add button
+- Gradient submit button with hover effects
+- Responsive design for mobile devices
+
+#### Related Service Dropdown
+- Added "Related Service" dropdown to ticket form
+- Populated from active services (`order_services` table) for logged-in user
+- Displays product name with domain (e.g., "Basic Hosting (example.com)")
+- New `getActiveServicesDropdown()` method in `Support_model.php`
+- Saves `order_service_id` with ticket for service-specific support
+
+#### Dashboard List Items Beautification
+- Styled "Recent Support Tickets" and "Recent Invoices" sections
+- Card-like appearance with 3px margin between items
+- Gradient backgrounds with rounded corners (10px border-radius)
+- Subtle box-shadow for depth
+- Hover effects with blue border highlight and slide animation
+- Color-coded icon shadows for tickets and invoices
+
+#### Quill Editor Message Fix
+- Fixed form submission breaking when message contains quotes
+- Changed from dynamic hidden input to hidden textarea
+- Use jQuery `.val()` method instead of string concatenation
+- Applies to both `newticket.php` and `viewticket.php`
+
+#### Enhanced HTML Sanitization
+- Updated `sanitize_html()` to **escape** dangerous tags instead of removing
+- Tags like `<script>`, `<iframe>`, `<form>` now display as visible text
+- Prevents XSS while allowing support staff to see original message content
+- Dangerous tags list: script, iframe, object, embed, form, input, button, textarea, select, style, link, meta, base
+
+#### Secure Ticket Attachment Viewing
+- Implemented `vtattachments()` method in Tickets controller
+- Company validation (users can only view their own ticket attachments)
+- Directory traversal prevention using `basename()`
+- MIME type validation (whitelist: gif, jpeg, png, pdf, txt)
+- URL changed to query parameter: `/tickets/vtattachments/{id}?file={filename}`
+- Multiple attachments per ticket/reply supported
+
+#### File Upload Fix
+- Fixed upload path using `FCPATH` instead of `realpath()` (prevents false on Windows)
+- Auto-create upload directory if it doesn't exist
+- Fixed `upload_files()` to return actual filename from `$upload_data['file_name']`
+- Proper handling of multiple file uploads
+
+#### CSRF Token Fixes
+- Added `<?= csrf_field() ?>` to `newticket.php` form
+- Added `<?= csrf_field() ?>` to `viewticket.php` reply form
+
+#### Modified Files
+- `resources/assets/css/custom.css` - Dashboard list and ticket form styles
+- `src/modules/tickets/views/newticket.php` - Complete redesign
+- `src/modules/tickets/views/viewticket.php` - Attachment display, CSRF, Quill fix
+- `src/modules/tickets/controllers/Tickets.php` - Attachment viewer, file upload fixes
+- `src/models/Support_model.php` - `getActiveServicesDropdown()` method
+- `src/models/Common_model.php` - Fixed upload filename return
+- `src/helpers/whmaz_helper.php` - Enhanced `sanitize_html()`
+
+---
+
 ## [1.0.9] - 2026-02-11
 
 ### UI Enhancement - Client Portal Beautification
@@ -864,6 +935,16 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.1.0] - 2026-02-11 - Enhancement
+- Beautified New Ticket page with modern form design
+- Added Related Service dropdown from active services
+- Beautified dashboard list items with 3px margin
+- Fixed Quill editor message submission
+- Enhanced sanitize_html() to escape dangerous tags
+- Implemented secure ticket attachment viewing
+- Fixed file upload filename handling
+- Added CSRF tokens to ticket forms
+
 ### [1.0.9] - 2026-02-11 - UI Enhancement
 - Complete client portal UI beautification
 - Modern dashboard with welcome banner and stat cards
@@ -1062,6 +1143,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.0.9
+**Current Version:** 1.1.0
 **Release Date:** February 11, 2026
-**Status:** Stable Production Release (UI Enhancement)
+**Status:** Stable Production Release (Enhancement)

@@ -1811,6 +1811,66 @@ $(function(){
 });
 ```
 
+### Quill Rich Text Editor Pattern
+
+**IMPORTANT:** When using Quill editor with forms, always use a hidden textarea instead of dynamically appending hidden inputs to avoid HTML encoding issues with quotes.
+
+#### HTML Structure
+```php
+<!-- Editor wrapper with styling -->
+<div class="editor-wrapper">
+    <div id="editor"></div>
+</div>
+<!-- Hidden textarea to store editor content -->
+<textarea name="message" id="message_hidden" style="display:none;"></textarea>
+```
+
+#### JavaScript Initialization
+```javascript
+$(function(){
+    'use strict';
+
+    var toolbarOptions = [
+        ['bold', 'italic', 'underline'],
+        ['link', 'blockquote', 'code-block'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        [{ 'script': 'sub'}, { 'script': 'super' }],
+        [{ 'indent': '-1'}, { 'indent': '+1' }],
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'font': [] }],
+    ];
+
+    var quill = new Quill('#editor', {
+        modules: {
+            toolbar: toolbarOptions
+        },
+        placeholder: 'Enter your message...',
+        theme: 'snow'
+    });
+
+    // On form submit, copy editor content to hidden textarea
+    $('#formId').submit(function() {
+        var content = quill.root.innerHTML;
+        $('#message_hidden').val(content);  // Use .val() - NOT string concatenation!
+        return true;
+    });
+});
+```
+
+#### Displaying Quill Content Safely
+```php
+// Use sanitize_html() to display Quill content safely
+// This escapes dangerous tags (script, iframe, etc.) as visible text
+// while preserving safe formatting (bold, italic, links, etc.)
+<?= sanitize_html($message ?? '') ?>
+```
+
+**DO NOT do this (breaks with quotes in content):**
+```javascript
+// WRONG - will break if content contains quotes
+$(this).append('<input type="hidden" name="message" value="' + delta + '" />');
+```
+
 ---
 
 ## Helper Functions Usage
@@ -2089,6 +2149,34 @@ $id = safe_decode($this->uri->segment(3));
 
 ### 6. File Upload Security
 
+#### Using Common_model->upload_files() (Recommended)
+```php
+// In controller - define upload path using FCPATH
+$this->img_path = FCPATH . 'uploadedfiles' . DIRECTORY_SEPARATOR . 'tickets';
+if (!is_dir($this->img_path)) {
+    @mkdir($this->img_path, 0755, true);
+}
+
+// Upload files (handles multiple files)
+$image_name = '';
+if (isset($_FILES['attachment']) && $_FILES['attachment']['size'][0] > 0) {
+    $image = $this->Common_model->upload_files($this->img_path, gen_uuid(), $_FILES['attachment']);
+    if (!empty($image) && is_array($image)) {
+        $image_name = implode(",", $image);  // Store comma-separated filenames
+    }
+}
+
+// Store $image_name in database
+```
+
+**IMPORTANT:** The `upload_files()` function:
+- Returns actual filenames from `$upload_data['file_name']` (not pre-configured names)
+- Encrypts filenames using `bin2hex(random_bytes(16))`
+- Validates MIME types server-side
+- Allows: gif, jpg, jpeg, png, pdf, txt
+- Max size: 5MB per file
+
+#### Manual Upload Configuration
 ```php
 $config = array(
     'upload_path'   => './uploadedfiles/',
@@ -2101,8 +2189,53 @@ $this->load->library('upload', $config);
 
 if ($this->upload->do_upload('file')) {
     $file_data = $this->upload->data();
+    $filename = $file_data['file_name'];  // Use actual filename from upload data
 } else {
     $error = $this->upload->display_errors();
+}
+```
+
+#### Serving Uploaded Files Securely
+```php
+public function download($id)
+{
+    // 1. Validate user has access to the file
+    $record = $this->Model->getById($id, getCompanyId());
+    if (empty($record)) {
+        $this->session->set_flashdata('alert_error', 'Access denied.');
+        redirect('index');
+        return;
+    }
+
+    // 2. Sanitize filename to prevent directory traversal
+    $filename = basename($this->input->get('file'));
+    $file_path = $this->upload_path . DIRECTORY_SEPARATOR . $filename;
+
+    // 3. Validate file exists
+    if (!file_exists($file_path) || !is_readable($file_path)) {
+        $this->session->set_flashdata('alert_error', 'File not found.');
+        redirect('view/' . $id);
+        return;
+    }
+
+    // 4. Validate MIME type
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime_type = finfo_file($finfo, $file_path);
+    finfo_close($finfo);
+
+    $allowed_mimes = array('image/gif', 'image/jpeg', 'image/png', 'application/pdf', 'text/plain');
+    if (!in_array($mime_type, $allowed_mimes)) {
+        $this->session->set_flashdata('alert_error', 'File type not allowed.');
+        redirect('view/' . $id);
+        return;
+    }
+
+    // 5. Serve the file
+    header('Content-Type: ' . $mime_type);
+    header('Content-Disposition: inline; filename="' . $filename . '"');
+    header('Content-Length: ' . filesize($file_path));
+    readfile($file_path);
+    exit;
 }
 ```
 
