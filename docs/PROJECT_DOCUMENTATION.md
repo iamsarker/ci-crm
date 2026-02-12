@@ -925,18 +925,49 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 ### 15. Automated Tasks Management
 
 **Module:** `src/modules/cronjobs/`
+**Model:** `src/models/Cronjob_model.php`
 **Database Tables:**
-- `cron_jobs` - Job definitions
+- `cron_jobs` - Job execution logs
 - `pending_executions` - Pending operations queue
 
 **Features:**
-- Scheduled task execution
-- Invoice generation automation
-- Service renewal processing
-- Payment reminders
-- Domain renewal reminders
+- **Renewal Invoice Generation** - Auto-generate invoices 15 days before expiry
+- Service renewal processing with billing cycle support
+- Domain renewal processing with multi-year support
+- Email notifications for renewal invoices
+- Duplicate invoice prevention
+- CLI and HTTP execution support
 - Execution logging
-- Task scheduling configuration
+
+**Renewal Invoice System (WHMCS-style):**
+- Checks `order_services` and `order_domains` where `next_due_date` is within 15 days
+- Only processes items with `auto_renew=1` and `status=1` (active)
+- Excludes one-time (`cycle_days=0`) billing cycles
+- Creates invoice with `due_date` = `next_due_date`
+- Links `invoice_items.ref_id` to source order item
+- Records `billing_period_start` and `billing_period_end`
+- Sends email using `invoice_created` template
+
+**Key URLs:**
+- `/cronjobs` - System info and setup instructions
+- `/cronjobs/run` - Main entry point (run all tasks)
+- `/cronjobs/generateRenewalInvoices` - Generate renewal invoices only
+- `/cronjobs/testRenewal/{days}` - Preview expiring items (no invoice creation)
+
+**Cron Setup:**
+```bash
+# Run daily at 6:00 AM
+0 6 * * * curl -s http://yoursite.com/cronjobs/run > /dev/null 2>&1
+# Or via CLI
+0 6 * * * php /path/to/index.php cronjobs run > /dev/null 2>&1
+```
+
+**Model Methods:**
+- `getExpiringServices($days)` - Get services expiring within X days
+- `getExpiringDomains($days)` - Get domains expiring within X days
+- `createServiceRenewalInvoice($service)` - Create invoice for service
+- `createDomainRenewalInvoice($domain)` - Create invoice for domain
+- `updateNextDueDateAfterPayment($invoiceId)` - Update dates after payment
 
 ---
 
@@ -1770,6 +1801,6 @@ For HMVC documentation: https://github.com/jenssegers/codeigniter-hmvc
 
 ---
 
-**Documentation Version:** 1.5
+**Documentation Version:** 1.6
 **Last Updated:** 2026-02-12
 **Project Status:** Active Development

@@ -7,6 +7,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.4.0] - 2026-02-12
+
+### New Feature - Automated Renewal Invoice Generation
+
+#### Renewal Invoice Cronjob System
+- Automated generation of renewal invoices 15 days before service/domain expiry
+- Supports both services (hosting packages) and domains
+- Prevents duplicate invoices using billing period tracking
+- Respects `auto_renew` flag on services/domains
+- Excludes one-time and free billing cycles
+- Transaction-safe invoice creation
+
+#### Cronjob Endpoints
+- `/cronjobs/run` - Main entry point, runs all automated tasks
+- `/cronjobs/generateRenewalInvoices` - Generate renewal invoices only
+- `/cronjobs/testRenewal/{days}` - Test mode: preview expiring items without creating invoices
+- `/cronjobs` - Show cronjob system info and setup instructions
+
+#### Email Notifications
+- Automatic email to customers when renewal invoice is generated
+- Uses `invoice_created` email template with placeholders
+- Includes invoice details, due date, and payment link
+
+#### New Files
+- `src/models/Cronjob_model.php` - Complete renewal invoice logic with:
+  - `getExpiringServices()` - Find services expiring within X days
+  - `getExpiringDomains()` - Find domains expiring within X days
+  - `createServiceRenewalInvoice()` - Create invoice for service renewal
+  - `createDomainRenewalInvoice()` - Create invoice for domain renewal
+  - `updateNextDueDateAfterPayment()` - Update dates when invoice is paid
+
+#### Modified Files
+- `src/modules/cronjobs/controllers/Cronjobs.php` - Complete rewrite with:
+  - Main `run()` method for cron execution
+  - `generateRenewalInvoices()` with service and domain processing
+  - `sendRenewalInvoiceEmail()` for customer notifications
+  - CLI and HTTP response support
+
+#### Cron Setup
+```bash
+# Run daily at 6:00 AM
+0 6 * * * curl -s http://yoursite.com/cronjobs/run > /dev/null 2>&1
+```
+
+#### How It Works
+1. Cronjob runs daily and checks for items expiring in next 15 days
+2. For each expiring item with `auto_renew=1`:
+   - Creates invoice with due_date = next_due_date
+   - Links invoice_item to order_service/order_domain via ref_id
+   - Records billing_period_start and billing_period_end
+3. Sends email notification to customer
+4. When invoice is paid, next_due_date is updated to billing_period_end
+
+---
+
 ## [1.3.0] - 2026-02-12
 
 ### New Feature - Cart Item Count Badge
@@ -1030,6 +1085,13 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.4.0] - 2026-02-12 - New Feature
+- Automated renewal invoice generation 15 days before expiry
+- Cronjob system with `/cronjobs/run` endpoint
+- Email notifications for renewal invoices
+- Support for both services and domains
+- Duplicate invoice prevention using billing period tracking
+
 ### [1.3.0] - 2026-02-12 - New Feature
 - Added cart item count badge in client portal header
 - AJAX-powered real-time cart count display
@@ -1246,6 +1308,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.3.0
+**Current Version:** 1.4.0
 **Release Date:** February 12, 2026
 **Status:** Stable Production Release (New Feature)
