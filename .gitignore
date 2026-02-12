@@ -3,6 +3,9 @@
 # Environment configuration
 .env
 
+nul
+null
+
 src/cache/*
 !src/cache/index.html
 
