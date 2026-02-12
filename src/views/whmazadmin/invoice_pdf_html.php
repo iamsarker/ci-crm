@@ -39,21 +39,21 @@
 			</thead>
 			<tbody>
 			<tr>
-				<td colspan="2"><img src="<?=$logoBase64?>" alt="logo"></td>
+				<td colspan="2"><?php if(!empty($logoBase64)) { ?><img src="<?=$logoBase64?>" alt="logo"><?php } ?></td>
 				<td colspan="2" style="text-align: right;">
 					<h3 style="text-align: right; width: 100%;">
-						<?php echo htmlspecialchars($companyInfo['CompanyName']->cnf_val ?? '', ENT_QUOTES, 'UTF-8');?>
+						<?php echo htmlspecialchars($companyInfo['company_name'] ?? '', ENT_QUOTES, 'UTF-8');?>
 					</h3>
 					<h5 style="text-align: right; width: 100%;">
 						<?php
-						echo htmlspecialchars($companyInfo['CompanyAddress']->cnf_val ?? '', ENT_QUOTES, 'UTF-8');
-						echo !empty($companyInfo['CompanyCity']->cnf_val) ? ", ".htmlspecialchars($companyInfo['CompanyCity']->cnf_val ?? '', ENT_QUOTES, 'UTF-8') : "";
-						echo !empty($companyInfo['CompanyZip']->cnf_val) ? "-".htmlspecialchars($companyInfo['CompanyZip']->cnf_val ?? '', ENT_QUOTES, 'UTF-8') : "";
-						echo !empty($companyInfo['CompanyCountry']->cnf_val) ? ", ".htmlspecialchars($companyInfo['CompanyCountry']->cnf_val ?? '', ENT_QUOTES, 'UTF-8') : "";
+						echo htmlspecialchars($companyInfo['company_address'] ?? '', ENT_QUOTES, 'UTF-8');
+						echo !empty($companyInfo['city']) ? ", ".htmlspecialchars($companyInfo['city'], ENT_QUOTES, 'UTF-8') : "";
+						echo !empty($companyInfo['zip_code']) ? "-".htmlspecialchars($companyInfo['zip_code'], ENT_QUOTES, 'UTF-8') : "";
+						echo !empty($companyInfo['country']) ? ", ".htmlspecialchars($companyInfo['country'], ENT_QUOTES, 'UTF-8') : "";
 						?>
 					</h5>
 					<?php
-					echo !empty($companyInfo['CompanyVAT']->cnf_val) ? "<h5 style='width: 100%'>VAT No: ".htmlspecialchars($companyInfo['CompanyVAT']->cnf_val ?? '', ENT_QUOTES, 'UTF-8')."</h5>" : "";
+					echo !empty($companyInfo['bin_tax']) ? "<h5 style='width: 100%'>BIN/Tax ID: ".htmlspecialchars($companyInfo['bin_tax'], ENT_QUOTES, 'UTF-8')."</h5>" : "";
 					?>
 				</td>
 			</tr>

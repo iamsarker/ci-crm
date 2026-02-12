@@ -11,6 +11,7 @@ class Billing extends WHMAZ_Controller
 		parent::__construct();
 		$this->load->model('Billing_model');
 		$this->load->model('Common_model');
+		$this->load->model('Appsetting_model');
 
 		if (!$this->isLogin()) {
 			redirect('/auth/login', 'refresh');
@@ -39,11 +40,12 @@ class Billing extends WHMAZ_Controller
 	public function view_invoice($invoice_uuid)
 	{
 		$companyId = getCompanyId();
-		$data['companyInfo'] = $this->Common_model->get_sys_config("COMPANY_INFO");
+		$data['companyInfo'] = $this->Appsetting_model->getSettings();
 		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
 		$data['invoice'] = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
 		$data['invoiceItems'] = $this->Billing_model->getInvoiceItems($data['invoice']['id']);
-		$data['logoBase64'] = convertImageToBase65($this->upload_dir.'/'.$data['companyInfo']['CompanyLogo']->cnf_val);
+		$logoPath = !empty($data['companyInfo']['logo']) ? $this->upload_dir.'/mics/'.$data['companyInfo']['logo'] : '';
+		$data['logoBase64'] = !empty($logoPath) && file_exists($logoPath) ? convertImageToBase65($logoPath) : '';
 		$data['txnHistory'] = array();
 		$data['viewMode'] = "HTML";
 
@@ -59,11 +61,12 @@ class Billing extends WHMAZ_Controller
 
 		$companyId = getCompanyId();
 
-		$data['companyInfo'] = $this->Common_model->get_sys_config("COMPANY_INFO");
+		$data['companyInfo'] = $this->Appsetting_model->getSettings();
 		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
 		$data['invoice'] = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
 		$data['invoiceItems'] = $this->Billing_model->getInvoiceItems($data['invoice']['id']);
-		$data['logoBase64'] = convertImageToBase65($this->upload_dir.'/'.$data['companyInfo']['CompanyLogo']->cnf_val);
+		$logoPath = !empty($data['companyInfo']['logo']) ? $this->upload_dir.'/mics/'.$data['companyInfo']['logo'] : '';
+		$data['logoBase64'] = !empty($logoPath) && file_exists($logoPath) ? convertImageToBase65($logoPath) : '';
 		$data['txnHistory'] = array();
 		$data['viewMode'] = "PDF";
 

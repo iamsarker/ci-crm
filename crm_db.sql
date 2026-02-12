@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 10, 2026 at 11:08 PM
+-- Generation Time: Feb 12, 2026 at 12:54 AM
 -- Server version: 10.11.11-MariaDB-cll-lve
 -- PHP Version: 8.3.20
 
@@ -58,7 +58,8 @@ CREATE TABLE `add_to_carts` (
 --
 
 INSERT INTO `add_to_carts` (`id`, `user_id`, `customer_session_id`, `item_type`, `product_service_id`, `note`, `hosting_domain`, `hosting_domain_type`, `sub_total`, `tax`, `vat`, `total`, `quantity`, `product_service_pricing_id`, `dom_pricing_id`, `currency_id`, `currency_code`, `billing_cycle_id`, `billing_cycle`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(15, 0, 1769704314539, 2, 3, '3GB_SHARED', 'tongbari.com', 0, 25.95, 0.00, 0.00, 25.95, 1, 5, 0, 1, 'USD', 4, 'Yearly', '2026-01-29 16:31:54', 0, '2026-01-29 16:31:54', NULL);
+(1, 1, 1770869850690, 2, 3, '3GB_SHARED', 'tes.bo', 0, 25.95, 0.00, 0.00, 25.95, 1, 5, 0, 1, 'USD', 4, 'Yearly', '2026-02-12 04:18:00', 0, '2026-02-12 04:19:28', NULL),
+(2, 1, 1770869850690, 2, 19, '6GB_SHARED', 'exam.net', 0, 38.00, 0.00, 0.00, 38.00, 1, 25, 0, 1, 'USD', 4, 'Yearly', '2026-02-12 04:18:14', 0, '2026-02-12 04:19:28', NULL);
 
 -- --------------------------------------------------------
 
@@ -162,7 +163,8 @@ INSERT INTO `admin_logins` (`id`, `admin_id`, `login_time`, `session_val`, `term
 (79, 1, '2026-02-07 05:04:05', '0', '127.0.0.1', NULL, 1),
 (80, 1, '2026-02-08 01:15:56', '0', '127.0.0.1', NULL, 1),
 (81, 1, '2026-02-09 01:22:21', '0', '127.0.0.1', NULL, 1),
-(82, 1, '2026-02-08 19:59:25', '0', '103.159.72.16', NULL, 1);
+(82, 1, '2026-02-08 19:59:25', '0', '103.159.72.16', NULL, 1),
+(83, 1, '2026-02-12 05:37:30', '0', '127.0.0.1', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -300,9 +302,13 @@ CREATE TABLE `app_settings` (
   `admin_url` varchar(255) NOT NULL,
   `favicon` varchar(255) NOT NULL,
   `logo` varchar(255) NOT NULL,
+  `bin_tax` varchar(60) DEFAULT NULL,
   `company_name` varchar(255) NOT NULL,
   `company_address` varchar(255) NOT NULL,
   `zip_code` varchar(20) NOT NULL,
+  `city` varchar(100) DEFAULT NULL,
+  `state` varchar(100) DEFAULT NULL,
+  `country` varchar(100) DEFAULT NULL,
   `license_auth` varchar(255) DEFAULT NULL,
   `license_hash` varchar(255) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
@@ -324,8 +330,8 @@ CREATE TABLE `app_settings` (
 -- Dumping data for table `app_settings`
 --
 
-INSERT INTO `app_settings` (`id`, `site_name`, `site_desc`, `admin_url`, `favicon`, `logo`, `company_name`, `company_address`, `zip_code`, `license_auth`, `license_hash`, `email`, `fax`, `phone`, `smtp_host`, `smtp_port`, `smtp_username`, `smtp_authkey`, `captcha_site_key`, `captcha_secret_key`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Tong Bari | Solution under one roof', 'Tong Bari | Solution under one roof', '', 'favicon_ed6d384d93d183751bb364d239d05738.png', 'logo_49f80162b47b6fc2187384384ee08f1e.jpg', 'Tong Bari', 'Dhaka', '1219', NULL, NULL, 'support@tongbari.com', '2345', '12345', 'mail.tongbari.com', '587', 'support@tongbari.com', 'pz3jlnMaW3k=', '6Lej8lUsAAAAAASMAoMFwiMIvx1_Qkh8pKVLJ6Qo', '6Lej8lUsAAAAAEVPLbN0Yyqyb8_Zoiqtlu0s9bOw', NULL, NULL, '2026-01-30 23:13:55', 1);
+INSERT INTO `app_settings` (`id`, `site_name`, `site_desc`, `admin_url`, `favicon`, `logo`, `bin_tax`, `company_name`, `company_address`, `zip_code`, `city`, `state`, `country`, `license_auth`, `license_hash`, `email`, `fax`, `phone`, `smtp_host`, `smtp_port`, `smtp_username`, `smtp_authkey`, `captcha_site_key`, `captcha_secret_key`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(1, 'Tong Bari | Solution under one roof', 'Tong Bari | Solution under one roof', '', 'favicon_ed6d384d93d183751bb364d239d05765.ico', '0e358147-e5e3-11ee-9a16-14857fbdbc3f.png', NULL, 'Tong Bari', 'Dhaka', '1219', NULL, NULL, NULL, NULL, NULL, 'support@tongbari.com', '2345', '12345', 'mail.tongbari.com', '587', 'support@tongbari.com', 'pz3jlnMaW3k=', '6Lej8lUsAAAAAASMAoMFwiMIvx1_Qkh8pKVLJ6Qo', '6Lej8lUsAAAAAEVPLbN0Yyqyb8_Zoiqtlu0s9bOw', NULL, NULL, '2026-02-12 06:18:12', 1);
 
 -- --------------------------------------------------------
 
@@ -726,6 +732,35 @@ INSERT INTO `cron_jobs` (`id`, `job_name`, `execute_dt`) VALUES
 (21, 'Invoicegenerator', '2024-11-16 23:21:28'),
 (22, 'Invoicegenerator', '2024-11-21 21:12:22'),
 (23, 'Invoicegenerator', '2024-11-21 21:17:03');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cron_schedules`
+--
+
+CREATE TABLE `cron_schedules` (
+  `id` int(11) NOT NULL,
+  `job_name` varchar(100) NOT NULL,
+  `job_description` varchar(255) DEFAULT NULL,
+  `job_command` varchar(500) NOT NULL,
+  `schedule_minute` varchar(20) NOT NULL DEFAULT '*',
+  `schedule_hour` varchar(20) NOT NULL DEFAULT '*',
+  `schedule_day` varchar(20) NOT NULL DEFAULT '*',
+  `schedule_month` varchar(20) NOT NULL DEFAULT '*',
+  `schedule_weekday` varchar(20) NOT NULL DEFAULT '*',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `last_run` datetime DEFAULT NULL,
+  `created_on` datetime DEFAULT NULL,
+  `updated_on` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cron_schedules`
+--
+
+INSERT INTO `cron_schedules` (`id`, `job_name`, `job_description`, `job_command`, `schedule_minute`, `schedule_hour`, `schedule_day`, `schedule_month`, `schedule_weekday`, `is_active`, `last_run`, `created_on`, `updated_on`) VALUES
+(1, 'renewal_invoices', 'Generate renewal invoices for expiring services/domains', '/cronjobs/run', '0', '6', '*', '*', '*', 1, NULL, '2026-02-11 23:59:44', '2026-02-11 23:59:44');
 
 -- --------------------------------------------------------
 
@@ -1436,18 +1471,6 @@ CREATE TABLE `login_attempts` (
   `attempt_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `login_attempts`
---
-
-INSERT INTO `login_attempts` (`id`, `identifier`, `identifier_type`, `ip_address`, `user_agent`, `is_successful`, `attempt_time`) VALUES
-(13, '198.135.49.154', 'ip', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:20:01'),
-(14, 'tset@g.c', 'email', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:20:01'),
-(15, '198.135.49.154', 'ip', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:22:04'),
-(16, 'abm.ataullah@gmail.com', 'email', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:22:04'),
-(17, '198.135.49.154', 'ip', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:22:14'),
-(18, 'sohag.jobair@gmail.com', 'email', '198.135.49.154', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-10 10:22:14');
-
 -- --------------------------------------------------------
 
 --
@@ -1618,6 +1641,20 @@ CREATE TABLE `order_services` (
   `product_service_pricing_id` int(11) NOT NULL,
   `product_service_type_key` varchar(150) NOT NULL,
   `cp_username` varchar(100) DEFAULT NULL COMMENT 'cPanel username',
+  `cp_password` varchar(150) DEFAULT '0',
+  `cp_disk_used` decimal(10,2) DEFAULT 0.00,
+  `cp_disk_limit` decimal(10,2) DEFAULT 0.00,
+  `cp_bandwidth_used` decimal(10,2) DEFAULT 0.00,
+  `cp_bandwidth_limit` decimal(10,2) DEFAULT 0.00,
+  `cp_email_accounts` int(11) DEFAULT 0,
+  `cp_email_limit` int(11) DEFAULT 0,
+  `cp_databases` int(11) DEFAULT 0,
+  `cp_database_limit` int(11) DEFAULT 0,
+  `cp_addon_domains` int(11) DEFAULT 0,
+  `cp_addon_limit` int(11) DEFAULT 0,
+  `cp_subdomains` int(11) DEFAULT 0,
+  `cp_subdomain_limit` int(11) DEFAULT 0,
+  `cp_last_sync` datetime DEFAULT NULL,
   `billing_cycle_id` int(11) NOT NULL,
   `description` text DEFAULT NULL,
   `first_pay_amount` decimal(15,2) NOT NULL,
@@ -1645,19 +1682,19 @@ CREATE TABLE `order_services` (
 -- Dumping data for table `order_services`
 --
 
-INSERT INTO `order_services` (`id`, `order_id`, `company_id`, `product_service_id`, `product_service_pricing_id`, `product_service_type_key`, `cp_username`, `billing_cycle_id`, `description`, `first_pay_amount`, `recurring_amount`, `hosting_domain`, `license_key`, `license_seats`, `auto_renew`, `reg_date`, `exp_date`, `next_due_date`, `is_synced`, `last_sync_dt`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(701, 702, 1, 2, 3, 'SHARED_HOSTING', NULL, 4, '', 11.15, 11.15, 'erpboi.com', NULL, NULL, 1, '2024-08-10', '2025-08-10', '2025-08-10', 1, NULL, 1, '', '2024-08-10 07:56:40', 1, '2026-01-26 16:30:22', NULL, NULL, NULL),
-(702, 708, 2, 5, 9, 'SHARED_HOSTING', 'skydigit', 4, '', 37.95, 37.95, 'skydigitalbd.com', NULL, NULL, 1, '2024-08-21', '2024-08-21', '2024-08-21', 1, NULL, 1, '', '2024-08-21 03:41:24', 1, '2026-01-27 20:13:44', 1, NULL, NULL),
-(704, 710, 8, 5, 9, 'SHARED_HOSTING', 'ultimate', 4, '', 37.95, 57.95, 'ultimateapparelsourcing.com.bd', NULL, NULL, 1, '2020-08-10', '2025-08-10', '2025-08-10', 0, NULL, 1, '', '2024-08-22 02:21:52', 1, '2026-01-27 14:19:53', NULL, NULL, NULL),
-(705, 713, 5, 15, 15, 'RESELLER_HOSTING', NULL, 4, '', 73.00, 73.00, 'authorservice.org', NULL, NULL, 1, '2024-08-30', '2024-08-27', '2024-08-27', 0, NULL, 0, '', '2024-08-30 07:11:19', 1, '2026-01-27 14:05:41', NULL, NULL, NULL),
-(706, 714, 9, 5, 9, 'SHARED_HOSTING', 'snkbdcom', 4, '', 37.95, 37.95, 'snkbd.com', NULL, NULL, 1, '2021-11-26', '2024-11-26', '2024-11-26', 0, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-01-27 14:20:40', NULL, NULL, NULL),
-(707, 716, 10, 7, 13, 'SHARED_HOSTING', 'apparelglow', 4, '', 72.95, 65.00, 'apparelglowltd.com', NULL, NULL, 1, '2022-11-26', '2024-11-26', '2024-11-26', 0, NULL, 1, '', '2024-11-21 16:03:43', 1, '2026-01-27 14:20:53', NULL, NULL, NULL),
-(708, 718, 11, 3, 5, 'SHARED_HOSTING', 'alakabhattacharj', 4, '', 25.95, 25.95, 'alakabhattacharjee.com', NULL, NULL, 1, '2016-03-29', '2024-03-29', '2024-03-29', 0, NULL, 1, '', '2024-11-22 16:36:57', 1, '2026-01-27 14:21:03', NULL, NULL, NULL),
-(709, 720, 2, 11, 23, 'SERVER_VPS', NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-01-16', '2025-01-16', '2025-01-16', 0, NULL, 1, '', '2025-01-23 16:43:04', 1, '2026-01-26 16:32:35', NULL, NULL, NULL),
-(710, 721, 12, 19, 25, 'SHARED_HOSTING', 'alisoftbd', 4, '', 38.00, 38.00, 'alisoftbd.com', NULL, NULL, 1, '2024-05-04', '2026-05-04', '2026-05-04', 0, NULL, 1, '', '2025-05-03 05:59:08', 1, '2026-01-27 14:18:52', NULL, NULL, NULL),
-(712, 723, 13, 5, 9, 'SHARED_HOSTING', 'dwacombd', 4, '', 37.95, 37.95, 'dwa.com.bd', NULL, NULL, 1, '2024-12-03', '2024-12-03', '2025-12-03', 0, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-01-27 14:19:01', NULL, NULL, NULL),
-(713, 724, 14, 20, 27, 'SHARED_HOSTING', 'brandnstitc', 4, '', 65.00, 65.00, 'brandnstitch.com', NULL, NULL, 1, '2025-08-12', '2026-08-12', '2026-08-12', 0, NULL, 0, '', '2025-08-12 03:41:24', 1, '2026-01-27 14:19:22', NULL, NULL, NULL),
-(714, 725, 2, 11, 23, 'SERVER_VPS', NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-12-04', '2025-12-04', '2025-12-04', 0, NULL, 0, '', '2025-12-04 14:32:15', 1, '2026-01-26 16:33:01', NULL, NULL, NULL);
+INSERT INTO `order_services` (`id`, `order_id`, `company_id`, `product_service_id`, `product_service_pricing_id`, `product_service_type_key`, `cp_username`, `cp_password`, `cp_disk_used`, `cp_disk_limit`, `cp_bandwidth_used`, `cp_bandwidth_limit`, `cp_email_accounts`, `cp_email_limit`, `cp_databases`, `cp_database_limit`, `cp_addon_domains`, `cp_addon_limit`, `cp_subdomains`, `cp_subdomain_limit`, `cp_last_sync`, `billing_cycle_id`, `description`, `first_pay_amount`, `recurring_amount`, `hosting_domain`, `license_key`, `license_seats`, `auto_renew`, `reg_date`, `exp_date`, `next_due_date`, `is_synced`, `last_sync_dt`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(701, 702, 1, 2, 3, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 11.15, 11.15, 'erpboi.com', NULL, NULL, 1, '2024-08-10', '2025-08-10', '2025-08-10', 1, NULL, 1, '', '2024-08-10 07:56:40', 1, '2026-01-26 16:30:22', NULL, NULL, NULL),
+(702, 708, 2, 5, 9, 'SHARED_HOSTING', 'skydigit', '0', 3191.00, 5096.00, 274.45, 0.00, 9, 0, 3, 0, 1, 0, 5, 0, '2026-02-11 06:02:43', 4, '', 37.95, 37.95, 'skydigitalbd.com', NULL, NULL, 1, '2024-08-21', '2024-08-21', '2024-08-21', 1, NULL, 1, '', '2024-08-21 03:41:24', 1, '2026-02-11 12:02:43', 1, NULL, NULL),
+(704, 710, 8, 5, 9, 'SHARED_HOSTING', 'ultimate', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 57.95, 'ultimateapparelsourcing.com.bd', NULL, NULL, 1, '2020-08-10', '2025-08-10', '2025-08-10', 0, NULL, 1, '', '2024-08-22 02:21:52', 1, '2026-01-27 14:19:53', NULL, NULL, NULL),
+(705, 713, 5, 15, 15, 'RESELLER_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 73.00, 73.00, 'authorservice.org', NULL, NULL, 1, '2024-08-30', '2024-08-27', '2024-08-27', 0, NULL, 0, '', '2024-08-30 07:11:19', 1, '2026-01-27 14:05:41', NULL, NULL, NULL),
+(706, 714, 9, 5, 9, 'SHARED_HOSTING', 'snkbdcom', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'snkbd.com', NULL, NULL, 1, '2021-11-26', '2024-11-26', '2024-11-26', 0, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-01-27 14:20:40', NULL, NULL, NULL),
+(707, 716, 10, 7, 13, 'SHARED_HOSTING', 'apparelglow', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 72.95, 65.00, 'apparelglowltd.com', NULL, NULL, 1, '2022-11-26', '2024-11-26', '2024-11-26', 0, NULL, 1, '', '2024-11-21 16:03:43', 1, '2026-01-27 14:20:53', NULL, NULL, NULL),
+(708, 718, 11, 3, 5, 'SHARED_HOSTING', 'alakabhattacharj', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 25.95, 25.95, 'alakabhattacharjee.com', NULL, NULL, 1, '2016-03-29', '2024-03-29', '2024-03-29', 0, NULL, 1, '', '2024-11-22 16:36:57', 1, '2026-01-27 14:21:03', NULL, NULL, NULL),
+(709, 720, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-01-16', '2025-01-16', '2025-01-16', 0, NULL, 1, '', '2025-01-23 16:43:04', 1, '2026-01-26 16:32:35', NULL, NULL, NULL),
+(710, 721, 12, 19, 25, 'SHARED_HOSTING', 'alisoftbd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 38.00, 38.00, 'alisoftbd.com', NULL, NULL, 1, '2024-05-04', '2026-05-04', '2026-05-04', 0, NULL, 1, '', '2025-05-03 05:59:08', 1, '2026-01-27 14:18:52', NULL, NULL, NULL),
+(712, 723, 13, 5, 9, 'SHARED_HOSTING', 'dwacombd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'dwa.com.bd', NULL, NULL, 1, '2024-12-03', '2024-12-03', '2025-12-03', 0, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-01-27 14:19:01', NULL, NULL, NULL),
+(713, 724, 14, 20, 27, 'SHARED_HOSTING', 'brandnstitc', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 65.00, 65.00, 'brandnstitch.com', NULL, NULL, 1, '2025-08-12', '2026-08-12', '2026-08-12', 0, NULL, 0, '', '2025-08-12 03:41:24', 1, '2026-01-27 14:19:22', NULL, NULL, NULL),
+(714, 725, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-12-04', '2025-12-04', '2025-12-04', 0, NULL, 0, '', '2025-12-04 14:32:15', 1, '2026-01-26 16:33:01', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2048,28 +2085,7 @@ INSERT INTO `sys_cnf` (`id`, `cnf_key`, `cnf_val`, `cnf_group`, `created_on`, `u
 (2, 'DefaultNameServer2', 'ns2.tongbari.com', 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
 (3, 'DefaultNameServer3', NULL, 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
 (4, 'DefaultNameServer4', NULL, 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
-(8, 'CompanyName', 'Tong Bari', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(9, 'CompanyLogo', 'mics/0e358147-e5e3-11ee-9a16-14857fbdbc3f.png', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(10, 'CompanyPhone', '', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(11, 'CompanyEmail', '', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(12, 'CompanyCountry', 'Bangladesh', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(13, 'CompanyCity', 'Gazipur', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(14, 'CompanyState', 'Dhaka', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(15, 'CompanyZip', '1712', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(16, 'CompanyAddress', 'Dottapara, Tongi', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(17, 'CompanyBIN', '', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(18, 'CompanyVAT', '', 'COMPANY_INFO', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(21, 'EmailGateway', 'smtp', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(22, 'EmailHost', 'mail.tongbari.com', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(23, 'EmailPort', '465', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(24, 'EmailUsername', 'noreply@tongbari.com', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(25, 'EmailPassword', '%R9LhA5^F(9,', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(26, 'EmailSslType', 'tls', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(27, 'EmailSenderName', 'Tong Bari', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(28, 'EmailSenderEmail', 'noreply@tongbari.com', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(29, 'EmailGlobalSignature', '', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(30, 'EmailBccAddress', '', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09'),
-(31, 'EmailCssStyle', '', 'EMAIL_SMTP', '2024-02-26 16:43:09', '2024-02-26 16:43:09');
+(5, 'cron_secret_key', 'a7f3b2c9d8e4f1a0b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8', 'SYSTEM', '2026-02-11 23:12:43', '2026-02-11 23:12:43');
 
 -- --------------------------------------------------------
 
@@ -2376,7 +2392,12 @@ INSERT INTO `user_logins` (`id`, `user_id`, `login_time`, `session_val`, `termin
 (98, 15, '2026-02-09 22:16:02', '0', '182.163.99.83', NULL, 1),
 (99, 7, '2026-02-10 15:48:28', '0', '127.0.0.1', NULL, 1),
 (100, 1, '2026-02-10 17:51:37', '0', '127.0.0.1', NULL, 1),
-(101, 1, '2026-02-11 01:47:29', '0', '127.0.0.1', NULL, 1);
+(101, 1, '2026-02-11 01:47:29', '0', '127.0.0.1', NULL, 1),
+(102, 7, '2026-02-11 05:49:24', '0', '127.0.0.1', NULL, 1),
+(103, 1, '2026-02-12 02:59:35', '0', '127.0.0.1', NULL, 1),
+(104, 1, '2026-02-12 03:49:45', '0', '127.0.0.1', NULL, 1),
+(105, 1, '2026-02-12 03:52:45', '0', '127.0.0.1', NULL, 1),
+(106, 1, '2026-02-12 04:19:26', '0', '127.0.0.1', NULL, 1);
 
 --
 -- Indexes for dumped tables
@@ -2387,7 +2408,8 @@ INSERT INTO `user_logins` (`id`, `user_id`, `login_time`, `session_val`, `termin
 --
 ALTER TABLE `add_to_carts`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `customer_session_id` (`customer_session_id`);
 
 --
 -- Indexes for table `admin_logins`
@@ -2455,6 +2477,13 @@ ALTER TABLE `countries`
 --
 ALTER TABLE `cron_jobs`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `cron_schedules`
+--
+ALTER TABLE `cron_schedules`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `job_name` (`job_name`);
 
 --
 -- Indexes for table `currencies`
@@ -2714,13 +2743,13 @@ ALTER TABLE `user_logins`
 -- AUTO_INCREMENT for table `add_to_carts`
 --
 ALTER TABLE `add_to_carts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `admin_logins`
 --
 ALTER TABLE `admin_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
 
 --
 -- AUTO_INCREMENT for table `admin_roles`
@@ -2775,6 +2804,12 @@ ALTER TABLE `countries`
 --
 ALTER TABLE `cron_jobs`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+
+--
+-- AUTO_INCREMENT for table `cron_schedules`
+--
+ALTER TABLE `cron_schedules`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `currencies`
@@ -2960,7 +2995,7 @@ ALTER TABLE `servers`
 -- AUTO_INCREMENT for table `sys_cnf`
 --
 ALTER TABLE `sys_cnf`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `tickets`
@@ -2990,7 +3025,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_logins`
 --
 ALTER TABLE `user_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 -- --------------------------------------------------------
 
