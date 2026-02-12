@@ -191,8 +191,11 @@
       <div class="navbar-right">
 
 		  <div class="dropdown dropdown-profile">
-			  <a href="<?=base_url()?>cart/view" class="dropdown-link">
-				  <div class="bg-light avatar avatar-sm"><img src="<?=base_url()?>/resources/assets/img/cart.svg" class="rounded-circle" alt=""></div>
+			  <a href="<?=base_url()?>cart/view" title="View cart" class="dropdown-link">
+				  <div class="bg-light cart-counting avatar avatar-sm position-relative">
+					  <img src="<?=base_url()?>/resources/assets/img/cart.svg" class="rounded-circle" alt="">
+					  <span class="cart-count-badge" id="cart-count-badge" style="display:none;"></span>
+				  </div>
 			  </a>
 		  </div>
 		  <?php if( isLoggedin() ){ $user = getUserData();?>

@@ -220,15 +220,26 @@ The Client Portal is built using HMVC modules and provides customer-facing funct
 - Cart item management (add/remove/update)
 - Multi-item cart support
 - Price calculation with currency conversion
-- Session-based cart (guest users)
+- Session-based cart (guest users) via cookie-based `customer_session_id`
 - User-based cart (logged-in customers)
+- **Cart count badge in header** - Shows total items in cart via AJAX
+- Automatic cart transfer on login (guest cart items assigned to user)
 - Domain search functionality
 - Domain suggestions
+
+**Cart Count Feature:**
+- Real-time cart item count displayed in header navigation
+- AJAX-powered updates without page reload
+- Badge hidden when cart is empty, shows "99+" for counts over 99
+- `getCartCount()` helper function for counting items
+- `loadCartCount()` JavaScript function (globally accessible) for refreshing count
+- Cookie-based `customer_session_id` persists across session regeneration
 
 **Key URLs:**
 - `/cart/` - View cart
 - `/cart/add_service` - Add service to cart
 - `/cart/add_domain` - Add domain to cart
+- `/cart/getCount` - AJAX endpoint returning cart item count (JSON)
 - `/domain-search/{tld}/{domain}` - Domain search
 - `/domain-suggestion/{domain}` - Domain suggestions
 
@@ -1491,6 +1502,10 @@ $result = whm_get_account_stats($serverInfo, $cpanelUsername);
 - `is_admin_loggedin()` - Admin auth check
 - `get_customer_id()` - Get customer ID
 - `get_admin_id()` - Get admin ID
+- `getCustomerSessionId()` - Get/create customer session ID (cookie-based, persists across session regeneration)
+
+**Cart Helpers:**
+- `getCartCount()` - Get total cart item count for current user/session
 
 **Currency Helpers:**
 - `get_default_currency()` - Get default currency
@@ -1755,6 +1770,6 @@ For HMVC documentation: https://github.com/jenssegers/codeigniter-hmvc
 
 ---
 
-**Documentation Version:** 1.4
-**Last Updated:** 2026-02-11
+**Documentation Version:** 1.5
+**Last Updated:** 2026-02-12
 **Project Status:** Active Development

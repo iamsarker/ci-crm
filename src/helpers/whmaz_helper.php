@@ -118,11 +118,25 @@
 
 	function getCustomerSessionId(){
 		$ci = & get_instance();
-		if( empty($ci->session->customer_session_id) ){
-			$ci->session->customer_session_id = time().rand(100,999);
+		$cookieName = 'whmaz_cart_session';
+
+		// Check cookie first
+		$sessionId = $ci->input->cookie($cookieName);
+
+		if(empty($sessionId)){
+			// Generate new session ID
+			$sessionId = time().rand(100,999);
+
+			// Store in cookie (expires in 30 days)
+			$ci->input->set_cookie(array(
+				'name'   => $cookieName,
+				'value'  => $sessionId,
+				'expire' => 86400 * 30,
+				'httponly' => true
+			));
 		}
 
-		return $ci->session->customer_session_id;
+		return $sessionId;
 	}
 
 	function getAdminSessionId(){
@@ -166,6 +180,22 @@
 		$ci->load->model('Cart_model');
 		$arr = $ci->Cart_model->getServiceGroups();
 		return $arr;
+	}
+
+	function getCartCount(){
+		$ci = & get_instance();
+		$ci->load->database();
+		$customerId = (int)getCustomerId();
+		$customerSessionId = (int)getCustomerSessionId();
+
+		if($customerId > 0){
+			$sql = "SELECT COUNT(*) as count FROM add_to_carts WHERE user_id=? OR customer_session_id=?";
+			$result = $ci->db->query($sql, array($customerId, $customerSessionId))->row();
+		} else {
+			$sql = "SELECT COUNT(*) as count FROM add_to_carts WHERE customer_session_id=?";
+			$result = $ci->db->query($sql, array($customerSessionId))->row();
+		}
+		return $result ? (int)$result->count : 0;
 	}
 
 	function pricingDropdown(){

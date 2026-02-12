@@ -45,6 +45,12 @@ class Cart extends WHMAZ_Controller
 		echo json_encode("OK");
 	}
 
+	function getCount()
+	{
+		$count = getCartCount();
+		echo json_encode(array('count' => $count));
+	}
+
 
 	function checkout()
 	{
@@ -446,7 +452,7 @@ class Cart extends WHMAZ_Controller
 		return array();
 	}
 
-	public function services($type, $title = NULL)
+	public function services($type = 0, $title = NULL)
 	{
 
 		$data['currency'] = $this->Cart_model->getCurrencies();

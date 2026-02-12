@@ -102,5 +102,29 @@
 			});
 		});
 
+		// Load cart count via AJAX
+		function loadCartCount(){
+			$.ajax({
+				url: "<?=base_url()?>cart/getCount",
+				method: "GET",
+				dataType: "json",
+				success: function(response){
+					var count = response.count || 0;
+					var $badge = $('#cart-count-badge');
+					if(count > 0){
+						$badge.text(count > 99 ? '99+' : count).show();
+					} else {
+						$badge.hide();
+					}
+				}
+			});
+		}
+
+		// Load cart count on page load
+		loadCartCount();
+
+		// Make it globally accessible to refresh after add/remove
+		window.loadCartCount = loadCartCount;
+
 	})
 </script>

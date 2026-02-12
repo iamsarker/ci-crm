@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2026-02-12
+
+### New Feature - Cart Item Count Badge
+
+#### Cart Count Display in Header
+- Real-time cart item count badge displayed in client portal header
+- AJAX-powered updates without page reload
+- Badge shows item count (1-99) or "99+" for larger quantities
+- Badge automatically hidden when cart is empty
+- Red circular badge with white text for visibility
+
+#### Cart Session Persistence Fix
+- Changed `customer_session_id` storage from PHP session to cookie
+- Cookie persists for 30 days with httponly flag
+- Fixes cart loss during session regeneration on login
+- Guest cart items now properly transfer to user account on login
+
+#### Automatic Cart Transfer on Login
+- Guest cart items automatically assigned to user's `user_id` after login
+- Seamless shopping experience from guest to registered user
+- No cart items lost during authentication process
+
+#### New Helper Functions
+- `getCartCount()` - Returns total cart item count for current user/session
+- Updated `getCustomerSessionId()` - Now uses cookies for persistence
+
+#### New API Endpoint
+- `cart/getCount` - Returns JSON with cart item count `{"count": N}`
+
+#### JavaScript Integration
+- `loadCartCount()` - Global function to refresh cart count via AJAX
+- Auto-loads on page load
+- Can be called after add/remove cart operations
+
+#### Modified Files
+- `src/helpers/whmaz_helper.php` - Added `getCartCount()`, updated `getCustomerSessionId()` to use cookies
+- `src/modules/cart/controllers/Cart.php` - Added `getCount()` endpoint
+- `src/modules/auth/controllers/Auth.php` - Added cart transfer on login
+- `src/views/templates/customer/header.php` - Added cart count badge element
+- `src/views/templates/customer/footer_script.php` - Added `loadCartCount()` AJAX function
+- `resources/assets/css/custom.css` - Added `.cart-count-badge` styling
+
+---
+
 ## [1.2.0] - 2026-02-11
 
 ### Enhancement - cPanel Real-Time Usage Sync
@@ -986,6 +1030,14 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.3.0] - 2026-02-12 - New Feature
+- Added cart item count badge in client portal header
+- AJAX-powered real-time cart count display
+- Fixed cart session persistence using cookies instead of PHP session
+- Automatic cart transfer from guest to user on login
+- Added `getCartCount()` helper and `cart/getCount` API endpoint
+- Added global `loadCartCount()` JavaScript function
+
 ### [1.1.0] - 2026-02-11 - Enhancement
 - Beautified New Ticket page with modern form design
 - Added Related Service dropdown from active services
@@ -1194,6 +1246,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.1.0
-**Release Date:** February 11, 2026
-**Status:** Stable Production Release (Enhancement)
+**Current Version:** 1.3.0
+**Release Date:** February 12, 2026
+**Status:** Stable Production Release (New Feature)

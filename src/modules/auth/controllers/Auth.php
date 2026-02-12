@@ -27,7 +27,19 @@ class Auth extends WHMAZ_Controller
 
 			$resp = $this->Auth_model->doLogin($username, $password);
 			if ($resp['status_code'] == 1) {
+				// Get customer_session_id before setting user session
+				$customerSessionId = getCustomerSessionId();
+
 				$this->session->set_userdata("CUSTOMER", $resp['data']);
+
+				// Transfer guest cart items to logged-in user
+				$userId = $resp['data']['id'];
+				if ($customerSessionId > 0 && $userId > 0) {
+					$this->load->database();
+					$this->db->where('customer_session_id', $customerSessionId);
+					$this->db->where('user_id', 0);
+					$this->db->update('add_to_carts', array('user_id' => $userId));
+				}
 
 				// SECURITY FIX: Validate redirect URL to prevent open redirect vulnerability
 				if( !empty($redirectUrl) ){

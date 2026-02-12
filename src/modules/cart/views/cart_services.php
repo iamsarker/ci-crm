@@ -16,7 +16,7 @@
                     </nav>
                 </div>
                 <div class="header-actions mg-t-10 mg-md-t-0">
-                    <a href="<?=base_url()?>cart" class="btn btn-light">
+                    <a href="<?=base_url()?>cart/view" class="btn btn-light">
                         <i class="fa fa-shopping-cart mg-r-5"></i> View Cart
                     </a>
                 </div>

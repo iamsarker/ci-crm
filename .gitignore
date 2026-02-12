@@ -6,6 +6,8 @@
 nul
 null
 
+src/sessions/*
+
 src/cache/*
 !src/cache/index.html
 

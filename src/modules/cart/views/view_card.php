@@ -17,7 +17,7 @@
                     </nav>
                 </div>
                 <div class="header-actions mg-t-10 mg-md-t-0">
-                    <a href="<?=base_url()?>cart/services" class="btn btn-light">
+                    <a href="<?=base_url()?>cart/services/0" class="btn btn-light">
                         <i class="fa fa-plus mg-r-5"></i> Add More Services
                     </a>
                 </div>
@@ -140,7 +140,7 @@
                     </div>
                     <h4>Your Cart is Empty</h4>
                     <p>Looks like you haven't added any items to your cart yet.</p>
-                    <a href="<?=base_url()?>cart/services" class="btn btn-primary btn-browse">
+                    <a href="<?=base_url()?>cart/services/0" class="btn btn-primary btn-browse">
                         <i class="fa fa-server mg-r-5"></i> Browse Services
                     </a>
                 </div>
