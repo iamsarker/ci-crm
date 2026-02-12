@@ -1,0 +1,167 @@
+/* List Page Specific Styles */
+.stats-card {
+	border: none;
+	border-radius: 12px;
+	box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+	transition: all 0.3s ease;
+	overflow: hidden;
+}
+.stats-card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+.stats-card .card-body {
+	padding: 1.25rem;
+}
+.stats-icon {
+	width: 50px;
+	height: 50px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.5rem;
+}
+.stats-icon.primary { background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%); color: #fff; }
+.stats-icon.success { background: linear-gradient(135deg, #43A047 0%, #388E3C 100%); color: #fff; }
+.stats-icon.warning { background: linear-gradient(135deg, #FB8C00 0%, #F57C00 100%); color: #fff; }
+.stats-icon.info { background: linear-gradient(135deg, #00ACC1 0%, #0097A7 100%); color: #fff; }
+.stats-value {
+	font-size: 1.75rem;
+	font-weight: 700;
+	color: #333;
+	line-height: 1.2;
+}
+.stats-label {
+	color: #666;
+	font-size: 0.85rem;
+	margin-top: 2px;
+}
+
+/* Table Card */
+.table-card {
+	border: none;
+	border-radius: 12px;
+	box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+	overflow: hidden;
+}
+.table-card .card-header {
+	background: var(--md-secondary);
+	color: #fff;
+	padding: 1rem 1.25rem;
+	border: none;
+}
+.table-card .card-header h4,
+.table-card .card-header h5 {
+	margin: 0;
+	font-weight: 600;
+}
+.table-card .card-header .breadcrumb-item a {
+	color: rgba(255,255,255,0.7);
+	text-decoration: none;
+}
+.table-card .card-header .breadcrumb-item a:hover {
+	color: #fff;
+}
+.table-card .card-header .breadcrumb-item.active {
+	color: rgba(255,255,255,0.9);
+}
+.table-card .card-body {
+	padding: 1.25rem;
+}
+
+/* DataTable Styling - Generic for all list pages */
+.table-card table.dataTable {
+	width: 100% !important;
+}
+.table-card table.dataTable thead th {
+	background: #f8f9fa;
+	border-bottom: 2px solid #dee2e6;
+	font-weight: 600;
+	color: #495057;
+	padding: 12px 15px;
+	font-size: 0.85rem;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+.table-card table.dataTable tbody td {
+	padding: 12px 15px;
+	vertical-align: middle;
+	border-bottom: 1px solid #eee;
+}
+.table-card table.dataTable tbody tr:hover {
+	background-color: #f8f9fa;
+}
+
+/* Action Buttons */
+.btn-action {
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 6px;
+	margin: 0 2px;
+	transition: all 0.2s ease;
+}
+.btn-action:hover {
+	transform: scale(1.1);
+}
+.btn-action.btn-manage {
+	background: linear-gradient(135deg, #1976D2 0%, #1565C0 100%);
+	border: none;
+	color: #fff;
+}
+.btn-action.btn-delete {
+	background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+	border: none;
+	color: #fff;
+}
+
+/* Company Name Cell */
+.company-name {
+	font-weight: 600;
+	color: #333;
+}
+.company-email {
+	color: #1976D2;
+}
+
+/* Credentials Alert */
+.credentials-alert {
+	background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+	border: 1px solid #FFB74D;
+	border-radius: 12px;
+	padding: 1.25rem;
+}
+.credentials-alert .alert-title {
+	color: #E65100;
+	font-weight: 700;
+	font-size: 1.1rem;
+}
+.credentials-alert .credential-item {
+	background: #fff;
+	border-radius: 8px;
+	padding: 10px 15px;
+	margin: 8px 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+.credentials-alert .credential-label {
+	color: #666;
+	font-weight: 500;
+}
+.credentials-alert .credential-value {
+	font-weight: 600;
+	color: #333;
+}
+.credentials-alert .password-value {
+	font-family: 'Courier New', monospace;
+	background: #263238;
+	color: #4CAF50;
+	padding: 5px 12px;
+	border-radius: 4px;
+	font-size: 1rem;
+}
