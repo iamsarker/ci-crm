@@ -39,29 +39,44 @@ select.fontawesome {
 
 .pdfViewContainer{
 	background-color: #cacaca !important;
-	height: 700px !important;
+	min-height: 700px !important;
+	height: auto !important;
 	overflow: auto !important;
+	border-radius: 10px;
+	margin-top: 15px;
 }
 
 .pdfViewBox{
 	background-color: white !important;
 	width: auto !important;
 	height: auto !important;
-	padding: 5px !important;
+	padding: 20px !important;
+	border-radius: 8px;
+	box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
+/* Admin Portal - Sticky Footer */
 body {
-	height: 100vh;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
 }
 
 .content-wrapper {
+	flex: 1;
 	display: flex;
 	flex-direction: column;
-	min-height: 890px;
+	padding-bottom: 20px;
 }
 
-footer {
+footer.footer {
 	margin-top: auto;
+	flex-shrink: 0;
+	position: relative;
+	z-index: 1;
+	padding: 15px 25px;
+	background-color: #f8f9fa;
+	border-top: 1px solid #e5e9f2;
 }
 
 .line-height-0{
