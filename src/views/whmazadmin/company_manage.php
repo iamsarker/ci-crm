@@ -267,7 +267,7 @@
 								<i class="fa fa-plus-circle"></i> Create Account
 							</button>
 							<button type="button" class="btn btn-outline-info btn-sm" id="btnSyncCpanel" title="Sync from cPanel">
-								<i class="fa fa-sync"></i> Sync Info
+								<i class="fa fa-sync" id="syncIcon"></i> Sync Info
 							</button>
 							<button type="button" class="btn btn-outline-warning btn-sm" id="btnSuspendCpanel" title="Suspend Account">
 								<i class="fa fa-pause-circle"></i> Suspend
@@ -278,6 +278,74 @@
 							<button type="button" class="btn btn-outline-danger btn-sm" id="btnTerminateCpanel" title="Terminate Account">
 								<i class="fa fa-trash"></i> Terminate
 							</button>
+						</div>
+
+						<!-- Usage Stats Section -->
+						<div id="usage_stats_section" class="mt-3" style="display:none;">
+							<hr>
+							<h6 class="text-info"><i class="fa fa-chart-pie"></i> Package / Usage Stats</h6>
+							<small class="text-muted" id="last_sync_time"></small>
+
+							<div class="row mt-2">
+								<div class="col-md-6">
+									<div class="mb-2">
+										<div class="d-flex justify-content-between">
+											<small><i class="fa fa-hdd"></i> Disk Space</small>
+											<small id="disk_usage_text">0 MB / Unlimited</small>
+										</div>
+										<div class="progress" style="height: 8px;">
+											<div class="progress-bar bg-success" id="disk_progress" style="width: 0%"></div>
+										</div>
+									</div>
+									<div class="mb-2">
+										<div class="d-flex justify-content-between">
+											<small><i class="fa fa-tachometer-alt"></i> Bandwidth</small>
+											<small id="bw_usage_text">0 MB / Unlimited</small>
+										</div>
+										<div class="progress" style="height: 8px;">
+											<div class="progress-bar bg-info" id="bw_progress" style="width: 0%"></div>
+										</div>
+									</div>
+									<div class="mb-2">
+										<div class="d-flex justify-content-between">
+											<small><i class="fa fa-envelope"></i> Email Accounts</small>
+											<small id="email_usage_text">0 / Unlimited</small>
+										</div>
+										<div class="progress" style="height: 8px;">
+											<div class="progress-bar bg-primary" id="email_progress" style="width: 0%"></div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="mb-2">
+										<div class="d-flex justify-content-between">
+											<small><i class="fa fa-database"></i> Databases</small>
+											<small id="db_usage_text">0 / Unlimited</small>
+										</div>
+										<div class="progress" style="height: 8px;">
+											<div class="progress-bar bg-warning" id="db_progress" style="width: 0%"></div>
+										</div>
+									</div>
+									<div class="mb-2">
+										<div class="d-flex justify-content-between">
+											<small><i class="fa fa-sitemap"></i> Addon Domains</small>
+											<small id="addon_usage_text">0 / Unlimited</small>
+										</div>
+										<div class="progress" style="height: 8px;">
+											<div class="progress-bar bg-secondary" id="addon_progress" style="width: 0%"></div>
+										</div>
+									</div>
+									<div class="mb-2">
+										<div class="d-flex justify-content-between">
+											<small><i class="fa fa-folder"></i> Subdomains</small>
+											<small id="subdomain_usage_text">0 / Unlimited</small>
+										</div>
+										<div class="progress" style="height: 8px;">
+											<div class="progress-bar bg-dark" id="subdomain_progress" style="width: 0%"></div>
+										</div>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</form>
@@ -464,6 +532,14 @@
 		// Open modal when clicking Manage button
 		$(document).on('click', '.btn-manage-service', function() {
 			currentServiceId = $(this).data('service-id');
+
+			// Show modal immediately with loading state
+			$('#modal_loading').show();
+			$('#serviceManageForm').hide();
+			$('#usage_stats_section').hide();
+			serviceModal.show();
+
+			// Then load the service details
 			loadServiceDetails(currentServiceId);
 		});
 
@@ -505,15 +581,15 @@
 						} else {
 							$('#cpanel_section').hide();
 						}
-
-						serviceModal.show();
 					} else {
 						toastError(response.message || 'Failed to load service details');
+						serviceModal.hide();
 					}
 				},
 				error: function() {
 					$('#modal_loading').hide();
 					toastError('Failed to load service details');
+					serviceModal.hide();
 				}
 			});
 		}
@@ -601,6 +677,8 @@
 
 		// Sync cPanel Info
 		$('#btnSyncCpanel').on('click', function() {
+			var btn = $(this);
+			var icon = $('#syncIcon');
 			var serviceId = $('#modal_service_id').val();
 			var cpUsername = $('#modal_cp_username').val();
 
@@ -609,8 +687,9 @@
 				return;
 			}
 
-			$('#modal_loading').show();
-			$('#serviceManageForm').hide();
+			// Disable button and show spinner
+			btn.prop('disabled', true);
+			icon.removeClass('fa-sync').addClass('fa-spinner fa-spin');
 
 			$.ajax({
 				url: '<?=base_url()?>whmazadmin/company/sync_cpanel_account/' + serviceId,
@@ -620,23 +699,75 @@
 				},
 				dataType: 'json',
 				success: function(response) {
-					$('#modal_loading').hide();
-					$('#serviceManageForm').show();
+					if (response.success && response.stats) {
+						var stats = response.stats;
 
-					if (response.success) {
-						toastSuccess(response.message || 'cPanel info synced successfully');
-						loadServiceDetails(serviceId);
+						// Show usage stats section
+						$('#usage_stats_section').show();
+
+						// Update disk usage
+						var diskDisplay = formatNumber(stats.disk_used, 1) + ' MB / ' + formatLimit(stats.disk_limit, 'MB');
+						$('#disk_usage_text').text(diskDisplay);
+						$('#disk_progress').css('width', (stats.disk_percent || 0) + '%');
+
+						// Update bandwidth
+						var bwDisplay = formatNumber(stats.bandwidth_used, 1) + ' MB / ' + formatLimit(stats.bandwidth_limit, 'MB');
+						$('#bw_usage_text').text(bwDisplay);
+						$('#bw_progress').css('width', (stats.bandwidth_percent || 0) + '%');
+
+						// Update email accounts
+						var emailDisplay = (stats.email_accounts || 0) + ' / ' + formatLimit(stats.email_limit);
+						$('#email_usage_text').text(emailDisplay);
+						$('#email_progress').css('width', (stats.email_percent || 0) + '%');
+
+						// Update databases
+						var dbDisplay = (stats.databases || 0) + ' / ' + formatLimit(stats.database_limit);
+						$('#db_usage_text').text(dbDisplay);
+						$('#db_progress').css('width', (stats.database_percent || 0) + '%');
+
+						// Update addon domains
+						var addonDisplay = (stats.addon_domains || 0) + ' / ' + formatLimit(stats.addon_limit);
+						$('#addon_usage_text').text(addonDisplay);
+						$('#addon_progress').css('width', (stats.addon_percent || 0) + '%');
+
+						// Update subdomains
+						var subdomainDisplay = (stats.subdomains || 0) + ' / ' + formatLimit(stats.subdomain_limit);
+						$('#subdomain_usage_text').text(subdomainDisplay);
+						$('#subdomain_progress').css('width', (stats.subdomain_percent || 0) + '%');
+
+						// Update last sync time
+						$('#last_sync_time').html('<i class="fa fa-clock"></i> Last synced: ' + (stats.last_sync || 'Just now'));
+
+						// Update sync status badge
+						$('#modal_sync_status').removeClass('bg-secondary bg-danger').addClass('bg-success').text('Synced');
+
+						toastSuccess(response.message || 'cPanel usage stats synced successfully');
 					} else {
 						toastError(response.message || 'Failed to sync cPanel info');
 					}
 				},
 				error: function() {
-					$('#modal_loading').hide();
-					$('#serviceManageForm').show();
 					toastError('Failed to sync cPanel info');
+				},
+				complete: function() {
+					// Re-enable button and restore icon
+					btn.prop('disabled', false);
+					icon.removeClass('fa-spinner fa-spin').addClass('fa-sync');
 				}
 			});
 		});
+
+		// Helper functions for formatting
+		function formatNumber(num, decimals) {
+			return parseFloat(num || 0).toFixed(decimals);
+		}
+
+		function formatLimit(limit, unit) {
+			if (limit === 'unlimited' || limit === 0 || limit === '0' || !limit) {
+				return 'Unlimited';
+			}
+			return limit + (unit ? ' ' + unit : '');
+		}
 
 		// Suspend cPanel Account
 		$('#btnSuspendCpanel').on('click', function() {

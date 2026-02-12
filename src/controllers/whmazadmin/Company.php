@@ -485,7 +485,7 @@ class Company extends WHMAZADMIN_Controller {
 	}
 
 	/**
-	 * Sync cPanel account info from WHM server
+	 * Sync cPanel account usage stats from WHM server
 	 * @param int $serviceId Service ID
 	 */
 	public function sync_cpanel_account($serviceId = null)
@@ -520,10 +520,13 @@ class Company extends WHMAZADMIN_Controller {
 				exit;
 			}
 
-			// Get account info from WHM
-			$result = whm_get_account_info($serverInfo, $service['cp_username']);
+			// Load cPanel helper
+			$this->load->helper('cpanel');
 
-			if ($result['success']) {
+			// Get usage stats from cPanel (like client portal)
+			$statsResult = whm_get_account_stats($serverInfo, $service['cp_username']);
+
+			if ($statsResult['success']) {
 				// Update sync status
 				$updateData = array(
 					'is_synced' => 1,
@@ -532,12 +535,15 @@ class Company extends WHMAZADMIN_Controller {
 				);
 				$this->Company_model->updateService($serviceId, $updateData);
 
-				$accountData = isset($result['data']['acct'][0]) ? $result['data']['acct'][0] : array();
+				// Save stats to database if model method exists
+				if (method_exists($this->Company_model, 'saveCpanelUsageStats')) {
+					$this->Company_model->saveCpanelUsageStats($serviceId, $service['company_id'], $statsResult['stats']);
+				}
 
 				echo json_encode(array(
 					'success' => true,
-					'message' => 'cPanel account info synced successfully',
-					'account_info' => $accountData
+					'message' => 'cPanel usage stats synced successfully',
+					'stats' => $statsResult['stats']
 				));
 			} else {
 				// Mark as not synced if account not found
@@ -550,7 +556,7 @@ class Company extends WHMAZADMIN_Controller {
 
 				echo json_encode(array(
 					'success' => false,
-					'message' => 'Account not found on server: ' . $result['error']
+					'message' => 'Failed to fetch cPanel stats: ' . ($statsResult['error'] ?? 'Unknown error')
 				));
 			}
 		} catch (Exception $e) {

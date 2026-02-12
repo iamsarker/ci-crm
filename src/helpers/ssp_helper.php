@@ -22,7 +22,7 @@
 				$columnIdx = intval($request['order'][$i]['column']);
 				$ordCol = $request['columns'][$columnIdx];
 
-				if ( $ordCol['orderable'] == 'true' ) {
+				if ( $ordCol['orderable'] == 'true' || $ordCol['orderable'] === true ) {
 					$dir = $request['order'][$i]['dir'] === 'asc' ? 'ASC' : 'DESC';
 					$orderBy[] = '`'.$ordCol['data'].'` '.$dir;
 				}
@@ -44,7 +44,7 @@
 
 			for ( $i=0; $i<$colLen ; $i++ ) {
 				$reqCol = $request['columns'][$i];
-				if ( $reqCol['searchable'] == 'true' ) {
+				if ( $reqCol['searchable'] == 'true' || $reqCol['searchable'] === true ) {
 					array_push($bindings, $str);
 					$globalSearch[] = "`".$reqCol['data']."` LIKE ? ";
 				}
@@ -55,7 +55,7 @@
 			for ( $i=0; $i<$colLen ; $i++ ) {
 				$reqCol = $request['columns'][$i];
 				$str = $reqCol['search']['value'];
-				if ( $reqCol['searchable'] == 'true' && $str != '' ) {
+				if ( ($reqCol['searchable'] == 'true' || $reqCol['searchable'] === true) && $str != '' ) {
 					if ( is_numeric($str) ) {
 						array_push($bindings, $str);
 						$columnSearch[] = "`".$reqCol['data']."` = ? ";
