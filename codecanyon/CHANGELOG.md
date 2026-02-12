@@ -7,6 +7,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-02-12
+
+### New Feature - Admin Portal General Settings Enhancements
+
+#### System Config Tab
+- New System Config tab in General Settings for managing `sys_cnf` table key-value pairs
+- Grouped display by `cnf_group` (DNS, SYSTEM, COMPANY_INFO, etc.)
+- Inline value editing with save/cancel buttons
+- Sensitive value masking (keys containing "secret", "password", "authkey", "api_key", "token")
+- Read-only keys and groups (only values editable)
+
+#### Cronjobs Tab with Linux Integration
+- New Cronjobs tab in General Settings for managing scheduled tasks
+- Configure cronjob schedules (minute, hour, day, month, weekday)
+- Quick preset buttons (Every hour, Daily midnight, Daily 6 AM, Weekly, Monthly)
+- Enable/disable cronjobs with toggle button
+- Preview generated crontab content
+- One-click copy to clipboard
+- Auto-install to Linux crontab (requires server permissions)
+- Manual installation instructions provided
+
+#### Company Information Section Updates
+- Added BIN / Tax ID field
+- Added City, State fields
+- Country field changed from text input to dropdown (from `countries` table)
+- Reorganized layout for better UX
+
+#### Database Changes
+- New `cron_schedules` table for cronjob configuration
+- New columns in `app_settings`: `bin_tax`, `city`, `state`, `country`
+
+#### New Files
+- `src/models/Syscnf_model.php` - System config CRUD operations
+- `src/models/Cronschedule_model.php` - Cronjob schedule management with crontab generation
+
+#### Modified Files
+- `src/controllers/whmazadmin/General_setting.php` - Added sys_cnf and cronjob methods
+- `src/views/whmazadmin/general_setting_manage.php` - Added System Config and Cronjobs tabs
+- `src/models/Cronjob_model.php` - Added `getSysConfig()` method for secure cronjob authentication
+
+#### Cronjob Security
+- Secret key authentication via `sys_cnf` table (`cron_secret_key`)
+- CLI requests bypass authentication (for server cron execution)
+- URL parameter validation: `/cronjobs/run?key=YOUR_SECRET_KEY`
+
+---
+
 ## [1.4.0] - 2026-02-12
 
 ### New Feature - Automated Renewal Invoice Generation
@@ -1085,6 +1132,13 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.5.0] - 2026-02-12 - New Feature
+- System Config tab for managing sys_cnf key-value pairs
+- Cronjobs tab for Linux crontab schedule management
+- Company Information updates (BIN/Tax ID, City, State, Country dropdown)
+- One-click crontab installation to Linux
+- Cronjob schedule quick presets
+
 ### [1.4.0] - 2026-02-12 - New Feature
 - Automated renewal invoice generation 15 days before expiry
 - Cronjob system with `/cronjobs/run` endpoint
@@ -1308,6 +1362,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.4.0
+**Current Version:** 1.5.0
 **Release Date:** February 12, 2026
 **Status:** Stable Production Release (New Feature)

@@ -912,6 +912,11 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 
 ### 14. System Configuration
 
+**Controller:** `whmazadmin/General_setting.php`
+**Views:** `src/views/whmazadmin/general_setting_manage.php`
+**Models:** `Appsetting_model.php`, `Syscnf_model.php`, `Cronschedule_model.php`
+**Database Tables:** `app_settings`, `sys_cnf`, `cron_schedules`
+
 **Features:**
 - Application settings (`app_settings` table)
 - Email configuration (SMTP settings)
@@ -919,6 +924,105 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 - Tax settings
 - Number generation formats
 - System preferences
+- **System Config Tab** - Key-value configuration management
+- **Cronjobs Tab** - Linux crontab schedule management
+
+#### 14.1 General Settings - Company Information
+
+**Fields:**
+- Site Name, Company Name, Address, City, State, Country (dropdown from `countries` table)
+- ZIP Code, Phone, Email, Website
+- Logo upload
+- BIN / Tax ID
+
+**Key URLs:**
+- `/whmazadmin/general_setting/manage` - General settings page
+
+#### 14.2 System Config Tab
+
+**Purpose:** Manage key-value configuration pairs stored in `sys_cnf` table
+
+**Database Table:** `sys_cnf`
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | INT | Primary key |
+| `cnf_key` | VARCHAR(100) | Configuration key |
+| `cnf_val` | TEXT | Configuration value |
+| `cnf_group` | VARCHAR(50) | Group name for organization |
+| `cnf_desc` | VARCHAR(255) | Description |
+| `is_sensitive` | TINYINT(1) | 1=mask value in UI |
+| `updated_on` | DATETIME | Last update timestamp |
+
+**Features:**
+- Grouped display of configurations
+- Inline value editing via AJAX
+- Sensitive value masking (shows `••••••••` for passwords/keys)
+- Read-only keys (admin can only edit values, not add/delete)
+- Real-time save without page reload
+
+**Configuration Groups:**
+- SECURITY - Secret keys, cron keys
+- INTEGRATIONS - Third-party API keys
+- GENERAL - General system settings
+
+**Key URLs:**
+- `/whmazadmin/general_setting/update_sysconfig` - AJAX: Update config value
+- `/whmazadmin/general_setting/get_sysconfig/{id}` - AJAX: Get config for editing
+
+#### 14.3 Cronjobs Tab (Linux Crontab Management)
+
+**Purpose:** Configure and install cronjob schedules directly to Linux crontab
+
+**Database Table:** `cron_schedules`
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | INT | Primary key |
+| `job_name` | VARCHAR(100) | Job identifier |
+| `job_description` | VARCHAR(255) | Human-readable description |
+| `job_command` | VARCHAR(255) | URL path to execute |
+| `schedule_minute` | VARCHAR(20) | Cron minute field |
+| `schedule_hour` | VARCHAR(20) | Cron hour field |
+| `schedule_day` | VARCHAR(20) | Cron day of month field |
+| `schedule_month` | VARCHAR(20) | Cron month field |
+| `schedule_weekday` | VARCHAR(20) | Cron day of week field |
+| `is_active` | TINYINT(1) | 1=active, 0=disabled |
+| `last_run` | DATETIME | Last execution time |
+| `created_on` | DATETIME | Creation timestamp |
+| `updated_on` | DATETIME | Last update timestamp |
+
+**Features:**
+- Schedule configuration with 5-field cron expression
+- Quick presets (Daily 6AM, Every Hour, Every 15 Minutes, Weekly Sunday)
+- Active/inactive toggle per job
+- Human-readable schedule descriptions
+- Preview generated crontab content
+- Copy crontab to clipboard
+- One-click install to Linux crontab
+- Preserves existing non-WHMAZ crontab entries
+
+**Cron Expression Fields:**
+- Minute (0-59, *)
+- Hour (0-23, *)
+- Day of Month (1-31, *)
+- Month (1-12, *)
+- Day of Week (0-6, Sunday=0, *)
+
+**Key URLs:**
+- `/whmazadmin/general_setting/update_cronjob` - AJAX: Update schedule
+- `/whmazadmin/general_setting/toggle_cronjob` - AJAX: Toggle active status
+- `/whmazadmin/general_setting/get_cronjob/{id}` - AJAX: Get schedule for editing
+- `/whmazadmin/general_setting/generate_crontab` - AJAX: Generate crontab preview
+- `/whmazadmin/general_setting/install_crontab` - AJAX: Install to Linux crontab
+
+**Generated Crontab Format:**
+```bash
+# WHMAZ Cronjobs - Auto-generated
+# Generated on: 2026-02-12 10:00:00
+# Do not edit manually - changes will be overwritten
+
+# Generate renewal invoices for expiring services
+0 6 * * * curl -s "http://yoursite.com/cronjobs/run?key=YOUR_SECRET_KEY" > /dev/null 2>&1
+```
 
 ---
 
@@ -1257,7 +1361,7 @@ Available in footer for both admin and client portals
 
 ## Database Schema
 
-### Total Tables: 48
+### Total Tables: 50
 
 ### User & Authentication Tables
 | Table | Purpose |
@@ -1370,9 +1474,11 @@ Available in footer for both admin and client portals
 | `announcements` | System announcements |
 | `alerts` | Alert/notification system |
 | `alert_recipients` | Alert recipients |
-| `app_settings` | Application configuration |
+| `app_settings` | Application configuration (company info, SMTP settings) |
+| `sys_cnf` | System key-value configuration pairs |
+| `cron_schedules` | Cronjob schedule definitions for Linux crontab |
 | `gen_numbers` | Auto-incrementing number generator |
-| `cron_jobs` | Scheduled job definitions |
+| `cron_jobs` | Scheduled job execution logs |
 | `pending_executions` | Pending operations queue |
 
 ### Database Views
@@ -1801,6 +1907,6 @@ For HMVC documentation: https://github.com/jenssegers/codeigniter-hmvc
 
 ---
 
-**Documentation Version:** 1.6
+**Documentation Version:** 1.7
 **Last Updated:** 2026-02-12
 **Project Status:** Active Development

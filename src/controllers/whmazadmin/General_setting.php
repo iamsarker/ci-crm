@@ -10,6 +10,8 @@ class General_setting extends WHMAZADMIN_Controller {
 		$this->load->model('Appsetting_model');
 		$this->load->model('Dunningrule_model');
 		$this->load->model('Emailtemplate_model');
+		$this->load->model('Syscnf_model');
+		$this->load->model('Cronschedule_model');
 		$this->load->model('Common_model');
 		if (!$this->isLogin()) {
 			redirect('/whmazadmin/authenticate/login', 'refresh');
@@ -65,9 +67,13 @@ class General_setting extends WHMAZADMIN_Controller {
 					'admin_url'          => $this->input->post('admin_url'),
 					'favicon'            => $favicon_name,
 					'logo'               => $logo_name,
+					'bin_tax'            => $this->input->post('bin_tax'),
 					'company_name'       => $this->input->post('company_name'),
 					'company_address'    => $this->input->post('company_address'),
 					'zip_code'           => $this->input->post('zip_code'),
+					'city'               => $this->input->post('city'),
+					'state'              => $this->input->post('state'),
+					'country'            => $this->input->post('country'),
 					'email'              => $this->input->post('email'),
 					'fax'                => $this->input->post('fax'),
 					'phone'              => $this->input->post('phone'),
@@ -96,7 +102,22 @@ class General_setting extends WHMAZADMIN_Controller {
 		$data['detail'] = $this->Appsetting_model->getSettings();
 		$data['dunning_rules'] = $this->Dunningrule_model->loadAllData();
 		$data['dunning_email_templates'] = $this->Emailtemplate_model->loadByCategory('DUNNING');
-		$data['active_tab'] = $this->input->get('tab') === 'dunning' ? 'dunning' : 'general';
+		$data['sys_configs'] = $this->Syscnf_model->getAllGrouped();
+		$data['cron_schedules'] = $this->Cronschedule_model->getAll();
+		$data['cron_secret_key'] = $this->Syscnf_model->getValue('cron_secret_key');
+		$data['countries'] = $this->Appsetting_model->getCountries();
+
+		// Determine active tab
+		$tab = $this->input->get('tab');
+		if ($tab === 'dunning') {
+			$data['active_tab'] = 'dunning';
+		} elseif ($tab === 'sysconfig') {
+			$data['active_tab'] = 'sysconfig';
+		} elseif ($tab === 'cronjobs') {
+			$data['active_tab'] = 'cronjobs';
+		} else {
+			$data['active_tab'] = 'general';
+		}
 
 		$this->load->view('whmazadmin/general_setting_manage', $data);
 	}
@@ -190,6 +211,207 @@ class General_setting extends WHMAZADMIN_Controller {
 
 		$rules = $this->Dunningrule_model->loadAllData();
 		echo json_encode(array('success' => 1, 'data' => $rules));
+	}
+
+	/**
+	 * Update system config value (AJAX)
+	 */
+	public function update_sysconfig() {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+			show_404();
+		}
+
+		$id = intval($this->input->post('id'));
+		$value = $this->input->post('value');
+
+		if ($id <= 0) {
+			echo json_encode(array('success' => 0, 'message' => 'Invalid configuration ID.'));
+			return;
+		}
+
+		// Verify the config exists
+		$config = $this->Syscnf_model->getById($id);
+		if (empty($config)) {
+			echo json_encode(array('success' => 0, 'message' => 'Configuration not found.'));
+			return;
+		}
+
+		$resp = $this->Syscnf_model->updateValue($id, $value);
+		if ($resp['success'] == 1) {
+			echo json_encode(array('success' => 1, 'message' => 'Configuration updated successfully.'));
+		} else {
+			echo json_encode(array('success' => 0, 'message' => 'Failed to update configuration.'));
+		}
+	}
+
+	/**
+	 * Get system config detail (AJAX)
+	 */
+	public function get_sysconfig($id = 0) {
+		if (!$this->input->is_ajax_request()) {
+			show_404();
+		}
+
+		$id = intval($id);
+		$detail = $this->Syscnf_model->getById($id);
+
+		if (!empty($detail)) {
+			echo json_encode(array('success' => 1, 'data' => $detail));
+		} else {
+			echo json_encode(array('success' => 0, 'message' => 'Configuration not found.'));
+		}
+	}
+
+	/**
+	 * Update cronjob schedule (AJAX)
+	 */
+	public function update_cronjob() {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+			show_404();
+		}
+
+		$id = intval($this->input->post('id'));
+
+		if ($id <= 0) {
+			echo json_encode(array('success' => 0, 'message' => 'Invalid schedule ID.'));
+			return;
+		}
+
+		// Validate schedule parts
+		$minute = trim($this->input->post('schedule_minute'));
+		$hour = trim($this->input->post('schedule_hour'));
+		$day = trim($this->input->post('schedule_day'));
+		$month = trim($this->input->post('schedule_month'));
+		$weekday = trim($this->input->post('schedule_weekday'));
+
+		// Basic validation for cron fields
+		$cronPattern = '/^(\*|(\*\/)?[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*)$/';
+
+		if (!preg_match($cronPattern, $minute) || intval($minute) > 59) {
+			echo json_encode(array('success' => 0, 'message' => 'Invalid minute value (0-59 or *)'));
+			return;
+		}
+		if (!preg_match($cronPattern, $hour) || (is_numeric($hour) && intval($hour) > 23)) {
+			echo json_encode(array('success' => 0, 'message' => 'Invalid hour value (0-23 or *)'));
+			return;
+		}
+		if (!preg_match($cronPattern, $day) || (is_numeric($day) && intval($day) > 31)) {
+			echo json_encode(array('success' => 0, 'message' => 'Invalid day value (1-31 or *)'));
+			return;
+		}
+		if (!preg_match($cronPattern, $month) || (is_numeric($month) && intval($month) > 12)) {
+			echo json_encode(array('success' => 0, 'message' => 'Invalid month value (1-12 or *)'));
+			return;
+		}
+		if (!preg_match($cronPattern, $weekday) || (is_numeric($weekday) && intval($weekday) > 6)) {
+			echo json_encode(array('success' => 0, 'message' => 'Invalid weekday value (0-6 or *)'));
+			return;
+		}
+
+		$data = array(
+			'schedule_minute' => $minute,
+			'schedule_hour' => $hour,
+			'schedule_day' => $day,
+			'schedule_month' => $month,
+			'schedule_weekday' => $weekday
+		);
+
+		$resp = $this->Cronschedule_model->updateSchedule($id, $data);
+		if ($resp['success'] == 1) {
+			echo json_encode(array('success' => 1, 'message' => 'Schedule updated successfully.'));
+		} else {
+			echo json_encode(array('success' => 0, 'message' => 'Failed to update schedule.'));
+		}
+	}
+
+	/**
+	 * Toggle cronjob active status (AJAX)
+	 */
+	public function toggle_cronjob($id = 0) {
+		if (!$this->input->is_ajax_request()) {
+			show_404();
+		}
+
+		$id = intval($id);
+		$resp = $this->Cronschedule_model->toggleActive($id);
+
+		if ($resp['success'] == 1) {
+			$status = $resp['is_active'] == 1 ? 'enabled' : 'disabled';
+			echo json_encode(array('success' => 1, 'message' => 'Cronjob ' . $status . '.', 'is_active' => $resp['is_active']));
+		} else {
+			echo json_encode(array('success' => 0, 'message' => $resp['message'] ?? 'Failed to toggle cronjob.'));
+		}
+	}
+
+	/**
+	 * Get cronjob schedule detail (AJAX)
+	 */
+	public function get_cronjob($id = 0) {
+		if (!$this->input->is_ajax_request()) {
+			show_404();
+		}
+
+		$id = intval($id);
+		$detail = $this->Cronschedule_model->getById($id);
+
+		if (!empty($detail)) {
+			$detail['cron_expression'] = $this->Cronschedule_model->buildCronExpression($detail);
+			$detail['schedule_description'] = $this->Cronschedule_model->getScheduleDescription($detail);
+			echo json_encode(array('success' => 1, 'data' => $detail));
+		} else {
+			echo json_encode(array('success' => 0, 'message' => 'Schedule not found.'));
+		}
+	}
+
+	/**
+	 * Generate crontab content (AJAX)
+	 */
+	public function generate_crontab() {
+		if (!$this->input->is_ajax_request()) {
+			show_404();
+		}
+
+		$cronKey = $this->Syscnf_model->getValue('cron_secret_key');
+
+		if (empty($cronKey)) {
+			echo json_encode(array(
+				'success' => 0,
+				'message' => 'Cron secret key not configured. Please add "cron_secret_key" in System Config first.'
+			));
+			return;
+		}
+
+		$baseUrl = base_url();
+		$crontab = $this->Cronschedule_model->generateCrontab($baseUrl, $cronKey);
+
+		echo json_encode(array(
+			'success' => 1,
+			'crontab' => $crontab
+		));
+	}
+
+	/**
+	 * Install crontab to system (AJAX)
+	 */
+	public function install_crontab() {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+			show_404();
+		}
+
+		$cronKey = $this->Syscnf_model->getValue('cron_secret_key');
+
+		if (empty($cronKey)) {
+			echo json_encode(array(
+				'success' => 0,
+				'message' => 'Cron secret key not configured. Please add "cron_secret_key" in System Config first.'
+			));
+			return;
+		}
+
+		$baseUrl = base_url();
+		$resp = $this->Cronschedule_model->installCrontab($baseUrl, $cronKey);
+
+		echo json_encode($resp);
 	}
 
 	/**
