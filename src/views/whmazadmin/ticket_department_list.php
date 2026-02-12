@@ -1,96 +1,200 @@
 <?php $this->load->view('whmazadmin/include/header');?>
+<link href="<?=base_url()?>resources/assets/css/admin.list_page.css" rel="stylesheet">
 
-	 <div class="content content-fluid content-wrapper">
-      <div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
+<div class="content content-fluid content-wrapper">
+	<div class="container-fluid pd-x-20 pd-lg-x-30 pd-xl-x-40">
 
-        <div class="row mt-5">
-			<div class="col-md-12 col-sm-12">
-				<h3 class="d-flex justify-content-between"><span>Departments</span> <a href="<?=base_url()?>whmazadmin/ticket_department/manage" class="btn btn-sm btn-secondary"><i class="fa fa-plus-square"></i>&nbsp;Add</a></h3>
-				<hr class="mg-5" />
-				<nav aria-label="breadcrumb">
-					<ol class="breadcrumb breadcrumb-style1 mg-b-0">
-						<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Portal home</a></li>
-						<li class="breadcrumb-item active"><a href="#">Departments</a></li>
-					</ol>
-				</nav>
-			  <?php if ($this->session->flashdata('alert')) { ?>
-				<?= $this->session->flashdata('alert') ?>
-			  <?php } ?>
+		<p class="mt-4">&nbsp;</p>
 
+		<!-- Stats Cards -->
+		<div class="row mb-4 mt-4" id="statsRow">
+			<div class="col-xl-3 col-md-6 mb-3">
+				<div class="card stats-card">
+					<div class="card-body d-flex align-items-center">
+						<div class="stats-icon primary me-3">
+							<i class="fa fa-folder"></i>
+						</div>
+						<div>
+							<div class="stats-value" id="totalDepts"><?= count($results ?? []) ?></div>
+							<div class="stats-label">Total Departments</div>
+						</div>
+					</div>
+				</div>
 			</div>
+			<div class="col-xl-3 col-md-6 mb-3">
+				<div class="card stats-card">
+					<div class="card-body d-flex align-items-center">
+						<div class="stats-icon success me-3">
+							<i class="fa fa-check-circle"></i>
+						</div>
+						<div>
+							<div class="stats-value" id="activeDepts"><?= count(array_filter($results ?? [], function($r) { return $r['status'] == 1; })) ?></div>
+							<div class="stats-label">Active</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-3 col-md-6 mb-3">
+				<div class="card stats-card">
+					<div class="card-body d-flex align-items-center">
+						<div class="stats-icon info me-3">
+							<i class="fa fa-envelope"></i>
+						</div>
+						<div>
+							<div class="stats-value" id="withEmail"><?= count(array_filter($results ?? [], function($r) { return !empty($r['email']); })) ?></div>
+							<div class="stats-label">With Email</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-3 col-md-6 mb-3">
+				<div class="card stats-card">
+					<div class="card-body d-flex align-items-center">
+						<div class="stats-icon warning me-3">
+							<i class="fa fa-ban"></i>
+						</div>
+						<div>
+							<div class="stats-value" id="inactiveDepts"><?= count(array_filter($results ?? [], function($r) { return $r['status'] != 1; })) ?></div>
+							<div class="stats-label">Inactive</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-			<div class="col-md-12 col-sm-12 mt-5">
-				<table id="listDataTable" class="table table-hover">
+		<!-- Departments Table -->
+		<div class="card table-card">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<div>
+					<h4 class="mb-1"><i class="fa fa-folder me-2"></i>Ticket Departments</h4>
+					<nav aria-label="breadcrumb" class="mb-0">
+						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
+							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
+							<li class="breadcrumb-item active text-white">Departments</li>
+						</ol>
+					</nav>
+				</div>
+				<a href="<?=base_url()?>whmazadmin/ticket_department/manage" class="btn btn-light btn-sm">
+					<i class="fa fa-plus-circle me-1"></i> Add Department
+				</a>
+			</div>
+			<div class="card-body">
+				<table id="deptListDt" class="table table-hover w-100">
 					<thead>
 					<tr>
-						<th class="wd-15p">Dept. Name</th>
-						<th class="wd-15p text-center">Serial#</th>
-						<th class="wd-15p">Email</th>
-						<th class="wd-15p">Description</th>
-						<th class="wd-10p text-center">Active?</th>
-						<th class="wd-15p">Last updated</th>
-						<th class="wd-25p text-center">Action</th>
+						<th>Department Name</th>
+						<th class="text-center">Sort Order</th>
+						<th>Email</th>
+						<th>Description</th>
+						<th class="text-center">Status</th>
+						<th>Last Updated</th>
+						<th class="text-center">Actions</th>
 					</tr>
 					</thead>
 					<tbody>
 					<?php foreach($results as $row){ ?>
 						<tr>
-							<td><?php echo $row['name']; ?></td>
-							<td class="text-center"><?php echo $row['sort_order']; ?></td>
-							<td><?php echo $row['email']; ?></td>
-							<td><?php echo $row['description']; ?></td>
-							<td class="text-center">
-								<?= getRowStatus($row['status']) ?>
+							<td>
+								<span class="fw-semibold"><i class="fa fa-folder me-1 text-muted"></i><?= htmlspecialchars($row['name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
 							</td>
-							<td><?php echo $row['updated_on']; ?></td>
 							<td class="text-center">
-								<button type="button" class="btn btn-xs btn-secondary" onclick="openManage('<?=safe_encode($row['id'])?>')" title="Manage"><i class="fa fa-wrench"></i></button>
-								<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow('<?=safe_encode($row['id'])?>', <?= json_encode($row['name'] ?? '') ?>)" title="Delete"><i class="fa fa-trash"></i></button>
+								<span class="badge bg-secondary"><?= htmlspecialchars($row['sort_order'] ?? '0', ENT_QUOTES, 'UTF-8') ?></span>
+							</td>
+							<td>
+								<?php if (!empty($row['email'])): ?>
+									<i class="fa fa-envelope me-1 text-muted"></i><a href="mailto:<?= htmlspecialchars($row['email'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($row['email'], ENT_QUOTES, 'UTF-8') ?></a>
+								<?php else: ?>
+									<span class="text-muted">-</span>
+								<?php endif; ?>
+							</td>
+							<td>
+								<small class="text-muted"><?= htmlspecialchars($row['description'] ?? '-', ENT_QUOTES, 'UTF-8') ?></small>
+							</td>
+							<td class="text-center">
+								<?php if ($row['status'] == 1): ?>
+									<span class="badge bg-success"><i class="fa fa-check me-1"></i>Active</span>
+								<?php else: ?>
+									<span class="badge bg-danger"><i class="fa fa-times me-1"></i>Inactive</span>
+								<?php endif; ?>
+							</td>
+							<td>
+								<?php if (!empty($row['updated_on'])): ?>
+									<i class="fa fa-clock me-1 text-muted"></i><?= date('M d, Y', strtotime($row['updated_on'])) ?>
+								<?php else: ?>
+									<span class="text-muted">-</span>
+								<?php endif; ?>
+							</td>
+							<td class="text-center">
+								<button type="button" class="btn btn-action btn-manage" onclick="openManage('<?=safe_encode($row['id'])?>')" title="Manage Department">
+									<i class="fa fa-cog"></i>
+								</button>
+								<button type="button" class="btn btn-action btn-delete" onclick="deleteRow('<?=safe_encode($row['id'])?>', <?= json_encode($row['name'] ?? '') ?>)" title="Delete Department">
+									<i class="fa fa-trash"></i>
+								</button>
 							</td>
 						</tr>
 					<?php } ?>
 					</tbody>
 				</table>
 			</div>
-      </div>
-		
-    </div><!-- container -->
-  </div><!-- content -->
+		</div>
+
+	</div>
+</div>
 
 <?php $this->load->view('whmazadmin/include/footer_script');?>
+
 <script>
-      $(function(){
-        	'use strict'
+$(function(){
+	'use strict'
 
-			$('#listDataTable').DataTable();
+	$('#deptListDt').DataTable({
+		"responsive": true,
+		"language": {
+			"processing": '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+			"emptyTable": '<div class="text-center py-4"><i class="fa fa-folder fa-3x text-muted mb-3"></i><p class="text-muted">No departments found</p></div>',
+			"zeroRecords": '<div class="text-center py-4"><i class="fa fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No matching departments found</p></div>'
+		}
+	});
+});
 
-      });
+function openManage(id) {
+	Swal.fire({
+		title: 'Loading...',
+		text: 'Please wait',
+		allowOutsideClick: false,
+		allowEscapeKey: false,
+		showConfirmButton: false,
+		didOpen: () => { Swal.showLoading(); }
+	});
+	window.location = "<?=base_url()?>whmazadmin/ticket_department/manage/" + id;
+}
 
-	  function openManage(id) {
-		  window.location = "<?=base_url()?>whmazadmin/ticket_department/manage/"+id;
-	  }
+function deleteRow(id, title) {
+	Swal.fire({
+		title: 'Delete Department?',
+		html: 'Are you sure you want to delete <strong>' + escapeXSS(title) + '</strong>?<br><small class="text-muted">This action cannot be undone.</small>',
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonColor: '#d33',
+		cancelButtonColor: '#6c757d',
+		confirmButtonText: '<i class="fa fa-trash me-1"></i> Yes, Delete',
+		cancelButtonText: 'Cancel',
+		reverseButtons: true
+	}).then((result) => {
+		if (result.isConfirmed) {
+			Swal.fire({
+				title: 'Deleting...',
+				text: 'Please wait',
+				allowOutsideClick: false,
+				allowEscapeKey: false,
+				showConfirmButton: false,
+				didOpen: () => { Swal.showLoading(); }
+			});
+			window.location = "<?=base_url()?>whmazadmin/ticket_department/delete_records/" + id;
+		}
+	});
+}
+</script>
 
-	  function deleteRow(id, title) {
-
-		  Swal.fire({
-			  title: 'Do you want to delete the (<b>'+title+'</b>) record?',
-			  showDenyButton: true,
-			  icon: 'question',
-			  confirmButtonText: 'Yes, delete',
-			  denyButtonText: 'No, cancel',
-			  customClass: {
-				  actions: 'my-actions',
-				  denyButton: 'order-1 right-gap',
-				  confirmButton: 'order-2',
-			  },
-		  }).then((result) => {
-			  if (result.isConfirmed) {
-				  window.location = "<?=base_url()?>whmazadmin/ticket_department/delete_records/"+id;
-				  console.log('success');
-			  } else if (result.isDenied) {
-				  console.log('Changes are not saved');
-			  }
-		  });
-	  }
-    </script>
 <?php $this->load->view('whmazadmin/include/footer');?>

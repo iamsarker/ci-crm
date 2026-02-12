@@ -4,21 +4,6 @@
 <div class="content content-fluid content-wrapper">
 	<div class="container-fluid pd-x-20 pd-lg-x-30 pd-xl-x-40">
 
-		<!-- Flash Messages -->
-		<?php if ($this->session->flashdata('admin_success')) { ?>
-			<div class="alert alert-success alert-dismissible fade show" role="alert">
-				<i class="fa fa-check-circle me-2"></i><?= $this->session->flashdata('admin_success') ?>
-				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-			</div>
-		<?php } ?>
-
-		<?php if ($this->session->flashdata('admin_error')) { ?>
-			<div class="alert alert-danger alert-dismissible fade show" role="alert">
-				<i class="fa fa-exclamation-circle me-2"></i><?= $this->session->flashdata('admin_error') ?>
-				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-			</div>
-		<?php } ?>
-
 		<!-- New Company Credentials Alert -->
 		<?php if ($this->session->flashdata('new_user_credentials')) {
 			$credentials = $this->session->flashdata('new_user_credentials');

@@ -1,116 +1,237 @@
 <?php $this->load->view('whmazadmin/include/header');?>
+<link href="<?=base_url()?>resources/assets/css/admin.list_page.css" rel="stylesheet">
 
-	 <div class="content content-fluid content-wrapper">
-      <div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
+<div class="content content-fluid content-wrapper">
+	<div class="container-fluid pd-x-20 pd-lg-x-30 pd-xl-x-40">
 
-        <div class="row mt-5">
-			<div class="col-md-12 col-sm-12">
-				<h3 class="d-flex justify-content-between"><span>Package Pricing</span> <a href="<?=base_url()?>whmazadmin/package/manage" class="btn btn-sm btn-secondary"><i class="fa fa-plus-square"></i>&nbsp;Add</a></h3>
-				<hr class="mg-5" />
-				<nav aria-label="breadcrumb">
-					<ol class="breadcrumb breadcrumb-style1 mg-b-0">
-						<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Portal home</a></li>
-						<li class="breadcrumb-item active"><a href="#">Package Pricing</a></li>
-					</ol>
-				</nav>
+		<p class="mt-4">&nbsp;</p>
+
+		<!-- Stats Cards -->
+		<div class="row mb-4 mt-4" id="statsRow">
+			<div class="col-xl-3 col-md-6 mb-3">
+				<div class="card stats-card">
+					<div class="card-body d-flex align-items-center">
+						<div class="stats-icon primary me-3">
+							<i class="fa fa-box"></i>
+						</div>
+						<div>
+							<div class="stats-value" id="totalPackages">-</div>
+							<div class="stats-label">Total Packages</div>
+						</div>
+					</div>
+				</div>
 			</div>
-
-			<div class="col-md-12 col-sm-12 mt-5">
-				<table id="listDataTable" class="table table-striped table-hover"></table>
+			<div class="col-xl-3 col-md-6 mb-3">
+				<div class="card stats-card">
+					<div class="card-body d-flex align-items-center">
+						<div class="stats-icon success me-3">
+							<i class="fa fa-check-circle"></i>
+						</div>
+						<div>
+							<div class="stats-value" id="activePackages">-</div>
+							<div class="stats-label">Active Packages</div>
+						</div>
+					</div>
+				</div>
 			</div>
-      </div>
+			<div class="col-xl-3 col-md-6 mb-3">
+				<div class="card stats-card">
+					<div class="card-body d-flex align-items-center">
+						<div class="stats-icon info me-3">
+							<i class="fa fa-sync-alt"></i>
+						</div>
+						<div>
+							<div class="stats-value" id="billingCycles">-</div>
+							<div class="stats-label">Billing Cycles</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-xl-3 col-md-6 mb-3">
+				<div class="card stats-card">
+					<div class="card-body d-flex align-items-center">
+						<div class="stats-icon warning me-3">
+							<i class="fa fa-coins"></i>
+						</div>
+						<div>
+							<div class="stats-value" id="currencies">-</div>
+							<div class="stats-label">Currencies</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 
-    </div><!-- container -->
-  </div><!-- content -->
+		<!-- Packages Table -->
+		<div class="card table-card">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<div>
+					<h4 class="mb-1"><i class="fa fa-box me-2"></i>Package Pricing</h4>
+					<nav aria-label="breadcrumb" class="mb-0">
+						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
+							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
+							<li class="breadcrumb-item active text-white">Package Pricing</li>
+						</ol>
+					</nav>
+				</div>
+				<a href="<?=base_url()?>whmazadmin/package/manage" class="btn btn-light btn-sm">
+					<i class="fa fa-plus-circle me-1"></i> Add Package
+				</a>
+			</div>
+			<div class="card-body">
+				<table id="packageListDt" class="table table-hover w-100"></table>
+			</div>
+		</div>
+
+	</div>
+</div>
 
 <?php $this->load->view('whmazadmin/include/footer_script');?>
+
 <script>
+$(function(){
+	'use strict'
 
-      $(function(){
-        	'use strict'
-
-			$('#listDataTable').DataTable({
-				"responsive": true,
-				"processing": true,
-				"serverSide": true,
-				"ajax": {
-					"url": "<?=base_url()?>whmazadmin/package/ssp_list_api/",
-				},
-				order: [[0, 'desc']],
-				"columns": [
-					{ "title": "ID", "data": "id", "width": "5%" },
-					{ "title": "Product Service", "data": "product_name", "width": "20%", render: function(data){return escapeXSS(data);} },
-					{
-						"title": "Currency", "data": "currency_code", "width": "10%",
-						"orderable": false,
-						"render": function (data, type, row) {
-							return escapeXSS(row.currency_symbol) + ' (' + escapeXSS(row.currency_code) + ')';
-						}
-					},
-					{ "title": "Billing Cycle", "data": "cycle_name", "width": "15%", render: function(data){return escapeXSS(data);} },
-					{
-						"title": "Price", "data": "price", "width": "10%",
-						"className": "text-right",
-						"render": function (data, type) {
-							return parseFloat(data).toFixed(2);
-						}
-					},
-					{
-						"title": "Active?", "data": "status", "width": "10%",
-						"className": "text-center",
-						"orderable": false,
-						"searchable": false,
-						"render": function (data, type) {
-							if (data == 1) {
-								return '<span class="badge bg-primary">Yes</span>';
-							} else {
-								return '<span class="badge bg-danger">No</span>';
-							}
-						}
-					},
-					{ "title": "Last Updated", "data": "updated_on", "width": "15%" },
-					{ "title": "encoded_id", "data": "encoded_id", "visible": false, "orderable": false, "searchable": false },
-					{
-						"title": "Action",
-						"data": "encoded_id",
-						"width": "15%",
-						"className": "text-center",
-						"orderable": false,
-						"searchable": false,
-						"render": function (data, type, row) {
-							return '<button type="button" class="btn btn-xs btn-secondary" onclick="openManage(\'' + data + '\')" title="Manage"><i class="fa fa-wrench"></i></button> ' +
-								   '<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow(\'' + data + '\', \'' + escapeXSS(row.product_name) + '\')" title="Delete"><i class="fa fa-trash"></i></button>';
-						}
+	$('#packageListDt').DataTable({
+		"responsive": true,
+		"processing": true,
+		"serverSide": true,
+		"ajax": {
+			"url": "<?=base_url()?>whmazadmin/package/ssp_list_api/",
+			"dataSrc": function(json) {
+				$('#totalPackages').text(json.recordsTotal || 0);
+				$('#activePackages').text(json.recordsTotal || 0);
+				return json.data;
+			}
+		},
+		"order": [[0, 'desc']],
+		"language": {
+			"processing": '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
+			"emptyTable": '<div class="text-center py-4"><i class="fa fa-box fa-3x text-muted mb-3"></i><p class="text-muted">No packages found</p></div>',
+			"zeroRecords": '<div class="text-center py-4"><i class="fa fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No matching packages found</p></div>'
+		},
+		"columns": [
+			{
+				"title": "ID",
+				"data": "id",
+				"width": "5%",
+				render: function(data) {
+					return '<span class="fw-bold text-primary">#' + data + '</span>';
+				}
+			},
+			{
+				"title": "Product / Service",
+				"data": "product_name",
+				"width": "22%",
+				render: function(data) {
+					return '<span class="fw-semibold"><i class="fa fa-cube me-1 text-muted"></i>' + escapeXSS(data) + '</span>';
+				}
+			},
+			{
+				"title": "Currency",
+				"data": "currency_code",
+				"width": "10%",
+				"orderable": false,
+				"render": function(data, type, row) {
+					return '<span class="badge bg-light text-dark">' + escapeXSS(row.currency_symbol) + ' ' + escapeXSS(row.currency_code) + '</span>';
+				}
+			},
+			{
+				"title": "Billing Cycle",
+				"data": "cycle_name",
+				"width": "12%",
+				render: function(data) {
+					return '<i class="fa fa-sync-alt me-1 text-muted"></i>' + escapeXSS(data);
+				}
+			},
+			{
+				"title": "Price",
+				"data": "price",
+				"width": "10%",
+				"className": "text-end",
+				"render": function(data, type, row) {
+					return '<span class="fw-bold text-success">' + parseFloat(data).toFixed(2) + '</span>';
+				}
+			},
+			{
+				"title": "Status",
+				"data": "status",
+				"width": "8%",
+				"className": "text-center",
+				"orderable": false,
+				"searchable": false,
+				"render": function(data) {
+					if (data == 1) {
+						return '<span class="badge bg-success"><i class="fa fa-check me-1"></i>Active</span>';
+					} else {
+						return '<span class="badge bg-danger"><i class="fa fa-times me-1"></i>Inactive</span>';
 					}
-				]
+				}
+			},
+			{
+				"title": "Last Updated",
+				"data": "updated_on",
+				"width": "13%",
+				render: function(data) {
+					if (!data) return '-';
+					var date = new Date(data);
+					return '<i class="fa fa-clock me-1 text-muted"></i>' + date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+				}
+			},
+			{ "title": "encoded_id", "data": "encoded_id", "visible": false, "orderable": false, "searchable": false },
+			{
+				"title": "Actions",
+				"data": "encoded_id",
+				"width": "10%",
+				"className": "text-center",
+				"orderable": false,
+				"searchable": false,
+				"render": function(data, type, row) {
+					return '<button type="button" class="btn btn-action btn-manage" onclick="openManage(\'' + data + '\')" title="Manage Package"><i class="fa fa-cog"></i></button> ' +
+						   '<button type="button" class="btn btn-action btn-delete" onclick="deleteRow(\'' + data + '\', \'' + escapeXSS(row.product_name) + '\')" title="Delete Package"><i class="fa fa-trash"></i></button>';
+				}
+			}
+		]
+	});
+});
+
+function openManage(id) {
+	Swal.fire({
+		title: 'Loading...',
+		text: 'Please wait',
+		allowOutsideClick: false,
+		allowEscapeKey: false,
+		showConfirmButton: false,
+		didOpen: () => { Swal.showLoading(); }
+	});
+	window.location = "<?=base_url()?>whmazadmin/package/manage/" + id;
+}
+
+function deleteRow(id, title) {
+	Swal.fire({
+		title: 'Delete Package?',
+		html: 'Are you sure you want to delete <strong>' + title + '</strong>?<br><small class="text-muted">This action cannot be undone.</small>',
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonColor: '#d33',
+		cancelButtonColor: '#6c757d',
+		confirmButtonText: '<i class="fa fa-trash me-1"></i> Yes, Delete',
+		cancelButtonText: 'Cancel',
+		reverseButtons: true
+	}).then((result) => {
+		if (result.isConfirmed) {
+			Swal.fire({
+				title: 'Deleting...',
+				text: 'Please wait',
+				allowOutsideClick: false,
+				allowEscapeKey: false,
+				showConfirmButton: false,
+				didOpen: () => { Swal.showLoading(); }
 			});
+			window.location = "<?=base_url()?>whmazadmin/package/delete_records/" + id;
+		}
+	});
+}
+</script>
 
-      });
-
-	  function openManage(id) {
-		  window.location = "<?=base_url()?>whmazadmin/package/manage/"+id;
-	  }
-
-	  function deleteRow(id, title) {
-		  Swal.fire({
-			  title: 'Do you want to delete the (<b>'+title+'</b>) pricing record?',
-			  showDenyButton: true,
-			  icon: 'question',
-			  confirmButtonText: 'Yes, delete',
-			  denyButtonText: 'No, cancel',
-			  customClass: {
-				  actions: 'my-actions',
-				  denyButton: 'order-1 right-gap',
-				  confirmButton: 'order-2',
-			  },
-		  }).then((result) => {
-			  if (result.isConfirmed) {
-				  window.location = "<?=base_url()?>whmazadmin/package/delete_records/"+id;
-				  console.log('success');
-			  } else if (result.isDenied) {
-				  console.log('Changes are not saved');
-			  }
-		  });
-	  }
-    </script>
 <?php $this->load->view('whmazadmin/include/footer');?>
