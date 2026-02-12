@@ -40,8 +40,8 @@ class Cronjob_model extends CI_Model
 				JOIN product_services ps ON os.product_service_id = ps.id
 				JOIN billing_cycle bc ON os.billing_cycle_id = bc.id
 				WHERE os.status = 1
-				AND os.next_due_date <= ?
-				AND os.next_due_date >= ?
+				AND os.next_renewal_date <= ?
+				AND os.next_renewal_date >= ?
 				AND bc.cycle_days > 0
 				AND os.auto_renew = 1
 				AND os.deleted_on IS NULL
@@ -51,9 +51,9 @@ class Cronjob_model extends CI_Model
 					WHERE ii.ref_id = os.id
 					AND ii.item_type = 2
 					AND i.status = 1
-					AND ii.billing_period_start = os.next_due_date
+					AND ii.billing_period_start = os.next_renewal_date
 				)
-				ORDER BY os.next_due_date ASC";
+				ORDER BY os.next_renewal_date ASC";
 
 		return $this->db->query($sql, array($targetDate, $today))->result_array();
 	}
@@ -81,8 +81,8 @@ class Cronjob_model extends CI_Model
 				JOIN dom_pricing dp ON od.dom_pricing_id = dp.id AND dp.currency_id = o.currency_id
 				JOIN dom_extensions de ON dp.dom_extension_id = de.id
 				WHERE od.status = 1
-				AND od.next_due_date <= ?
-				AND od.next_due_date >= ?
+				AND od.next_renewal_date <= ?
+				AND od.next_renewal_date >= ?
 				AND od.auto_renew = 1
 				AND od.deleted_on IS NULL
 				AND NOT EXISTS (
@@ -91,9 +91,9 @@ class Cronjob_model extends CI_Model
 					WHERE ii.ref_id = od.id
 					AND ii.item_type = 1
 					AND i.status = 1
-					AND ii.billing_period_start = od.next_due_date
+					AND ii.billing_period_start = od.next_renewal_date
 				)
-				ORDER BY od.next_due_date ASC";
+				ORDER BY od.next_renewal_date ASC";
 
 		return $this->db->query($sql, array($targetDate, $today))->result_array();
 	}
@@ -110,9 +110,12 @@ class Cronjob_model extends CI_Model
 
 		try {
 			// Calculate new billing period
-			$billingPeriodStart = $service['next_due_date'];
+			$billingPeriodStart = $service['next_renewal_date'];
 			$billingPeriodEnd = date('Y-m-d', strtotime($billingPeriodStart . " +{$service['cycle_days']} days"));
 			$renewalAmount = floatval($service['recurring_amount']);
+
+			// Invoice due_date: next_renewal_date + 7 days
+			$invoiceDueDate = date('Y-m-d', strtotime($billingPeriodStart . " +7 days"));
 
 			// Create invoice
 			$invoice = array(
@@ -127,7 +130,7 @@ class Cronjob_model extends CI_Model
 				'vat' => 0.00,
 				'total' => $renewalAmount,
 				'order_date' => date('Y-m-d'),
-				'due_date' => $service['next_due_date'],
+				'due_date' => $invoiceDueDate,
 				'status' => 1,
 				'pay_status' => 'DUE',
 				'remarks' => 'Auto-generated renewal invoice',
@@ -200,10 +203,13 @@ class Cronjob_model extends CI_Model
 
 		try {
 			// Calculate new billing period (domains are always yearly based on reg_period)
-			$billingPeriodStart = $domain['next_due_date'];
+			$billingPeriodStart = $domain['next_renewal_date'];
 			$yearsToRenew = !empty($domain['reg_period']) ? intval($domain['reg_period']) : 1;
 			$billingPeriodEnd = date('Y-m-d', strtotime($billingPeriodStart . " +{$yearsToRenew} years"));
 			$renewalAmount = floatval($domain['renewal_price']) * $yearsToRenew;
+
+			// Invoice due_date: next_renewal_date + 7 days
+			$invoiceDueDate = date('Y-m-d', strtotime($billingPeriodStart . " +7 days"));
 
 			// Create invoice
 			$invoice = array(
@@ -218,7 +224,7 @@ class Cronjob_model extends CI_Model
 				'vat' => 0.00,
 				'total' => $renewalAmount,
 				'order_date' => date('Y-m-d'),
-				'due_date' => $domain['next_due_date'],
+				'due_date' => $invoiceDueDate,
 				'status' => 1,
 				'pay_status' => 'DUE',
 				'remarks' => 'Auto-generated domain renewal invoice',
@@ -381,7 +387,7 @@ class Cronjob_model extends CI_Model
 	}
 
 	/**
-	 * Update service/domain next_due_date after payment
+	 * Update service/domain renewal dates after payment
 	 * This should be called when invoice is marked as paid
 	 *
 	 * @param int $invoiceId Invoice ID
@@ -400,20 +406,31 @@ class Cronjob_model extends CI_Model
 				continue;
 			}
 
+			// Calculate new due_date: next_renewal_date + 7 days
+			$newDueDate = date('Y-m-d', strtotime($item['billing_period_end'] . " +7 days"));
+
 			if ($item['item_type'] == 1) {
 				// Domain
 				$this->db->where('id', $item['ref_id']);
 				$this->db->update('order_domains', array(
-					'next_due_date' => $item['billing_period_end'],
+					'next_renewal_date' => $item['billing_period_end'],
+					'due_date' => $newDueDate,
 					'exp_date' => $item['billing_period_end'],
+					'suspension_date' => null,
+					'suspension_reason' => null,
+					'termination_date' => null,
 					'updated_on' => date('Y-m-d H:i:s')
 				));
 			} elseif ($item['item_type'] == 2) {
 				// Service
 				$this->db->where('id', $item['ref_id']);
 				$this->db->update('order_services', array(
-					'next_due_date' => $item['billing_period_end'],
+					'next_renewal_date' => $item['billing_period_end'],
+					'due_date' => $newDueDate,
 					'exp_date' => $item['billing_period_end'],
+					'suspension_date' => null,
+					'suspension_reason' => null,
+					'termination_date' => null,
 					'updated_on' => date('Y-m-d H:i:s')
 				));
 			}

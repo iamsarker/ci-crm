@@ -20,16 +20,16 @@
 		echo "Invoicegenerator Log created successfully\n";
 	}
 
-	$domainSql="SELECT od.id oid, od.order_id, od.company_id, od.domain, od.first_pay_amount, od.recurring_amount, od.reg_date, od.exp_date, od.next_due_date, DATEDIFF(od.exp_date, CURDATE()) as date_diff, o.currency_id, o.currency_code
-		FROM order_domains od 
-		JOIN orders o on od.order_id=o.id 
-		WHERE DATEDIFF(od.exp_date, CURDATE()) >= 0 and DATEDIFF(od.exp_date, CURDATE()) <= 15 and od.status=1";
+	$domainSql="SELECT od.id oid, od.order_id, od.company_id, od.domain, od.first_pay_amount, od.recurring_amount, od.reg_date, od.exp_date, od.due_date, od.next_renewal_date, DATEDIFF(od.next_renewal_date, CURDATE()) as date_diff, o.currency_id, o.currency_code
+		FROM order_domains od
+		JOIN orders o on od.order_id=o.id
+		WHERE DATEDIFF(od.next_renewal_date, CURDATE()) >= 0 and DATEDIFF(od.next_renewal_date, CURDATE()) <= 15 and od.status=1";
 
-	$hostingSql="SELECT os.id sid, os.order_id, os.company_id, os.description, os.hosting_domain, os.first_pay_amount, os.recurring_amount, os.reg_date, os.exp_date, os.next_due_date, DATEDIFF(os.exp_date, CURDATE()) as date_diff, o.currency_id, o.currency_code, ps.product_name
-		FROM order_services os 
-		JOIN orders o on os.order_id=o.id 
-		JOIN product_services ps on os.product_service_id=ps.id 
-		WHERE DATEDIFF(os.exp_date, CURDATE()) >= 0 and DATEDIFF(os.exp_date, CURDATE()) <= 15 and os.status=1";
+	$hostingSql="SELECT os.id sid, os.order_id, os.company_id, os.description, os.hosting_domain, os.first_pay_amount, os.recurring_amount, os.reg_date, os.exp_date, os.due_date, os.next_renewal_date, DATEDIFF(os.next_renewal_date, CURDATE()) as date_diff, o.currency_id, o.currency_code, ps.product_name
+		FROM order_services os
+		JOIN orders o on os.order_id=o.id
+		JOIN product_services ps on os.product_service_id=ps.id
+		WHERE DATEDIFF(os.next_renewal_date, CURDATE()) >= 0 and DATEDIFF(os.next_renewal_date, CURDATE()) <= 15 and os.status=1";
 
 	$domain_arr = array();
 	$hosting_arr = array();
@@ -135,6 +135,9 @@
 			}
 		}
 
+		// Invoice due_date: next_renewal_date + 7 days
+		$invoiceDueDate = date('Y-m-d', strtotime($last_exp_date . ' +7 days'));
+
 		$invoice['invoice_uuid'] = gen_uuid();
 		$invoice['company_id'] = $company_id;
 		$invoice['order_id'] = $oid;
@@ -146,7 +149,7 @@
 		$invoice['vat'] = 0.0;
 		$invoice['total'] = $sub_total;
 		$invoice['order_date'] = $order_date;
-		$invoice['due_date'] = $last_exp_date;
+		$invoice['due_date'] = $invoiceDueDate;
 		$invoice['status'] = 1;
 		$invoice['pay_status'] = 'DUE';
 		$invoice['need_api_call'] = 1;

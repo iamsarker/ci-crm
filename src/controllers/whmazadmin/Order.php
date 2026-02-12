@@ -85,6 +85,7 @@ class Order extends WHMAZADMIN_Controller
 					'discount_amount'		=> $this->input->post('discount_amount'),
 					'total_amount'			=> $this->input->post('total_amount'),
 					'reg_period'			=> $this->input->post('reg_period'),
+					'reg_date'				=> $this->input->post('reg_date') ? $this->input->post('reg_date') : date('Y-m-d'),
 					'has_notification'		=> $this->input->post('has_notification') ? 1 : 0,
 					'need_api_call'			=> $this->input->post('need_api_call') ? 1 : 0,
 				);
@@ -154,7 +155,7 @@ class Order extends WHMAZADMIN_Controller
 		$order['currency_id'] = $form_data['currency_id'];
 		$order['currency_code'] = $currency['code'];
 		$order['payment_gateway_id'] = !empty($form_data['payment_gateway_id']) ? $form_data['payment_gateway_id'] : 0;
-		$order['order_date'] = getDateAddDay(0);
+		$order['order_date'] = !empty($form_data['reg_date']) ? $form_data['reg_date'] : date('Y-m-d');
 		$order['amount'] = empty($form_data['sub_total']) ? 0 : $form_data['sub_total'];
 		$order['vat_amount'] = 0.0;
 		$order['tax_amount'] = 0.0;
@@ -177,13 +178,26 @@ class Order extends WHMAZADMIN_Controller
 
 		$savedIds = array('domain_id' => 0, 'service_id' => 0);
 
+		// Use posted reg_date or default to today
+		$regDate = !empty($form_data['reg_date']) ? $form_data['reg_date'] : date('Y-m-d');
+		$regPeriod = !empty($form_data['reg_period']) ? intval($form_data['reg_period']) : 1;
+
+		// Calculate dates based on reg_date
+		$expDate = date('Y-m-d', strtotime($regDate . " +{$regPeriod} years"));
+		$dueDate = date('Y-m-d', strtotime($regDate . " +7 days")); // Payment due: reg_date + 7 days
+		$nextRenewalDate = $expDate; // Renewal date = expiration date
+
 		$item['order_id'] = $order['id'];
 		$item['company_id'] = $order['company_id'];
 		$item['is_synced'] = 0;
 		$item['remarks'] = "";
-		$item['reg_date'] = getDateAddDay(0);
-		$item['exp_date'] = getDateAddYear($form_data['reg_period']);
-		$item['next_due_date'] = getDateAddYear($form_data['reg_period']);
+		$item['reg_date'] = $regDate;
+		$item['exp_date'] = $expDate;
+		$item['due_date'] = $dueDate;
+		$item['next_renewal_date'] = $nextRenewalDate;
+		$item['suspension_date'] = null;
+		$item['suspension_reason'] = null;
+		$item['termination_date'] = null;
 		$item['auto_renew'] = 1;
 		$item['inserted_on'] = getDateTime();
 		$item['inserted_by'] = getAdminId();
@@ -249,6 +263,9 @@ class Order extends WHMAZADMIN_Controller
 	}
 
 	public function saveInvoiceTable($order, $billing_cycle){
+		// Calculate invoice due_date: order_date (reg_date) + 7 days
+		$invoiceDueDate = date('Y-m-d', strtotime($order['order_date'] . ' +7 days'));
+
 		$invoice['invoice_uuid'] = gen_uuid();
 		$invoice['company_id'] = $order['company_id'];
 		$invoice['order_id'] = $order['id'];
@@ -259,8 +276,8 @@ class Order extends WHMAZADMIN_Controller
 		$invoice['tax'] = 0.0;
 		$invoice['vat'] = 0.0;
 		$invoice['total'] = $order['total_amount'];
-		$invoice['order_date'] = getDateAddDay(0);
-		$invoice['due_date'] = getDateAddDay($billing_cycle->cycle_days);
+		$invoice['order_date'] = $order['order_date'];
+		$invoice['due_date'] = $invoiceDueDate;
 		$invoice['status'] = 1;
 		$invoice['pay_status'] = 'DUE';
 		$invoice['need_api_call'] = $order['need_api_call'];

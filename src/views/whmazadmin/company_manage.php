@@ -335,7 +335,7 @@
 					}
 				},
 				{ "title": "Reg Date", "data": "reg_date" },
-				{ "title": "Next Due", "data": "next_due_date" },
+				{ "title": "Next Renewal", "data": "next_renewal_date" },
 				{ "title": "CompanyId", "data": "company_id", "visible": false, "orderable": true, "searchable": true },
 				{
 					"title": "Status", "data": "status", "orderable": false, "searchable": false,
@@ -382,7 +382,7 @@
 				},
 				{ "title": "Reg Date", "data": "reg_date" },
 				{ "title": "Exp Date", "data": "exp_date" },
-				{ "title": "Next Due", "data": "next_due_date" },
+				{ "title": "Next Renewal", "data": "next_renewal_date" },
 				{ "title": "CompanyId", "data": "company_id", "visible": false, "orderable": true, "searchable": true },
 				{
 					"title": "Status", "data": "status", "orderable": false, "searchable": false,

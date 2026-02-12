@@ -102,7 +102,7 @@
                                             <i class="fa fa-redo"></i>Next Renewal
                                         </div>
                                         <div class="detail-info-value text-primary fw-bold">
-                                            <?= !empty($detail['next_due_date']) ? date('M d, Y', strtotime($detail['next_due_date'])) : '-' ?>
+                                            <?= !empty($detail['next_renewal_date']) ? date('M d, Y', strtotime($detail['next_renewal_date'])) : '-' ?>
                                         </div>
                                     </div>
                                     <div class="detail-info-item">

@@ -124,4 +124,56 @@ class Package extends WHMAZADMIN_Controller {
 		redirect('whmazadmin/package/index');
 	}
 
+	/**
+	 * API: Filter hosting packages by module, server, and service group
+	 */
+	public function filter_api()
+	{
+		$this->processRestCall();
+
+		$params = array(
+			'module_id' => intval($this->input->post('module_id')),
+			'server_id' => intval($this->input->post('server_id')),
+			'service_group_id' => intval($this->input->post('service_group_id'))
+		);
+
+		// Validate required parameters
+		if ($params['module_id'] <= 0 || $params['server_id'] <= 0 || $params['service_group_id'] <= 0) {
+			header('Content-Type: application/json');
+			echo json_encode(array('code' => 400, 'msg' => 'Invalid parameters', 'data' => array()));
+			return;
+		}
+
+		$data = $this->Package_model->filterData($params);
+
+		header('Content-Type: application/json');
+		echo json_encode(array('code' => 200, 'msg' => 'OK', 'data' => $data));
+	}
+
+	/**
+	 * API: Get hosting package price by product, currency, and billing cycle
+	 */
+	public function prices()
+	{
+		$this->processRestCall();
+
+		$params = array(
+			'product_service_id' => intval($this->input->post('product_service_id')),
+			'currency_id' => intval($this->input->post('currency_id')),
+			'billing_cycle_id' => intval($this->input->post('billing_cycle_id'))
+		);
+
+		// Validate required parameters
+		if ($params['product_service_id'] <= 0 || $params['currency_id'] <= 0 || $params['billing_cycle_id'] <= 0) {
+			header('Content-Type: application/json');
+			echo json_encode(array('code' => 400, 'msg' => 'Invalid parameters', 'data' => null));
+			return;
+		}
+
+		$data = $this->Package_model->priceData($params);
+
+		header('Content-Type: application/json');
+		echo json_encode(array('code' => 200, 'msg' => 'OK', 'data' => $data));
+	}
+
 }

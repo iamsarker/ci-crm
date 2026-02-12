@@ -45,7 +45,7 @@
 							<td><?= $row['dns4']; ?></td>
 							<td class="text-center">
 								<button type="button" class="btn btn-xs btn-secondary" onclick="openManage('<?=safe_encode($row['id'])?>')" title="Manage"><i class="fa fa-wrench"></i></button>
-								<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow('<?=safe_encode($row['id'])?>', <?= json_encode($row['name'] ?? '') ?>)" title="Delete"><i class="fa fa-trash"></i></button>
+								<button type="button" class="btn btn-xs btn-danger" onclick="deleteRow('<?=safe_encode($row['id'])?>', '<?= htmlspecialchars($row['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>')" title="Delete"><i class="fa fa-trash"></i></button>
 							</td>
 						</tr>
 					<?php } ?>
@@ -71,9 +71,11 @@
 	  }
 
 	  function deleteRow(id, title) {
+		  // Escape HTML to prevent XSS
+		  var safeTitle = $('<div>').text(title).html();
 
 		  Swal.fire({
-			  title: 'Do you want to delete the (<b>'+title+'</b>) record?',
+			  title: 'Do you want to delete the (<b>'+safeTitle+'</b>) record?',
 			  showDenyButton: true,
 			  icon: 'question',
 			  confirmButtonText: 'Yes, delete',
@@ -86,9 +88,6 @@
 		  }).then((result) => {
 			  if (result.isConfirmed) {
 				  window.location = "<?=base_url()?>whmazadmin/server/delete_records/"+id;
-				  console.log('success');
-			  } else if (result.isDenied) {
-				  console.log('Changes are not saved');
 			  }
 		  });
 	  }

@@ -150,7 +150,11 @@ class Cart extends WHMAZ_Controller
 					$item['remarks'] = "";
 					$item['reg_date'] = getDateAddDay(0);
 					$item['exp_date'] = getDateAddDay($billingCycle->cycle_days);
-					$item['next_due_date'] = getDateAddDay($billingCycle->cycle_days);
+					$item['due_date'] = getDateAddDay(7); // Payment due date: reg_date + 7 days
+					$item['next_renewal_date'] = getDateAddDay($billingCycle->cycle_days); // Service renewal date
+					$item['suspension_date'] = null;
+					$item['suspension_reason'] = null;
+					$item['termination_date'] = null;
 					$item['auto_renew'] = 1;
 					$item['inserted_on'] = getDateTime();
 					$item['inserted_by'] = $userId;

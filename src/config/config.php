@@ -495,7 +495,12 @@ $config['csrf_exclude_uris'] = array(
 	'cart/addToCartAjax/.*',
 	'cart/checkoutSubmit',
 	'cart/delete/.*',
-	'cart/delete_all'
+	'cart/delete_all',
+	// Order management dropdown API endpoints (require admin authentication)
+	'whmazadmin/package/filter_api',
+	'whmazadmin/package/prices',
+	'whmazadmin/domain_pricing/prices',
+	'whmazadmin/invoice/mark_as_paid'
 );
 
 /*

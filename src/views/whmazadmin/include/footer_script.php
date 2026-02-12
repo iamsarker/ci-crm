@@ -46,11 +46,18 @@
 			beforeSend: function(xhr, settings) {
 				// Add CSRF token to POST requests
 				if (settings.type === 'POST' && csrfName && csrfHash) {
-					settings.data = settings.data || {};
-					if (typeof settings.data === 'string') {
-						settings.data += '&' + csrfName + '=' + csrfHash;
-					} else if (typeof settings.data === 'object') {
-						settings.data[csrfName] = csrfHash;
+					// Always send CSRF token in header for JSON requests
+					xhr.setRequestHeader('X-CSRF-TOKEN', csrfHash);
+
+					// For non-JSON requests, also add to data
+					var contentType = settings.contentType || '';
+					if (contentType.indexOf('application/json') === -1) {
+						settings.data = settings.data || {};
+						if (typeof settings.data === 'string') {
+							settings.data += '&' + csrfName + '=' + csrfHash;
+						} else if (typeof settings.data === 'object') {
+							settings.data[csrfName] = csrfHash;
+						}
 					}
 				}
 			},

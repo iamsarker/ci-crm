@@ -357,7 +357,7 @@ class Cronjobs extends WHMAZ_Controller
 				'product' => $s['product_name'],
 				'domain' => $s['hosting_domain'],
 				'company' => $s['company_name'],
-				'next_due_date' => $s['next_due_date'],
+				'next_renewal_date' => $s['next_renewal_date'],
 				'recurring_amount' => $s['recurring_amount'],
 				'cycle' => $s['cycle_name']
 			);
@@ -368,7 +368,7 @@ class Cronjobs extends WHMAZ_Controller
 				'id' => $d['id'],
 				'domain' => $d['domain'],
 				'company' => $d['company_name'],
-				'next_due_date' => $d['next_due_date'],
+				'next_renewal_date' => $d['next_renewal_date'],
 				'renewal_price' => $d['renewal_price']
 			);
 		}

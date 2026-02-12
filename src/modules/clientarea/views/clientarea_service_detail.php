@@ -131,7 +131,7 @@
                                         </div>
                                         <div class="detail-content">
                                             <span class="detail-label">Next Renewal</span>
-                                            <span class="detail-value text-primary font-weight-bold"><?= htmlspecialchars($detail['next_due_date'] ?? 'N/A', ENT_QUOTES, 'UTF-8') ?></span>
+                                            <span class="detail-value text-primary font-weight-bold"><?= htmlspecialchars($detail['next_renewal_date'] ?? 'N/A', ENT_QUOTES, 'UTF-8') ?></span>
                                         </div>
                                     </div>
                                     <div class="detail-item">
