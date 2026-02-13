@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 12, 2026 at 12:54 AM
+-- Generation Time: Feb 13, 2026 at 02:38 AM
 -- Server version: 10.11.11-MariaDB-cll-lve
 -- PHP Version: 8.3.20
 
@@ -52,14 +52,6 @@ CREATE TABLE `add_to_carts` (
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `add_to_carts`
---
-
-INSERT INTO `add_to_carts` (`id`, `user_id`, `customer_session_id`, `item_type`, `product_service_id`, `note`, `hosting_domain`, `hosting_domain_type`, `sub_total`, `tax`, `vat`, `total`, `quantity`, `product_service_pricing_id`, `dom_pricing_id`, `currency_id`, `currency_code`, `billing_cycle_id`, `billing_cycle`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 1, 1770869850690, 2, 3, '3GB_SHARED', 'tes.bo', 0, 25.95, 0.00, 0.00, 25.95, 1, 5, 0, 1, 'USD', 4, 'Yearly', '2026-02-12 04:18:00', 0, '2026-02-12 04:19:28', NULL),
-(2, 1, 1770869850690, 2, 19, '6GB_SHARED', 'exam.net', 0, 38.00, 0.00, 0.00, 38.00, 1, 25, 0, 1, 'USD', 4, 'Yearly', '2026-02-12 04:18:14', 0, '2026-02-12 04:19:28', NULL);
 
 -- --------------------------------------------------------
 
@@ -164,7 +156,8 @@ INSERT INTO `admin_logins` (`id`, `admin_id`, `login_time`, `session_val`, `term
 (80, 1, '2026-02-08 01:15:56', '0', '127.0.0.1', NULL, 1),
 (81, 1, '2026-02-09 01:22:21', '0', '127.0.0.1', NULL, 1),
 (82, 1, '2026-02-08 19:59:25', '0', '103.159.72.16', NULL, 1),
-(83, 1, '2026-02-12 05:37:30', '0', '127.0.0.1', NULL, 1);
+(83, 1, '2026-02-12 05:37:30', '0', '127.0.0.1', NULL, 1),
+(84, 1, '2026-02-13 01:22:34', '0', '127.0.0.1', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1025,7 +1018,8 @@ CREATE TABLE `expenses` (
 --
 
 INSERT INTO `expenses` (`id`, `expense_type_id`, `expense_vendor_id`, `exp_amount`, `paid_amount`, `expense_date`, `attachment`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(1, 1, 2, 100, 100, '2024-08-04', '172270785810_Screenshot_from_2024-07-01_20-33-28.png', 'test', 1, '2024-08-03 19:36:49', 1, '2024-08-03 21:31:04', 1, NULL, NULL);
+(1, 1, 2, 100, 100, '2024-08-04', '172270785810_Screenshot_from_2024-07-01_20-33-28.png', 'test', 1, '2024-08-03 19:36:49', 1, '2024-08-03 21:31:04', 1, NULL, NULL),
+(2, 1, 2, 1, 1, '2026-02-13', '686b378044e7c04d1238fb87ee411f97.jpg', 'test', 1, '2026-02-13 02:38:29', 1, '2026-02-13 02:38:32', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1084,28 +1078,6 @@ INSERT INTO `expense_vendors` (`id`, `vendor_name`, `remarks`, `status`, `insert
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `expense_view`
--- (See below for the actual view)
---
-CREATE TABLE `expense_view` (
-`id` int(11)
-,`expense_type_id` int(11)
-,`expense_vendor_id` int(11)
-,`exp_amount` double
-,`paid_amount` double
-,`expense_date` date
-,`attachment` varchar(255)
-,`remarks` text
-,`status` tinyint(4)
-,`inserted_on` datetime
-,`updated_on` timestamp
-,`expense_type` varchar(255)
-,`vendor_name` varchar(255)
-);
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `gen_numbers`
 --
 
@@ -1120,8 +1092,8 @@ CREATE TABLE `gen_numbers` (
 --
 
 INSERT INTO `gen_numbers` (`id`, `no_type`, `last_no`) VALUES
-(1, 'ORDER', 2024),
-(2, 'INVOICE', 1533);
+(1, 'ORDER', 2025),
+(2, 'INVOICE', 1534);
 
 -- --------------------------------------------------------
 
@@ -1189,7 +1161,8 @@ INSERT INTO `invoices` (`id`, `invoice_uuid`, `company_id`, `order_id`, `currenc
 (547, '7b960619-242b-40b6-88a1-0085be232e23', 8, 710, 1, 'USD', '1530', 22.00, 0.00, 0.00, 17.00, '2025-08-10', '2020-08-10', NULL, NULL, NULL, 1, 'PAID', 0, '2025-08-10 02:21:52', 1, '2025-10-27 14:28:48', NULL, NULL, NULL),
 (549, '2a3a52fb-d960-49f1-bc1c-aadb36240780', 9, 714, 1, 'USD', '1531', 50.94, 0.00, 0.00, 47.44, '2025-11-26', '2021-11-26', NULL, NULL, NULL, 1, 'PAID', 0, '2025-11-16 22:51:26', 1, '2025-12-04 13:37:39', NULL, NULL, NULL),
 (550, '91edf252-bca1-40d9-bf3f-71ab2f56d726', 2, 725, 1, 'USD', '1532', 69.50, 0.00, 0.00, 69.50, '2026-12-04', '2025-12-04', NULL, NULL, NULL, 1, 'PAID', 0, '2025-12-04 14:32:13', 1, '2026-01-13 15:04:40', NULL, NULL, NULL),
-(551, 'b26a4187-295c-4a0d-8b6b-c95ed23bbebc', 2, 720, 1, 'USD', '1533', 69.50, 0.00, 0.00, 69.50, '2027-01-16', '2025-01-16', NULL, NULL, NULL, 1, 'PAID', 0, '2026-01-13 16:43:04', 1, '2026-01-23 08:06:39', 1, NULL, NULL);
+(551, 'b26a4187-295c-4a0d-8b6b-c95ed23bbebc', 2, 720, 1, 'USD', '1533', 69.50, 0.00, 0.00, 69.50, '2027-01-16', '2025-01-16', NULL, NULL, NULL, 1, 'PAID', 0, '2026-01-13 16:43:04', 1, '2026-01-23 08:06:39', 1, NULL, NULL),
+(552, '9fcf6d9c-90c3-4317-bc77-75a07bc44ee0', 14, 726, 1, 'USD', '1534', 33.14, 0.00, 0.00, 33.14, '2025-04-21', '2025-04-14', NULL, NULL, NULL, 1, 'PAID', 0, '2025-04-14 10:24:18', 1, '2026-02-12 16:35:27', 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1226,47 +1199,49 @@ CREATE TABLE `invoice_items` (
 --
 
 INSERT INTO `invoice_items` (`id`, `invoice_id`, `item`, `item_desc`, `item_type`, `ref_id`, `billing_cycle_id`, `note`, `quantity`, `unit_price`, `discount`, `sub_total`, `tax`, `vat`, `total`, `billing_period_start`, `billing_period_end`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(501, 501, 'Domain registration', 'erpboi.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-08-10 07:56:40', 1, '2024-08-21 01:39:04', NULL),
-(502, 501, 'Hosting package', 'Yearly Basic for erpboi.com domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 11.15, 0.00, 0.00, 11.15, NULL, NULL, '2024-08-10 07:56:40', 1, '2024-08-21 01:39:06', NULL),
-(503, 502, 'Domain registration', 'finboi.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-08-11 02:26:38', 1, '2024-08-21 01:39:09', NULL),
-(504, 503, 'Domain registration', 'Domain Renewal - skydigitalbd.com - 1 Year/s (23/08/2024 - 22/08/2025)\n + DNS Management', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 11.25, NULL, NULL, '2024-08-21 03:32:52', 1, '2024-08-21 01:50:21', NULL),
-(506, 504, 'Hosting package', 'Yearly Corp_3GB for skydigitalbd.com domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2024-08-21 03:41:24', 1, '2024-08-21 23:37:22', NULL),
-(507, 505, 'Domain registration', 'ultimateappearelsourcingbd.com.bd -  year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, '2024-08-22 02:21:52', 1, '2024-08-22 00:21:52', NULL),
-(508, 505, 'Hosting package', 'Yearly Corp_5GB for ultimateappearelsourcingbd.com.bd domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 57.95, 0.00, 0.00, 57.95, NULL, NULL, '2024-08-22 02:21:52', 1, '2024-08-22 00:21:52', NULL),
-(509, 506, 'Domain registration', 'authorservice.org - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 13.85, 0.00, 0.00, 13.85, NULL, NULL, '2024-08-30 05:50:05', 1, '2024-08-30 03:50:05', NULL),
-(510, 507, 'Domain registration', 'truefarmersagro.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-08-30 06:28:13', 1, '2024-08-30 04:28:13', NULL),
-(511, 508, 'Domain registration', 'authorservice.org -  year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, '2024-08-30 07:11:19', 1, '2024-08-30 05:11:19', NULL),
-(512, 508, 'Hosting package', 'Yearly reseller package (Small) for authorservice.org domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 73.00, 0.00, 0.00, 73.00, NULL, NULL, '2024-08-30 07:11:19', 1, '2024-08-30 05:14:21', NULL),
-(513, 509, 'Domain registration', 'snkbd.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2023-11-19 15:27:57', 1, '2024-11-05 14:36:06', NULL),
-(514, 509, 'Hosting package', 'Yearly Corp_3GB for snkbd.com domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2023-11-19 15:27:57', 1, '2024-11-05 14:36:09', NULL),
-(515, 510, 'Domain registration', 'shaikhandkhanservices.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2023-11-19 15:27:57', 1, '2024-11-16 15:12:47', NULL),
-(537, 527, 'Domain renewal', 'Renewal of Domain -> snkbd.com', 1, NULL, NULL, '', 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-16 22:51:26', 1, '2024-11-16 16:51:26', NULL),
-(538, 527, 'Hosting package', 'Renewal of hosting package -> Corp_3GB', 1, NULL, NULL, '', 1, 0.00, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2024-11-16 22:51:26', 1, '2024-11-16 16:51:26', NULL),
-(539, 528, 'Domain renewal', 'Renewal of Domain -> shaikhandkhanservices.com', 1, NULL, NULL, '', 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-16 22:51:28', 1, '2024-11-16 16:51:28', NULL),
-(543, 531, 'Domain registration', 'apparelglowltd.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-21 16:03:43', 1, '2024-11-21 15:03:43', NULL),
-(544, 531, 'Hosting package', 'Yearly Corp_5GB for apparelglowltd.com domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 57.95, 0.00, 0.00, 57.95, NULL, NULL, '2024-11-21 16:03:43', 1, '2024-11-21 15:03:43', NULL),
-(545, 532, 'Domain renewal', 'Renewal of Domain -> apparelglowltd.com', 1, NULL, NULL, '', 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-21 21:17:03', 1, '2024-11-21 15:17:03', NULL),
-(546, 532, 'Hosting package', 'Renewal/upgrade of hosting package -> Corp_10GB', 1, NULL, NULL, '', 1, 0.00, 0.00, 72.95, 0.00, 0.00, 72.95, NULL, NULL, '2024-11-21 21:17:03', 1, '2024-11-21 15:49:49', NULL),
-(547, 533, 'Domain registration', 'koreshikhi.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-22 15:47:27', 1, '2024-11-22 14:47:27', NULL),
-(548, 534, 'Domain registration', 'alakabhattacharjee.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-22 16:36:57', 1, '2024-11-22 15:36:57', NULL),
-(549, 534, 'Hosting package', 'Yearly Starter for alakabhattacharjee.com domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 25.95, 0.00, 0.00, 25.95, NULL, NULL, '2024-11-22 16:36:57', 1, '2024-11-22 15:36:57', NULL),
-(550, 535, 'Domain registration', 'bcsaaa.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-12-25 04:29:58', 1, '2024-12-25 03:29:58', NULL),
-(551, 536, 'Hosting package', 'Yearly renew of uVPS-1 (Parliament)', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 69.50, 0.00, 0.00, 69.50, NULL, NULL, '2025-01-23 16:43:04', NULL, '2026-01-13 15:08:50', NULL),
-(552, 537, 'Domain registration', 'alisoftbd.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2025-05-03 05:59:10', 1, '2025-05-03 03:59:10', NULL),
-(553, 537, 'Hosting package', 'Yearly 6GB for alisoftbd.com domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 38.00, 0.00, 0.00, 38.00, NULL, NULL, '2025-05-03 05:59:11', 1, '2025-05-03 03:59:11', NULL),
-(554, 539, 'Domain registration', 'alisoftbd.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2025-05-03 05:59:10', 1, '2025-05-03 03:59:10', NULL),
-(555, 539, 'Hosting package', 'Yearly 6GB for alisoftbd.com domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 38.00, 0.00, 0.00, 38.00, NULL, NULL, '2025-05-03 05:59:11', 1, '2025-05-03 03:59:11', NULL),
-(557, 541, 'Hosting package', 'Yearly Corp_3GB for dwa.com.bd domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2025-05-06 02:25:52', 1, '2025-05-06 00:25:51', NULL),
-(558, 542, 'Domain registration', 'brandnstitch.com - 1 year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2025-08-12 03:41:27', 1, '2025-08-12 01:41:27', NULL),
-(559, 542, 'Hosting package', 'Yearly 10GB_SHARED for brandnstitch.com domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 78.50, 0.00, 0.00, 78.50, NULL, NULL, '2025-08-12 03:41:28', 1, '2025-08-12 01:51:01', NULL),
-(560, 545, 'Domain registration', 'Domain Renewal - skydigitalbd.com - 1 Year/s (23/08/2025 - 22/08/2026)\r\n + DNS Management', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2025-08-23 03:32:52', 1, '2025-08-23 08:32:52', NULL),
-(561, 546, 'Hosting package', 'Yearly Corp_3GB for skydigitalbd.com domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2025-08-23 03:32:52', 1, '2025-08-23 08:32:52', NULL),
-(562, 547, 'Domain registration', 'ultimateappearelsourcingbd.com.bd -  year(s)', 1, NULL, NULL, NULL, 1, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, '2025-08-22 02:21:52', 1, '2025-08-22 00:21:52', NULL),
-(563, 547, 'Hosting package', 'Yearly Corp_3GB for ultimateappearelsourcingbd.com.bd domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 22.00, 0.00, 0.00, 22.00, NULL, NULL, '2025-08-22 02:21:52', 1, '2025-10-27 14:25:49', NULL),
-(564, 549, 'Domain renewal', 'Renewal of Domain -> snkbd.com', 1, NULL, NULL, '', 1, 0.00, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2025-11-16 22:51:26', 1, '2025-11-16 16:51:26', NULL),
-(565, 549, 'Hosting package', 'Renewal of hosting package -> Corp_3GB', 1, NULL, NULL, '', 1, 0.00, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2025-11-16 22:51:26', 1, '2025-11-16 16:51:26', NULL),
-(566, 550, 'Hosting package', 'Yearly uVPS-1 for  domain', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 69.50, 0.00, 0.00, 69.50, NULL, NULL, '2025-12-04 14:32:18', NULL, '2025-12-04 13:32:18', NULL),
-(567, 551, 'Hosting package', 'Yearly renew of uVPS-1 (Parliament)', 2, NULL, NULL, NULL, 1, 0.00, 0.00, 69.50, 0.00, 0.00, 69.50, NULL, NULL, '2026-01-13 16:43:04', NULL, '2026-01-13 22:43:04', NULL);
+(501, 501, 'Domain registration', 'erpboi.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-08-10 07:56:40', 1, '2026-02-12 10:34:38', NULL),
+(502, 501, 'Hosting package', 'Yearly Basic for erpboi.com domain', 2, NULL, 4, NULL, 1, 11.15, 0.00, 11.15, 0.00, 0.00, 11.15, NULL, NULL, '2024-08-10 07:56:40', 1, '2026-02-12 10:34:38', NULL),
+(503, 502, 'Domain registration', 'finboi.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-08-11 02:26:38', 1, '2026-02-12 10:34:38', NULL),
+(504, 503, 'Domain registration', 'Domain Renewal - skydigitalbd.com - 1 Year/s (23/08/2024 - 22/08/2025)\n + DNS Management', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 11.25, NULL, NULL, '2024-08-21 03:32:52', 1, '2026-02-12 10:34:38', NULL),
+(506, 504, 'Hosting package', 'Yearly Corp_3GB for skydigitalbd.com domain', 2, NULL, 4, NULL, 1, 37.95, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2024-08-21 03:41:24', 1, '2026-02-12 10:34:38', NULL),
+(507, 505, 'Domain registration', 'ultimateappearelsourcingbd.com.bd -  year(s)', 1, NULL, 4, NULL, 1, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, '2024-08-22 02:21:52', 1, '2026-02-12 10:33:38', NULL),
+(508, 505, 'Hosting package', 'Yearly Corp_5GB for ultimateappearelsourcingbd.com.bd domain', 2, NULL, 4, NULL, 1, 57.95, 0.00, 57.95, 0.00, 0.00, 57.95, NULL, NULL, '2024-08-22 02:21:52', 1, '2026-02-12 10:34:38', NULL),
+(509, 506, 'Domain registration', 'authorservice.org - 1 year(s)', 1, NULL, 4, NULL, 1, 13.85, 0.00, 13.85, 0.00, 0.00, 13.85, NULL, NULL, '2024-08-30 05:50:05', 1, '2026-02-12 10:34:38', NULL),
+(510, 507, 'Domain registration', 'truefarmersagro.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-08-30 06:28:13', 1, '2026-02-12 10:34:38', NULL),
+(511, 508, 'Domain registration', 'authorservice.org -  year(s)', 1, NULL, 4, NULL, 1, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, '2024-08-30 07:11:19', 1, '2026-02-12 10:33:38', NULL),
+(512, 508, 'Hosting package', 'Yearly reseller package (Small) for authorservice.org domain', 2, NULL, 4, NULL, 1, 73.00, 0.00, 73.00, 0.00, 0.00, 73.00, NULL, NULL, '2024-08-30 07:11:19', 1, '2026-02-12 10:34:38', NULL),
+(513, 509, 'Domain registration', 'snkbd.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2023-11-19 15:27:57', 1, '2026-02-12 10:34:38', NULL),
+(514, 509, 'Hosting package', 'Yearly Corp_3GB for snkbd.com domain', 2, NULL, 4, NULL, 1, 37.95, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2023-11-19 15:27:57', 1, '2026-02-12 10:34:38', NULL),
+(515, 510, 'Domain registration', 'shaikhandkhanservices.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2023-11-19 15:27:57', 1, '2026-02-12 10:34:38', NULL),
+(537, 527, 'Domain renewal', 'Renewal of Domain -> snkbd.com', 1, NULL, 4, '', 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-16 22:51:26', 1, '2026-02-12 10:34:38', NULL),
+(538, 527, 'Hosting package', 'Renewal of hosting package -> Corp_3GB', 1, NULL, 4, '', 1, 37.95, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2024-11-16 22:51:26', 1, '2026-02-12 10:34:38', NULL),
+(539, 528, 'Domain renewal', 'Renewal of Domain -> shaikhandkhanservices.com', 1, NULL, 4, '', 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-16 22:51:28', 1, '2026-02-12 10:34:38', NULL),
+(543, 531, 'Domain registration', 'apparelglowltd.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-21 16:03:43', 1, '2026-02-12 10:34:38', NULL),
+(544, 531, 'Hosting package', 'Yearly Corp_5GB for apparelglowltd.com domain', 2, NULL, 4, NULL, 1, 57.95, 0.00, 57.95, 0.00, 0.00, 57.95, NULL, NULL, '2024-11-21 16:03:43', 1, '2026-02-12 10:34:38', NULL),
+(545, 532, 'Domain renewal', 'Renewal of Domain -> apparelglowltd.com', 1, NULL, 4, '', 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-21 21:17:03', 1, '2026-02-12 10:34:38', NULL),
+(546, 532, 'Hosting package', 'Renewal/upgrade of hosting package -> Corp_10GB', 1, NULL, 4, '', 1, 72.95, 0.00, 72.95, 0.00, 0.00, 72.95, NULL, NULL, '2024-11-21 21:17:03', 1, '2026-02-12 10:34:38', NULL),
+(547, 533, 'Domain registration', 'koreshikhi.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-22 15:47:27', 1, '2026-02-12 10:34:38', NULL),
+(548, 534, 'Domain registration', 'alakabhattacharjee.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-11-22 16:36:57', 1, '2026-02-12 10:34:38', NULL),
+(549, 534, 'Hosting package', 'Yearly Starter for alakabhattacharjee.com domain', 2, NULL, 4, NULL, 1, 25.95, 0.00, 25.95, 0.00, 0.00, 25.95, NULL, NULL, '2024-11-22 16:36:57', 1, '2026-02-12 10:34:38', NULL),
+(550, 535, 'Domain registration', 'bcsaaa.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2024-12-25 04:29:58', 1, '2026-02-12 10:34:38', NULL),
+(551, 536, 'Hosting package', 'Yearly renew of uVPS-1 (Parliament)', 2, NULL, 4, NULL, 1, 69.50, 0.00, 69.50, 0.00, 0.00, 69.50, NULL, NULL, '2025-01-23 16:43:04', NULL, '2026-02-12 10:34:38', NULL),
+(552, 537, 'Domain registration', 'alisoftbd.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2025-05-03 05:59:10', 1, '2026-02-12 10:34:38', NULL),
+(553, 537, 'Hosting package', 'Yearly 6GB for alisoftbd.com domain', 2, NULL, 4, NULL, 1, 38.00, 0.00, 38.00, 0.00, 0.00, 38.00, NULL, NULL, '2025-05-03 05:59:11', 1, '2026-02-12 10:34:38', NULL),
+(554, 539, 'Domain registration', 'alisoftbd.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2025-05-03 05:59:10', 1, '2026-02-12 10:34:38', NULL),
+(555, 539, 'Hosting package', 'Yearly 6GB for alisoftbd.com domain', 2, NULL, 4, NULL, 1, 38.00, 0.00, 38.00, 0.00, 0.00, 38.00, NULL, NULL, '2025-05-03 05:59:11', 1, '2026-02-12 10:34:38', NULL),
+(557, 541, 'Hosting package', 'Yearly Corp_3GB for dwa.com.bd domain', 2, NULL, 4, NULL, 1, 37.95, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2025-05-06 02:25:52', 1, '2026-02-12 10:34:38', NULL),
+(558, 542, 'Domain registration', 'brandnstitch.com - 1 year(s)', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2025-08-12 03:41:27', 1, '2026-02-12 10:34:38', NULL),
+(559, 542, 'Hosting package', 'Yearly 10GB_SHARED for brandnstitch.com domain', 2, NULL, 4, NULL, 1, 78.50, 0.00, 78.50, 0.00, 0.00, 78.50, NULL, NULL, '2025-08-12 03:41:28', 1, '2026-02-12 10:34:38', NULL),
+(560, 545, 'Domain registration', 'Domain Renewal - skydigitalbd.com - 1 Year/s (23/08/2025 - 22/08/2026)\r\n + DNS Management', 1, NULL, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2025-08-23 03:32:52', 1, '2026-02-12 10:34:38', NULL),
+(561, 546, 'Hosting package', 'Yearly Corp_3GB for skydigitalbd.com domain', 2, NULL, 4, NULL, 1, 37.95, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2025-08-23 03:32:52', 1, '2026-02-12 10:34:38', NULL),
+(562, 547, 'Domain registration', 'ultimateappearelsourcingbd.com.bd -  year(s)', 1, NULL, 4, NULL, 1, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, NULL, NULL, '2025-08-22 02:21:52', 1, '2026-02-12 10:33:06', NULL),
+(563, 547, 'Hosting package', 'Yearly Corp_3GB for ultimateappearelsourcingbd.com.bd domain', 2, NULL, 4, NULL, 1, 22.00, 0.00, 22.00, 0.00, 0.00, 22.00, NULL, NULL, '2025-08-22 02:21:52', 1, '2026-02-12 10:34:38', NULL),
+(564, 549, 'Domain renewal', 'Renewal of Domain -> snkbd.com', 1, NULL, 4, '', 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, NULL, NULL, '2025-11-16 22:51:26', 1, '2026-02-12 10:34:38', NULL),
+(565, 549, 'Hosting package', 'Renewal of hosting package -> Corp_3GB', 1, NULL, 4, '', 1, 37.95, 0.00, 37.95, 0.00, 0.00, 37.95, NULL, NULL, '2025-11-16 22:51:26', 1, '2026-02-12 10:34:38', NULL),
+(566, 550, 'Hosting package', 'Yearly uVPS-1 for  domain', 2, NULL, 4, NULL, 1, 69.50, 0.00, 69.50, 0.00, 0.00, 69.50, NULL, NULL, '2025-12-04 14:32:18', NULL, '2026-02-12 10:34:38', NULL),
+(567, 551, 'Hosting package', 'Yearly renew of uVPS-1 (Parliament)', 2, NULL, 4, NULL, 1, 69.50, 0.00, 69.50, 0.00, 0.00, 69.50, NULL, NULL, '2026-01-13 16:43:04', NULL, '2026-02-12 10:34:11', NULL),
+(568, 552, 'Domain registration', 'emonislam.com - 1 year(s)', 1, 724, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, '2025-04-14', '2026-04-14', '2025-04-14 10:24:21', 1, '2026-02-12 10:32:53', NULL),
+(569, 552, 'Hosting package', 'Yearly 2GB_SHARED for emonislam.com domain', 2, 715, 4, NULL, 1, 20.15, 0.00, 20.15, 0.00, 0.00, 20.15, '2025-04-14', '2026-04-14', '2025-04-14 10:24:22', 1, '2026-02-12 10:31:55', NULL);
 
 -- --------------------------------------------------------
 
@@ -1301,50 +1276,6 @@ CREATE TABLE `invoice_txn` (
 INSERT INTO `invoice_txn` (`id`, `invoice_id`, `payment_gateway_id`, `transaction_id`, `txn_date`, `amount`, `currency_code`, `type`, `status`, `remarks`, `attachments`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (1, 505, NULL, NULL, '2024-08-22', 23.00, NULL, 'payment', 1, 'paid - 2250 tk', NULL, '2024-08-22 10:19:48', 1, NULL, NULL, NULL, NULL),
 (2, 506, NULL, NULL, '2024-08-30', 12.99, NULL, 'payment', 1, 'paid - 1600 tk', NULL, '2024-08-22 10:19:48', 1, NULL, NULL, NULL, NULL);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `invoice_view`
--- (See below for the actual view)
---
-CREATE TABLE `invoice_view` (
-`id` bigint(20)
-,`invoice_uuid` varchar(40)
-,`company_id` bigint(20)
-,`order_id` bigint(20)
-,`currency_id` int(11)
-,`currency_code` varchar(3)
-,`invoice_no` varchar(20)
-,`sub_total` decimal(15,2)
-,`tax` decimal(15,2)
-,`vat` decimal(15,2)
-,`total` decimal(15,2)
-,`due_date` date
-,`order_date` date
-,`cancel_date` date
-,`refund_date` date
-,`remarks` text
-,`status` tinyint(4)
-,`pay_status` varchar(8)
-,`need_api_call` tinyint(4)
-,`inserted_on` datetime
-,`updated_on` timestamp
-,`company_name` varchar(150)
-,`company_mobile` varchar(16)
-,`company_email` varchar(255)
-,`company_address` varchar(255)
-,`company_city` varchar(100)
-,`company_state` varchar(100)
-,`company_zipcode` varchar(10)
-,`country` varchar(100)
-,`company_phone` varchar(16)
-,`order_uuid` varchar(40)
-,`order_no` bigint(20)
-,`total_paid` decimal(37,2)
-,`balance_due` decimal(38,2)
-,`last_payment_date` date
-);
 
 -- --------------------------------------------------------
 
@@ -1471,6 +1402,13 @@ CREATE TABLE `login_attempts` (
   `attempt_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `login_attempts`
+--
+
+INSERT INTO `login_attempts` (`id`, `identifier`, `identifier_type`, `ip_address`, `user_agent`, `is_successful`, `attempt_time`) VALUES
+(20, 'info.errorpoint@gmail.com', 'email', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-13 01:22:16');
+
 -- --------------------------------------------------------
 
 --
@@ -1548,7 +1486,8 @@ INSERT INTO `orders` (`id`, `order_uuid`, `order_no`, `company_id`, `currency_id
 (721, '9fb7021e-46e1-472f-a548-39f3881be477', 2020, 12, 1, 'USD', '2024-05-04', 50.99, 0.00, 0.00, '', 0.00, 2.99, 48.00, 1, NULL, 1, '', 0, 0, '2025-05-03 05:59:08', 7, '2025-05-06 00:07:23', NULL, NULL, NULL),
 (723, 'ca821065-8ecf-44ca-99d5-2499f802ed8b', 2022, 13, 1, 'USD', '2024-12-03', 37.95, 0.00, 0.00, '', 0.00, 9.95, 28.00, 1, NULL, 1, '', 0, 0, '2024-12-03 02:25:47', 0, '2025-05-06 00:40:36', NULL, NULL, NULL),
 (724, 'de8a552d-abcc-4b9c-81d4-595eb0594bb2', 2023, 14, 1, 'USD', '2025-08-12', 91.49, 0.00, 0.00, '', 0.00, 1.00, 90.49, 1, NULL, 1, '', 0, 0, '2025-08-12 03:41:24', 0, '2025-08-12 01:50:35', NULL, NULL, NULL),
-(725, '9aecd9e7-7267-4cca-8729-45d7f60d7c3d', 2024, 2, 1, 'USD', '2025-12-04', 69.50, 0.00, 0.00, '', 0.00, 0.00, 69.50, 1, NULL, 1, '', 0, 0, '2025-12-04 14:32:14', 0, '2025-12-04 13:32:14', NULL, NULL, NULL);
+(725, '9aecd9e7-7267-4cca-8729-45d7f60d7c3d', 2024, 2, 1, 'USD', '2025-12-04', 69.50, 0.00, 0.00, '', 0.00, 0.00, 69.50, 1, NULL, 1, '', 0, 0, '2025-12-04 14:32:14', 0, '2025-12-04 13:32:14', NULL, NULL, NULL),
+(726, 'a9d3e28c-1ac5-40e8-b571-25fc4ef08152', 2025, 14, 1, 'USD', '2025-04-14', 33.14, 0.00, 0.00, '', 0.00, 0.00, 33.14, 1, NULL, 1, '', 0, 0, '2025-04-14 10:24:19', 1, '2026-02-12 10:27:17', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1570,7 +1509,11 @@ CREATE TABLE `order_domains` (
   `reg_date` date NOT NULL,
   `reg_period` int(2) NOT NULL DEFAULT 1 COMMENT 'year',
   `exp_date` date DEFAULT NULL,
-  `next_due_date` date DEFAULT NULL,
+  `due_date` date DEFAULT NULL COMMENT 'Invoice payment due date',
+  `next_renewal_date` date DEFAULT NULL COMMENT 'Domain renewal date',
+  `suspension_date` date DEFAULT NULL COMMENT 'Date when domain was/will be suspended',
+  `suspension_reason` varchar(255) DEFAULT NULL COMMENT 'Reason for suspension',
+  `termination_date` date DEFAULT NULL COMMENT 'Date when domain was/will be terminated',
   `is_synced` tinyint(4) NOT NULL DEFAULT 1,
   `last_sync_dt` datetime DEFAULT NULL,
   `domain_cust_id` bigint(20) DEFAULT NULL,
@@ -1609,23 +1552,24 @@ CREATE TABLE `order_domains` (
 -- Dumping data for table `order_domains`
 --
 
-INSERT INTO `order_domains` (`id`, `order_id`, `company_id`, `dom_register_id`, `dom_pricing_id`, `order_type`, `epp_code`, `domain`, `first_pay_amount`, `recurring_amount`, `reg_date`, `reg_period`, `exp_date`, `next_due_date`, `is_synced`, `last_sync_dt`, `domain_cust_id`, `domain_order_id`, `dns_management`, `email_forwarding`, `id_protection`, `auto_renew`, `dns_type`, `ns1`, `ns2`, `ns3`, `ns4`, `contact_name`, `contact_company`, `contact_email`, `contact_phone`, `contact_address1`, `contact_address2`, `contact_city`, `contact_state`, `contact_zip`, `contact_country`, `last_contact_sync`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(702, 702, 1, 2, 1, 1, NULL, 'erpboi.com', 12.99, 12.99, '2023-11-29', 1, '2025-11-29', '2025-11-29', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-10 07:56:40', 1, '2024-12-25 03:32:42', NULL, NULL, NULL),
-(705, 705, 1, 1, 1, 1, '', 'finboi.com', 12.99, 12.99, '2024-08-11', 1, '2025-08-11', '2025-08-11', 0, NULL, NULL, 107940477, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-11 02:26:38', 1, '2024-08-21 01:43:41', NULL, NULL, NULL),
-(707, 707, 2, 1, 1, 1, '', 'skydigitalbd.com', 12.99, 12.99, '2022-08-22', 1, '2025-08-21', '2025-08-21', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', 'ns1.whmaz.com', 'ns2.whmaz.com', NULL, NULL, 'Md Ismail', 'Sky Digital Ltd', 'ismail4g@gmail.com', '8801730704604', 'Banasree', '', 'Dhaka', 'Dhaka', '1219', 'BD', '2026-02-10 17:17:42', 1, '', '2024-08-21 03:32:52', 1, '2026-02-10 23:17:42', NULL, NULL, NULL),
-(710, 710, 8, 0, 0, 3, '', 'ultimateapparelsourcing.com.bd', 0.00, 0.00, '2020-08-10', 1, '2020-08-10', '2020-08-10', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-08-22 02:21:52', 1, '2024-11-16 02:32:43', NULL, NULL, NULL),
-(711, 711, 6, 0, 5, 1, '', 'authorservice.org', 13.85, 13.85, '2020-08-19', 1, '2025-08-19', '2025-08-19', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-30 05:50:05', 1, '2024-11-16 02:32:10', NULL, NULL, NULL),
-(712, 712, 6, 0, 1, 1, '', 'truefarmersagro.com', 12.99, 12.99, '2024-03-04', 1, '2025-03-04', '2025-03-04', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-30 06:28:13', 1, '2024-11-16 02:32:07', NULL, NULL, NULL),
-(713, 713, 5, 0, 0, 1, '', 'authorservice.org', 0.00, 0.00, '2024-08-30', 1, '2024-08-30', '2024-08-30', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-08-30 07:11:19', 1, '2026-01-27 14:27:09', NULL, NULL, NULL),
-(714, 714, 9, 1, 1, 1, '', 'snkbd.com', 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2024-11-16 02:31:41', NULL, NULL, NULL),
-(715, 715, 9, 1, 1, 1, '', 'shaikhandkhanservices.com', 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2024-11-16 15:28:42', NULL, NULL, NULL),
-(716, 716, 10, 1, 1, 1, '', 'apparelglowltd.com', 12.99, 12.99, '2022-11-26', 1, '2024-11-26', '2024-11-26', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-21 16:03:43', 1, '2024-11-21 15:11:02', NULL, NULL, NULL),
-(717, 717, 2, 1, 1, 1, '', 'koreshikhi.com', 12.99, 12.99, '2024-11-22', 1, '2025-11-22', '2025-11-22', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-22 15:47:27', 1, '2024-11-22 15:48:02', NULL, NULL, NULL),
-(718, 718, 11, 1, 1, 1, '', 'alakabhattacharjee.com', 12.99, 12.99, '2016-03-29', 1, '2024-03-29', '2024-03-29', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-22 16:36:57', 1, '2024-11-22 15:48:04', NULL, NULL, NULL),
-(719, 719, 2, 1, 1, 1, '', 'bcsaaa.com', 12.99, 12.99, '2024-12-25', 1, '2025-12-25', '2025-12-25', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-12-25 04:29:58', 1, '2024-12-25 03:29:58', NULL, NULL, NULL),
-(720, 721, 12, 1, 1, 1, '', 'alisoftbd.com', 12.99, 12.99, '2024-05-04', 1, '2026-05-04', '2026-05-04', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2025-05-03 05:59:08', 1, '2025-05-06 00:34:03', NULL, NULL, NULL),
-(722, 723, 13, 0, 0, 1, '', 'dwa.com.bd', 0.00, 0.00, '2025-05-06', 1, '2024-12-03', '2024-12-03', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-05-06 02:25:47', 1, '2025-05-06 00:35:06', NULL, NULL, NULL),
-(723, 724, 14, 1, 1, 1, '', 'brandnstitch.com', 12.99, 12.99, '2025-08-12', 1, '2026-08-12', '2026-08-12', 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2025-08-12 03:41:24', 1, '2025-08-12 01:41:24', NULL, NULL, NULL);
+INSERT INTO `order_domains` (`id`, `order_id`, `company_id`, `dom_register_id`, `dom_pricing_id`, `order_type`, `epp_code`, `domain`, `first_pay_amount`, `recurring_amount`, `reg_date`, `reg_period`, `exp_date`, `due_date`, `next_renewal_date`, `suspension_date`, `suspension_reason`, `termination_date`, `is_synced`, `last_sync_dt`, `domain_cust_id`, `domain_order_id`, `dns_management`, `email_forwarding`, `id_protection`, `auto_renew`, `dns_type`, `ns1`, `ns2`, `ns3`, `ns4`, `contact_name`, `contact_company`, `contact_email`, `contact_phone`, `contact_address1`, `contact_address2`, `contact_city`, `contact_state`, `contact_zip`, `contact_country`, `last_contact_sync`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(702, 702, 1, 2, 1, 1, NULL, 'erpboi.com', 12.99, 12.99, '2023-11-29', 1, '2025-11-29', '2025-11-29', '2025-11-29', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-10 07:56:40', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(705, 705, 1, 1, 1, 1, '', 'finboi.com', 12.99, 12.99, '2024-08-11', 1, '2025-08-11', '2025-08-11', '2025-08-11', NULL, NULL, NULL, 0, NULL, NULL, 107940477, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-11 02:26:38', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(707, 707, 2, 1, 1, 1, '', 'skydigitalbd.com', 12.99, 12.99, '2022-08-22', 1, '2025-08-21', '2025-08-21', '2025-08-21', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', 'ns1.whmaz.com', 'ns2.whmaz.com', NULL, NULL, 'Md Ismail', 'Sky Digital Ltd', 'ismail4g@gmail.com', '8801730704604', 'Banasree', '', 'Dhaka', 'Dhaka', '1219', 'BD', '2026-02-10 17:17:42', 1, '', '2024-08-21 03:32:52', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(710, 710, 8, 0, 0, 3, '', 'ultimateapparelsourcing.com.bd', 0.00, 0.00, '2020-08-10', 1, '2020-08-10', '2020-08-10', '2020-08-10', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-08-22 02:21:52', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(711, 711, 6, 0, 5, 1, '', 'authorservice.org', 13.85, 13.85, '2020-08-19', 1, '2025-08-19', '2025-08-19', '2025-08-19', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-30 05:50:05', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(712, 712, 6, 0, 1, 1, '', 'truefarmersagro.com', 12.99, 12.99, '2024-03-04', 1, '2025-03-04', '2025-03-04', '2025-03-04', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-30 06:28:13', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(713, 713, 5, 0, 0, 1, '', 'authorservice.org', 0.00, 0.00, '2024-08-30', 1, '2024-08-30', '2024-08-30', '2024-08-30', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-08-30 07:11:19', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(714, 714, 9, 1, 1, 1, '', 'snkbd.com', 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(715, 715, 9, 1, 1, 1, '', 'shaikhandkhanservices.com', 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(716, 716, 10, 1, 1, 1, '', 'apparelglowltd.com', 12.99, 12.99, '2022-11-26', 1, '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-21 16:03:43', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(717, 717, 2, 1, 1, 1, '', 'koreshikhi.com', 12.99, 12.99, '2024-11-22', 1, '2025-11-22', '2025-11-22', '2025-11-22', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-22 15:47:27', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(718, 718, 11, 1, 1, 1, '', 'alakabhattacharjee.com', 12.99, 12.99, '2016-03-29', 1, '2024-03-29', '2024-03-29', '2024-03-29', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-22 16:36:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(719, 719, 2, 1, 1, 1, '', 'bcsaaa.com', 12.99, 12.99, '2024-12-25', 1, '2025-12-25', '2025-12-25', '2025-12-25', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-12-25 04:29:58', 1, '2026-02-12 11:12:44', NULL, NULL, NULL),
+(720, 721, 12, 1, 1, 1, '', 'alisoftbd.com', 12.99, 12.99, '2024-05-04', 1, '2026-05-04', '2026-05-04', '2026-05-04', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-05-03 05:59:08', 1, '2026-02-12 11:12:40', NULL, NULL, NULL),
+(722, 723, 13, 0, 0, 1, '', 'dwa.com.bd', 0.00, 0.00, '2025-05-06', 1, '2024-12-03', '2024-12-03', '2024-12-03', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(723, 724, 14, 1, 1, 1, '', 'brandnstitch.com', 12.99, 12.99, '2025-08-12', 1, '2026-08-12', '2026-08-12', '2026-08-12', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-08-12 03:41:24', 1, '2026-02-12 11:12:33', NULL, NULL, NULL),
+(724, 726, 14, 1, 1, 1, '', 'emonislam.com', 12.99, 12.99, '2025-04-14', 1, '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-04-14 10:24:19', 1, '2026-02-12 11:12:37', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1665,7 +1609,11 @@ CREATE TABLE `order_services` (
   `auto_renew` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=auto renew, 0=manual',
   `reg_date` date NOT NULL,
   `exp_date` date DEFAULT NULL,
-  `next_due_date` date DEFAULT NULL,
+  `due_date` date DEFAULT NULL COMMENT 'Invoice payment due date',
+  `next_renewal_date` date DEFAULT NULL COMMENT 'Service renewal date',
+  `suspension_date` date DEFAULT NULL COMMENT 'Date when service was/will be suspended',
+  `suspension_reason` varchar(255) DEFAULT NULL COMMENT 'Reason for suspension',
+  `termination_date` date DEFAULT NULL COMMENT 'Date when service was/will be terminated',
   `is_synced` tinyint(4) NOT NULL DEFAULT 1,
   `last_sync_dt` datetime DEFAULT NULL,
   `status` tinyint(4) NOT NULL COMMENT '0=pending, 1=active, 2=expired, 3=suspended, 4=terminated',
@@ -1682,63 +1630,83 @@ CREATE TABLE `order_services` (
 -- Dumping data for table `order_services`
 --
 
-INSERT INTO `order_services` (`id`, `order_id`, `company_id`, `product_service_id`, `product_service_pricing_id`, `product_service_type_key`, `cp_username`, `cp_password`, `cp_disk_used`, `cp_disk_limit`, `cp_bandwidth_used`, `cp_bandwidth_limit`, `cp_email_accounts`, `cp_email_limit`, `cp_databases`, `cp_database_limit`, `cp_addon_domains`, `cp_addon_limit`, `cp_subdomains`, `cp_subdomain_limit`, `cp_last_sync`, `billing_cycle_id`, `description`, `first_pay_amount`, `recurring_amount`, `hosting_domain`, `license_key`, `license_seats`, `auto_renew`, `reg_date`, `exp_date`, `next_due_date`, `is_synced`, `last_sync_dt`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(701, 702, 1, 2, 3, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 11.15, 11.15, 'erpboi.com', NULL, NULL, 1, '2024-08-10', '2025-08-10', '2025-08-10', 1, NULL, 1, '', '2024-08-10 07:56:40', 1, '2026-01-26 16:30:22', NULL, NULL, NULL),
-(702, 708, 2, 5, 9, 'SHARED_HOSTING', 'skydigit', '0', 3191.00, 5096.00, 274.45, 0.00, 9, 0, 3, 0, 1, 0, 5, 0, '2026-02-11 06:02:43', 4, '', 37.95, 37.95, 'skydigitalbd.com', NULL, NULL, 1, '2024-08-21', '2024-08-21', '2024-08-21', 1, NULL, 1, '', '2024-08-21 03:41:24', 1, '2026-02-11 12:02:43', 1, NULL, NULL),
-(704, 710, 8, 5, 9, 'SHARED_HOSTING', 'ultimate', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 57.95, 'ultimateapparelsourcing.com.bd', NULL, NULL, 1, '2020-08-10', '2025-08-10', '2025-08-10', 0, NULL, 1, '', '2024-08-22 02:21:52', 1, '2026-01-27 14:19:53', NULL, NULL, NULL),
-(705, 713, 5, 15, 15, 'RESELLER_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 73.00, 73.00, 'authorservice.org', NULL, NULL, 1, '2024-08-30', '2024-08-27', '2024-08-27', 0, NULL, 0, '', '2024-08-30 07:11:19', 1, '2026-01-27 14:05:41', NULL, NULL, NULL),
-(706, 714, 9, 5, 9, 'SHARED_HOSTING', 'snkbdcom', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'snkbd.com', NULL, NULL, 1, '2021-11-26', '2024-11-26', '2024-11-26', 0, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-01-27 14:20:40', NULL, NULL, NULL),
-(707, 716, 10, 7, 13, 'SHARED_HOSTING', 'apparelglow', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 72.95, 65.00, 'apparelglowltd.com', NULL, NULL, 1, '2022-11-26', '2024-11-26', '2024-11-26', 0, NULL, 1, '', '2024-11-21 16:03:43', 1, '2026-01-27 14:20:53', NULL, NULL, NULL),
-(708, 718, 11, 3, 5, 'SHARED_HOSTING', 'alakabhattacharj', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 25.95, 25.95, 'alakabhattacharjee.com', NULL, NULL, 1, '2016-03-29', '2024-03-29', '2024-03-29', 0, NULL, 1, '', '2024-11-22 16:36:57', 1, '2026-01-27 14:21:03', NULL, NULL, NULL),
-(709, 720, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-01-16', '2025-01-16', '2025-01-16', 0, NULL, 1, '', '2025-01-23 16:43:04', 1, '2026-01-26 16:32:35', NULL, NULL, NULL),
-(710, 721, 12, 19, 25, 'SHARED_HOSTING', 'alisoftbd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 38.00, 38.00, 'alisoftbd.com', NULL, NULL, 1, '2024-05-04', '2026-05-04', '2026-05-04', 0, NULL, 1, '', '2025-05-03 05:59:08', 1, '2026-01-27 14:18:52', NULL, NULL, NULL),
-(712, 723, 13, 5, 9, 'SHARED_HOSTING', 'dwacombd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'dwa.com.bd', NULL, NULL, 1, '2024-12-03', '2024-12-03', '2025-12-03', 0, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-01-27 14:19:01', NULL, NULL, NULL),
-(713, 724, 14, 20, 27, 'SHARED_HOSTING', 'brandnstitc', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 65.00, 65.00, 'brandnstitch.com', NULL, NULL, 1, '2025-08-12', '2026-08-12', '2026-08-12', 0, NULL, 0, '', '2025-08-12 03:41:24', 1, '2026-01-27 14:19:22', NULL, NULL, NULL),
-(714, 725, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-12-04', '2025-12-04', '2025-12-04', 0, NULL, 0, '', '2025-12-04 14:32:15', 1, '2026-01-26 16:33:01', NULL, NULL, NULL);
+INSERT INTO `order_services` (`id`, `order_id`, `company_id`, `product_service_id`, `product_service_pricing_id`, `product_service_type_key`, `cp_username`, `cp_password`, `cp_disk_used`, `cp_disk_limit`, `cp_bandwidth_used`, `cp_bandwidth_limit`, `cp_email_accounts`, `cp_email_limit`, `cp_databases`, `cp_database_limit`, `cp_addon_domains`, `cp_addon_limit`, `cp_subdomains`, `cp_subdomain_limit`, `cp_last_sync`, `billing_cycle_id`, `description`, `first_pay_amount`, `recurring_amount`, `hosting_domain`, `license_key`, `license_seats`, `auto_renew`, `reg_date`, `exp_date`, `due_date`, `next_renewal_date`, `suspension_date`, `suspension_reason`, `termination_date`, `is_synced`, `last_sync_dt`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(701, 702, 1, 2, 3, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 11.15, 11.15, 'erpboi.com', NULL, NULL, 1, '2024-08-10', '2025-08-10', '2025-08-10', '2025-08-10', NULL, NULL, NULL, 1, NULL, 1, '', '2024-08-10 07:56:40', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(702, 708, 2, 5, 9, 'SHARED_HOSTING', 'skydigit', '0', 3191.00, 5096.00, 274.45, 0.00, 9, 0, 3, 0, 1, 0, 5, 0, '2026-02-11 06:02:43', 4, '', 37.95, 37.95, 'skydigitalbd.com', NULL, NULL, 1, '2024-08-21', '2024-08-21', '2024-08-21', '2024-08-21', NULL, NULL, NULL, 1, NULL, 1, '', '2024-08-21 03:41:24', 1, '2026-02-12 09:44:14', 1, NULL, NULL),
+(704, 710, 8, 5, 9, 'SHARED_HOSTING', 'ultimate', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 57.95, 'ultimateapparelsourcing.com.bd', NULL, NULL, 1, '2020-08-10', '2025-08-10', '2025-08-10', '2025-08-10', NULL, NULL, NULL, 0, NULL, 1, '', '2024-08-22 02:21:52', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(705, 713, 5, 15, 15, 'RESELLER_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 73.00, 73.00, 'authorservice.org', NULL, NULL, 1, '2024-08-30', '2024-08-27', '2024-08-27', '2024-08-27', NULL, NULL, NULL, 0, NULL, 1, '', '2024-08-30 07:11:19', 1, '2026-02-12 11:14:56', NULL, NULL, NULL),
+(706, 714, 9, 5, 9, 'SHARED_HOSTING', 'snkbdcom', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'snkbd.com', NULL, NULL, 1, '2021-11-26', '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(707, 716, 10, 7, 13, 'SHARED_HOSTING', 'apparelglow', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 72.95, 65.00, 'apparelglowltd.com', NULL, NULL, 1, '2022-11-26', '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, 1, '', '2024-11-21 16:03:43', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(708, 718, 11, 3, 5, 'SHARED_HOSTING', 'alakabhattacharj', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 25.95, 25.95, 'alakabhattacharjee.com', NULL, NULL, 1, '2016-03-29', '2024-03-29', '2024-03-29', '2024-03-29', NULL, NULL, NULL, 0, NULL, 1, '', '2024-11-22 16:36:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(709, 720, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-01-16', '2025-01-16', '2025-01-16', '2025-01-16', NULL, NULL, NULL, 0, NULL, 1, '', '2025-01-23 16:43:04', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(710, 721, 12, 19, 25, 'SHARED_HOSTING', 'alisoftbd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 38.00, 38.00, 'alisoftbd.com', NULL, NULL, 1, '2024-05-04', '2026-05-04', '2026-05-04', '2026-05-04', NULL, NULL, NULL, 0, NULL, 1, '', '2025-05-03 05:59:08', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(712, 723, 13, 5, 9, 'SHARED_HOSTING', 'dwacombd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'dwa.com.bd', NULL, NULL, 1, '2024-12-03', '2024-12-03', '2025-12-03', '2024-12-03', NULL, NULL, NULL, 0, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(713, 724, 14, 20, 27, 'SHARED_HOSTING', 'brandnstitc', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 65.00, 65.00, 'brandnstitch.com', NULL, NULL, 1, '2025-08-12', '2026-08-12', '2026-08-12', '2026-08-12', NULL, NULL, NULL, 1, NULL, 1, '', '2025-08-12 03:41:24', 1, '2026-02-12 17:23:21', 1, NULL, NULL),
+(714, 725, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-12-04', '2025-12-04', '2025-12-04', '2025-12-04', NULL, NULL, NULL, 0, NULL, 1, '', '2025-12-04 14:32:15', 1, '2026-02-12 11:14:53', NULL, NULL, NULL),
+(715, 726, 14, 2, 3, 'SHARED_HOSTING', 'emonisla', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 20.15, 20.15, 'emonislam.com', NULL, NULL, 1, '2025-04-14', '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 1, NULL, 1, '', '2025-04-14 10:24:19', 1, '2026-02-12 17:22:31', 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `order_view`
--- (See below for the actual view)
+-- Table structure for table `pages`
 --
-CREATE TABLE `order_view` (
-`id` bigint(20)
-,`order_uuid` varchar(40)
-,`order_no` bigint(20)
-,`company_id` bigint(20)
-,`currency_id` int(11)
-,`currency_code` varchar(3)
-,`order_date` date
-,`amount` decimal(15,2)
-,`vat_amount` decimal(15,2)
-,`tax_amount` decimal(15,2)
-,`coupon_code` varchar(16)
-,`coupon_amount` decimal(15,2)
-,`discount_amount` decimal(15,2)
-,`total_amount` decimal(15,2)
-,`payment_gateway_id` int(11)
-,`remarks` text
-,`instructions` text
-,`status` tinyint(4)
-,`inserted_on` datetime
-,`updated_on` timestamp
-,`company_name` varchar(150)
-,`company_email` varchar(255)
-,`company_mobile` varchar(16)
-,`company_phone` varchar(16)
-,`company_address` varchar(255)
-,`country` varchar(100)
-,`company_zipcode` varchar(10)
-,`company_city` varchar(100)
-,`company_state` varchar(100)
-,`payment_gateway_name` varchar(100)
-,`payment_gateway_fa_icon` varchar(30)
-,`service_count` bigint(21)
-,`domain_count` bigint(21)
-,`services_recurring_total` decimal(37,2)
-,`domains_recurring_total` decimal(37,2)
-);
+
+CREATE TABLE `pages` (
+  `id` int(11) UNSIGNED NOT NULL,
+  `page_title` varchar(255) NOT NULL,
+  `page_slug` varchar(255) NOT NULL,
+  `page_content` longtext DEFAULT NULL,
+  `meta_title` varchar(255) DEFAULT NULL,
+  `meta_description` text DEFAULT NULL,
+  `meta_keywords` varchar(500) DEFAULT NULL,
+  `is_published` tinyint(1) NOT NULL DEFAULT 0,
+  `is_system` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'System pages cannot be deleted',
+  `sort_order` int(11) NOT NULL DEFAULT 0,
+  `total_view` int(11) NOT NULL DEFAULT 0,
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` datetime DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `deleted_on` datetime DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `pages`
+--
+
+INSERT INTO `pages` (`id`, `page_title`, `page_slug`, `page_content`, `meta_title`, `meta_description`, `meta_keywords`, `is_published`, `is_system`, `sort_order`, `total_view`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`, `status`) VALUES
+(1, 'Terms and Conditions', 'terms-and-conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', '', 1, 1, 1, 3, '2026-02-12 21:24:40', NULL, '2026-02-13 03:35:49', 1, NULL, NULL, 1),
+(2, 'Privacy Policy', 'privacy-policy', '<h2>Privacy Policy</h2><p>Please add your privacy policy here.</p>', 'Privacy Policy', NULL, NULL, 1, 1, 2, 1, '2026-02-12 21:24:40', NULL, NULL, NULL, NULL, NULL, 1),
+(3, 'Refund Policy', 'refund-policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', '', 1, 0, 3, 0, '2026-02-12 21:24:40', NULL, '2026-02-13 03:38:09', 1, NULL, NULL, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `page_history`
+--
+
+CREATE TABLE `page_history` (
+  `id` int(11) UNSIGNED NOT NULL,
+  `page_id` int(11) UNSIGNED NOT NULL,
+  `page_title` varchar(255) NOT NULL,
+  `page_content` longtext DEFAULT NULL,
+  `meta_title` varchar(255) DEFAULT NULL,
+  `meta_description` text DEFAULT NULL,
+  `change_type` enum('created','updated','restored') NOT NULL DEFAULT 'updated',
+  `change_note` varchar(500) DEFAULT NULL,
+  `changed_by` int(11) DEFAULT NULL,
+  `changed_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `page_history`
+--
+
+INSERT INTO `page_history` (`id`, `page_id`, `page_title`, `page_content`, `meta_title`, `meta_description`, `change_type`, `change_note`, `changed_by`, `changed_at`) VALUES
+(1, 1, 'Terms and Conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', 'updated', '', 1, '2026-02-13 03:35:50'),
+(2, 3, 'Refund Policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', 'updated', '', 1, '2026-02-13 03:38:09');
 
 -- --------------------------------------------------------
 
@@ -1991,33 +1959,6 @@ INSERT INTO `product_service_types` (`id`, `servce_type_name`, `key_name`, `rema
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `product_service_view`
--- (See below for the actual view)
---
-CREATE TABLE `product_service_view` (
-`id` int(11)
-,`product_service_group_id` int(11)
-,`server_id` int(11)
-,`product_service_module_id` int(11)
-,`product_service_type_id` int(11)
-,`product_name` varchar(255)
-,`product_desc` text
-,`is_hidden` tinyint(4)
-,`cp_package` varchar(150)
-,`status` tinyint(4)
-,`updated_on` timestamp
-,`group_name` varchar(100)
-,`group_headline` varchar(255)
-,`server_name` varchar(255)
-,`server_hostname` varchar(160)
-,`server_ip` varchar(160)
-,`module_name` varchar(100)
-,`servce_type_name` varchar(150)
-);
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `servers`
 --
 
@@ -2058,7 +1999,7 @@ CREATE TABLE `servers` (
 
 INSERT INTO `servers` (`id`, `name`, `ip_addr`, `hostname`, `dns1`, `dns1_ip`, `dns2`, `dns2_ip`, `dns3`, `dns3_ip`, `dns4`, `dns4_ip`, `max_accounts`, `type`, `username`, `authpass`, `access_hash`, `port`, `is_secure`, `noc`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (1, 'Reseller-ns1.whmaz.com', '67.222.24.126', 'server.whmaz.com', 'ns1.whmaz.com', '67.222.24.126', 'ns2.whmaz.com', '67.222.24.126', '', '', '', '', NULL, NULL, 'whmazc', NULL, 'U0ZJd1RUVk5Remt4U1RGRU1VVkhNRVZJU1ZOTlVqSTNPVmszTlRKR1YxWT0=', 2087, 1, NULL, 'testing', 1, NULL, NULL, '2026-01-25 21:05:17', 1, '2024-08-04 04:03:16', 1),
-(2, 'KNOWHOST - RESELLER', '170.249.236.236', 'cp22-ga.privatesystems.net', 'cp1.privatesystems.net', '158.106.136.90', 'cp2.privatesystems.net', '108.160.157.7', 'cp3.privatesystems.net', '158.106.136.36', 'cp4.privatesystems.net', '158.106.136.90', NULL, NULL, 'enamingo', NULL, '.', 2087, 1, NULL, 'reseller hosting server', 1, '2024-08-09 16:06:20', 1, '2024-08-09 14:06:20', NULL, NULL, NULL),
+(2, 'KNOWHOST - RESELLER', '170.249.236.236', 'cp22-ga.privatesystems.net', 'cp1.privatesystems.net', '158.106.136.90', 'cp2.privatesystems.net', '108.160.157.7', 'cp3.privatesystems.net', '158.106.136.36', 'cp4.privatesystems.net', '158.106.136.90', NULL, NULL, 'enamingo', NULL, '.', 2087, 1, NULL, 'reseller hosting server', 0, '2024-08-09 16:06:20', 1, '2024-08-09 14:06:20', NULL, '2026-02-12 09:19:47', 1),
 (3, 'Contabo', '1.1.1.1', 'self', 'self1.contabo.com', '1.1.1.1', 'self2.contabo.com', '1.1.1.1', 'self3.contabo.com', '1.1.1.1', 'self4.contabo.com', '1.1.1.1', NULL, NULL, 'root', NULL, 'root', 80, 0, NULL, 'root', 1, '2024-08-20 17:22:41', 1, '2024-08-20 15:22:41', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
@@ -2190,33 +2131,6 @@ INSERT INTO `ticket_replies` (`id`, `ticket_id`, `company_id`, `admin_id`, `mess
 (7, 8, 1, 0, '<p>User reply testing 3</p>', '', 0, 1, '2026-02-11 02:28:00', 1, '2026-02-11 02:32:42', NULL),
 (8, 8, 1, 0, '<p><span style=\"color: rgb(60, 72, 88);\">ticket security testing. ok now. &lt;script&gt;alert(\"reply\");&lt;/script&gt;</span></p>', '', 0, 1, '2026-02-11 02:33:00', 1, '2026-02-11 02:33:18', NULL),
 (9, 11, 1, 0, '<p>reply with <strong>attachment</strong></p>', '2a63f893ffaae646631a88657f4b9b4e.jpg', 0, 1, '2026-02-11 04:30:00', 1, '2026-02-11 04:30:35', NULL);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `ticket_view`
--- (See below for the actual view)
---
-CREATE TABLE `ticket_view` (
-`id` bigint(20)
-,`company_id` bigint(20)
-,`ticket_dept_id` int(11)
-,`order_service_id` bigint(20)
-,`order_domain_id` bigint(20)
-,`title` text
-,`message` text
-,`priority` tinyint(4)
-,`attachment` text
-,`status` tinyint(4)
-,`flag` tinyint(4)
-,`inserted_on` datetime
-,`updated_on` timestamp
-,`company_name` varchar(150)
-,`company_email` varchar(255)
-,`company_mobile` varchar(16)
-,`dept_name` varchar(255)
-,`user_name` varchar(201)
-);
 
 -- --------------------------------------------------------
 
@@ -2397,7 +2311,9 @@ INSERT INTO `user_logins` (`id`, `user_id`, `login_time`, `session_val`, `termin
 (103, 1, '2026-02-12 02:59:35', '0', '127.0.0.1', NULL, 1),
 (104, 1, '2026-02-12 03:49:45', '0', '127.0.0.1', NULL, 1),
 (105, 1, '2026-02-12 03:52:45', '0', '127.0.0.1', NULL, 1),
-(106, 1, '2026-02-12 04:19:26', '0', '127.0.0.1', NULL, 1);
+(106, 1, '2026-02-12 04:19:26', '0', '127.0.0.1', NULL, 1),
+(107, 1, '2026-02-12 06:59:30', '0', '127.0.0.1', NULL, 1),
+(108, 1, '2026-02-12 06:24:59', '0', '103.159.72.16', NULL, 1);
 
 --
 -- Indexes for dumped tables
@@ -2641,6 +2557,23 @@ ALTER TABLE `order_services`
   ADD KEY `company_id` (`company_id`);
 
 --
+-- Indexes for table `pages`
+--
+ALTER TABLE `pages`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_page_slug` (`page_slug`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_is_published` (`is_published`);
+
+--
+-- Indexes for table `page_history`
+--
+ALTER TABLE `page_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_page_id` (`page_id`),
+  ADD KEY `idx_changed_at` (`changed_at`);
+
+--
 -- Indexes for table `password_resets`
 --
 ALTER TABLE `password_resets`
@@ -2749,7 +2682,7 @@ ALTER TABLE `add_to_carts`
 -- AUTO_INCREMENT for table `admin_logins`
 --
 ALTER TABLE `admin_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
 
 --
 -- AUTO_INCREMENT for table `admin_roles`
@@ -2857,7 +2790,7 @@ ALTER TABLE `email_templates`
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `expense_types`
@@ -2881,13 +2814,13 @@ ALTER TABLE `gen_numbers`
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=552;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=553;
 
 --
 -- AUTO_INCREMENT for table `invoice_items`
 --
 ALTER TABLE `invoice_items`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=568;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=570;
 
 --
 -- AUTO_INCREMENT for table `invoice_txn`
@@ -2917,7 +2850,7 @@ ALTER TABLE `kb_cat_mapping`
 -- AUTO_INCREMENT for table `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -2929,19 +2862,31 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=726;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=727;
 
 --
 -- AUTO_INCREMENT for table `order_domains`
 --
 ALTER TABLE `order_domains`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=724;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=725;
 
 --
 -- AUTO_INCREMENT for table `order_services`
 --
 ALTER TABLE `order_services`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=715;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=716;
+
+--
+-- AUTO_INCREMENT for table `pages`
+--
+ALTER TABLE `pages`
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `page_history`
+--
+ALTER TABLE `page_history`
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `payment_gateway`
@@ -3025,52 +2970,17 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_logins`
 --
 ALTER TABLE `user_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
-
--- --------------------------------------------------------
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
 
 --
--- Structure for view `expense_view`
+-- Constraints for dumped tables
 --
-DROP TABLE IF EXISTS `expense_view`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`tong0bari`@`localhost` SQL SECURITY DEFINER VIEW `expense_view`  AS SELECT `e`.`id` AS `id`, `e`.`expense_type_id` AS `expense_type_id`, `e`.`expense_vendor_id` AS `expense_vendor_id`, `e`.`exp_amount` AS `exp_amount`, `e`.`paid_amount` AS `paid_amount`, `e`.`expense_date` AS `expense_date`, `e`.`attachment` AS `attachment`, `e`.`remarks` AS `remarks`, `e`.`status` AS `status`, `e`.`inserted_on` AS `inserted_on`, `e`.`updated_on` AS `updated_on`, `et`.`expense_type` AS `expense_type`, `ev`.`vendor_name` AS `vendor_name` FROM ((`expenses` `e` join `expense_types` `et` on(`e`.`expense_type_id` = `et`.`id`)) join `expense_vendors` `ev` on(`e`.`expense_vendor_id` = `ev`.`id`)) ;
-
--- --------------------------------------------------------
 
 --
--- Structure for view `invoice_view`
+-- Constraints for table `page_history`
 --
-DROP TABLE IF EXISTS `invoice_view`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`tong0bari`@`localhost` SQL SECURITY DEFINER VIEW `invoice_view`  AS SELECT DISTINCT `i`.`id` AS `id`, `i`.`invoice_uuid` AS `invoice_uuid`, `i`.`company_id` AS `company_id`, `i`.`order_id` AS `order_id`, `i`.`currency_id` AS `currency_id`, `i`.`currency_code` AS `currency_code`, `i`.`invoice_no` AS `invoice_no`, `i`.`sub_total` AS `sub_total`, `i`.`tax` AS `tax`, `i`.`vat` AS `vat`, `i`.`total` AS `total`, `i`.`due_date` AS `due_date`, `i`.`order_date` AS `order_date`, `i`.`cancel_date` AS `cancel_date`, `i`.`refund_date` AS `refund_date`, `i`.`remarks` AS `remarks`, `i`.`status` AS `status`, `i`.`pay_status` AS `pay_status`, `i`.`need_api_call` AS `need_api_call`, `i`.`inserted_on` AS `inserted_on`, `i`.`updated_on` AS `updated_on`, `c`.`name` AS `company_name`, `c`.`mobile` AS `company_mobile`, `c`.`email` AS `company_email`, `c`.`address` AS `company_address`, `c`.`city` AS `company_city`, `c`.`state` AS `company_state`, `c`.`zip_code` AS `company_zipcode`, `c`.`country` AS `country`, `c`.`phone` AS `company_phone`, `o`.`order_uuid` AS `order_uuid`, `o`.`order_no` AS `order_no`, coalesce(`t`.`total_paid`,0) AS `total_paid`, `i`.`total`- coalesce(`t`.`total_paid`,0) AS `balance_due`, `t`.`last_payment_date` AS `last_payment_date` FROM (((`invoices` `i` join `companies` `c` on(`i`.`company_id` = `c`.`id`)) join `orders` `o` on(`i`.`order_id` = `o`.`id`)) left join (select `invoice_txn`.`invoice_id` AS `invoice_id`,sum(case when `invoice_txn`.`type` = 'payment' and `invoice_txn`.`status` = 1 then `invoice_txn`.`amount` when `invoice_txn`.`type` = 'refund' and `invoice_txn`.`status` = 1 then -`invoice_txn`.`amount` when `invoice_txn`.`type` = 'credit' and `invoice_txn`.`status` = 1 then `invoice_txn`.`amount` else 0 end) AS `total_paid`,max(case when `invoice_txn`.`status` = 1 then `invoice_txn`.`txn_date` end) AS `last_payment_date` from `invoice_txn` where `invoice_txn`.`deleted_on` is null group by `invoice_txn`.`invoice_id`) `t` on(`i`.`id` = `t`.`invoice_id`)) ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `order_view`
---
-DROP TABLE IF EXISTS `order_view`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`tong0bari`@`localhost` SQL SECURITY DEFINER VIEW `order_view`  AS SELECT `o`.`id` AS `id`, `o`.`order_uuid` AS `order_uuid`, `o`.`order_no` AS `order_no`, `o`.`company_id` AS `company_id`, `o`.`currency_id` AS `currency_id`, `o`.`currency_code` AS `currency_code`, `o`.`order_date` AS `order_date`, `o`.`amount` AS `amount`, `o`.`vat_amount` AS `vat_amount`, `o`.`tax_amount` AS `tax_amount`, `o`.`coupon_code` AS `coupon_code`, `o`.`coupon_amount` AS `coupon_amount`, `o`.`discount_amount` AS `discount_amount`, `o`.`total_amount` AS `total_amount`, `o`.`payment_gateway_id` AS `payment_gateway_id`, `o`.`remarks` AS `remarks`, `o`.`instructions` AS `instructions`, `o`.`status` AS `status`, `o`.`inserted_on` AS `inserted_on`, `o`.`updated_on` AS `updated_on`, `c`.`name` AS `company_name`, `c`.`email` AS `company_email`, `c`.`mobile` AS `company_mobile`, `c`.`phone` AS `company_phone`, `c`.`address` AS `company_address`, `c`.`country` AS `country`, `c`.`zip_code` AS `company_zipcode`, `c`.`city` AS `company_city`, `c`.`state` AS `company_state`, `p`.`name` AS `payment_gateway_name`, `p`.`icon_fa_unicode` AS `payment_gateway_fa_icon`, coalesce(`sv`.`service_count`,0) AS `service_count`, coalesce(`dm`.`domain_count`,0) AS `domain_count`, coalesce(`sv`.`total_recurring`,0) AS `services_recurring_total`, coalesce(`dm`.`total_recurring`,0) AS `domains_recurring_total` FROM ((((`orders` `o` join `companies` `c` on(`o`.`company_id` = `c`.`id`)) join `payment_gateway` `p` on(`o`.`payment_gateway_id` = `p`.`id`)) left join (select `order_services`.`order_id` AS `order_id`,count(0) AS `service_count`,sum(`order_services`.`recurring_amount`) AS `total_recurring` from `order_services` where `order_services`.`deleted_on` is null group by `order_services`.`order_id`) `sv` on(`o`.`id` = `sv`.`order_id`)) left join (select `order_domains`.`order_id` AS `order_id`,count(0) AS `domain_count`,sum(`order_domains`.`recurring_amount`) AS `total_recurring` from `order_domains` where `order_domains`.`deleted_on` is null group by `order_domains`.`order_id`) `dm` on(`o`.`id` = `dm`.`order_id`)) ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `product_service_view`
---
-DROP TABLE IF EXISTS `product_service_view`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`tong0bari`@`localhost` SQL SECURITY DEFINER VIEW `product_service_view`  AS SELECT DISTINCT `ps`.`id` AS `id`, `ps`.`product_service_group_id` AS `product_service_group_id`, `ps`.`server_id` AS `server_id`, `ps`.`product_service_module_id` AS `product_service_module_id`, `ps`.`product_service_type_id` AS `product_service_type_id`, `ps`.`product_name` AS `product_name`, `ps`.`product_desc` AS `product_desc`, `ps`.`is_hidden` AS `is_hidden`, `ps`.`cp_package` AS `cp_package`, `ps`.`status` AS `status`, `ps`.`updated_on` AS `updated_on`, `psg`.`group_name` AS `group_name`, `psg`.`group_headline` AS `group_headline`, `s`.`name` AS `server_name`, `s`.`hostname` AS `server_hostname`, `s`.`ip_addr` AS `server_ip`, `psm`.`module_name` AS `module_name`, `pst`.`servce_type_name` AS `servce_type_name` FROM ((((`product_services` `ps` join `product_service_groups` `psg` on(`ps`.`product_service_group_id` = `psg`.`id`)) left join `servers` `s` on(`ps`.`server_id` = `s`.`id`)) join `product_service_modules` `psm` on(`ps`.`product_service_module_id` = `psm`.`id`)) join `product_service_types` `pst` on(`ps`.`product_service_type_id` = `pst`.`id`)) ;
-
--- --------------------------------------------------------
-
---
--- Structure for view `ticket_view`
---
-DROP TABLE IF EXISTS `ticket_view`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`tong0bari`@`localhost` SQL SECURITY DEFINER VIEW `ticket_view`  AS SELECT `tk`.`id` AS `id`, `tk`.`company_id` AS `company_id`, `tk`.`ticket_dept_id` AS `ticket_dept_id`, `tk`.`order_service_id` AS `order_service_id`, `tk`.`order_domain_id` AS `order_domain_id`, `tk`.`title` AS `title`, `tk`.`message` AS `message`, `tk`.`priority` AS `priority`, `tk`.`attachment` AS `attachment`, `tk`.`status` AS `status`, `tk`.`flag` AS `flag`, `tk`.`inserted_on` AS `inserted_on`, `tk`.`updated_on` AS `updated_on`, `c`.`name` AS `company_name`, `c`.`email` AS `company_email`, `c`.`mobile` AS `company_mobile`, `td`.`name` AS `dept_name`, concat(`u`.`first_name`,' ',`u`.`last_name`) AS `user_name` FROM (((`tickets` `tk` join `companies` `c` on(`tk`.`company_id` = `c`.`id`)) join `ticket_depts` `td` on(`tk`.`ticket_dept_id` = `td`.`id`)) join `users` `u` on(`tk`.`inserted_by` = `u`.`id`)) ;
+ALTER TABLE `page_history`
+  ADD CONSTRAINT `fk_page_history_page` FOREIGN KEY (`page_id`) REFERENCES `pages` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
