@@ -1,8 +1,8 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.2.0
-**Last Updated:** February 11, 2026
+**Version:** 1.3.0
+**Last Updated:** February 13, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
 ---
@@ -34,6 +34,7 @@
 - [Package Management](#package-management)
 - [Service Product Management](#service-product-management)
 - [Email Template Management](#email-template-management)
+- [Dynamic Pages Management](#dynamic-pages-management)
 - [Dunning Rules Management](#dunning-rules-management)
 - [Domain Pricing Management](#domain-pricing-management)
 - [Invoice Management](#invoice-management)
@@ -1551,6 +1552,181 @@ The system comes with 10 pre-configured email templates:
 - Model: `src/models/Emailtemplate_model.php`
 - Views: `src/views/whmazadmin/email_template/email_template_list.php`, `email_template_manage.php`
 - Database Table: `email_templates`
+
+---
+
+## Dynamic Pages Management
+
+### Overview
+
+Dynamic Pages Management allows you to create and manage content pages like Terms & Conditions, Privacy Policy, and Refund Policy. The system includes version history with restore functionality, SEO settings, and public page viewing without login.
+
+**Access:** `whmazadmin/pages`
+
+### Page List
+
+1. **Access Dynamic Pages**
+   - Go to "Settings" → "Dynamic Pages"
+   - View all pages with server-side pagination
+
+2. **Stats Cards**
+   - **Total Pages:** Count of all pages
+   - **Published:** Count of published/live pages
+   - **Drafts:** Count of unpublished pages
+   - **Total Views:** Sum of all page views
+
+3. **Page List Columns**
+   - Page Title (with system page lock icon)
+   - URL Slug (in code format)
+   - Views count
+   - Published status (toggle switch)
+   - Last Updated date
+   - Sort Order
+   - Actions (Edit, History, Delete)
+
+4. **Quick Actions**
+   - Toggle publish/unpublish directly from list
+   - System pages show lock icon and cannot be deleted
+
+### Creating a Page
+
+1. **Click "Add Page"**
+   - Opens the page creation form
+
+2. **Page Details Section**
+   - **Page Title:** Display title (e.g., "Terms and Conditions")
+   - **URL Slug:** URL-friendly identifier (e.g., "terms-and-conditions"). Auto-generated from title if left blank.
+   - **Sort Order:** Display position (lower numbers appear first)
+   - **Published:** Toggle to make page publicly visible
+
+3. **SEO Settings Section**
+   - **Meta Title:** SEO title (defaults to page title if blank)
+   - **Meta Description:** Brief description for search engines (150-160 characters recommended)
+   - **Meta Keywords:** Comma-separated keywords
+
+4. **Page Content Section**
+   - Rich text editor (Quill) with full formatting toolbar
+   - Supports: headings, bold, italic, underline, lists, links, images, colors, alignment
+   - Write your page content with proper formatting
+
+5. **Save Page**
+   - Click "Create Page" or "Update Page"
+   - Page available at `/pages/{slug}` if published
+   - Version saved to history automatically
+
+### Editing Pages
+
+1. **Find Page**
+   - Search or browse in the page list
+   - Click "Edit" button (gear icon)
+
+2. **Page Statistics Sidebar** (edit mode only)
+   - Total Views count
+   - Created date
+   - Last Updated date
+
+3. **Recent Changes Sidebar**
+   - Shows last 5 versions
+   - Change type badges (created, updated, restored)
+   - Changed by user and timestamp
+   - "View All" link to full history
+
+4. **Modify Content**
+   - Update any field
+   - Edit content using Quill editor
+   - Toggle publish status
+   - Update SEO settings
+
+5. **Save Changes**
+   - Click "Update Page"
+   - New version saved to history
+   - Changes effective immediately
+
+### Version History
+
+1. **Access History**
+   - From page list: Click "History" button (clock icon)
+   - From edit page: Click "View All" in Recent Changes sidebar
+
+2. **Current Version Card**
+   - Shows current live page info
+   - Title, slug, last updated, view count
+   - "Live" badge indicator
+
+3. **Version Timeline**
+   - All versions displayed as cards
+   - Version number (v1, v2, v3...)
+   - Change type badge (created/updated/restored)
+   - Changed by user and timestamp
+   - Content preview (truncated)
+
+4. **View Version**
+   - Click "View" button on any version
+   - Modal shows full version details:
+     - Page Title
+     - Meta Title
+     - Meta Description
+     - Full Content
+
+5. **Restore Version**
+   - Click "Restore" button on any version (except current)
+   - Confirmation dialog with version info
+   - Click "Yes, Restore" to proceed
+   - Page content restored to selected version
+   - New history entry created with "restored" type
+
+### System Pages
+
+**What are System Pages?**
+- Pre-installed pages that cannot be deleted
+- Marked with lock icon in list
+- Default system pages:
+  - Terms and Conditions
+  - Privacy Policy
+
+**System Page Restrictions:**
+- Cannot be deleted (delete button disabled)
+- URL slug cannot be changed
+- Can still edit content, SEO settings, and publish status
+
+### Public Page Viewing
+
+**Page URLs:**
+- Format: `https://yourdomain.com/pages/{slug}`
+- Examples:
+  - `/pages/terms-and-conditions`
+  - `/pages/privacy-policy`
+  - `/pages/refund-policy`
+
+**No Login Required:**
+- Published pages accessible to all visitors
+- Uses customer portal header/footer
+- Clean, professional design
+- Breadcrumb navigation
+- Mobile-responsive layout
+
+**View Counter:**
+- Each page view increments counter
+- Stats visible in admin list and page edit
+
+### Footer Links
+
+**Updated Footers:**
+- Client portal footer includes page links
+- Admin portal footer includes page links (opens in new tab)
+
+**Default Links:**
+- Terms & Conditions
+- Privacy Policy
+- Refund Policy
+
+**Files:**
+- Controller (Admin): `src/controllers/whmazadmin/Pages.php`
+- Controller (Public): `src/controllers/Pages.php`
+- Model: `src/models/Page_model.php`
+- Views: `src/views/whmazadmin/page_list.php`, `page_manage.php`, `page_history.php`
+- Public View: `src/views/templates/page_view.php`
+- Database Tables: `pages`, `page_history`
 
 ---
 
@@ -3111,7 +3287,7 @@ This guide covered:
 ---
 
 **Document Information:**
-- Version: 1.1.0
-- Last Updated: February 11, 2026
+- Version: 1.3.0
+- Last Updated: February 13, 2026
 - Product: WHMAZ - CI-CRM
 - Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.

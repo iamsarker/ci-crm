@@ -76,6 +76,7 @@
 						<li class="nav-sub-item">&nbsp;</li>
 
 						 <li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/email_template/index" class="nav-sub-link"><i data-feather="mail"></i> Email Template</a></li>
+						 <li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/pages/index" class="nav-sub-link"><i data-feather="file-text"></i> Dynamic Pages</a></li>
 						<!-- <li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/contactus" class="nav-sub-link"><i data-feather="map-pin"></i> Contact us</a></li> -->
 					</ul>
 				</li>

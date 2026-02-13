@@ -7,6 +7,70 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2026-02-13
+
+### New Feature - Dynamic Pages Management with Version History
+
+#### Dynamic Pages System
+- Create and manage dynamic content pages (Terms & Conditions, Privacy Policy, Refund Policy, etc.)
+- Rich text editor (Quill) for page content with full formatting support
+- SEO settings per page (meta title, description, keywords)
+- Publish/unpublish toggle for controlling page visibility
+- Sort order for organizing pages
+- System pages protection (cannot be deleted)
+- View count tracking per page
+- Public page URLs accessible without login
+
+#### Version History & Restore
+- Complete version history tracking for all page changes
+- View previous versions of any page
+- Restore any historical version with one click
+- Change type tracking (created, updated, restored)
+- Change notes for restoration actions
+- Admin user attribution for all changes
+
+#### Admin Portal Features
+- Dynamic Pages list with server-side DataTable pagination
+- Stats cards showing total pages, published, drafts, and total views
+- Quick toggle for publish/unpublish status
+- History viewer with timeline display
+- Restore confirmation with SweetAlert2
+
+#### Public Page Viewing
+- Clean, professional page display template
+- Breadcrumb navigation
+- Last updated date display
+- Mobile-responsive design
+- No login required to view published pages
+
+#### Footer Integration
+- Updated client portal footer with page links
+- Updated admin portal footer with page links
+- Links to Terms & Conditions, Privacy Policy, Refund Policy
+
+#### Database Changes
+- New `pages` table for storing dynamic pages
+- New `page_history` table for version control
+- `pages_view` database view for listing with admin names
+
+#### New Files
+- `src/controllers/Pages.php` - Public page controller
+- `src/controllers/whmazadmin/Pages.php` - Admin page controller
+- `src/models/Page_model.php` - Page model with CRUD and history
+- `src/views/whmazadmin/page_list.php` - Admin list view
+- `src/views/whmazadmin/page_manage.php` - Admin create/edit view
+- `src/views/whmazadmin/page_history.php` - Version history view
+- `src/views/templates/page_view.php` - Public page template
+- `database/migrations/create_pages_tables.sql` - Database migration
+
+#### Modified Files
+- `src/views/templates/customer/footer.php` - Added page links
+- `src/views/whmazadmin/include/footer.php` - Added page links
+- `src/views/whmazadmin/include/header_menus.php` - Added Dynamic Pages menu
+- `src/config/routes.php` - Added pages route
+
+---
+
 ## [1.5.0] - 2026-02-12
 
 ### New Feature - Admin Portal General Settings Enhancements
@@ -1131,6 +1195,15 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 ---
 
 ## Version History
+
+### [1.6.0] - 2026-02-13 - New Feature
+- Dynamic Pages Management with version history
+- Create/edit Terms & Conditions, Privacy Policy, Refund Policy pages
+- Rich text editor (Quill) for page content
+- SEO settings (meta title, description, keywords)
+- Version history with restore functionality
+- Public page viewing without login required
+- Footer links updated in client and admin portals
 
 ### [1.5.0] - 2026-02-12 - New Feature
 - System Config tab for managing sys_cnf key-value pairs

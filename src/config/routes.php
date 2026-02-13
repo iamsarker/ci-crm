@@ -56,4 +56,5 @@ $route['billing'] = FALSE;
 $route['change-currency/(:any)/(:any)'] = 'auth/change_currency/$1/$2';
 $route['domain-search'] = 'cart/domain_search';
 $route['domain-suggestion'] = 'cart/get_domain_suggestions';
+$route['pages/(:any)'] = 'pages/index/$1';
 

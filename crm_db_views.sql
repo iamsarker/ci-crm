@@ -97,3 +97,16 @@ FROM tickets tk
 JOIN companies c on tk.company_id=c.id
 JOIN ticket_depts td on tk.ticket_dept_id=td.id
 JOIN users u on tk.inserted_by=u.id;
+
+
+-- pages_view
+
+CREATE OR REPLACE VIEW `pages_view` AS
+SELECT
+	p.*,
+	u1.username as created_by_name,
+	u2.username as updated_by_name
+FROM `pages` p
+		 LEFT JOIN `admin_users` u1 ON p.inserted_by = u1.id
+		 LEFT JOIN `admin_users` u2 ON p.updated_by = u2.id
+WHERE p.status = 1;

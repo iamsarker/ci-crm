@@ -18,9 +18,9 @@
 		</div>
 		<div>
 			<nav class="nav">
-				<a href="https://themeforest.net/licenses/standard" class="nav-link">Licenses</a>
-				<a href="<?=base_url()?>resources/change-log.html" class="nav-link">Change Log</a>
-				<a href="https://discordapp.com/invite/RYqkVuw" class="nav-link">Get Help</a>
+				<a href="<?=base_url()?>pages/terms-and-conditions" class="nav-link">Terms & Conditions</a>
+				<a href="<?=base_url()?>pages/privacy-policy" class="nav-link">Privacy Policy</a>
+				<a href="<?=base_url()?>pages/refund-policy" class="nav-link">Refund Policy</a>
 			</nav>
 		</div>
 	</footer>
