@@ -3948,3 +3948,46 @@ footer.footer {
 .btn-forgot:hover {
 	background: linear-gradient(135deg, #f57c00, #e65100);
 }
+
+/* Contact Info Cards */
+.contact-info-card {
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+	padding: 25px;
+	text-align: center;
+	transition: all 0.3s ease;
+	border: 1px solid #e9ecef;
+}
+
+.contact-info-card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.contact-info-icon {
+	width: 60px;
+	height: 60px;
+	background: linear-gradient(135deg, #00897B, #00695C);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto 15px;
+	color: #fff;
+	font-size: 22px;
+}
+
+.contact-info-card h5 {
+	font-size: 16px;
+	font-weight: 600;
+	color: #333;
+	margin-bottom: 8px;
+}
+
+.contact-info-card p {
+	font-size: 14px;
+	color: #6c757d;
+	margin: 0;
+	word-break: break-word;
+}

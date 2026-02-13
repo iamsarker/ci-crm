@@ -379,5 +379,25 @@ class Support_model extends CI_Model{
 		return $dropdown;
 	}
 
+	/**
+	 * Get all active admin email addresses
+	 */
+	function getAdminEmails()
+	{
+		$emails = array();
+		$sql = "SELECT email FROM admin_users WHERE status = 1 AND email IS NOT NULL AND email != ''";
+		$query = $this->db->query($sql);
+
+		if ($query->num_rows() > 0) {
+			foreach ($query->result_array() as $row) {
+				if (filter_var($row['email'], FILTER_VALIDATE_EMAIL)) {
+					$emails[] = $row['email'];
+				}
+			}
+		}
+
+		return $emails;
+	}
+
 }
 ?>
