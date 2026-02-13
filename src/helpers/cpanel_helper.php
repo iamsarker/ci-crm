@@ -40,6 +40,9 @@ if (!function_exists('whm_api_call')) {
         // Initialize cURL
         $curl = curl_init();
 
+        // Extend PHP execution time for API calls (server connections can be slow)
+        set_time_limit(120);
+
         // SSL options - disabled for self-signed certificates on WHM servers
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
@@ -608,6 +611,9 @@ if (!function_exists('whm_cpanel_api2_call')) {
 
         // Initialize cURL
         $curl = curl_init();
+
+        // Extend PHP execution time for API calls
+        set_time_limit(120);
 
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
