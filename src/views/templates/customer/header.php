@@ -165,7 +165,7 @@
           <li class="nav-item"><a href="<?=base_url()?>contactus" class="nav-link"><i data-feather="archive"></i> Contact us</a></li>
           
           <?php } else{ $menus = getMenuItems();?>
-          <li class="nav-item"><a href="<?=base_url()?>home" class="nav-link"><i data-feather="home"></i> Home</a></li>
+          <li class="nav-item"><a href="<?=base_url()?>auth/login" class="nav-link"><i data-feather="home"></i> Home</a></li>
 		  <li class="nav-item with-sub">
 			  <a href="" class="nav-link"><i data-feather="globe"></i> Domain</a>
 			  <ul class="navbar-menu-sub">

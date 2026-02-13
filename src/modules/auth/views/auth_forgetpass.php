@@ -1,25 +1,43 @@
 <?php $this->load->view('templates/customer/header');?>
 
-<div class="content content-fixed content-auth-alt content-wrapper">
-      <div class="container d-flex justify-content-center ht-100p">
-		<div class="mx-wd-300 wd-sm-450 ht-100p d-flex flex-column align-items-center justify-content-center">
-		  <div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
-			<div class="wd-200p">
-				<form method="post" action="">
-					<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
-					<h3 class="tx-color-01 mg-b-5">Reset your password</h3>
-					<p class="tx-color-03 tx-16 mg-b-40">Enter your email and we'll send you a reset link.</p>
-
-					<div class="wd-200p d-flex flex-column flex-sm-row">
-						<input type="text"  name="username" class="form-control wd-sm-250 flex-fill" placeholder="Enter username/email address">
-						<button class="btn btn-primary ms-1">Reset Password</button>
+<div class="content content-fixed content-auth-alt">
+	<div class="auth-forgot-wrapper">
+		<div class="container">
+			<div class="forgot-card">
+				<div class="forgot-header">
+					<div class="forgot-icon">
+						<i class="fa fa-key"></i>
 					</div>
-					<span class="tx-12 tx-color-03">Back to <a href="<?=base_url()?>auth/login">Login page</a></span>
-				</form>
-			</div>
-		  </div><!-- sign-wrapper -->
-		</div><!-- media -->
+					<h2>Forgot Password?</h2>
+					<p>No worries, we'll send you reset instructions</p>
+				</div>
 
+				<div class="forgot-body">
+					<form method="post" action="" class="login-form">
+						<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
+
+						<div class="form-group">
+							<label class="form-label">Email Address</label>
+							<div class="input-group">
+								<span class="input-group-text"><i class="fa fa-envelope"></i></span>
+								<input type="email" class="form-control" name="username" placeholder="Enter your registered email" required>
+							</div>
+							<small class="text-muted mt-2 d-block">
+								<i class="fa fa-info-circle me-1"></i> Enter the email associated with your account
+							</small>
+						</div>
+
+						<button type="submit" class="btn-forgot">
+							<i class="fa fa-paper-plane me-2"></i> Send Reset Link
+						</button>
+
+						<div class="register-link">
+							<i class="fa fa-arrow-left me-1"></i> Back to <a href="<?=base_url()?>auth/login">Sign In</a>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 

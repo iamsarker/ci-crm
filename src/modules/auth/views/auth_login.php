@@ -1,38 +1,53 @@
 <?php $this->load->view('templates/customer/header');?>
 
-<div class="content content-fixed content-profile content-wrapper">
-      <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
-		<div class="content content-fixed content-auth" style="margin-top: 15px">
-	      <div class="container">
-	        <div class="media align-items-stretch justify-content-center ht-100p pos-relative">
-	          <div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
-	            <div class="wd-100p">
-	            	<form method="post" action="">
-	            		<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
-		            	<h3 class="tx-color-01 mg-b-5">Sign In</h3>
-			            <p class="tx-color-03 tx-16 mg-b-40">Welcome back! Please signin to continue.</p>
+<div class="content content-fixed content-auth-alt">
+	<div class="auth-login-wrapper">
+		<div class="container">
+			<div class="login-card">
+				<div class="login-header">
+					<div class="login-icon">
+						<i class="fa fa-sign-in-alt"></i>
+					</div>
+					<h2>Welcome Back!</h2>
+					<p>Sign in to access your account</p>
+				</div>
 
-			            <div class="form-group">
-			                <label>Email address</label>
-			                <input type="email" class="form-control" name="username" placeholder="example@whmaz.com">
-			            </div>
-			            <div class="form-group">
-			                <div class="d-flex justify-content-between mg-b-5">
-			                	<label class="mg-b-0-f">Password</label>
-			                	<a href="<?=base_url()?>auth/forgetpaswrd" class="tx-13">Forgot password?</a>
-			                </div>
-			                <input type="password" class="form-control" name="password" placeholder="Enter your password">
-			            </div>
-			            <button class="btn btn-brand-02 btn-block">Sign In</button>
-			            <div class="tx-13 mg-t-20 tx-center">Don't have an account? <a href="<?=base_url()?>auth/register">Create an Account</a></div>
-		            </form>
-	            </div>
-	          </div><!-- sign-wrapper -->
-	        </div><!-- media -->
-	      </div><!-- container -->
-	    </div><!-- content -->
+				<div class="login-body">
+					<form method="post" action="" class="login-form">
+						<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
+
+						<div class="form-group">
+							<label class="form-label">Email Address</label>
+							<div class="input-group">
+								<span class="input-group-text"><i class="fa fa-envelope"></i></span>
+								<input type="email" class="form-control" name="username" placeholder="Enter your email" required>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label">
+								Password
+								<a href="<?=base_url()?>auth/forgetpaswrd">Forgot password?</a>
+							</label>
+							<div class="input-group">
+								<span class="input-group-text"><i class="fa fa-lock"></i></span>
+								<input type="password" class="form-control" name="password" placeholder="Enter your password" required>
+							</div>
+						</div>
+
+						<button type="submit" class="btn-login">
+							<i class="fa fa-sign-in-alt me-2"></i> Sign In
+						</button>
+
+						<div class="register-link">
+							Don't have an account? <a href="<?=base_url()?>auth/register">Create Account</a>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 
-<?php $this->load->view('templates/customer/footer');?>
 <?php $this->load->view('templates/customer/footer_script');?>
+<?php $this->load->view('templates/customer/footer');?>

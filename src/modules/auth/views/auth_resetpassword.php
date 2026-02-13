@@ -1,32 +1,51 @@
 <?php $this->load->view('templates/customer/header');?>
 
-<div class="content content-fixed content-auth-alt content-wrapper">
-      <div class="container d-flex justify-content-center ht-100p">
-		<div class="mx-wd-300 wd-sm-450 ht-100p d-flex flex-column align-items-center justify-content-center">
-		  <div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
-			<div class="wd-200p">
-				<form method="post" action="<?=base_url('auth/resetpassword/' . $token)?>">
-					<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
-					<h3 class="tx-color-01 mg-b-5">Set New Password</h3>
-					<p class="tx-color-03 tx-16 mg-b-40">Enter your new password below.</p>
+<div class="content content-fixed content-auth-alt">
+	<div class="auth-forgot-wrapper">
+		<div class="container">
+			<div class="forgot-card">
+				<div class="forgot-header">
+					<div class="forgot-icon">
+						<i class="fa fa-lock"></i>
+					</div>
+					<h2>Set New Password</h2>
+					<p>Create a strong password for your account</p>
+				</div>
 
-					<div class="form-group mg-b-20">
-						<label>New Password</label>
-						<input type="password" name="password" class="form-control" placeholder="Enter new password" required minlength="8">
-					</div>
-					<div class="form-group mg-b-20">
-						<label>Confirm Password</label>
-						<input type="password" name="confirm_password" class="form-control" placeholder="Confirm new password" required minlength="8">
-					</div>
-					<button class="btn btn-primary btn-block">Reset Password</button>
-					<div class="mg-t-10">
-						<span class="tx-12 tx-color-03">Back to <a href="<?=base_url()?>auth/login">Login page</a></span>
-					</div>
-				</form>
+				<div class="forgot-body">
+					<form method="post" action="<?=base_url('auth/resetpassword/' . $token)?>" class="login-form">
+						<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
+
+						<div class="form-group">
+							<label class="form-label">New Password</label>
+							<div class="input-group">
+								<span class="input-group-text"><i class="fa fa-key"></i></span>
+								<input type="password" class="form-control" name="password" placeholder="Enter new password" required minlength="8">
+							</div>
+							<div class="password-requirements">
+								<i class="fa fa-info-circle"></i> Min 8 characters with uppercase, lowercase & number
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label class="form-label">Confirm Password</label>
+							<div class="input-group">
+								<span class="input-group-text"><i class="fa fa-check-double"></i></span>
+								<input type="password" class="form-control" name="confirm_password" placeholder="Re-enter new password" required minlength="8">
+							</div>
+						</div>
+
+						<button type="submit" class="btn-forgot">
+							<i class="fa fa-save me-2"></i> Reset Password
+						</button>
+
+						<div class="register-link">
+							<i class="fa fa-arrow-left me-1"></i> Back to <a href="<?=base_url()?>auth/login">Sign In</a>
+						</div>
+					</form>
+				</div>
 			</div>
-		  </div><!-- sign-wrapper -->
-		</div><!-- media -->
-
+		</div>
 	</div>
 </div>
 

@@ -1,108 +1,165 @@
 <?php $this->load->view('templates/customer/header');?>
+
 <?php if (!empty($captcha_site_key)) { ?>
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <?php } ?>
 
-<div class="content content-fixed content-profile content-wrapper">
-      <div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
+<div class="content content-fixed content-auth-alt">
+	<div class="auth-register-wrapper">
+		<div class="container">
+			<div class="register-card">
+				<div class="register-header">
+					<div class="register-icon">
+						<i class="fa fa-user-plus"></i>
+					</div>
+					<h2>Create Your Account</h2>
+					<p>Join us today! Registration is free and only takes a minute.</p>
+				</div>
 
-		<div class="content content-fixed content-auth mt-0">
-	      <div class="container">
+				<div class="register-body">
+					<form method="post" action="" class="register-form">
+						<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
 
+						<div class="register-row">
+							<!-- Left Column - Personal Information -->
+							<div class="register-col">
+								<div class="register-section">
+									<div class="register-section-title">
+										<i class="fa fa-user"></i> Personal Information
+									</div>
 
-	      	<form method="post" action="">
-	      		<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
-	        <div class="media align-items-stretch justify-content-center ht-100p pos-relative">
-	          	<div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
-		            <div class="wd-100p">
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-group">
+												<label class="form-label">First Name <span class="required">*</span></label>
+												<input type="text" class="form-control" name="reg[first_name]" placeholder="Enter first name" required>
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label class="form-label">Last Name <span class="required">*</span></label>
+												<input type="text" class="form-control" name="reg[last_name]" placeholder="Enter last name" required>
+											</div>
+										</div>
+									</div>
 
-		            	<h4 class="tx-color-01 mg-b-5">Create new account</h4>
-		            	<p class="tx-color-03 tx-16 mg-b-20">It's free to signup and only takes a minute.</p>
+									<div class="form-group">
+										<label class="form-label">Email Address <span class="required">*</span></label>
+										<div class="input-group">
+											<span class="input-group-text"><i class="fa fa-envelope"></i></span>
+											<input type="email" class="form-control" name="reg[email]" placeholder="example@email.com" required>
+										</div>
+									</div>
 
-		            	<div class="form-group">
-			                <label>First name *</label>
-			                <input type="text" class="form-control" name="reg[first_name]" placeholder="First name">
-			            </div>
+									<div class="form-group">
+										<label class="form-label">Mobile Number <span class="required">*</span></label>
+										<div class="input-group">
+											<span class="input-group-text"><i class="fa fa-phone"></i></span>
+											<input type="tel" class="form-control" name="reg[mobile]" placeholder="+1 234 567 8900" required>
+										</div>
+									</div>
+								</div>
 
-			            <div class="form-group">
-			                <label>Last name *</label>
-			                <input type="text" class="form-control" name="reg[last_name]" placeholder="Last name">
-			            </div>
+								<div class="register-section">
+									<div class="register-section-title">
+										<i class="fa fa-lock"></i> Account Security
+									</div>
 
-			            <div class="form-group">
-			                <label>Email *</label>
-			                <input type="email" class="form-control" name="reg[email]" placeholder="example@whmaz.com">
-			            </div>
+									<div class="form-group">
+										<label class="form-label">Password <span class="required">*</span></label>
+										<div class="input-group">
+											<span class="input-group-text"><i class="fa fa-key"></i></span>
+											<input type="password" class="form-control" name="reg[password]" placeholder="Create a strong password" required minlength="8">
+										</div>
+										<div class="password-requirements">
+											<i class="fa fa-info-circle"></i> Min 8 characters with uppercase, lowercase & number
+										</div>
+									</div>
 
-			            <div class="form-group">
-			                <label>Mobile no *</label>
-			                <input type="tel" class="form-control" name="reg[mobile]" placeholder="Mobile no">
-			            </div>
+									<div class="form-group">
+										<label class="form-label">Confirm Password <span class="required">*</span></label>
+										<div class="input-group">
+											<span class="input-group-text"><i class="fa fa-check-double"></i></span>
+											<input type="password" class="form-control" name="reg[confirm_password]" placeholder="Re-enter your password" required minlength="8">
+										</div>
+									</div>
+								</div>
+							</div>
 
-			            <div class="form-group">
-			                <label>Password *</label>
-			                <input type="password" class="form-control" name="reg[password]" placeholder="Password">
-			            </div>
+							<!-- Right Column - Address Information -->
+							<div class="register-col">
+								<div class="register-section">
+									<div class="register-section-title">
+										<i class="fa fa-map-marker-alt"></i> Address Information
+									</div>
 
-			            <div class="form-group">
-			                <label>Re-type Password *</label>
-			                <input type="password" class="form-control" name="reg[password]" placeholder="Retype Password">
-			            </div>
-			            
-		            </div>
-	          	</div>
+									<div class="form-group">
+										<label class="form-label">Street Address</label>
+										<input type="text" class="form-control" name="reg[address]" placeholder="Enter your street address">
+									</div>
 
-	          	<div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
-		            <div class="wd-100p">
+									<div class="row">
+										<div class="col-md-6">
+											<div class="form-group">
+												<label class="form-label">City</label>
+												<input type="text" class="form-control" name="reg[city]" placeholder="City">
+											</div>
+										</div>
+										<div class="col-md-6">
+											<div class="form-group">
+												<label class="form-label">ZIP / Postal Code</label>
+												<input type="text" class="form-control" name="reg[zip_code]" placeholder="ZIP Code">
+											</div>
+										</div>
+									</div>
 
-		            	<div class="form-group">
-			                <label>Address</label>
-			                <input type="text" class="form-control" name="reg[address]" placeholder="Address">
-			            </div>
+									<div class="form-group">
+										<label class="form-label">State / Province</label>
+										<input type="text" class="form-control" name="reg[state]" placeholder="State or Province">
+									</div>
 
-			            <div class="form-group">
-			                <label>City</label>
-			                <input type="text" class="form-control" name="reg[city]" placeholder="City">
-			            </div>
+									<div class="form-group">
+										<label class="form-label">Country</label>
+										<select class="form-control form-select" name="reg[country]">
+											<option value="">-- Select Country --</option>
+											<?php if (!empty($countries)) { foreach ($countries as $country) { ?>
+												<option value="<?= htmlspecialchars($country['country_name'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($country['country_name'], ENT_QUOTES, 'UTF-8') ?></option>
+											<?php } } ?>
+										</select>
+									</div>
+								</div>
 
-			            <div class="form-group">
-			                <label>Zip cide</label>
-			                <input type="text" class="form-control" name="reg[zip_code]" placeholder="Zip cide">
-			            </div>
+								<div class="register-section">
+									<div class="terms-checkbox">
+										<input type="checkbox" id="termsAgree" name="terms" required>
+										<label for="termsAgree">
+											By creating an account, you agree to our
+											<a href="<?=base_url()?>pages/terms-and-conditions" target="_blank">Terms of Service</a>
+											and
+											<a href="<?=base_url()?>pages/privacy-policy" target="_blank">Privacy Policy</a>.
+										</label>
+									</div>
 
-			            <div class="form-group">
-			                <label>State</label>
-			                <input type="text" class="form-control" name="reg[state]" placeholder="State">
-			            </div>
-			            
-			            <div class="form-group">
-			                <label>Country</label>
-			                <select class="form-control form-select" name="reg[country]">
-			                	<option value="">-- Select Country --</option>
-			                	<?php if (!empty($countries)) { foreach ($countries as $country) { ?>
-			                		<option value="<?= htmlspecialchars($country['country_name'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($country['country_name'], ENT_QUOTES, 'UTF-8') ?></option>
-			                	<?php } } ?>
-			                </select>
-			            </div>
+									<?php if (!empty($captcha_site_key)) { ?>
+									<div class="recaptcha-wrapper">
+										<div class="g-recaptcha" data-sitekey="<?= htmlspecialchars($captcha_site_key, ENT_QUOTES, 'UTF-8') ?>"></div>
+									</div>
+									<?php } ?>
 
-			            <div class="form-group tx-12">
-                			By clicking <strong>Create an account</strong> below, you agree to our <br />terms of service and privacy statement.
-              			</div>
+									<button type="submit" class="btn-register">
+										<i class="fa fa-user-plus"></i> Create Account
+									</button>
 
-			            <?php if (!empty($captcha_site_key)) { ?>
-			            <div class="form-group">
-			                <div class="g-recaptcha" data-sitekey="<?= htmlspecialchars($captcha_site_key, ENT_QUOTES, 'UTF-8') ?>"></div>
-			            </div>
-			            <?php } ?>
-
-			            <button class="btn btn-brand-02 btn-block">Sign Up</button>
-			            <div class="tx-13 mg-t-20 tx-center">Already have an account? <a href="<?=base_url()?>auth/login">Login now</a></div>
-		            </div>
-	          	</div>
-	        </div>
-	    	</form>
-	      </div><!-- container -->
-	    </div><!-- content -->
+									<div class="login-link">
+										Already have an account? <a href="<?=base_url()?>auth/login">Sign In</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 
