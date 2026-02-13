@@ -25,12 +25,6 @@
 					</div>
 				</div>
 
-				<?php if ($this->session->flashdata('alert')) { ?>
-					<div class="company-alert alert-success">
-						<i class="fa fa-check-circle"></i>
-						<?= $this->session->flashdata('alert') ?>
-					</div>
-				<?php } ?>
 			</div>
 		</div>
 

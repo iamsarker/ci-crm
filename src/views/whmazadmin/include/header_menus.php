@@ -35,10 +35,6 @@
 					<a href="" class="nav-link"><i data-feather="pie-chart"></i> Billing</a>
 					<ul class="navbar-menu-sub">
 						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/invoice/index" class="nav-sub-link"><i data-feather="file-text"></i>View invoices</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/invoice/add" class="nav-sub-link"><i data-feather="file-plus"></i>New invoice</a></li>
-						<li class="nav-sub-item">&nbsp;</li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/billing/quotes" class="nav-sub-link"><i data-feather="file-minus"></i>View quotes</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/billing/quotes" class="nav-sub-link"><i data-feather="file-plus"></i>New quote</a></li>
 					</ul>
 				</li>
 

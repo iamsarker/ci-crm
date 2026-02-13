@@ -678,3 +678,388 @@
 	background: #fef3c7;
 	color: #92400e;
 }
+
+/* ============================================
+   KNOWLEDGE BASE PAGE STYLES
+   ============================================ */
+
+/* KB Page Header */
+.kb-page-header {
+	background: linear-gradient(135deg, #5E35B1 0%, #4527A0 100%);
+	border-radius: 12px;
+	padding: 28px 32px;
+	box-shadow: 0 4px 20px rgba(94, 53, 177, 0.3);
+}
+.kb-page-header h3 {
+	color: #fff;
+	margin: 0;
+	font-weight: 600;
+	font-size: 1.6rem;
+	display: flex;
+	align-items: center;
+}
+.kb-page-header h3 i {
+	margin-right: 12px;
+	opacity: 0.9;
+}
+.kb-page-header .breadcrumb {
+	background: transparent;
+	margin: 10px 0 0 0;
+	padding: 0;
+}
+.kb-page-header .breadcrumb-item a {
+	color: rgba(255,255,255,0.85);
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+.kb-page-header .breadcrumb-item a:hover {
+	color: #fff;
+}
+.kb-page-header .breadcrumb-item.active a {
+	color: #fff;
+	font-weight: 500;
+}
+.kb-page-header .breadcrumb-item + .breadcrumb-item::before {
+	color: rgba(255,255,255,0.5);
+}
+.kb-page-header .btn-back {
+	background: rgba(255,255,255,0.15);
+	border: 1px solid rgba(255,255,255,0.3);
+	color: #fff;
+	padding: 8px 18px;
+	border-radius: 8px;
+	font-weight: 600;
+	transition: all 0.3s ease;
+}
+.kb-page-header .btn-back:hover {
+	background: rgba(255,255,255,0.25);
+	transform: translateY(-2px);
+	color: #fff;
+}
+
+/* KB Form Styles */
+.kb-form .form-group {
+	margin-bottom: 20px;
+}
+.kb-form .form-label {
+	font-weight: 600;
+	color: #334155;
+	font-size: 0.85rem;
+	margin-bottom: 8px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.kb-form .form-label i {
+	color: #5E35B1;
+	font-size: 0.85rem;
+}
+.kb-form .form-control,
+.kb-form .form-select {
+	border: 1.5px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 12px 16px;
+	font-size: 0.9rem;
+	transition: all 0.2s ease;
+	background: #fff;
+}
+.kb-form .form-control:focus,
+.kb-form .form-select:focus {
+	border-color: #5E35B1;
+	box-shadow: 0 0 0 3px rgba(94, 53, 177, 0.15);
+}
+
+/* KB Form Section */
+.kb-form-section {
+	background: #f8fafc;
+	border-radius: 10px;
+	padding: 25px;
+	margin-bottom: 20px;
+}
+.kb-form-section .section-title {
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: #5E35B1;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 20px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* KB Save Button */
+.btn-save-kb {
+	background: linear-gradient(135deg, #5E35B1 0%, #4527A0 100%);
+	border: none;
+	padding: 12px 30px;
+	font-size: 0.95rem;
+	font-weight: 600;
+	border-radius: 8px;
+	color: #fff;
+	box-shadow: 0 4px 15px rgba(94, 53, 177, 0.3);
+	transition: all 0.3s ease;
+}
+.btn-save-kb:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(94, 53, 177, 0.4);
+	color: #fff;
+}
+
+/* KB Stats Card */
+.kb-stats-card {
+	background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+	border-radius: 10px;
+	padding: 20px;
+}
+.kb-stats-card .stat-item {
+	text-align: center;
+	padding: 10px;
+}
+.kb-stats-card .stat-value {
+	font-size: 1.5rem;
+	font-weight: 700;
+	color: #5E35B1;
+}
+.kb-stats-card .stat-label {
+	font-size: 0.8rem;
+	color: #7c3aed;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+/* KB Editor Container */
+.kb-editor-container {
+	border: 1.5px solid #e2e8f0;
+	border-radius: 8px;
+	overflow: hidden;
+}
+.kb-editor-container .ql-toolbar {
+	border: none;
+	border-bottom: 1px solid #e2e8f0;
+	background: #f8fafc;
+}
+.kb-editor-container .ql-container {
+	border: none;
+	font-size: 0.95rem;
+}
+
+/* ============================================
+   TICKET DEPARTMENT PAGE STYLES
+   ============================================ */
+
+/* Ticket Department Page Header */
+.ticket-dept-page-header {
+	background: linear-gradient(135deg, #E65100 0%, #BF360C 100%);
+	border-radius: 12px;
+	padding: 28px 32px;
+	box-shadow: 0 4px 20px rgba(230, 81, 0, 0.3);
+}
+.ticket-dept-page-header h3 {
+	color: #fff;
+	margin: 0;
+	font-weight: 600;
+	font-size: 1.6rem;
+	display: flex;
+	align-items: center;
+}
+.ticket-dept-page-header h3 i {
+	margin-right: 12px;
+	opacity: 0.9;
+}
+.ticket-dept-page-header .breadcrumb {
+	background: transparent;
+	margin: 10px 0 0 0;
+	padding: 0;
+}
+.ticket-dept-page-header .breadcrumb-item a {
+	color: rgba(255,255,255,0.85);
+	text-decoration: none;
+	transition: color 0.2s ease;
+}
+.ticket-dept-page-header .breadcrumb-item a:hover {
+	color: #fff;
+}
+.ticket-dept-page-header .breadcrumb-item.active a {
+	color: #fff;
+	font-weight: 500;
+}
+.ticket-dept-page-header .breadcrumb-item + .breadcrumb-item::before {
+	color: rgba(255,255,255,0.5);
+}
+.ticket-dept-page-header .btn-back {
+	background: rgba(255,255,255,0.15);
+	border: 1px solid rgba(255,255,255,0.3);
+	color: #fff;
+	padding: 8px 18px;
+	border-radius: 8px;
+	font-weight: 600;
+	transition: all 0.3s ease;
+}
+.ticket-dept-page-header .btn-back:hover {
+	background: rgba(255,255,255,0.25);
+	transform: translateY(-2px);
+	color: #fff;
+}
+
+/* Ticket Department Form */
+.ticket-dept-form .form-group {
+	margin-bottom: 20px;
+}
+.ticket-dept-form .form-label {
+	font-weight: 600;
+	color: #334155;
+	font-size: 0.85rem;
+	margin-bottom: 8px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.ticket-dept-form .form-label i {
+	color: #E65100;
+	font-size: 0.85rem;
+}
+.ticket-dept-form .form-control,
+.ticket-dept-form .form-select {
+	border: 1.5px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 12px 16px;
+	font-size: 0.9rem;
+	transition: all 0.2s ease;
+	background: #fff;
+}
+.ticket-dept-form .form-control:focus,
+.ticket-dept-form .form-select:focus {
+	border-color: #E65100;
+	box-shadow: 0 0 0 3px rgba(230, 81, 0, 0.15);
+}
+
+/* Ticket Department Form Section */
+.ticket-dept-form-section {
+	background: #f8fafc;
+	border-radius: 10px;
+	padding: 25px;
+	margin-bottom: 20px;
+}
+.ticket-dept-form-section .section-title {
+	font-size: 0.85rem;
+	font-weight: 700;
+	color: #E65100;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 20px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Ticket Department Save Button */
+.btn-save-ticket-dept {
+	background: linear-gradient(135deg, #E65100 0%, #BF360C 100%);
+	border: none;
+	padding: 12px 30px;
+	font-size: 0.95rem;
+	font-weight: 600;
+	border-radius: 8px;
+	color: #fff;
+	box-shadow: 0 4px 15px rgba(230, 81, 0, 0.3);
+	transition: all 0.3s ease;
+}
+.btn-save-ticket-dept:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(230, 81, 0, 0.4);
+	color: #fff;
+}
+
+/* Shared Form Card */
+.manage-form-card {
+	background: #fff;
+	border-radius: 12px;
+	box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+	padding: 30px;
+}
+
+/* Custom Checkbox Toggle */
+.custom-checkbox-toggle {
+	display: flex;
+	align-items: center;
+	background: #f8fafc;
+	padding: 14px 18px;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	border: 1.5px solid #e2e8f0;
+}
+.custom-checkbox-toggle:hover {
+	background: #f1f5f9;
+	border-color: #cbd5e1;
+}
+.custom-checkbox-toggle input[type="checkbox"] {
+	width: 20px;
+	height: 20px;
+	margin-right: 12px;
+	accent-color: #5E35B1;
+	cursor: pointer;
+}
+.custom-checkbox-toggle label {
+	margin: 0;
+	cursor: pointer;
+	font-weight: 500;
+	color: #334155;
+}
+
+/* Order Summary Box */
+.order-summary-box {
+	background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+	border-radius: 10px;
+	padding: 20px;
+	border: 1px solid #e2e8f0;
+}
+.order-summary-box .summary-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 0;
+	border-bottom: 1px dashed #e2e8f0;
+}
+.order-summary-box .summary-row:last-child {
+	border-bottom: none;
+}
+.order-summary-box .summary-row.total-row {
+	background: linear-gradient(135deg, #00897B 0%, #00695C 100%);
+	margin: 15px -20px -20px -20px;
+	padding: 18px 20px;
+	border-radius: 0 0 10px 10px;
+	border-bottom: none;
+}
+.order-summary-box .summary-row.total-row .summary-label {
+	color: #fff;
+	font-size: 1rem;
+}
+.order-summary-box .summary-row.total-row .summary-label i {
+	color: rgba(255,255,255,0.8);
+}
+.order-summary-box .summary-label {
+	font-weight: 600;
+	color: #334155;
+	font-size: 0.85rem;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.order-summary-box .summary-label i {
+	width: 16px;
+}
+.order-summary-box .summary-input {
+	text-align: right;
+	font-weight: 600;
+	max-width: 120px;
+	background: #fff;
+	border: 1px solid #e2e8f0;
+}
+.order-summary-box .summary-input.total-input {
+	background: rgba(255,255,255,0.2);
+	border: none;
+	color: #fff;
+	font-size: 1.1rem;
+}

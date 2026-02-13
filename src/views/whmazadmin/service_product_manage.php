@@ -1,127 +1,145 @@
 <?php $this->load->view('whmazadmin/include/header');?>
+<link rel="stylesheet" href="<?=base_url()?>resources/assets/css/admin.manage_view.css">
 
-	 <div class="content content-fluid content-wrapper">
-      <div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
+<div class="content content-fluid content-wrapper">
+	<div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
 
-        <div class="row mt-5">
-			<div class="col-md-12 col-sm-12">
-				<h3 class="d-flex justify-content-between"><span>Service Products</span> <a href="<?=base_url()?>whmazadmin/service_product/index" class="btn btn-sm btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a></h3>
-				<hr class="mg-5" />
-				<nav aria-label="breadcrumb">
-					<ol class="breadcrumb breadcrumb-style1 mg-b-0">
-						<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Portal home</a></li>
-						<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/service_product/index">Service products</a></li>
-						<li class="breadcrumb-item active"><a href="#">Manage service product</a></li>
-					</ol>
-				</nav>
-			  <?php if ($this->session->flashdata('alert')) { ?>
-				<?= $this->session->flashdata('alert') ?>
-			  <?php } ?>
-
+		<!-- Page Header -->
+		<div class="row mt-4">
+			<div class="col-12">
+				<div class="company-page-header">
+					<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+						<div>
+							<h3><i class="fa fa-box"></i> <?= !empty($detail['product_name']) ? htmlspecialchars($detail['product_name']) : 'New Service Product' ?></h3>
+							<nav aria-label="breadcrumb">
+								<ol class="breadcrumb mb-0">
+									<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+									<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/service_product/index">Service Products</a></li>
+									<li class="breadcrumb-item active"><a href="#">Manage</a></li>
+								</ol>
+							</nav>
+						</div>
+						<a href="<?=base_url()?>whmazadmin/service_product/index" class="btn btn-back">
+							<i class="fa fa-arrow-left"></i> Back to List
+						</a>
+					</div>
+				</div>
 			</div>
+		</div>
 
-			<div class="col-md-12 col-sm-12 mt-5">
-				<form method="post" name="entityManageForm" id="entityManageForm" action="<?=base_url()?>whmazadmin/service_product/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
-					<?=csrf_field()?>
-					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
+		<!-- Form Section -->
+		<div class="row mt-4">
+			<div class="col-12">
+				<div class="manage-form-card">
+					<form method="post" name="entityManageForm" id="entityManageForm" class="company-form" action="<?=base_url()?>whmazadmin/service_product/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
+						<?=csrf_field()?>
+						<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 
-					<div class="row">
-
-						<div class="col-md-6 col-sm-12">
-							<div class="form-group">
-								<label for="product_name">Product name</label>
-								<input name="product_name" type="text" class="form-control" id="product_name" value="<?= htmlspecialchars($detail['product_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-								<?php echo form_error('product_name', '<div class="error">', '</div>'); ?>
+						<!-- Product Details Section -->
+						<div class="company-form-section">
+							<div class="section-title">
+								<i class="fa fa-info-circle"></i> Product Details
 							</div>
-						</div>
-
-						<div class="col-md-6 col-sm-12">
-							<div class="form-group">
-								<label for="product_service_group_id">Service group</label>
-								<?php echo form_dropdown('product_service_group_id', $service_groups, !empty($detail['product_service_group_id']) ? $detail['product_service_group_id'] : '', 'class="form-select select2" id="product_service_group_id"'); ?>
-								<?php echo form_error('product_service_group_id', '<div class="error">', '</div>'); ?>
-							</div>
-						</div>
-
-					</div>
-
-					<div class="row mt-3">
-
-						<div class="col-md-4 col-sm-12">
-							<div class="form-group">
-								<label for="product_service_type_id">Service type</label>
-								<?php echo form_dropdown('product_service_type_id', $service_types, !empty($detail['product_service_type_id']) ? $detail['product_service_type_id'] : '', 'class="form-select select2" id="product_service_type_id"'); ?>
-								<?php echo form_error('product_service_type_id', '<div class="error">', '</div>'); ?>
-							</div>
-						</div>
-
-						<div class="col-md-4 col-sm-12">
-							<div class="form-group">
-								<label for="product_service_module_id">Module</label>
-								<?php echo form_dropdown('product_service_module_id', $service_modules, !empty($detail['product_service_module_id']) ? $detail['product_service_module_id'] : '', 'class="form-select select2" id="product_service_module_id"'); ?>
-								<?php echo form_error('product_service_module_id', '<div class="error">', '</div>'); ?>
-							</div>
-						</div>
-
-						<div class="col-md-4 col-sm-12">
-							<div class="form-group">
-								<label for="server_id">Server</label>
-								<?php echo form_dropdown('server_id', $servers, !empty($detail['server_id']) ? $detail['server_id'] : '', 'class="form-select select2" id="server_id"'); ?>
-								<?php echo form_error('server_id', '<div class="error">', '</div>'); ?>
-							</div>
-						</div>
-
-					</div>
-
-					<div class="row mt-3" id="cp_package_row" style="display:none;">
-
-						<div class="col-md-6 col-sm-12">
-							<div class="form-group">
-								<label for="cp_package">cPanel package name</label>
-								<select name="cp_package" class="form-select" id="cp_package">
-									<option value="">-- Select Package --</option>
-									<?php if (!empty($detail['cp_package'])): ?>
-										<option value="<?= htmlspecialchars($detail['cp_package'], ENT_QUOTES, 'UTF-8') ?>" selected><?= htmlspecialchars($detail['cp_package'], ENT_QUOTES, 'UTF-8') ?></option>
-									<?php endif; ?>
-								</select>
-								<small class="text-muted" id="cp_package_hint">Select service type, module &amp; server first</small>
-								<div id="cp_package_loading" style="display:none;">
-									<span class="spinner-border spinner-border-sm text-primary" role="status"></span>
-									<small class="text-primary">Fetching packages from server...</small>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="product_name"><i class="fa fa-box"></i> Product Name</label>
+										<input name="product_name" type="text" class="form-control" id="product_name" placeholder="Enter product name" value="<?= htmlspecialchars($detail['product_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+										<?php echo form_error('product_name', '<div class="error">', '</div>'); ?>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="product_service_group_id"><i class="fa fa-object-group"></i> Service Group</label>
+										<?php echo form_dropdown('product_service_group_id', $service_groups, !empty($detail['product_service_group_id']) ? $detail['product_service_group_id'] : '', 'class="form-select select2" id="product_service_group_id"'); ?>
+										<?php echo form_error('product_service_group_id', '<div class="error">', '</div>'); ?>
+									</div>
 								</div>
 							</div>
 						</div>
 
-						<div class="col-md-6 col-sm-12">
-							<div class="form-group">
-								<label for="is_hidden">Visibility</label>
-								<div class="form-check mt-2">
-									<input class="form-check-input" type="checkbox" name="is_hidden" id="is_hidden" value="1" <?= (!empty($detail['is_hidden']) && $detail['is_hidden'] == 1) ? 'checked' : '' ?>>
-									<label class="form-check-label" for="is_hidden">Hidden from client area</label>
+						<!-- Service Configuration Section -->
+						<div class="company-form-section">
+							<div class="section-title">
+								<i class="fa fa-cogs"></i> Service Configuration
+							</div>
+							<div class="row">
+								<div class="col-md-4">
+									<div class="form-group">
+										<label class="form-label" for="product_service_type_id"><i class="fa fa-layer-group"></i> Service Type</label>
+										<?php echo form_dropdown('product_service_type_id', $service_types, !empty($detail['product_service_type_id']) ? $detail['product_service_type_id'] : '', 'class="form-select select2" id="product_service_type_id"'); ?>
+										<?php echo form_error('product_service_type_id', '<div class="error">', '</div>'); ?>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<label class="form-label" for="product_service_module_id"><i class="fa fa-puzzle-piece"></i> Module</label>
+										<?php echo form_dropdown('product_service_module_id', $service_modules, !empty($detail['product_service_module_id']) ? $detail['product_service_module_id'] : '', 'class="form-select select2" id="product_service_module_id"'); ?>
+										<?php echo form_error('product_service_module_id', '<div class="error">', '</div>'); ?>
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<label class="form-label" for="server_id"><i class="fa fa-server"></i> Server</label>
+										<?php echo form_dropdown('server_id', $servers, !empty($detail['server_id']) ? $detail['server_id'] : '', 'class="form-select select2" id="server_id"'); ?>
+										<?php echo form_error('server_id', '<div class="error">', '</div>'); ?>
+									</div>
+								</div>
+							</div>
+
+							<div class="row" id="cp_package_row" style="display:none;">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label" for="cp_package"><i class="fa fa-archive"></i> cPanel Package Name</label>
+										<select name="cp_package" class="form-select" id="cp_package">
+											<option value="">-- Select Package --</option>
+											<?php if (!empty($detail['cp_package'])): ?>
+												<option value="<?= htmlspecialchars($detail['cp_package'], ENT_QUOTES, 'UTF-8') ?>" selected><?= htmlspecialchars($detail['cp_package'], ENT_QUOTES, 'UTF-8') ?></option>
+											<?php endif; ?>
+										</select>
+										<small class="text-muted" id="cp_package_hint">Select service type, module &amp; server first</small>
+										<div id="cp_package_loading" style="display:none;">
+											<span class="spinner-border spinner-border-sm text-primary" role="status"></span>
+											<small class="text-primary">Fetching packages from server...</small>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="form-label"><i class="fa fa-eye-slash"></i> Visibility</label>
+										<div class="custom-checkbox-toggle mt-2">
+											<input type="checkbox" name="is_hidden" id="is_hidden" value="1" <?= (!empty($detail['is_hidden']) && $detail['is_hidden'] == 1) ? 'checked' : '' ?>>
+											<label for="is_hidden">Hidden from client area</label>
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>
 
-					</div>
-
-					<div class="row mt-3">
-						<div class="col-md-12 col-sm-12">
+						<!-- Description Section -->
+						<div class="company-form-section">
+							<div class="section-title">
+								<i class="fa fa-file-alt"></i> Product Description
+							</div>
 							<div class="form-group">
-								<label for="product_desc">Product description</label>
-								<textarea name="product_desc" class="form-control" id="product_desc" rows="5"><?= htmlspecialchars($detail['product_desc'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+								<label class="form-label" for="product_desc"><i class="fa fa-align-left"></i> Description</label>
+								<textarea name="product_desc" class="form-control" id="product_desc" rows="5" placeholder="Enter product description..."><?= htmlspecialchars($detail['product_desc'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
 							</div>
 						</div>
-					</div>
 
-					<div class="form-group mt-3">
-						<button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-check-circle"></i>&nbsp;Save</button>
-					</div>
-				</form>
+						<!-- Submit Button -->
+						<div class="form-group mt-4">
+							<button type="submit" class="btn btn-save-company">
+								<i class="fa fa-check-circle"></i> Save Product
+							</button>
+						</div>
+					</form>
+				</div>
 			</div>
-      </div>
+		</div>
 
-    </div><!-- container -->
-  </div><!-- content -->
+	</div><!-- container -->
+</div><!-- content -->
 
 <?php $this->load->view('whmazadmin/include/footer_script');?>
 
@@ -250,6 +268,5 @@ $(function(){
 	checkCpanelVisibility();
 });
 </script>
-
 
 <?php $this->load->view('whmazadmin/include/footer');?>

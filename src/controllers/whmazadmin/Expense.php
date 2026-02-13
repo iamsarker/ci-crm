@@ -42,11 +42,12 @@ class Expense extends WHMAZADMIN_Controller {
 
 			if ($this->form_validation->run() == true){
 
-				if($_FILES['attachment']['size'] > 0){
+				$image_name = '';
+				if(!empty($_FILES['attachment']['name'][0]) && $_FILES['attachment']['size'][0] > 0){
 					$image = $this->Common_model->upload_files($this->img_path, round(microtime(true) * 100), $_FILES['attachment']);
-					$image_name = implode(",",$image);
-				} else {
-					$image_name = '';
+					if(is_array($image) && !empty($image)){
+						$image_name = implode(",", $image);
+					}
 				}
 
 				$form_data = array(

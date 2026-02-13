@@ -1,51 +1,71 @@
 <?php $this->load->view('whmazadmin/include/header');?>
+<link rel="stylesheet" href="<?=base_url()?>resources/assets/css/admin.manage_view.css">
 
-	 <div class="content content-fluid content-wrapper">
-      <div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
+<div class="content content-fluid content-wrapper">
+	<div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
 
-        <div class="row mt-5">
-			<div class="col-md-12 col-sm-12">
-				<h3 class="d-flex justify-content-between"><span>Expense Vendors</span> <a href="<?=base_url()?>whmazadmin/expense_vendor/index" class="btn btn-sm btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a></h3>
-				<hr class="mg-5" />
-				<nav aria-label="breadcrumb">
-					<ol class="breadcrumb breadcrumb-style1 mg-b-0">
-						<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Portal home</a></li>
-						<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/expense_vendor/index">Expense Vendors</a></li>
-						<li class="breadcrumb-item active"><a href="#">Manage Expense vendor</a></li>
-					</ol>
-				</nav>
-			  <?php if ($this->session->flashdata('alert')) { ?>
-				<?= $this->session->flashdata('alert') ?>
-			  <?php } ?>
-
+		<!-- Page Header -->
+		<div class="row mt-4">
+			<div class="col-12">
+				<div class="company-page-header">
+					<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+						<div>
+							<h3><i class="fa fa-store"></i> <?= !empty($detail['vendor_name']) ? htmlspecialchars($detail['vendor_name']) : 'New Expense Vendor' ?></h3>
+							<nav aria-label="breadcrumb">
+								<ol class="breadcrumb mb-0">
+									<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+									<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/expense_vendor/index">Expense Vendors</a></li>
+									<li class="breadcrumb-item active"><a href="#">Manage</a></li>
+								</ol>
+							</nav>
+						</div>
+						<a href="<?=base_url()?>whmazadmin/expense_vendor/index" class="btn btn-back">
+							<i class="fa fa-arrow-left"></i> Back to List
+						</a>
+					</div>
+				</div>
 			</div>
+		</div>
 
-			<div class="col-md-12 col-sm-12 mt-5">
-				<form method="post" name="entityManageForm" id="entityManageForm" action="<?=base_url()?>whmazadmin/expense_vendor/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
-					<?=csrf_field()?>
-					<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
-					<div class="form-group">
-						<label for="vendor_name">Expense vendor name</label>
-						<input name="vendor_name" type="text" class="form-control" id="vendor_name" value="<?= htmlspecialchars($detail['vendor_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-						<?php echo form_error('expense_type', '<div class="error">', '</div>'); ?>
-					</div>
+		<!-- Form Section -->
+		<div class="row mt-4">
+			<div class="col-12">
+				<div class="manage-form-card">
+					<form method="post" name="entityManageForm" id="entityManageForm" class="company-form" action="<?=base_url()?>whmazadmin/expense_vendor/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
+						<?=csrf_field()?>
+						<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 
-					<div class="form-group">
-						<label for="remarks">Remarks</label>
-						<textarea name="remarks" rows="3" class="form-control" id="remarks"><?= htmlspecialchars($detail['remarks'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
-						<?php echo form_error('remarks', '<div class="error">', '</div>'); ?>
-					</div>
+						<!-- Vendor Details Section -->
+						<div class="company-form-section">
+							<div class="section-title">
+								<i class="fa fa-info-circle"></i> Vendor Details
+							</div>
+							<div class="form-group">
+								<label class="form-label" for="vendor_name"><i class="fa fa-store"></i> Vendor Name</label>
+								<input name="vendor_name" type="text" class="form-control" id="vendor_name" placeholder="Enter vendor name" value="<?= htmlspecialchars($detail['vendor_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+								<?php echo form_error('vendor_name', '<div class="error">', '</div>'); ?>
+							</div>
 
-					<div class="form-group">
-						<button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-check-circle"></i>&nbsp;Save</button>
-					</div>
-				</form>
+							<div class="form-group">
+								<label class="form-label" for="remarks"><i class="fa fa-align-left"></i> Remarks</label>
+								<textarea name="remarks" rows="3" class="form-control" id="remarks" placeholder="Enter remarks..."><?= htmlspecialchars($detail['remarks'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+								<?php echo form_error('remarks', '<div class="error">', '</div>'); ?>
+							</div>
+						</div>
+
+						<!-- Submit Button -->
+						<div class="form-group mt-4">
+							<button type="submit" class="btn btn-save-company">
+								<i class="fa fa-check-circle"></i> Save Vendor
+							</button>
+						</div>
+					</form>
+				</div>
 			</div>
-      </div>
-		
-    </div><!-- container -->
-  </div><!-- content -->
+		</div>
+
+	</div><!-- container -->
+</div><!-- content -->
 
 <?php $this->load->view('whmazadmin/include/footer_script');?>
-
 <?php $this->load->view('whmazadmin/include/footer');?>

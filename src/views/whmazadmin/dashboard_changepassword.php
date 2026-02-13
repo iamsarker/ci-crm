@@ -1,56 +1,79 @@
 <?php $this->load->view('whmazadmin/include/header'); ?>
+<link rel="stylesheet" href="<?=base_url()?>resources/assets/css/admin.manage_view.css">
 
-<div class="content content-fixed content-wrapper">
-	<div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
-		<div class="d-sm-flex align-items-center justify-content-between mg-b-20 mg-lg-b-25 mg-xl-b-30">
-			<div>
-				<nav aria-label="breadcrumb">
-					<ol class="breadcrumb breadcrumb-style1 mg-b-10">
-						<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
-						<li class="breadcrumb-item active" aria-current="page">Change Password</li>
-					</ol>
-				</nav>
-				<h4 class="mg-b-0 tx-spacing--1">Change Password</h4>
-			</div>
-		</div>
+<div class="content content-fluid content-wrapper">
+	<div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
 
-		<div class="row">
-			<div class="col-sm-12 col-md-3 col-lg-3">&nbsp;</div>
-			<div class="col-sm-12 col-md-6 col-lg-5">
-				<div class="card">
-					<div class="card-header">
-						<h6 class="mg-b-0"><i class="fa fa-lock"></i>&nbsp;Update Your Password</h6>
-					</div>
-					<div class="card-body">
-						<form method="POST" action="<?=base_url()?>whmazadmin/dashboard/changePassword">
-							<?=csrf_field()?>
-
-							<div class="form-group">
-								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5">Current Password <span class="tx-danger">*</span></label>
-								<input type="password" name="current_password" class="form-control" required minlength="8" placeholder="Enter current password">
-							</div>
-
-							<div class="form-group">
-								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5">New Password <span class="tx-danger">*</span></label>
-								<input type="password" name="new_password" class="form-control" required minlength="8" placeholder="Min. 8 characters">
-								<small class="tx-12 tx-color-03">Must contain uppercase (A-Z), lowercase (a-z), and number (0-9)</small>
-							</div>
-
-							<div class="form-group">
-								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5">Confirm New Password <span class="tx-danger">*</span></label>
-								<input type="password" name="confirm_password" class="form-control" required minlength="8" placeholder="Re-enter new password">
-							</div>
-
-							<button type="submit" class="btn btn-primary btn-block">Change Password</button>
-						</form>
+		<!-- Page Header -->
+		<div class="row mt-4">
+			<div class="col-12">
+				<div class="company-page-header">
+					<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+						<div>
+							<h3><i class="fa fa-key"></i> Change Password</h3>
+							<nav aria-label="breadcrumb">
+								<ol class="breadcrumb mb-0">
+									<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+									<li class="breadcrumb-item active"><a href="#">Change Password</a></li>
+								</ol>
+							</nav>
+						</div>
+						<a href="<?=base_url()?>whmazadmin/dashboard/index" class="btn btn-back">
+							<i class="fa fa-arrow-left"></i> Back to Dashboard
+						</a>
 					</div>
 				</div>
 			</div>
-			<div class="col-sm-12 col-md-3 col-lg-3">&nbsp;</div>
 		</div>
 
-	</div>
-</div>
+		<!-- Form Section -->
+		<div class="row mt-4">
+			<div class="col-md-2"></div>
+			<div class="col-md-8 col-lg-6">
+				<div class="manage-form-card">
+					<form method="POST" name="changePasswordForm" id="changePasswordForm" class="company-form" action="<?=base_url()?>whmazadmin/dashboard/changePassword">
+						<?=csrf_field()?>
+
+						<!-- Password Update Section -->
+						<div class="company-form-section">
+							<div class="section-title">
+								<i class="fa fa-lock"></i> Update Your Password
+							</div>
+
+							<div class="form-group">
+								<label class="form-label" for="current_password"><i class="fa fa-unlock-alt"></i> Current Password <span class="text-danger">*</span></label>
+								<input type="password" name="current_password" id="current_password" class="form-control" required minlength="8" placeholder="Enter current password">
+								<?php echo form_error('current_password', '<div class="error">', '</div>'); ?>
+							</div>
+
+							<div class="form-group">
+								<label class="form-label" for="new_password"><i class="fa fa-key"></i> New Password <span class="text-danger">*</span></label>
+								<input type="password" name="new_password" id="new_password" class="form-control" required minlength="8" placeholder="Min. 8 characters">
+								<small class="form-text text-muted">Must contain uppercase (A-Z), lowercase (a-z), and number (0-9)</small>
+								<?php echo form_error('new_password', '<div class="error">', '</div>'); ?>
+							</div>
+
+							<div class="form-group">
+								<label class="form-label" for="confirm_password"><i class="fa fa-check-double"></i> Confirm New Password <span class="text-danger">*</span></label>
+								<input type="password" name="confirm_password" id="confirm_password" class="form-control" required minlength="8" placeholder="Re-enter new password">
+								<?php echo form_error('confirm_password', '<div class="error">', '</div>'); ?>
+							</div>
+						</div>
+
+						<!-- Submit Button -->
+						<div class="form-group mt-4">
+							<button type="submit" class="btn btn-save-company btn-lg w-100">
+								<i class="fa fa-check-circle"></i> Change Password
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div class="col-md-2"></div>
+		</div>
+
+	</div><!-- container -->
+</div><!-- content -->
 
 <?php $this->load->view('whmazadmin/include/footer_script'); ?>
 <?php $this->load->view('whmazadmin/include/footer'); ?>
