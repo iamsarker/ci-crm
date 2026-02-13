@@ -37,7 +37,7 @@ class Authenticate extends WHMAZADMIN_Controller
 					return;
 				}
 
-				$verify_url = 'https://www.google.com/recaptcha/api/siteverify';
+				$verify_url = RECAPTCHA_VERIFY_URL;
 				$post_data = array(
 					'secret' => $captcha_secret_key,
 					'response' => $recaptcha_response,

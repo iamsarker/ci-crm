@@ -83,3 +83,13 @@ defined('EXIT_USER_INPUT')     OR define('EXIT_USER_INPUT', 7); // invalid user 
 defined('EXIT_DATABASE')       OR define('EXIT_DATABASE', 8); // database error
 defined('EXIT__AUTO_MIN')      OR define('EXIT__AUTO_MIN', 9); // lowest automatically-assigned error code
 defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
+
+/*
+|--------------------------------------------------------------------------
+| Google reCAPTCHA
+|--------------------------------------------------------------------------
+|
+| URL for verifying reCAPTCHA responses
+|
+*/
+defined('RECAPTCHA_VERIFY_URL') OR define('RECAPTCHA_VERIFY_URL', getenv('RECAPTCHA_VERIFY_URL') ?: 'https://www.google.com/recaptcha/api/siteverify');

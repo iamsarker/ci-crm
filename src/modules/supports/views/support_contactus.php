@@ -46,6 +46,22 @@
 											</div>
 
 											<div class="form-group">
+												<label class="form-label">Department <span class="required">*</span></label>
+												<div class="input-group">
+													<span class="input-group-text"><i class="fa fa-building"></i></span>
+													<select class="form-control form-select" name="department" required>
+														<option value="">-- Select Department --</option>
+														<?php if (!empty($departments)) { foreach ($departments as $dept) { ?>
+															<option value="<?= $dept['id'] ?>" <?= ($this->input->post('department') == $dept['id']) ? 'selected' : '' ?>>
+																<?= htmlspecialchars($dept['name']) ?>
+																<?= !empty($dept['description']) ? ' - ' . htmlspecialchars($dept['description']) : '' ?>
+															</option>
+														<?php } } ?>
+													</select>
+												</div>
+											</div>
+
+											<div class="form-group">
 												<label class="form-label">Subject <span class="required">*</span></label>
 												<div class="input-group">
 													<span class="input-group-text"><i class="fa fa-tag"></i></span>
@@ -84,37 +100,6 @@
 									</div>
 								</div>
 							</form>
-						</div>
-					</div>
-
-					<!-- Contact Info Cards -->
-					<div class="row mt-4">
-						<div class="col-md-4 mb-3">
-							<div class="contact-info-card">
-								<div class="contact-info-icon">
-									<i class="fa fa-map-marker-alt"></i>
-								</div>
-								<h5>Our Address</h5>
-								<p><?= !empty(getAppSettings()->address) ? htmlspecialchars(getAppSettings()->address) : 'Address not available' ?></p>
-							</div>
-						</div>
-						<div class="col-md-4 mb-3">
-							<div class="contact-info-card">
-								<div class="contact-info-icon">
-									<i class="fa fa-phone-alt"></i>
-								</div>
-								<h5>Phone Number</h5>
-								<p><?= !empty(getAppSettings()->phone) ? htmlspecialchars(getAppSettings()->phone) : 'Phone not available' ?></p>
-							</div>
-						</div>
-						<div class="col-md-4 mb-3">
-							<div class="contact-info-card">
-								<div class="contact-info-icon">
-									<i class="fa fa-envelope"></i>
-								</div>
-								<h5>Email Address</h5>
-								<p><?= !empty(getAppSettings()->email) ? htmlspecialchars(getAppSettings()->email) : 'Email not available' ?></p>
-							</div>
 						</div>
 					</div>
 				</div>

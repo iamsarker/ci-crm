@@ -267,7 +267,7 @@ class Cart extends WHMAZ_Controller
 				return;
 			}
 
-			$verify_url = 'https://www.google.com/recaptcha/api/siteverify';
+			$verify_url = RECAPTCHA_VERIFY_URL;
 			$verify_data = array(
 				'secret' => $captcha_secret_key,
 				'response' => $recaptcha_token,

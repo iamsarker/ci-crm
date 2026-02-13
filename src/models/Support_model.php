@@ -399,5 +399,29 @@ class Support_model extends CI_Model{
 		return $emails;
 	}
 
+	/**
+	 * Get all active ticket departments
+	 */
+	function getActiveTicketDepartments()
+	{
+		$sql = "SELECT id, name, description, email FROM ticket_depts WHERE status = 1 ORDER BY sort_order ASC, name ASC";
+		$query = $this->db->query($sql);
+		return $query->result_array();
+	}
+
+	/**
+	 * Get ticket department by ID
+	 */
+	function getTicketDepartmentById($id)
+	{
+		$sql = "SELECT id, name, description, email FROM ticket_depts WHERE id = ? AND status = 1";
+		$query = $this->db->query($sql, array(intval($id)));
+
+		if ($query->num_rows() > 0) {
+			return $query->row_array();
+		}
+		return null;
+	}
+
 }
 ?>

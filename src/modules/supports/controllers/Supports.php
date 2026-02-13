@@ -103,6 +103,9 @@ class Supports extends WHMAZ_Controller {
 		$captcha_site_key = !empty($app_settings['captcha_site_key']) ? $app_settings['captcha_site_key'] : '';
 		$captcha_secret_key = !empty($app_settings['captcha_secret_key']) ? $app_settings['captcha_secret_key'] : '';
 
+		// Load ticket departments
+		$departments = $this->Support_model->getActiveTicketDepartments();
+
 		if ($this->input->post()) {
 			// Verify reCAPTCHA if configured
 			if (!empty($captcha_site_key) && !empty($captcha_secret_key)) {
@@ -110,11 +113,12 @@ class Supports extends WHMAZ_Controller {
 				if (empty($recaptcha_response)) {
 					$this->session->set_flashdata('alert_error', 'Please complete the reCAPTCHA verification.');
 					$data['captcha_site_key'] = $captcha_site_key;
+					$data['departments'] = $departments;
 					$this->load->view('support_contactus', $data);
 					return;
 				}
 
-				$verify_url = 'https://www.google.com/recaptcha/api/siteverify';
+				$verify_url = RECAPTCHA_VERIFY_URL;
 				$post_data = array(
 					'secret' => $captcha_secret_key,
 					'response' => $recaptcha_response,
@@ -136,6 +140,7 @@ class Supports extends WHMAZ_Controller {
 				if (!$recaptcha_result['success']) {
 					$this->session->set_flashdata('alert_error', 'reCAPTCHA verification failed. Please try again.');
 					$data['captcha_site_key'] = $captcha_site_key;
+					$data['departments'] = $departments;
 					$this->load->view('support_contactus', $data);
 					return;
 				}
@@ -144,12 +149,14 @@ class Supports extends WHMAZ_Controller {
 			// Validate form inputs
 			$name = trim($this->input->post('name'));
 			$email = trim($this->input->post('email'));
+			$department_id = intval($this->input->post('department'));
 			$subject = trim($this->input->post('subject'));
 			$message = trim($this->input->post('message'));
 
-			if (empty($name) || empty($email) || empty($subject) || empty($message)) {
+			if (empty($name) || empty($email) || empty($department_id) || empty($subject) || empty($message)) {
 				$this->session->set_flashdata('alert_error', 'Please fill in all required fields.');
 				$data['captcha_site_key'] = $captcha_site_key;
+				$data['departments'] = $departments;
 				$this->load->view('support_contactus', $data);
 				return;
 			}
@@ -157,21 +164,23 @@ class Supports extends WHMAZ_Controller {
 			if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 				$this->session->set_flashdata('alert_error', 'Please enter a valid email address.');
 				$data['captcha_site_key'] = $captcha_site_key;
+				$data['departments'] = $departments;
 				$this->load->view('support_contactus', $data);
 				return;
 			}
 
-			// Get admin emails
-			$admin_emails = $this->Support_model->getAdminEmails();
+			// Get selected department
+			$department = $this->Support_model->getTicketDepartmentById($department_id);
 
-			if (empty($admin_emails)) {
-				$this->session->set_flashdata('alert_error', 'Unable to send message. Please try again later.');
+			if (empty($department) || empty($department['email'])) {
+				$this->session->set_flashdata('alert_error', 'Invalid department selected. Please try again.');
 				$data['captcha_site_key'] = $captcha_site_key;
+				$data['departments'] = $departments;
 				$this->load->view('support_contactus', $data);
 				return;
 			}
 
-			// Send email to all admins
+			// Send email to department
 			$appSettings = getAppSettings();
 			$emailSubject = "Contact Form: " . htmlspecialchars($subject);
 
@@ -181,6 +190,8 @@ class Supports extends WHMAZ_Controller {
 			$emailBody .= '<td style="padding:10px; border:1px solid #ddd;">' . htmlspecialchars($name) . '</td></tr>';
 			$emailBody .= '<tr><td style="padding:10px; border:1px solid #ddd; background:#f5f5f5;"><strong>Email:</strong></td>';
 			$emailBody .= '<td style="padding:10px; border:1px solid #ddd;"><a href="mailto:' . htmlspecialchars($email) . '">' . htmlspecialchars($email) . '</a></td></tr>';
+			$emailBody .= '<tr><td style="padding:10px; border:1px solid #ddd; background:#f5f5f5;"><strong>Department:</strong></td>';
+			$emailBody .= '<td style="padding:10px; border:1px solid #ddd;">' . htmlspecialchars($department['name']) . '</td></tr>';
 			$emailBody .= '<tr><td style="padding:10px; border:1px solid #ddd; background:#f5f5f5;"><strong>Subject:</strong></td>';
 			$emailBody .= '<td style="padding:10px; border:1px solid #ddd;">' . htmlspecialchars($subject) . '</td></tr>';
 			$emailBody .= '<tr><td style="padding:10px; border:1px solid #ddd; background:#f5f5f5; vertical-align:top;"><strong>Message:</strong></td>';
@@ -192,14 +203,7 @@ class Supports extends WHMAZ_Controller {
 			$emailBody .= '</table>';
 			$emailBody .= '<br><p style="color:#666; font-size:12px;">This message was sent from the contact form on ' . $appSettings->company_name . '</p>';
 
-			$emailSent = false;
-			foreach ($admin_emails as $adminEmail) {
-				if (sendHtmlEmail($adminEmail, $emailSubject, $emailBody)) {
-					$emailSent = true;
-				}
-			}
-
-			if ($emailSent) {
+			if (sendHtmlEmail($department['email'], $emailSubject, $emailBody)) {
 				$this->session->set_flashdata('alert_success', 'Thank you for contacting us. We will get back to you shortly.');
 				redirect('supports/contactus');
 				return;
@@ -209,6 +213,7 @@ class Supports extends WHMAZ_Controller {
 		}
 
 		$data['captcha_site_key'] = $captcha_site_key;
+		$data['departments'] = $departments;
 		$this->load->view('support_contactus', $data);
 	}
 

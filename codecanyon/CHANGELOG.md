@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.0] - 2026-02-13
+
+### New Feature - Contact Us Page & Client Portal Beautification
+
+#### Contact Us Page
+- New Contact Us page in client portal (`supports/contactus`)
+- Department selection dropdown from `ticket_depts` table
+- Sends contact form submissions to selected department email
+- Google reCAPTCHA integration for spam protection
+- Form validation for all required fields
+- CSRF protection
+- Mobile-responsive design with teal color scheme
+
+#### Client Portal Auth Pages Beautification
+- Redesigned Login page with modern card layout
+- Redesigned Registration page with two-column layout
+- Redesigned Forgot Password page with orange theme
+- Redesigned Reset Password page with orange theme
+- Consistent teal gradient styling (#00897B to #00695C)
+- Input groups with icons
+- Mobile-responsive design
+
+#### Code Improvements
+- Added `RECAPTCHA_VERIFY_URL` constant in `constants.php`
+- Centralized reCAPTCHA verify URL configuration
+- Environment variable support via `.env` file
+- Removed hardcoded URLs from controllers
+
+#### New Files
+- `src/modules/supports/views/support_contactus.php` - Contact Us view
+
+#### Modified Files
+- `src/modules/supports/controllers/Supports.php` - Added contactus method
+- `src/models/Support_model.php` - Added department methods
+- `src/modules/auth/views/auth_login.php` - Beautified
+- `src/modules/auth/views/auth_register.php` - Beautified
+- `src/modules/auth/views/auth_forgetpass.php` - Beautified
+- `src/modules/auth/views/auth_resetpassword.php` - Beautified
+- `src/config/constants.php` - Added RECAPTCHA_VERIFY_URL constant
+- `resources/assets/css/custom.css` - Added auth page styles
+- `.env` - Added RECAPTCHA_VERIFY_URL
+
+---
+
 ## [1.6.0] - 2026-02-13
 
 ### New Feature - Dynamic Pages Management with Version History

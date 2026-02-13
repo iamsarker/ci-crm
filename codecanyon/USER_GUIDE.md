@@ -1,7 +1,7 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.3.0
+**Version:** 1.7.0
 **Last Updated:** February 13, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
@@ -26,6 +26,8 @@
 - [Making Payments](#making-payments)
 - [Support Tickets](#support-tickets)
 - [Knowledge Base](#knowledge-base)
+- [Announcements](#announcements)
+- [Contact Us](#contact-us)
 
 ### Part 3: Administrator Portal Guide
 - [Admin Dashboard](#admin-dashboard)
@@ -977,6 +979,87 @@ Announcements are publicly accessible without login, keeping visitors informed o
 - Year-month archive links in sidebar
 - Quick access to other months
 - Support navigation
+
+---
+
+## Contact Us
+
+The Contact Us page allows visitors to send messages to the appropriate department without needing to login.
+
+### Accessing Contact Us Page
+
+1. **Navigate to Contact Us**
+   - URL: `/supports/contactus`
+   - No login required (public page)
+   - Link in footer navigation
+
+### Contact Form Features
+
+**Modern Design:**
+- Clean, professional layout matching registration page
+- Teal gradient header with contact icon
+- Responsive design for mobile devices
+- Real-time form validation
+
+**Form Fields:**
+- **Your Name** (required): Full name of the sender
+- **Email Address** (required): Valid email for replies
+- **Department** (required): Select from active ticket departments
+  - Dropdown populated from configured departments
+  - Each department has its own email address
+- **Subject** (required): Brief topic of the inquiry
+- **Message** (required): Detailed message content
+
+**Security Features:**
+- Google reCAPTCHA protection (if configured)
+- CSRF token validation
+- Input sanitization
+- Email validation
+
+### Submitting a Contact Form
+
+1. **Fill in Your Details**
+   - Enter your name and email address
+   - These are required for the department to respond
+
+2. **Select Department**
+   - Choose the most appropriate department
+   - Examples: Sales, Technical Support, Billing, General Inquiry
+
+3. **Enter Subject and Message**
+   - Provide a clear subject line
+   - Write your detailed message or inquiry
+
+4. **Complete reCAPTCHA** (if displayed)
+   - Click the "I'm not a robot" checkbox
+   - Complete any additional verification if prompted
+
+5. **Submit Form**
+   - Click "Send Message" button
+   - Success message displayed on completion
+   - Email sent to selected department
+
+### What Happens After Submission
+
+- Email is sent to the selected department's email address
+- Email contains:
+  - Sender's name and email
+  - Department name
+  - Subject and message
+  - Submission timestamp
+  - Sender's IP address
+- Department staff can reply directly to the sender's email
+
+### Best Practices
+
+**For Faster Response:**
+- Select the correct department
+- Provide detailed information in your message
+- Include any relevant account or order numbers
+- Use a valid email address for replies
+
+![Contact Us Page](screenshots/contact-us.png)
+*[Screenshot Placeholder: Contact Us form with department selection]*
 
 ---
 
@@ -3287,7 +3370,7 @@ This guide covered:
 ---
 
 **Document Information:**
-- Version: 1.3.0
+- Version: 1.7.0
 - Last Updated: February 13, 2026
 - Product: WHMAZ - CI-CRM
 - Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.
