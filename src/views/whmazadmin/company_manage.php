@@ -1,180 +1,222 @@
 <?php $this->load->view('whmazadmin/include/header');?>
+<link rel="stylesheet" href="<?=base_url()?>resources/assets/css/admin.manage_view.css">
 
-	 <div class="content content-fluid content-wrapper">
-      <div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
+<div class="content content-fluid content-wrapper">
+	<div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
 
-        <div class="row mt-5">
-			<div class="col-md-12 col-sm-12">
-				<h3 class="d-flex justify-content-between"><span>Companies</span> <a href="<?=base_url()?>whmazadmin/company/index" class="btn btn-sm btn-secondary"><i class="fa fa-arrow-left"></i>&nbsp;Back</a></h3>
-				<hr class="mg-5" />
-				<nav aria-label="breadcrumb">
-					<ol class="breadcrumb breadcrumb-style1 mg-b-0">
-						<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Portal home</a></li>
-						<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/company/index">Companies</a></li>
-						<li class="breadcrumb-item active"><a href="#">Manage company</a></li>
-					</ol>
-				</nav>
-			  <?php if ($this->session->flashdata('alert')) { ?>
-				<?= $this->session->flashdata('alert') ?>
-			  <?php } ?>
+		<!-- Page Header -->
+		<div class="row mt-4">
+			<div class="col-12">
+				<div class="company-page-header">
+					<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+						<div>
+							<h3><i class="fa fa-building"></i> <?= !empty($detail['name']) ? htmlspecialchars($detail['name']) : 'New Company' ?></h3>
+							<nav aria-label="breadcrumb">
+								<ol class="breadcrumb mb-0">
+									<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+									<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/company/index">Companies</a></li>
+									<li class="breadcrumb-item active"><a href="#">Manage</a></li>
+								</ol>
+							</nav>
+						</div>
+						<a href="<?=base_url()?>whmazadmin/company/index" class="btn btn-back">
+							<i class="fa fa-arrow-left"></i> Back to List
+						</a>
+					</div>
+				</div>
 
+				<?php if ($this->session->flashdata('alert')) { ?>
+					<div class="company-alert alert-success">
+						<i class="fa fa-check-circle"></i>
+						<?= $this->session->flashdata('alert') ?>
+					</div>
+				<?php } ?>
 			</div>
+		</div>
 
-			<div class="col-md-12 col-sm-12 mt-5">
-
-				<ul class="nav nav-tabs" id="pageTab" role="pageTablist">
+		<!-- Tabs Section -->
+		<div class="row">
+			<div class="col-12">
+				<ul class="nav company-tabs" id="pageTab" role="pageTablist">
 					<li class="nav-item">
-						<a class="nav-link active" id="info-tab" data-bs-toggle="tab" href="#general-info" role="tab" aria-controls="general-info" aria-selected="true"><i class="fa fa-info-circle"></i>&nbsp;<span class="pt-1">General info</span></a>
+						<a class="nav-link active" id="info-tab" data-bs-toggle="tab" href="#general-info" role="tab" aria-controls="general-info" aria-selected="true">
+							<i class="fa fa-info-circle"></i> General Info
+						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" id="service-tab" data-bs-toggle="tab" href="#service-info" role="tab" aria-controls="service-info" aria-selected="false"><i class="fa fa-sliders-h"></i>&nbsp;<span class="pt-1">Services</span></a>
+						<a class="nav-link" id="service-tab" data-bs-toggle="tab" href="#service-info" role="tab" aria-controls="service-info" aria-selected="false">
+							<i class="fa fa-server"></i> Services
+						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" id="domain-tab" data-bs-toggle="tab" href="#domain-info" role="tab" aria-controls="domain-info" aria-selected="false"><i class="fa fa-globe"></i>&nbsp;<span class="pt-1">Domains</span></a>
+						<a class="nav-link" id="domain-tab" data-bs-toggle="tab" href="#domain-info" role="tab" aria-controls="domain-info" aria-selected="false">
+							<i class="fa fa-globe"></i> Domains
+						</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" id="invoice-tab" data-bs-toggle="tab" href="#invoice-info" role="tab" aria-controls="invoice-info" aria-selected="false"><i class="fa fa-file-invoice"></i>&nbsp;<span class="pt-1">Invoices</span></a>
+						<a class="nav-link" id="invoice-tab" data-bs-toggle="tab" href="#invoice-info" role="tab" aria-controls="invoice-info" aria-selected="false">
+							<i class="fa fa-file-invoice-dollar"></i> Invoices
+						</a>
 					</li>
 				</ul>
 
-				<div class="tab-content bd bd-gray-300 bd-t-0 pd-20" id="myTabContent">
+				<div class="tab-content company-tab-content" id="myTabContent">
 					<div class="tab-pane fade show active" id="general-info" role="tabpanel" aria-labelledby="info-tab">
 
-						<form method="post" name="entityManageForm" id="entityManageForm" action="<?=base_url()?>whmazadmin/company/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
+						<form method="post" name="entityManageForm" id="entityManageForm" class="company-form" action="<?=base_url()?>whmazadmin/company/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
 							<?=csrf_field()?>
 							<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 
-							<div class="row">
-								<div class="col-md-6 col-sm-12">
-									<div class="form-group">
-										<label for="name">Company name</label>
-										<input name="name" type="text" class="form-control" id="name" value="<?= htmlspecialchars($detail['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-										<?php echo form_error('name', '<div class="error">', '</div>'); ?>
-									</div>
+							<!-- Company Information Section -->
+							<div class="company-form-section">
+								<div class="section-title">
+									<i class="fa fa-building"></i> Company Information
 								</div>
-								<div class="col-md-3 col-sm-12">
-									<div class="form-group">
-										<label for="first_name">First name</label>
-										<input name="first_name" type="text" class="form-control" id="first_name" value="<?= htmlspecialchars($detail['first_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-										<?php echo form_error('first_name', '<div class="error">', '</div>'); ?>
+								<div class="row">
+									<div class="col-md-6 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="name"><i class="fa fa-building"></i> Company Name</label>
+											<input name="name" type="text" class="form-control" id="name" placeholder="Enter company name" value="<?= htmlspecialchars($detail['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+											<?php echo form_error('name', '<div class="error">', '</div>'); ?>
+										</div>
 									</div>
-								</div>
-								<div class="col-md-3 col-sm-12">
-									<div class="form-group">
-										<label for="last_name">Last name</label>
-										<input name="last_name" type="text" class="form-control" id="last_name" value="<?= htmlspecialchars($detail['last_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-										<?php echo form_error('last_name', '<div class="error">', '</div>'); ?>
+									<div class="col-md-3 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="first_name"><i class="fa fa-user"></i> First Name</label>
+											<input name="first_name" type="text" class="form-control" id="first_name" placeholder="First name" value="<?= htmlspecialchars($detail['first_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+											<?php echo form_error('first_name', '<div class="error">', '</div>'); ?>
+										</div>
 									</div>
-								</div>
-							</div>
-
-							<div class="row mt-3">
-
-								<div class="col-md-3 col-sm-12">
-									<div class="form-group">
-										<label for="email">Email</label>
-										<input name="email" type="text" class="form-control" id="email" value="<?= htmlspecialchars($detail['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-										<?php echo form_error('email', '<div class="error">', '</div>'); ?>
-									</div>
-								</div>
-
-								<div class="col-md-3 col-sm-12">
-									<div class="form-group">
-										<label for="mobile">Mobile</label>
-										<input name="mobile" type="text" class="form-control" id="mobile" value="<?= htmlspecialchars($detail['mobile'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-										<?php echo form_error('mobile', '<div class="error">', '</div>'); ?>
-									</div>
-								</div>
-
-								<div class="col-md-3 col-sm-12">
-									<div class="form-group">
-										<label for="phone">Phone</label>
-										<input name="phone" type="text" class="form-control" id="phone" value="<?= htmlspecialchars($detail['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-										<?php echo form_error('phone', '<div class="error">', '</div>'); ?>
-									</div>
-								</div>
-
-								<div class="col-md-3 col-sm-12">
-									<div class="form-group">
-										<label for="city">City</label>
-										<input name="city" type="text" class="form-control" id="city" value="<?= htmlspecialchars($detail['city'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-										<?php echo form_error('city', '<div class="error">', '</div>'); ?>
-									</div>
-								</div>
-
-							</div>
-
-							<div class="row mt-3">
-								<div class="col-md-3 col-sm-12">
-									<div class="form-group">
-										<label for="address">Address</label>
-										<input name="address" type="text" class="form-control" id="address" value="<?= htmlspecialchars($detail['address'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-										<?php echo form_error('address', '<div class="error">', '</div>'); ?>
-									</div>
-								</div>
-
-								<div class="col-md-3 col-sm-12">
-									<div class="form-group">
-										<label for="zip_code">Zip code</label>
-										<input name="zip_code" type="text" class="form-control" id="zip_code" value="<?= htmlspecialchars($detail['zip_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-										<?php echo form_error('zip_code', '<div class="error">', '</div>'); ?>
-									</div>
-								</div>
-
-								<div class="col-md-3 col-sm-12">
-									<div class="form-group">
-										<label for="state">State</label>
-										<input name="state" type="text" class="form-control" id="state" value="<?= htmlspecialchars($detail['state'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
-										<?php echo form_error('state', '<div class="error">', '</div>'); ?>
-									</div>
-								</div>
-
-								<div class="col-md-3 col-sm-12">
-									<div class="form-group">
-										<label for="Country">Country</label>
-										<?php echo form_dropdown('country', $countries,!empty($detail['country']) ? $detail['country'] : 'Bangladesh','class="form-select select2" id="country"'); ?>
-										<?php echo form_error('country', '<div class="error">', '</div>'); ?>
+									<div class="col-md-3 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="last_name"><i class="fa fa-user"></i> Last Name</label>
+											<input name="last_name" type="text" class="form-control" id="last_name" placeholder="Last name" value="<?= htmlspecialchars($detail['last_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+											<?php echo form_error('last_name', '<div class="error">', '</div>'); ?>
+										</div>
 									</div>
 								</div>
 							</div>
 
-							<div class="form-group">
-								<button type="submit" class="btn btn-sm btn-primary"><i class="fa fa-check-circle"></i>&nbsp;Save</button>
+							<!-- Contact Information Section -->
+							<div class="company-form-section">
+								<div class="section-title">
+									<i class="fa fa-address-card"></i> Contact Information
+								</div>
+								<div class="row">
+									<div class="col-md-4 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="email"><i class="fa fa-envelope"></i> Email Address</label>
+											<input name="email" type="email" class="form-control" id="email" placeholder="email@example.com" value="<?= htmlspecialchars($detail['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+											<?php echo form_error('email', '<div class="error">', '</div>'); ?>
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="mobile"><i class="fa fa-mobile-alt"></i> Mobile</label>
+											<input name="mobile" type="text" class="form-control" id="mobile" placeholder="+880 1XXX XXXXXX" value="<?= htmlspecialchars($detail['mobile'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+											<?php echo form_error('mobile', '<div class="error">', '</div>'); ?>
+										</div>
+									</div>
+									<div class="col-md-4 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="phone"><i class="fa fa-phone"></i> Phone</label>
+											<input name="phone" type="text" class="form-control" id="phone" placeholder="Office phone" value="<?= htmlspecialchars($detail['phone'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+											<?php echo form_error('phone', '<div class="error">', '</div>'); ?>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Address Information Section -->
+							<div class="company-form-section">
+								<div class="section-title">
+									<i class="fa fa-map-marker-alt"></i> Address Information
+								</div>
+								<div class="row">
+									<div class="col-md-6 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="address"><i class="fa fa-map"></i> Street Address</label>
+											<input name="address" type="text" class="form-control" id="address" placeholder="Street address" value="<?= htmlspecialchars($detail['address'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+											<?php echo form_error('address', '<div class="error">', '</div>'); ?>
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="city"><i class="fa fa-city"></i> City</label>
+											<input name="city" type="text" class="form-control" id="city" placeholder="City" value="<?= htmlspecialchars($detail['city'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+											<?php echo form_error('city', '<div class="error">', '</div>'); ?>
+										</div>
+									</div>
+									<div class="col-md-3 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="zip_code"><i class="fa fa-mail-bulk"></i> Zip Code</label>
+											<input name="zip_code" type="text" class="form-control" id="zip_code" placeholder="Zip/Postal code" value="<?= htmlspecialchars($detail['zip_code'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+											<?php echo form_error('zip_code', '<div class="error">', '</div>'); ?>
+										</div>
+									</div>
+								</div>
+								<div class="row mt-3">
+									<div class="col-md-6 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="state"><i class="fa fa-map-signs"></i> State/Province</label>
+											<input name="state" type="text" class="form-control" id="state" placeholder="State or province" value="<?= htmlspecialchars($detail['state'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+											<?php echo form_error('state', '<div class="error">', '</div>'); ?>
+										</div>
+									</div>
+									<div class="col-md-6 col-sm-12">
+										<div class="form-group">
+											<label class="form-label" for="country"><i class="fa fa-globe-asia"></i> Country</label>
+											<?php echo form_dropdown('country', $countries, !empty($detail['country']) ? $detail['country'] : 'Bangladesh', 'class="form-select select2" id="country"'); ?>
+											<?php echo form_error('country', '<div class="error">', '</div>'); ?>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Submit Button -->
+							<div class="form-group mt-4">
+								<button type="submit" class="btn btn-save-company">
+									<i class="fa fa-check-circle"></i> Save Company
+								</button>
 							</div>
 						</form>
 
 					</div>
 
 					<div class="tab-pane fade" id="service-info" role="tabpanel" aria-labelledby="service-tab">
-						<h6 class="mb-3">Services</h6>
-						<div class="table-responsive">
-							<table id="serviceListDt" class="table table-striped table-hover" style="width: 100%"></table>
+						<div class="company-datatable-wrapper">
+							<div class="table-responsive">
+								<table id="serviceListDt" class="table table-hover" style="width: 100%"></table>
+							</div>
 						</div>
 					</div>
 
 					<div class="tab-pane fade" id="domain-info" role="tabpanel" aria-labelledby="domain-tab">
-						<h6 class="mb-3">Domains</h6>
-						<div class="table-responsive">
-							<table id="domainListDt" class="table table-striped table-hover" style="width: 100%"></table>
+						<div class="company-datatable-wrapper">
+							<div class="table-responsive">
+								<table id="domainListDt" class="table table-hover" style="width: 100%"></table>
+							</div>
 						</div>
 					</div>
 
 					<div class="tab-pane fade" id="invoice-info" role="tabpanel" aria-labelledby="invoice-tab">
-						<div class="table-responsive">
-							<table id="invoiceListDt" class="table table-striped table-hover" style="width: 100%"></table>
+						<div class="company-datatable-wrapper">
+							<div class="table-responsive">
+								<table id="invoiceListDt" class="table table-hover" style="width: 100%"></table>
+							</div>
 						</div>
 					</div>
 
 				</div>
 
 			</div>
-      </div>
+		</div>
 
-    </div><!-- container -->
-  </div><!-- content -->
+	</div><!-- container -->
+</div><!-- content -->
 
 <!-- Service Management Modal -->
-<div class="modal fade" id="serviceManageModal" tabindex="-1" aria-labelledby="serviceManageModalLabel" aria-hidden="true">
+<div class="modal fade service-modal" id="serviceManageModal" tabindex="-1" aria-labelledby="serviceManageModalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
 			<div class="modal-header">
@@ -182,166 +224,182 @@
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 			</div>
 			<div class="modal-body">
-				<form id="serviceManageForm">
+				<form id="serviceManageForm" class="company-form">
 					<?=csrf_field()?>
 					<input type="hidden" name="service_id" id="modal_service_id" value="">
 
-					<div class="row">
-						<div class="col-md-6">
-							<div class="mb-3">
-								<label class="form-label">Service ID</label>
-								<input type="text" class="form-control" id="modal_display_id" readonly>
+					<!-- Service Details Section -->
+					<div class="company-form-section">
+						<div class="section-title">
+							<i class="fa fa-info-circle"></i> Service Details
+						</div>
+						<div class="row">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label"><i class="fa fa-hashtag"></i> Service ID</label>
+									<input type="text" class="form-control" id="modal_display_id" readonly>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label"><i class="fa fa-tag"></i> Service Type</label>
+									<input type="text" class="form-control" id="modal_service_type" readonly>
+								</div>
 							</div>
 						</div>
-						<div class="col-md-6">
-							<div class="mb-3">
-								<label class="form-label">Service Type</label>
-								<input type="text" class="form-control" id="modal_service_type" readonly>
+						<div class="row mt-3">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label"><i class="fa fa-globe"></i> Hosting Domain</label>
+									<input type="text" class="form-control" id="modal_hosting_domain" readonly>
+								</div>
 							</div>
-						</div>
-					</div>
-
-					<div class="row">
-						<div class="col-md-6">
-							<div class="mb-3">
-								<label class="form-label">Hosting Domain</label>
-								<input type="text" class="form-control" id="modal_hosting_domain" readonly>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="mb-3">
-								<label class="form-label">Product/Package</label>
-								<input type="text" class="form-control" id="modal_product_name" readonly>
-							</div>
-						</div>
-					</div>
-
-					<hr>
-					<h6 class="text-primary"><i class="fa fa-cloud"></i> cPanel Configuration</h6>
-
-					<div class="row">
-						<div class="col-md-6">
-							<div class="mb-3">
-								<label class="form-label">cPanel Username <span class="text-danger">*</span></label>
-								<input type="text" class="form-control" name="cp_username" id="modal_cp_username" placeholder="Enter cPanel username">
-								<small class="text-muted">Max 8 characters, lowercase letters and numbers only</small>
-							</div>
-						</div>
-						<div class="col-md-6">
-							<div class="mb-3">
-								<label class="form-label">Service Status</label>
-								<select class="form-select" name="service_status" id="modal_service_status">
-									<option value="0">Pending</option>
-									<option value="1">Active</option>
-									<option value="2">Expired</option>
-									<option value="3">Suspended</option>
-									<option value="4">Terminated</option>
-								</select>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label"><i class="fa fa-box"></i> Product/Package</label>
+									<input type="text" class="form-control" id="modal_product_name" readonly>
+								</div>
 							</div>
 						</div>
 					</div>
 
-					<div class="row">
-						<div class="col-md-6">
-							<div class="mb-3">
-								<label class="form-label">cPanel Package</label>
-								<input type="text" class="form-control" id="modal_cp_package" readonly>
+					<!-- cPanel Configuration Section -->
+					<div class="company-form-section">
+						<div class="section-title">
+							<i class="fa fa-cloud"></i> cPanel Configuration
+						</div>
+						<div class="row">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label"><i class="fa fa-user"></i> cPanel Username <span class="text-danger">*</span></label>
+									<input type="text" class="form-control" name="cp_username" id="modal_cp_username" placeholder="Enter cPanel username">
+									<small class="text-muted mt-1 d-block">Max 8 characters, lowercase letters and numbers only</small>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label"><i class="fa fa-toggle-on"></i> Service Status</label>
+									<select class="form-select" name="service_status" id="modal_service_status">
+										<option value="0">Pending</option>
+										<option value="1">Active</option>
+										<option value="2">Expired</option>
+										<option value="3">Suspended</option>
+										<option value="4">Terminated</option>
+									</select>
+								</div>
 							</div>
 						</div>
-						<div class="col-md-6">
-							<div class="mb-3">
-								<label class="form-label">Sync Status</label>
-								<span id="modal_sync_status" class="badge bg-secondary">Not synced</span>
+						<div class="row mt-3">
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label"><i class="fa fa-cube"></i> cPanel Package</label>
+									<input type="text" class="form-control" id="modal_cp_package" readonly>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group">
+									<label class="form-label"><i class="fa fa-sync"></i> Sync Status</label>
+									<div class="mt-2">
+										<span id="modal_sync_status" class="sync-status-badge not-synced">Not synced</span>
+									</div>
+								</div>
 							</div>
 						</div>
 					</div>
 
 					<div id="cpanel_section" style="display:none;">
-						<hr>
-						<h6 class="text-success"><i class="fa fa-terminal"></i> cPanel Actions</h6>
-						<div class="alert alert-info">
-							<small><strong>Note:</strong> These actions will directly affect the cPanel server. Use with caution.</small>
-						</div>
-						<div class="btn-group" role="group">
-							<button type="button" class="btn btn-outline-success btn-sm" id="btnCreateCpanel" title="Create cPanel Account">
-								<i class="fa fa-plus-circle"></i> Create Account
-							</button>
-							<button type="button" class="btn btn-outline-info btn-sm" id="btnSyncCpanel" title="Sync from cPanel">
-								<i class="fa fa-sync" id="syncIcon"></i> Sync Info
-							</button>
-							<button type="button" class="btn btn-outline-warning btn-sm" id="btnSuspendCpanel" title="Suspend Account">
-								<i class="fa fa-pause-circle"></i> Suspend
-							</button>
-							<button type="button" class="btn btn-outline-primary btn-sm" id="btnUnsuspendCpanel" title="Unsuspend Account">
-								<i class="fa fa-play-circle"></i> Unsuspend
-							</button>
-							<button type="button" class="btn btn-outline-danger btn-sm" id="btnTerminateCpanel" title="Terminate Account">
-								<i class="fa fa-trash"></i> Terminate
-							</button>
+						<!-- cPanel Actions Section -->
+						<div class="company-form-section">
+							<div class="section-title">
+								<i class="fa fa-terminal"></i> cPanel Actions
+							</div>
+							<div class="modal-alert-info">
+								<small><i class="fa fa-info-circle"></i> <strong>Note:</strong> These actions will directly affect the cPanel server. Use with caution.</small>
+							</div>
+							<div class="cpanel-actions d-flex flex-wrap gap-2 mt-3">
+								<button type="button" class="btn btn-outline-success btn-sm" id="btnCreateCpanel" title="Create cPanel Account">
+									<i class="fa fa-plus-circle"></i> Create Account
+								</button>
+								<button type="button" class="btn btn-outline-info btn-sm" id="btnSyncCpanel" title="Sync from cPanel">
+									<i class="fa fa-sync" id="syncIcon"></i> Sync Info
+								</button>
+								<button type="button" class="btn btn-outline-warning btn-sm" id="btnSuspendCpanel" title="Suspend Account">
+									<i class="fa fa-pause-circle"></i> Suspend
+								</button>
+								<button type="button" class="btn btn-outline-primary btn-sm" id="btnUnsuspendCpanel" title="Unsuspend Account">
+									<i class="fa fa-play-circle"></i> Unsuspend
+								</button>
+								<button type="button" class="btn btn-outline-danger btn-sm" id="btnTerminateCpanel" title="Terminate Account">
+									<i class="fa fa-trash"></i> Terminate
+								</button>
+							</div>
 						</div>
 
 						<!-- Usage Stats Section -->
-						<div id="usage_stats_section" class="mt-3" style="display:none;">
-							<hr>
-							<h6 class="text-info"><i class="fa fa-chart-pie"></i> Package / Usage Stats</h6>
-							<small class="text-muted" id="last_sync_time"></small>
-
-							<div class="row mt-2">
-								<div class="col-md-6">
-									<div class="mb-2">
-										<div class="d-flex justify-content-between">
-											<small><i class="fa fa-hdd"></i> Disk Space</small>
-											<small id="disk_usage_text">0 MB / Unlimited</small>
-										</div>
-										<div class="progress" style="height: 8px;">
-											<div class="progress-bar bg-success" id="disk_progress" style="width: 0%"></div>
-										</div>
-									</div>
-									<div class="mb-2">
-										<div class="d-flex justify-content-between">
-											<small><i class="fa fa-tachometer-alt"></i> Bandwidth</small>
-											<small id="bw_usage_text">0 MB / Unlimited</small>
-										</div>
-										<div class="progress" style="height: 8px;">
-											<div class="progress-bar bg-info" id="bw_progress" style="width: 0%"></div>
-										</div>
-									</div>
-									<div class="mb-2">
-										<div class="d-flex justify-content-between">
-											<small><i class="fa fa-envelope"></i> Email Accounts</small>
-											<small id="email_usage_text">0 / Unlimited</small>
-										</div>
-										<div class="progress" style="height: 8px;">
-											<div class="progress-bar bg-primary" id="email_progress" style="width: 0%"></div>
-										</div>
-									</div>
+						<div id="usage_stats_section" style="display:none;">
+							<div class="company-form-section">
+								<div class="section-title">
+									<i class="fa fa-chart-pie"></i> Package / Usage Stats
 								</div>
-								<div class="col-md-6">
-									<div class="mb-2">
-										<div class="d-flex justify-content-between">
-											<small><i class="fa fa-database"></i> Databases</small>
-											<small id="db_usage_text">0 / Unlimited</small>
+								<small class="text-muted d-block mb-3" id="last_sync_time"></small>
+
+								<div class="row">
+									<div class="col-md-6">
+										<div class="usage-stat-item">
+											<div class="stat-header">
+												<small><i class="fa fa-hdd"></i> Disk Space</small>
+												<small id="disk_usage_text">0 MB / Unlimited</small>
+											</div>
+											<div class="progress">
+												<div class="progress-bar bg-success" id="disk_progress" style="width: 0%"></div>
+											</div>
 										</div>
-										<div class="progress" style="height: 8px;">
-											<div class="progress-bar bg-warning" id="db_progress" style="width: 0%"></div>
+										<div class="usage-stat-item">
+											<div class="stat-header">
+												<small><i class="fa fa-tachometer-alt"></i> Bandwidth</small>
+												<small id="bw_usage_text">0 MB / Unlimited</small>
+											</div>
+											<div class="progress">
+												<div class="progress-bar bg-info" id="bw_progress" style="width: 0%"></div>
+											</div>
+										</div>
+										<div class="usage-stat-item">
+											<div class="stat-header">
+												<small><i class="fa fa-envelope"></i> Email Accounts</small>
+												<small id="email_usage_text">0 / Unlimited</small>
+											</div>
+											<div class="progress">
+												<div class="progress-bar bg-primary" id="email_progress" style="width: 0%"></div>
+											</div>
 										</div>
 									</div>
-									<div class="mb-2">
-										<div class="d-flex justify-content-between">
-											<small><i class="fa fa-sitemap"></i> Addon Domains</small>
-											<small id="addon_usage_text">0 / Unlimited</small>
+									<div class="col-md-6">
+										<div class="usage-stat-item">
+											<div class="stat-header">
+												<small><i class="fa fa-database"></i> Databases</small>
+												<small id="db_usage_text">0 / Unlimited</small>
+											</div>
+											<div class="progress">
+												<div class="progress-bar bg-warning" id="db_progress" style="width: 0%"></div>
+											</div>
 										</div>
-										<div class="progress" style="height: 8px;">
-											<div class="progress-bar bg-secondary" id="addon_progress" style="width: 0%"></div>
+										<div class="usage-stat-item">
+											<div class="stat-header">
+												<small><i class="fa fa-sitemap"></i> Addon Domains</small>
+												<small id="addon_usage_text">0 / Unlimited</small>
+											</div>
+											<div class="progress">
+												<div class="progress-bar bg-secondary" id="addon_progress" style="width: 0%"></div>
+											</div>
 										</div>
-									</div>
-									<div class="mb-2">
-										<div class="d-flex justify-content-between">
-											<small><i class="fa fa-folder"></i> Subdomains</small>
-											<small id="subdomain_usage_text">0 / Unlimited</small>
-										</div>
-										<div class="progress" style="height: 8px;">
-											<div class="progress-bar bg-dark" id="subdomain_progress" style="width: 0%"></div>
+										<div class="usage-stat-item">
+											<div class="stat-header">
+												<small><i class="fa fa-folder"></i> Subdomains</small>
+												<small id="subdomain_usage_text">0 / Unlimited</small>
+											</div>
+											<div class="progress">
+												<div class="progress-bar bg-dark" id="subdomain_progress" style="width: 0%"></div>
+											</div>
 										</div>
 									</div>
 								</div>
@@ -350,16 +408,20 @@
 					</div>
 				</form>
 
-				<div id="modal_loading" class="text-center" style="display:none;">
-					<div class="spinner-border text-primary" role="status">
+				<div id="modal_loading" class="text-center py-5" style="display:none;">
+					<div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
 						<span class="visually-hidden">Loading...</span>
 					</div>
-					<p class="mt-2">Processing...</p>
+					<p class="mt-3 text-muted">Processing request...</p>
 				</div>
 			</div>
 			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-				<button type="button" class="btn btn-primary" id="btnSaveService"><i class="fa fa-save"></i> Save Changes</button>
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+					<i class="fa fa-times"></i> Close
+				</button>
+				<button type="button" class="btn btn-save-company" id="btnSaveService">
+					<i class="fa fa-save"></i> Save Changes
+				</button>
 			</div>
 		</div>
 	</div>
@@ -518,7 +580,7 @@
 					"orderable": false,
 					"searchable": false,
 					"render": function (data, type, row) {
-						return '<a href="<?=base_url()?>whmazadmin/invoice/view_invoice/<?= $detail['id']?>/' + data + '" class="btn btn-sm btn-outline-secondary" title="View Invoice"><i class="fa fa-eye"></i></a>';
+						return '<a href="<?=base_url()?>whmazadmin/invoice/view_invoice/<?= !empty($detail['id']) ? $detail['id'] : 0 ?>/' + data + '" class="btn btn-sm btn-outline-secondary" title="View Invoice"><i class="fa fa-eye"></i></a>';
 					}
 				}
 			]
@@ -569,9 +631,9 @@
 
 						// Show sync status
 						if (data.is_synced == 1) {
-							$('#modal_sync_status').removeClass('bg-secondary bg-danger').addClass('bg-success').text('Synced');
+							$('#modal_sync_status').removeClass('not-synced').addClass('synced').text('Synced');
 						} else {
-							$('#modal_sync_status').removeClass('bg-success bg-danger').addClass('bg-secondary').text('Not synced');
+							$('#modal_sync_status').removeClass('synced').addClass('not-synced').text('Not synced');
 						}
 
 						// Show cPanel section only for hosting types
@@ -739,7 +801,7 @@
 						$('#last_sync_time').html('<i class="fa fa-clock"></i> Last synced: ' + (stats.last_sync || 'Just now'));
 
 						// Update sync status badge
-						$('#modal_sync_status').removeClass('bg-secondary bg-danger').addClass('bg-success').text('Synced');
+						$('#modal_sync_status').removeClass('not-synced').addClass('synced').text('Synced');
 
 						toastSuccess(response.message || 'cPanel usage stats synced successfully');
 					} else {
