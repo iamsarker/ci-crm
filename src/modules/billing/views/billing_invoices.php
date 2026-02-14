@@ -129,7 +129,7 @@
                                                 <i class="fa fa-file-pdf"></i>
                                             </button>
                                             <?php if(strtoupper($row['pay_status']) != 'PAID'): ?>
-                                            <a href="<?=base_url()?>billing/pay_invoice/<?= htmlspecialchars($row['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-sm btn-success" title="Pay Now">
+                                            <a href="<?=base_url()?>billing/pay/invoice/<?= htmlspecialchars($row['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-sm btn-success" title="Pay Now">
                                                 <i class="fa fa-credit-card"></i>
                                             </a>
                                             <?php endif; ?>

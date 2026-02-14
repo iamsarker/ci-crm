@@ -148,7 +148,6 @@
             <a href="" class="nav-link"><i data-feather="pie-chart"></i> Billing</a>
             <ul class="navbar-menu-sub">
               <li class="nav-sub-item"><a href="<?=base_url()?>billing/invoices" class="nav-sub-link"><i data-feather="list"></i>My invoices</a></li>
-              <li class="nav-sub-item"><a href="<?=base_url()?>billing/quotes" class="nav-sub-link"><i data-feather="list"></i>My Quotes</a></li>
             </ul>
           </li>
 

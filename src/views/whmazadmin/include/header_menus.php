@@ -35,6 +35,8 @@
 					<a href="" class="nav-link"><i data-feather="pie-chart"></i> Billing</a>
 					<ul class="navbar-menu-sub">
 						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/invoice/index" class="nav-sub-link"><i data-feather="file-text"></i>View invoices</a></li>
+						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/paymentgateway/index" class="nav-sub-link"><i data-feather="credit-card"></i>Payment Gateways</a></li>
+						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/paymentgateway/transactions" class="nav-sub-link"><i data-feather="activity"></i>Transactions</a></li>
 					</ul>
 				</li>
 

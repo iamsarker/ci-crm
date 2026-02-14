@@ -73,15 +73,4 @@ class Billing extends WHMAZ_Controller
 		$this->pdf->download_view('billing_invoice_pdf_html', $data, "Invoice-".$data['invoice']['invoice_no'].".pdf");
 	}
 
-
-	public function quotes()
-	{
-		$companyId = getCompanyId();
-		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
-		$data['results'] = $this->Billing_model->loadInvoiceList($companyId, -1);
-
-		$this->load->view('billing_quotes', $data);
-	}
-
-
 }

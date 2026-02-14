@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 13, 2026 at 02:38 AM
+-- Generation Time: Feb 13, 2026 at 07:59 PM
 -- Server version: 10.11.11-MariaDB-cll-lve
 -- PHP Version: 8.3.20
 
@@ -157,7 +157,9 @@ INSERT INTO `admin_logins` (`id`, `admin_id`, `login_time`, `session_val`, `term
 (81, 1, '2026-02-09 01:22:21', '0', '127.0.0.1', NULL, 1),
 (82, 1, '2026-02-08 19:59:25', '0', '103.159.72.16', NULL, 1),
 (83, 1, '2026-02-12 05:37:30', '0', '127.0.0.1', NULL, 1),
-(84, 1, '2026-02-13 01:22:34', '0', '127.0.0.1', NULL, 1);
+(84, 1, '2026-02-13 01:22:34', '0', '127.0.0.1', NULL, 1),
+(85, 1, '2026-02-13 15:47:18', '0', '127.0.0.1', NULL, 1),
+(86, 1, '2026-02-13 16:51:27', '0', '127.0.0.1', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1092,8 +1094,8 @@ CREATE TABLE `gen_numbers` (
 --
 
 INSERT INTO `gen_numbers` (`id`, `no_type`, `last_no`) VALUES
-(1, 'ORDER', 2025),
-(2, 'INVOICE', 1534);
+(1, 'ORDER', 2027),
+(2, 'INVOICE', 1536);
 
 -- --------------------------------------------------------
 
@@ -1162,7 +1164,8 @@ INSERT INTO `invoices` (`id`, `invoice_uuid`, `company_id`, `order_id`, `currenc
 (549, '2a3a52fb-d960-49f1-bc1c-aadb36240780', 9, 714, 1, 'USD', '1531', 50.94, 0.00, 0.00, 47.44, '2025-11-26', '2021-11-26', NULL, NULL, NULL, 1, 'PAID', 0, '2025-11-16 22:51:26', 1, '2025-12-04 13:37:39', NULL, NULL, NULL),
 (550, '91edf252-bca1-40d9-bf3f-71ab2f56d726', 2, 725, 1, 'USD', '1532', 69.50, 0.00, 0.00, 69.50, '2026-12-04', '2025-12-04', NULL, NULL, NULL, 1, 'PAID', 0, '2025-12-04 14:32:13', 1, '2026-01-13 15:04:40', NULL, NULL, NULL),
 (551, 'b26a4187-295c-4a0d-8b6b-c95ed23bbebc', 2, 720, 1, 'USD', '1533', 69.50, 0.00, 0.00, 69.50, '2027-01-16', '2025-01-16', NULL, NULL, NULL, 1, 'PAID', 0, '2026-01-13 16:43:04', 1, '2026-01-23 08:06:39', 1, NULL, NULL),
-(552, '9fcf6d9c-90c3-4317-bc77-75a07bc44ee0', 14, 726, 1, 'USD', '1534', 33.14, 0.00, 0.00, 33.14, '2025-04-21', '2025-04-14', NULL, NULL, NULL, 1, 'PAID', 0, '2025-04-14 10:24:18', 1, '2026-02-12 16:35:27', 1, NULL, NULL);
+(552, '9fcf6d9c-90c3-4317-bc77-75a07bc44ee0', 14, 726, 1, 'USD', '1534', 33.14, 0.00, 0.00, 33.14, '2025-04-21', '2025-04-14', NULL, NULL, NULL, 1, 'PAID', 0, '2025-04-14 10:24:18', 1, '2026-02-12 16:35:27', 1, NULL, NULL),
+(553, 'ac8e5c4f-30ff-4690-ba7d-b77d045736bc', 1, 727, 1, 'USD', '1535', 32.95, 0.00, 0.00, 32.95, '2026-02-13', '2026-02-13', NULL, NULL, NULL, 1, 'DUE', 0, '2026-02-13 15:55:37', 1, '2026-02-13 15:55:39', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1241,7 +1244,8 @@ INSERT INTO `invoice_items` (`id`, `invoice_id`, `item`, `item_desc`, `item_type
 (566, 550, 'Hosting package', 'Yearly uVPS-1 for  domain', 2, NULL, 4, NULL, 1, 69.50, 0.00, 69.50, 0.00, 0.00, 69.50, NULL, NULL, '2025-12-04 14:32:18', NULL, '2026-02-12 10:34:38', NULL),
 (567, 551, 'Hosting package', 'Yearly renew of uVPS-1 (Parliament)', 2, NULL, 4, NULL, 1, 69.50, 0.00, 69.50, 0.00, 0.00, 69.50, NULL, NULL, '2026-01-13 16:43:04', NULL, '2026-02-12 10:34:11', NULL),
 (568, 552, 'Domain registration', 'emonislam.com - 1 year(s)', 1, 724, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, '2025-04-14', '2026-04-14', '2025-04-14 10:24:21', 1, '2026-02-12 10:32:53', NULL),
-(569, 552, 'Hosting package', 'Yearly 2GB_SHARED for emonislam.com domain', 2, 715, 4, NULL, 1, 20.15, 0.00, 20.15, 0.00, 0.00, 20.15, '2025-04-14', '2026-04-14', '2025-04-14 10:24:22', 1, '2026-02-12 10:31:55', NULL);
+(569, 552, 'Hosting package', 'Yearly 2GB_SHARED for emonislam.com domain', 2, 715, 4, NULL, 1, 20.15, 0.00, 20.15, 0.00, 0.00, 20.15, '2025-04-14', '2026-04-14', '2025-04-14 10:24:22', 1, '2026-02-12 10:31:55', NULL),
+(570, 554, '5GB_SHARED', '5GB_SHARED - narikel.com', 2, 717, 4, NULL, 1, 32.95, 0.00, 32.95, 0.00, 0.00, 32.95, '2026-02-13', '2027-02-13', '2026-02-13 16:05:15', 1, '2026-02-13 16:05:19', NULL);
 
 -- --------------------------------------------------------
 
@@ -1253,6 +1257,7 @@ CREATE TABLE `invoice_txn` (
   `id` bigint(20) NOT NULL,
   `invoice_id` bigint(20) DEFAULT NULL,
   `payment_gateway_id` int(11) DEFAULT NULL COMMENT 'FK to payment gateway',
+  `payment_transaction_id` bigint(20) DEFAULT NULL COMMENT 'FK to payment_transactions',
   `transaction_id` varchar(100) DEFAULT NULL COMMENT 'External reference from payment gateway',
   `txn_date` date NOT NULL,
   `amount` decimal(15,2) NOT NULL,
@@ -1273,9 +1278,9 @@ CREATE TABLE `invoice_txn` (
 -- Dumping data for table `invoice_txn`
 --
 
-INSERT INTO `invoice_txn` (`id`, `invoice_id`, `payment_gateway_id`, `transaction_id`, `txn_date`, `amount`, `currency_code`, `type`, `status`, `remarks`, `attachments`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(1, 505, NULL, NULL, '2024-08-22', 23.00, NULL, 'payment', 1, 'paid - 2250 tk', NULL, '2024-08-22 10:19:48', 1, NULL, NULL, NULL, NULL),
-(2, 506, NULL, NULL, '2024-08-30', 12.99, NULL, 'payment', 1, 'paid - 1600 tk', NULL, '2024-08-22 10:19:48', 1, NULL, NULL, NULL, NULL);
+INSERT INTO `invoice_txn` (`id`, `invoice_id`, `payment_gateway_id`, `payment_transaction_id`, `transaction_id`, `txn_date`, `amount`, `currency_code`, `type`, `status`, `remarks`, `attachments`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 505, NULL, NULL, NULL, '2024-08-22', 23.00, NULL, 'payment', 1, 'paid - 2250 tk', NULL, '2024-08-22 10:19:48', 1, NULL, NULL, NULL, NULL),
+(2, 506, NULL, NULL, NULL, '2024-08-30', 12.99, NULL, 'payment', 1, 'paid - 1600 tk', NULL, '2024-08-22 10:19:48', 1, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1402,13 +1407,6 @@ CREATE TABLE `login_attempts` (
   `attempt_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `login_attempts`
---
-
-INSERT INTO `login_attempts` (`id`, `identifier`, `identifier_type`, `ip_address`, `user_agent`, `is_successful`, `attempt_time`) VALUES
-(20, 'info.errorpoint@gmail.com', 'email', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36', 0, '2026-02-13 01:22:16');
-
 -- --------------------------------------------------------
 
 --
@@ -1487,7 +1485,8 @@ INSERT INTO `orders` (`id`, `order_uuid`, `order_no`, `company_id`, `currency_id
 (723, 'ca821065-8ecf-44ca-99d5-2499f802ed8b', 2022, 13, 1, 'USD', '2024-12-03', 37.95, 0.00, 0.00, '', 0.00, 9.95, 28.00, 1, NULL, 1, '', 0, 0, '2024-12-03 02:25:47', 0, '2025-05-06 00:40:36', NULL, NULL, NULL),
 (724, 'de8a552d-abcc-4b9c-81d4-595eb0594bb2', 2023, 14, 1, 'USD', '2025-08-12', 91.49, 0.00, 0.00, '', 0.00, 1.00, 90.49, 1, NULL, 1, '', 0, 0, '2025-08-12 03:41:24', 0, '2025-08-12 01:50:35', NULL, NULL, NULL),
 (725, '9aecd9e7-7267-4cca-8729-45d7f60d7c3d', 2024, 2, 1, 'USD', '2025-12-04', 69.50, 0.00, 0.00, '', 0.00, 0.00, 69.50, 1, NULL, 1, '', 0, 0, '2025-12-04 14:32:14', 0, '2025-12-04 13:32:14', NULL, NULL, NULL),
-(726, 'a9d3e28c-1ac5-40e8-b571-25fc4ef08152', 2025, 14, 1, 'USD', '2025-04-14', 33.14, 0.00, 0.00, '', 0.00, 0.00, 33.14, 1, NULL, 1, '', 0, 0, '2025-04-14 10:24:19', 1, '2026-02-12 10:27:17', NULL, NULL, NULL);
+(726, 'a9d3e28c-1ac5-40e8-b571-25fc4ef08152', 2025, 14, 1, 'USD', '2025-04-14', 33.14, 0.00, 0.00, '', 0.00, 0.00, 33.14, 1, NULL, 1, '', 0, 0, '2025-04-14 10:24:19', 1, '2026-02-12 10:27:17', NULL, NULL, NULL),
+(727, '5926dec2-cdbf-4ce5-b286-1329027c00d1', 2026, 1, 1, 'USD', '2026-02-13', 32.95, 0.00, 0.00, '', 0.00, 0.00, 32.95, 1, '', 1, '', 0, 0, '2026-02-13 15:55:35', 1, '2026-02-13 15:55:37', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1643,7 +1642,8 @@ INSERT INTO `order_services` (`id`, `order_id`, `company_id`, `product_service_i
 (712, 723, 13, 5, 9, 'SHARED_HOSTING', 'dwacombd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'dwa.com.bd', NULL, NULL, 1, '2024-12-03', '2024-12-03', '2025-12-03', '2024-12-03', NULL, NULL, NULL, 0, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
 (713, 724, 14, 20, 27, 'SHARED_HOSTING', 'brandnstitc', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 65.00, 65.00, 'brandnstitch.com', NULL, NULL, 1, '2025-08-12', '2026-08-12', '2026-08-12', '2026-08-12', NULL, NULL, NULL, 1, NULL, 1, '', '2025-08-12 03:41:24', 1, '2026-02-12 17:23:21', 1, NULL, NULL),
 (714, 725, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-12-04', '2025-12-04', '2025-12-04', '2025-12-04', NULL, NULL, NULL, 0, NULL, 1, '', '2025-12-04 14:32:15', 1, '2026-02-12 11:14:53', NULL, NULL, NULL),
-(715, 726, 14, 2, 3, 'SHARED_HOSTING', 'emonisla', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 20.15, 20.15, 'emonislam.com', NULL, NULL, 1, '2025-04-14', '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 1, NULL, 1, '', '2025-04-14 10:24:19', 1, '2026-02-12 17:22:31', 1, NULL, NULL);
+(715, 726, 14, 2, 3, 'SHARED_HOSTING', 'emonisla', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 20.15, 20.15, 'emonislam.com', NULL, NULL, 1, '2025-04-14', '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 1, NULL, 1, '', '2025-04-14 10:24:19', 1, '2026-02-12 17:22:31', 1, NULL, NULL),
+(716, 727, 1, 4, 7, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '5GB_SHARED', 32.95, 32.95, 'narikel.com', NULL, NULL, 1, '2026-02-13', '2027-02-13', '2026-02-20', '2027-02-13', NULL, NULL, NULL, 0, NULL, 0, '', '2026-02-13 15:55:37', 1, '2026-02-13 15:55:40', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1729,8 +1729,35 @@ CREATE TABLE `password_resets` (
 CREATE TABLE `payment_gateway` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
+  `gateway_code` varchar(50) NOT NULL DEFAULT 'manual' COMMENT 'Unique code: stripe, paypal, razorpay, paystack, sslcommerz, bank_transfer, manual',
+  `gateway_type` enum('online_card','online_wallet','bank_transfer','manual','crypto') NOT NULL DEFAULT 'manual' COMMENT 'Type of payment method',
   `icon_fa_unicode` varchar(30) DEFAULT NULL,
   `pay_type` varchar(8) NOT NULL DEFAULT 'OFFLINE' COMMENT 'OFFLINE,ONLINE',
+  `public_key` varchar(500) DEFAULT NULL COMMENT 'Public/Publishable API key',
+  `secret_key` varchar(500) DEFAULT NULL COMMENT 'Secret/Private API key (store encrypted)',
+  `webhook_secret` varchar(255) DEFAULT NULL COMMENT 'Webhook signature verification secret',
+  `is_test_mode` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=Sandbox/Test, 0=Live/Production',
+  `test_public_key` varchar(500) DEFAULT NULL COMMENT 'Test/Sandbox public key',
+  `test_secret_key` varchar(500) DEFAULT NULL COMMENT 'Test/Sandbox secret key',
+  `extra_config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Gateway-specific settings as JSON' CHECK (json_valid(`extra_config`)),
+  `bank_name` varchar(200) DEFAULT NULL,
+  `account_name` varchar(200) DEFAULT NULL,
+  `account_number` varchar(100) DEFAULT NULL,
+  `routing_number` varchar(50) DEFAULT NULL COMMENT 'Routing/Sort code',
+  `swift_code` varchar(20) DEFAULT NULL COMMENT 'SWIFT/BIC for international',
+  `iban` varchar(50) DEFAULT NULL,
+  `supported_currencies` varchar(500) DEFAULT 'USD' COMMENT 'Comma-separated currency codes',
+  `min_amount` decimal(15,2) DEFAULT 0.00 COMMENT 'Minimum transaction amount',
+  `max_amount` decimal(15,2) DEFAULT 0.00 COMMENT 'Maximum transaction amount (0=unlimited)',
+  `fee_type` enum('none','fixed','percentage','both') NOT NULL DEFAULT 'none',
+  `fee_fixed` decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Fixed fee amount',
+  `fee_percent` decimal(5,2) NOT NULL DEFAULT 0.00 COMMENT 'Percentage fee (e.g., 2.9 for 2.9%)',
+  `fee_bearer` enum('merchant','customer') NOT NULL DEFAULT 'merchant' COMMENT 'Who pays the fee',
+  `logo` varchar(255) DEFAULT NULL COMMENT 'Gateway logo filename',
+  `display_name` varchar(100) DEFAULT NULL COMMENT 'Name shown to customers',
+  `description` text DEFAULT NULL COMMENT 'Description shown during checkout',
+  `sort_order` int(11) NOT NULL DEFAULT 0 COMMENT 'Display order (lower=first)',
+  `webhook_url` varchar(500) DEFAULT NULL COMMENT 'Auto-generated webhook URL',
   `merchant_id` varchar(100) DEFAULT NULL,
   `merchant_pwd` varchar(255) DEFAULT NULL,
   `instructions` text DEFAULT NULL,
@@ -1745,8 +1772,85 @@ CREATE TABLE `payment_gateway` (
 -- Dumping data for table `payment_gateway`
 --
 
-INSERT INTO `payment_gateway` (`id`, `name`, `icon_fa_unicode`, `pay_type`, `merchant_id`, `merchant_pwd`, `instructions`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Offline Payment', 'f3d1', 'OFFLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL);
+INSERT INTO `payment_gateway` (`id`, `name`, `gateway_code`, `gateway_type`, `icon_fa_unicode`, `pay_type`, `public_key`, `secret_key`, `webhook_secret`, `is_test_mode`, `test_public_key`, `test_secret_key`, `extra_config`, `bank_name`, `account_name`, `account_number`, `routing_number`, `swift_code`, `iban`, `supported_currencies`, `min_amount`, `max_amount`, `fee_type`, `fee_fixed`, `fee_percent`, `fee_bearer`, `logo`, `display_name`, `description`, `sort_order`, `webhook_url`, `merchant_id`, `merchant_pwd`, `instructions`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(1, 'Offline Payment', 'manual', 'manual', 'f3d1', 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Manual Payment', 'Pay via bank transfer or other offline methods. Your order will be processed after payment confirmation.', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL),
+(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Credit/Debit Card', 'Pay securely with your credit or debit card via Stripe.', 1, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
+(3, 'PayPal', 'paypal', 'online_wallet', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,JPY,CHF,HKD,SGD,SEK,DKK,PLN,NOK,CZK,ILS,MXN,BRL,PHP,TWD,THB,MYR', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'PayPal', 'Pay securely using your PayPal account or card.', 2, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
+(4, 'Razorpay', 'razorpay', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'INR', 0.00, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'Razorpay', 'Pay with UPI, Cards, Netbanking, or Wallets via Razorpay.', 3, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
+(5, 'Paystack', 'paystack', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NGN,GHS,ZAR,KES', 0.00, 0.00, 'both', 100.00, 1.50, 'merchant', NULL, 'Paystack', 'Pay with card or bank transfer via Paystack.', 4, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
+(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', 'http://localhost/webhook/sslcommerz', 1, 'test@admin.com', '12345', '{\r\n    \"store_id\": \"titum5d71b6d6edd13@ssl\",\r\n    \"store_password\": \"titum5d71b6d6edd13\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, 'http://localhost/webhook/sslcommerz', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-02-13 23:25:55', 1),
+(7, 'Bank Transfer', 'bank_transfer', 'bank_transfer', NULL, 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,BDT,INR', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Bank Transfer', 'Transfer funds directly to our bank account. Order will be processed after payment confirmation.', 10, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `payment_refunds`
+--
+
+CREATE TABLE `payment_refunds` (
+  `id` bigint(20) NOT NULL,
+  `refund_uuid` varchar(36) NOT NULL,
+  `transaction_id` bigint(20) NOT NULL COMMENT 'FK to payment_transactions',
+  `invoice_id` bigint(20) NOT NULL,
+  `gateway_refund_id` varchar(255) DEFAULT NULL,
+  `amount` decimal(15,2) NOT NULL,
+  `currency_code` varchar(3) NOT NULL,
+  `reason` varchar(500) DEFAULT NULL,
+  `status` enum('pending','processing','completed','failed') NOT NULL DEFAULT 'pending',
+  `failure_reason` varchar(500) DEFAULT NULL,
+  `gateway_response` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`gateway_response`)),
+  `requested_by` bigint(20) DEFAULT NULL,
+  `requested_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `processed_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `payment_transactions`
+--
+
+CREATE TABLE `payment_transactions` (
+  `id` bigint(20) NOT NULL,
+  `transaction_uuid` varchar(36) NOT NULL,
+  `invoice_id` bigint(20) NOT NULL,
+  `payment_gateway_id` int(11) NOT NULL,
+  `gateway_code` varchar(50) NOT NULL,
+  `gateway_transaction_id` varchar(255) DEFAULT NULL COMMENT 'Transaction ID from payment gateway',
+  `gateway_payment_id` varchar(255) DEFAULT NULL COMMENT 'Payment ID (for gateways like Razorpay)',
+  `gateway_order_id` varchar(255) DEFAULT NULL COMMENT 'Order ID created at gateway',
+  `gateway_subscription_id` varchar(255) DEFAULT NULL COMMENT 'For recurring payments',
+  `amount` decimal(15,2) NOT NULL,
+  `fee_amount` decimal(15,2) NOT NULL DEFAULT 0.00 COMMENT 'Processing fee charged',
+  `net_amount` decimal(15,2) NOT NULL COMMENT 'Amount after fee deduction',
+  `currency_code` varchar(3) NOT NULL,
+  `exchange_rate` decimal(10,6) DEFAULT 1.000000 COMMENT 'Exchange rate if currency converted',
+  `txn_type` enum('payment','refund','partial_refund','chargeback','credit') NOT NULL DEFAULT 'payment',
+  `status` enum('pending','processing','completed','failed','cancelled','refunded') NOT NULL DEFAULT 'pending',
+  `failure_reason` varchar(500) DEFAULT NULL,
+  `payment_method` varchar(50) DEFAULT NULL COMMENT 'card, bank, wallet, upi, etc.',
+  `card_brand` varchar(20) DEFAULT NULL COMMENT 'visa, mastercard, amex, etc.',
+  `card_last4` varchar(4) DEFAULT NULL,
+  `card_exp_month` tinyint(2) DEFAULT NULL,
+  `card_exp_year` smallint(4) DEFAULT NULL,
+  `bank_name` varchar(100) DEFAULT NULL,
+  `wallet_name` varchar(50) DEFAULT NULL COMMENT 'paypal, gpay, applepay, etc.',
+  `payer_email` varchar(255) DEFAULT NULL,
+  `payer_name` varchar(200) DEFAULT NULL,
+  `payer_phone` varchar(20) DEFAULT NULL,
+  `gateway_response` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Full response from gateway' CHECK (json_valid(`gateway_response`)),
+  `webhook_payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Webhook data received' CHECK (json_valid(`webhook_payload`)),
+  `ip_address` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(500) DEFAULT NULL,
+  `metadata` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Additional transaction metadata' CHECK (json_valid(`metadata`)),
+  `initiated_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `completed_at` datetime DEFAULT NULL,
+  `refunded_at` datetime DEFAULT NULL,
+  `inserted_on` datetime DEFAULT current_timestamp(),
+  `inserted_by` bigint(20) DEFAULT NULL,
+  `updated_on` datetime DEFAULT NULL ON UPDATE current_timestamp(),
+  `updated_by` bigint(20) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -2093,7 +2197,7 @@ CREATE TABLE `ticket_depts` (
 --
 
 INSERT INTO `ticket_depts` (`id`, `name`, `description`, `email`, `sort_order`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Support', 'Technical supports', 'support@whmaz.com', 1, 1, NULL, NULL, '2020-08-30 03:50:59', NULL),
+(1, 'Support', 'Technical supports', 'me.sarker@gmail.com', 1, 1, NULL, NULL, '2026-02-13 15:28:08', NULL),
 (2, 'Billing', 'Bill payments department.', 'billing@whmaz.com', 2, 1, NULL, NULL, '2024-08-03 03:42:56', 1);
 
 -- --------------------------------------------------------
@@ -2313,7 +2417,31 @@ INSERT INTO `user_logins` (`id`, `user_id`, `login_time`, `session_val`, `termin
 (105, 1, '2026-02-12 03:52:45', '0', '127.0.0.1', NULL, 1),
 (106, 1, '2026-02-12 04:19:26', '0', '127.0.0.1', NULL, 1),
 (107, 1, '2026-02-12 06:59:30', '0', '127.0.0.1', NULL, 1),
-(108, 1, '2026-02-12 06:24:59', '0', '103.159.72.16', NULL, 1);
+(108, 1, '2026-02-12 06:24:59', '0', '103.159.72.16', NULL, 1),
+(109, 1, '2026-02-13 15:54:15', '0', '127.0.0.1', NULL, 1),
+(110, 1, '2026-02-14 01:27:22', '0', '127.0.0.1', NULL, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `webhook_logs`
+--
+
+CREATE TABLE `webhook_logs` (
+  `id` bigint(20) NOT NULL,
+  `gateway_code` varchar(50) NOT NULL,
+  `event_type` varchar(100) DEFAULT NULL COMMENT 'Event type from gateway',
+  `event_id` varchar(255) DEFAULT NULL COMMENT 'Event ID from gateway',
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'Raw webhook payload' CHECK (json_valid(`payload`)),
+  `headers` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Request headers' CHECK (json_valid(`headers`)),
+  `signature` varchar(500) DEFAULT NULL COMMENT 'Signature header value',
+  `signature_valid` tinyint(1) DEFAULT NULL COMMENT 'Was signature valid?',
+  `processed` tinyint(1) NOT NULL DEFAULT 0,
+  `processed_at` datetime DEFAULT NULL,
+  `process_result` varchar(500) DEFAULT NULL,
+  `ip_address` varchar(45) DEFAULT NULL,
+  `received_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Indexes for dumped tables
@@ -2496,7 +2624,8 @@ ALTER TABLE `invoice_items`
 ALTER TABLE `invoice_txn`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_invoice_txn_invoice` (`invoice_id`),
-  ADD KEY `idx_invoice_txn_transaction` (`transaction_id`);
+  ADD KEY `idx_invoice_txn_transaction` (`transaction_id`),
+  ADD KEY `idx_payment_transaction` (`payment_transaction_id`);
 
 --
 -- Indexes for table `kbs`
@@ -2583,7 +2712,30 @@ ALTER TABLE `password_resets`
 -- Indexes for table `payment_gateway`
 --
 ALTER TABLE `payment_gateway`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_gateway_code` (`gateway_code`);
+
+--
+-- Indexes for table `payment_refunds`
+--
+ALTER TABLE `payment_refunds`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_refund_uuid` (`refund_uuid`),
+  ADD KEY `idx_transaction` (`transaction_id`),
+  ADD KEY `idx_invoice` (`invoice_id`),
+  ADD KEY `idx_status` (`status`);
+
+--
+-- Indexes for table `payment_transactions`
+--
+ALTER TABLE `payment_transactions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_transaction_uuid` (`transaction_uuid`),
+  ADD KEY `idx_invoice_id` (`invoice_id`),
+  ADD KEY `idx_gateway_txn` (`gateway_transaction_id`),
+  ADD KEY `idx_status` (`status`),
+  ADD KEY `idx_created` (`initiated_at`),
+  ADD KEY `idx_gateway` (`payment_gateway_id`,`gateway_code`);
 
 --
 -- Indexes for table `pending_executions`
@@ -2669,6 +2821,16 @@ ALTER TABLE `user_logins`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `webhook_logs`
+--
+ALTER TABLE `webhook_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_gateway` (`gateway_code`),
+  ADD KEY `idx_event` (`event_type`),
+  ADD KEY `idx_processed` (`processed`),
+  ADD KEY `idx_received` (`received_at`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -2676,13 +2838,13 @@ ALTER TABLE `user_logins`
 -- AUTO_INCREMENT for table `add_to_carts`
 --
 ALTER TABLE `add_to_carts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `admin_logins`
 --
 ALTER TABLE `admin_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=87;
 
 --
 -- AUTO_INCREMENT for table `admin_roles`
@@ -2814,13 +2976,13 @@ ALTER TABLE `gen_numbers`
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=553;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=555;
 
 --
 -- AUTO_INCREMENT for table `invoice_items`
 --
 ALTER TABLE `invoice_items`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=570;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=571;
 
 --
 -- AUTO_INCREMENT for table `invoice_txn`
@@ -2862,7 +3024,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=727;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=729;
 
 --
 -- AUTO_INCREMENT for table `order_domains`
@@ -2874,7 +3036,7 @@ ALTER TABLE `order_domains`
 -- AUTO_INCREMENT for table `order_services`
 --
 ALTER TABLE `order_services`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=716;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=718;
 
 --
 -- AUTO_INCREMENT for table `pages`
@@ -2892,7 +3054,19 @@ ALTER TABLE `page_history`
 -- AUTO_INCREMENT for table `payment_gateway`
 --
 ALTER TABLE `payment_gateway`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT for table `payment_refunds`
+--
+ALTER TABLE `payment_refunds`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `payment_transactions`
+--
+ALTER TABLE `payment_transactions`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `pending_executions`
@@ -2970,7 +3144,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_logins`
 --
 ALTER TABLE `user_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
+
+--
+-- AUTO_INCREMENT for table `webhook_logs`
+--
+ALTER TABLE `webhook_logs`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables

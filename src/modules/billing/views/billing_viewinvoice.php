@@ -50,7 +50,7 @@
                                 <i class="fa fa-file-pdf text-danger mg-r-5"></i>Download PDF
                             </a>
                             <?php if(strtoupper($invoice['pay_status'] ?? '') != 'PAID'): ?>
-                            <a href="<?= base_url() ?>billing/pay_invoice/<?= htmlspecialchars($invoice['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-success btn-sm">
+                            <a href="<?= base_url() ?>billing/pay/invoice/<?= htmlspecialchars($invoice['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-success btn-sm">
                                 <i class="fa fa-credit-card mg-r-5"></i>Pay Now
                             </a>
                             <?php endif; ?>

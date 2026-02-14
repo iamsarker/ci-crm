@@ -273,20 +273,6 @@
                     </div>
                 </div>
 
-                <!-- Description Card -->
-                <?php if(!empty($detail['description'])): ?>
-                <div class="card service-detail-card mg-b-20">
-                    <div class="card-header service-detail-header service-detail-header-secondary">
-                        <h5 class="mg-b-0"><i class="fa fa-file-alt mg-r-10"></i>Product Description</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="product-description">
-                            <?= $detail['description'] ?>
-                        </div>
-                    </div>
-                </div>
-                <?php endif; ?>
-
                 <!-- Instructions Card -->
                 <?php if(!empty($detail['instructions'])): ?>
                 <div class="card service-detail-card mg-b-20">

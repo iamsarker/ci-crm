@@ -497,6 +497,7 @@ $config['csrf_exclude_uris'] = array(
 	'cart/delete/.*',
 	'pages/.*',
 	'cart/delete_all',
+	'billing/pay/invoice/*',
 	// Order management dropdown API endpoints (require admin authentication)
 	'whmazadmin/package/filter_api',
 	'whmazadmin/package/prices',
