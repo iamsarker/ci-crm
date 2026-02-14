@@ -422,7 +422,7 @@
             </div>
 
             <!-- Bank Transfer -->
-            <div class="payment-form" id="bank-form" style="display:none;">
+            <div class="payment-form" id="bank_transfer-form" style="display:none;">
                 <h5 style="margin-bottom: 20px;"><i class="fas fa-university"></i> Bank Transfer Details</h5>
                 <div class="bank-transfer-details">
                     <table>

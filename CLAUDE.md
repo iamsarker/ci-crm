@@ -71,9 +71,13 @@ resources/assets/css/
   - Ticket Dept pages: `#E65100` (orange)
 
 #### Client Portal Colors (custom.css)
+- **Page Header Card**: `linear-gradient(135deg, #0168fa 0%, #6f42c1 100%)` (blue-purple gradient)
 - **Card Header**: Background `#f8f9fc`, icons `#0168fa` (blue)
 - **Form Section Title**: Text `#1c273c` (dark navy), icons `#0168fa` (blue)
-- **Register Section Title**: `#00897B` (teal)
+- **Auth Pages** (login, register, forgot password, reset password):
+  - Header: `linear-gradient(135deg, #0168fa 0%, #6f42c1 100%)` (blue-purple gradient)
+  - Buttons: Same gradient
+  - Form focus/links: `#0168fa` (blue)
 - **Checkout Card Header**: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)` (purple gradient)
 
 ## Important Configuration Locations

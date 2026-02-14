@@ -145,7 +145,7 @@ footer.footer {
 }
 
 .services-table .order-link i {
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .services-table tbody tr {
@@ -168,7 +168,7 @@ footer.footer {
 }
 
 .service-description .service-domain {
-    font-size: 12px;
+    font-size: 14px;
     color: #7987a1;
     display: inline-flex;
     align-items: center;
@@ -176,7 +176,7 @@ footer.footer {
 }
 
 .service-description .service-domain i {
-    font-size: 10px;
+    font-size: 14px;
 }
 
 .date-cell {
@@ -186,7 +186,7 @@ footer.footer {
 .date-cell i {
     color: #7987a1;
     margin-right: 6px;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .page-header-card {
@@ -240,7 +240,7 @@ footer.footer {
     font-weight: 600;
     color: #5a6b82;
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: 14px;
     letter-spacing: 0.5px;
     padding: 15px;
 }
@@ -324,7 +324,7 @@ footer.footer {
 .ns-label {
     font-weight: 600;
     color: #5a6b82;
-    font-size: 12px;
+    font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -332,7 +332,7 @@ footer.footer {
 .ns-value {
     font-weight: 500;
     color: #1c273c;
-    font-size: 13px;
+    font-size: 14px;
     word-break: break-all;
     text-align: right;
     max-width: 60%;
@@ -387,7 +387,7 @@ footer.footer {
 
 .detail-info-label {
     color: #5a6b82;
-    font-size: 13px;
+    font-size: 14px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -395,7 +395,7 @@ footer.footer {
 
 .detail-info-label i {
     color: #7987a1;
-    font-size: 12px;
+    font-size: 14px;
     width: 16px;
 }
 
@@ -412,7 +412,7 @@ footer.footer {
 }
 
 .header-status .badge {
-    font-size: 13px;
+    font-size: 14px;
     padding: 8px 16px;
 }
 
@@ -464,7 +464,7 @@ footer.footer {
 }
 
 .dns-type-option span {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     color: #5a6b82;
 }
@@ -481,7 +481,7 @@ footer.footer {
 }
 
 .ns-input-item label {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: #5a6b82;
     margin-bottom: 6px;
@@ -496,7 +496,7 @@ footer.footer {
 
 .ns-input-item .form-control {
     border-color: #e9ecef;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .ns-input-item .form-control:focus {
@@ -573,14 +573,14 @@ footer.footer {
 }
 
 .sync-info {
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .sync-status {
     width: 100%;
     border-radius: 8px;
     padding: 10px 15px;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .sync-status.alert-success {
@@ -601,7 +601,7 @@ footer.footer {
 }
 
 .contact-input-item label {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: #5a6b82;
     margin-bottom: 6px;
@@ -616,7 +616,7 @@ footer.footer {
 
 .contact-input-item .form-control {
     border-color: #e9ecef;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .contact-input-item .form-control:focus {
@@ -647,7 +647,7 @@ footer.footer {
 }
 
 #eppCodeStatus {
-    font-size: 12px;
+    font-size: 14px;
     padding: 5px 0;
 }
 
@@ -679,7 +679,7 @@ footer.footer {
     gap: 8px;
     font-weight: 500;
     color: #5a6b82;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .summary-label i {
@@ -710,7 +710,7 @@ footer.footer {
 }
 
 .invoice-link i {
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .amount-cell {
@@ -724,14 +724,14 @@ footer.footer {
 }
 
 .status-badge {
-    font-size: 11px;
+    font-size: 14px;
     padding: 6px 10px;
     font-weight: 600;
     letter-spacing: 0.3px;
 }
 
 .status-badge i {
-    font-size: 10px;
+    font-size: 14px;
 }
 
 .action-btn-group {
@@ -839,7 +839,7 @@ footer.footer {
 }
 
 .ticket-link i {
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .ticket-subject {
@@ -854,7 +854,7 @@ footer.footer {
 .department-badge {
     display: inline-flex;
     align-items: center;
-    font-size: 12px;
+    font-size: 14px;
     color: #5a6b82;
     background: #f1f5f9;
     padding: 4px 10px;
@@ -1013,7 +1013,7 @@ footer.footer {
 }
 
 .stat-label {
-    font-size: 13px;
+    font-size: 14px;
     color: #7987a1;
     margin: 0;
     font-weight: 500;
@@ -1150,7 +1150,7 @@ footer.footer {
 
 .item-date,
 .item-amount {
-    font-size: 12px;
+    font-size: 14px;
     color: #7987a1;
 }
 
@@ -1164,7 +1164,7 @@ footer.footer {
 }
 
 .item-due-date {
-    font-size: 11px;
+    font-size: 14px;
     color: #7987a1;
 }
 
@@ -1205,7 +1205,7 @@ footer.footer {
 .view-all-link {
     color: #0168fa;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
@@ -1225,7 +1225,7 @@ footer.footer {
 }
 
 .badge-sm {
-    font-size: 10px;
+    font-size: 12px;
     padding: 3px 6px;
 }
 
@@ -1303,7 +1303,7 @@ footer.footer {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
+    font-size: 14px;
     margin-right: 10px;
     flex-shrink: 0;
 }
@@ -1316,13 +1316,13 @@ footer.footer {
 }
 
 .ticket-item-id {
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     color: #0168fa;
 }
 
 .ticket-item-title {
-    font-size: 12px;
+    font-size: 14px;
     color: #5a6b82;
     white-space: nowrap;
     overflow: hidden;
@@ -1330,7 +1330,7 @@ footer.footer {
 }
 
 .ticket-item-badge {
-    font-size: 9px;
+    font-size: 12px;
     padding: 3px 8px;
     flex-shrink: 0;
     margin-left: 8px;
@@ -1353,7 +1353,7 @@ footer.footer {
 
 .sidebar-empty-state p {
     margin: 0;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 /* Ticket Form Card */
@@ -1383,7 +1383,7 @@ footer.footer {
 }
 
 .ticket-form-header p {
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .ticket-form-card .card-body {
@@ -1420,7 +1420,7 @@ footer.footer {
 
 /* Form Labels */
 .form-label {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: #5a6b82;
     margin-bottom: 6px;
@@ -1442,7 +1442,7 @@ footer.footer {
 .ticket-form .form-control,
 .ticket-form .form-select {
     border-color: #e9ecef;
-    font-size: 13px;
+    font-size: 14px;
     padding: 10px 12px;
 }
 
@@ -1470,7 +1470,7 @@ footer.footer {
 /* Error Messages */
 .error-message {
     color: #ef4444;
-    font-size: 12px;
+    font-size: 14px;
     margin-top: 6px;
     display: flex;
     align-items: center;
@@ -1552,7 +1552,7 @@ footer.footer {
     display: block;
     margin-top: 10px;
     color: #7987a1;
-    font-size: 12px;
+    font-size: 13px;
 }
 
 .attachment-help-text i {
@@ -1679,7 +1679,7 @@ footer.footer {
 }
 
 .service-domain-banner .domain-status .badge {
-    font-size: 13px;
+    font-size: 14px;
     padding: 8px 16px;
     border-radius: 20px;
 }
@@ -1721,12 +1721,12 @@ footer.footer {
 }
 
 .dns-label {
-    font-size: 13px;
+    font-size: 14px;
     color: #5a6b82;
 }
 
 .dns-value {
-    font-size: 13px;
+    font-size: 14px;
     color: #1c273c;
     font-family: monospace;
     background: #f1f5f9;
@@ -1753,7 +1753,7 @@ footer.footer {
 .service-detail-header h5 {
     color: #fff;
     font-weight: 600;
-    font-size: 15px;
+    font-size: 16px;
     display: flex;
     align-items: center;
 }
@@ -1825,14 +1825,14 @@ footer.footer {
 }
 
 .detail-label {
-    font-size: 12px;
+    font-size: 14px;
     color: #7987a1;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .detail-value {
-    font-size: 14px;
+    font-size: 16px;
     color: #1c273c;
     font-weight: 500;
 }
@@ -1857,7 +1857,7 @@ footer.footer {
 }
 
 .usage-label {
-    font-size: 13px;
+    font-size: 14px;
     color: #5a6b82;
 }
 
@@ -1866,7 +1866,7 @@ footer.footer {
 }
 
 .usage-value {
-    font-size: 12px;
+    font-size: 13px;
     color: #7987a1;
     font-family: monospace;
 }
@@ -1905,7 +1905,7 @@ footer.footer {
 /* Sync Button in Header */
 .service-detail-header #syncCpanelBtn {
     padding: 4px 10px;
-    font-size: 12px;
+    font-size: 14px;
     border-radius: 4px;
     transition: all 0.2s ease;
 }
@@ -1996,7 +1996,7 @@ footer.footer {
 }
 
 .ticket-info-label {
-    font-size: 12px;
+    font-size: 14px;
     color: #5a6b82;
     font-weight: 500;
     display: flex;
@@ -2011,7 +2011,7 @@ footer.footer {
 .ticket-info-value {
     font-weight: 500;
     color: #1c273c;
-    font-size: 13px;
+    font-size: 15px;
     text-align: right;
 }
 
@@ -2184,7 +2184,7 @@ footer.footer {
 }
 
 .message-time {
-    font-size: 12px;
+    font-size: 14px;
     color: #7987a1;
     display: flex;
     align-items: center;
@@ -2193,7 +2193,7 @@ footer.footer {
 .message-badge {
     background: linear-gradient(135deg, #8b5cf6 0%, #6f42c1 100%);
     color: #fff;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     padding: 4px 10px;
     border-radius: 20px;
@@ -2204,7 +2204,7 @@ footer.footer {
 /* Message Body */
 .message-body {
     padding: 20px;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.7;
     color: #3c4858;
 }
@@ -2234,7 +2234,7 @@ footer.footer {
     background: #f0f2f5;
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .message-body blockquote {
@@ -2260,7 +2260,7 @@ footer.footer {
 
 .message-actions .btn {
     border-radius: 6px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     padding: 6px 12px;
     transition: all 0.2s ease;
@@ -2442,7 +2442,7 @@ footer.footer {
 }
 
 .plan-description {
-    font-size: 13px;
+    font-size: 14px;
     color: #5a6b82;
     line-height: 1.6;
     margin-bottom: 20px;
@@ -2499,7 +2499,7 @@ footer.footer {
 
 .plan-select .select-label {
     display: block;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: #7987a1;
     margin-bottom: 6px;
@@ -2511,7 +2511,7 @@ footer.footer {
     border: 1px solid #e1e8f0;
     border-radius: 8px;
     padding: 10px 12px;
-    font-size: 13px;
+    font-size: 14px;
     transition: all 0.2s ease;
 }
 
@@ -2582,6 +2582,282 @@ footer.footer {
     color: #7987a1;
 }
 
+/* Domain Registration Page Styles */
+.domain-search-card,
+.domain-pricing-card,
+.domain-suggestions-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.domain-search-header,
+.domain-pricing-header,
+.domain-suggestions-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 18px 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.domain-search-header i,
+.domain-pricing-header i,
+.domain-suggestions-header i {
+    font-size: 20px;
+    color: #fff;
+}
+
+.domain-search-header h5,
+.domain-pricing-header h5,
+.domain-suggestions-header h5 {
+    margin: 0;
+    color: #fff;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.domain-search-body,
+.domain-pricing-body,
+.domain-suggestions-body {
+    padding: 25px;
+}
+
+.domain-search-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.domain-search-input-group {
+    display: flex;
+    align-items: stretch;
+    border: 2px solid #e1e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.domain-search-input-group:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+}
+
+.domain-search-input-group .domain-prefix {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    font-weight: 600;
+    color: #6c757d;
+    border-right: 1px solid #e1e8f0;
+    display: flex;
+    align-items: center;
+}
+
+.domain-search-input-group .form-control {
+    border: none;
+    padding: 12px 15px;
+    font-size: 15px;
+    flex: 1;
+}
+
+.domain-search-input-group .form-control:focus {
+    box-shadow: none;
+}
+
+.domain-search-input-group .btn-search {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: #fff;
+    padding: 12px 25px;
+    font-weight: 600;
+    border-radius: 0;
+    transition: all 0.3s ease;
+}
+
+.domain-search-input-group .btn-search:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+/* Domain Result */
+.domain-available {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    border-radius: 12px;
+    border: 1px solid #6ee7b7;
+}
+
+.domain-available .result-icon {
+    width: 60px;
+    height: 60px;
+    background: #10b981;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.domain-available .result-icon i {
+    font-size: 28px;
+    color: #fff;
+}
+
+.domain-available .result-content h4 {
+    margin: 0 0 5px;
+    color: #065f46;
+    font-weight: 600;
+}
+
+.domain-available .result-content p {
+    margin: 0 0 10px;
+    color: #047857;
+}
+
+.domain-available .result-price {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.domain-available .result-price .price {
+    font-size: 24px;
+    font-weight: 700;
+    color: #065f46;
+}
+
+.domain-available .btn-add-domain {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    padding: 10px 20px;
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+.domain-available .btn-add-domain:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.domain-unavailable {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    border-radius: 12px;
+    border: 1px solid #fca5a5;
+}
+
+.domain-unavailable .result-icon {
+    width: 60px;
+    height: 60px;
+    background: #ef4444;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.domain-unavailable .result-icon i {
+    font-size: 28px;
+    color: #fff;
+}
+
+.domain-unavailable .result-content h4 {
+    margin: 0 0 5px;
+    color: #991b1b;
+    font-weight: 600;
+}
+
+.domain-unavailable .result-content p {
+    margin: 0;
+    color: #b91c1c;
+}
+
+/* Domain Pricing Table */
+.domain-pricing-table {
+    margin-bottom: 0;
+}
+
+.domain-pricing-table thead th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #495057;
+    padding: 12px 15px;
+}
+
+.domain-pricing-table tbody td {
+    padding: 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.domain-pricing-table tbody tr:hover {
+    background: #f8f9ff;
+}
+
+.domain-ext {
+    font-weight: 700;
+    color: #667eea;
+    font-size: 16px;
+}
+
+.domain-price {
+    font-weight: 600;
+    color: #1c273c;
+}
+
+.domain-price small {
+    color: #7987a1;
+    font-weight: 400;
+}
+
+/* Domain Suggestions Table */
+.domain-suggestions-table {
+    margin-bottom: 0;
+}
+
+.domain-suggestions-table thead th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #495057;
+    padding: 12px 15px;
+    position: sticky;
+    top: 0;
+}
+
+.domain-suggestions-table tbody td {
+    padding: 12px 15px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.domain-suggestions-table tbody tr:hover {
+    background: #f8f9ff;
+}
+
+.suggestion-domain {
+    font-weight: 600;
+    color: #1c273c;
+}
+
+.suggestion-price {
+    font-weight: 600;
+    color: #667eea;
+}
+
 /* Domain Modal Styles */
 .domain-modal-content {
     border: none;
@@ -2626,7 +2902,7 @@ footer.footer {
 
 .domain-modal-header .modal-subtitle {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 13px;
+    font-size: 14px;
     margin: 0;
 }
 
@@ -2681,7 +2957,7 @@ footer.footer {
     border: none;
     border-radius: 0;
     padding: 12px 15px;
-    font-size: 15px;
+    font-size: 16px;
 }
 
 .domain-input:focus {
@@ -2691,7 +2967,7 @@ footer.footer {
 .domain-hint {
     display: block;
     margin-top: 8px;
-    font-size: 12px;
+    font-size: 14px;
     color: #7987a1;
 }
 
@@ -2759,13 +3035,13 @@ footer.footer {
 }
 
 .domain-type-option .option-title {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 600;
     color: #1c273c;
 }
 
 .domain-type-option .option-desc {
-    font-size: 11px;
+    font-size: 14px;
     color: #7987a1;
 }
 
@@ -2867,7 +3143,7 @@ footer.footer {
     background: #f8f9ff;
     border: none;
     padding: 15px 20px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -2892,13 +3168,13 @@ footer.footer {
     height: 28px;
     background: #f0f2f5;
     border-radius: 50%;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     color: #5a6b82;
 }
 
 .item-name {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     color: #1c273c;
 }
@@ -2907,7 +3183,7 @@ footer.footer {
 .badge-type {
     padding: 6px 12px;
     border-radius: 6px;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 500;
 }
 
@@ -2936,13 +3212,13 @@ footer.footer {
 }
 
 .item-price .price-currency {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: #5a6b82;
 }
 
 .item-price .price-cycle {
-    font-size: 12px;
+    font-size: 14px;
     color: #7987a1;
 }
 
@@ -3003,7 +3279,7 @@ footer.footer {
 
 .payment-label {
     display: block;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: #1c273c;
     margin-bottom: 8px;
@@ -3052,7 +3328,7 @@ footer.footer {
 
 .btn-checkout {
     padding: 14px 30px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     border-radius: 8px;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -3176,7 +3452,7 @@ footer.footer {
 }
 
 .progress-step .step-label {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     color: #7987a1;
 }
@@ -3253,7 +3529,7 @@ footer.footer {
 
 .checkout-card-header .header-text p {
     color: rgba(255, 255, 255, 0.8);
-    font-size: 13px;
+    font-size: 14px;
 }
 
 /* Payment Options */
@@ -3316,7 +3592,7 @@ footer.footer {
 
 .payment-option .option-title {
     display: block;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     color: #1c273c;
     margin-bottom: 3px;
@@ -3324,7 +3600,7 @@ footer.footer {
 
 .payment-option .option-desc {
     display: block;
-    font-size: 13px;
+    font-size: 14px;
     color: #7987a1;
 }
 
@@ -3380,13 +3656,13 @@ footer.footer {
 }
 
 .security-info-card .security-text strong {
-    font-size: 14px;
+    font-size: 16px;
     color: #1c273c;
     margin-bottom: 2px;
 }
 
 .security-info-card .security-text span {
-    font-size: 12px;
+    font-size: 14px;
     color: #5a6b82;
 }
 
@@ -3406,7 +3682,7 @@ footer.footer {
 
 .checkout-actions .btn-continue {
     padding: 14px 30px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
     border-radius: 8px;
     background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -3444,11 +3720,11 @@ footer.footer {
     .progress-step .step-icon {
         width: 40px;
         height: 40px;
-        font-size: 14px;
+        font-size: 16px;
     }
 
     .progress-step .step-label {
-        font-size: 11px;
+        font-size: 14px;
     }
 
     .payment-option .option-content {
@@ -3474,7 +3750,7 @@ footer.footer {
     right: -5px;
     background-color: #dc3545;
     color: white;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     min-width: 18px;
     height: 18px;
@@ -3505,7 +3781,7 @@ footer.footer {
 }
 
 .register-header {
-	background: linear-gradient(135deg, #00897B, #00695C);
+	background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
 	color: #fff;
 	padding: 30px 40px;
 	text-align: center;
@@ -3518,7 +3794,7 @@ footer.footer {
 }
 
 .register-header p {
-	font-size: 15px;
+	font-size: 16px;
 	opacity: 0.9;
 	margin: 0;
 }
@@ -3548,9 +3824,9 @@ footer.footer {
 }
 
 .register-section-title {
-	font-size: 14px;
+	font-size: 16px;
 	font-weight: 600;
-	color: #00897B;
+	color: #0168fa;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
 	margin-bottom: 20px;
@@ -3570,7 +3846,7 @@ footer.footer {
 }
 
 .register-form .form-label {
-	font-size: 13px;
+	font-size: 14px;
 	font-weight: 600;
 	color: #495057;
 	margin-bottom: 6px;
@@ -3591,8 +3867,8 @@ footer.footer {
 }
 
 .register-form .form-control:focus {
-	border-color: #00897B;
-	box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.15);
+	border-color: #0168fa;
+	box-shadow: 0 0 0 3px rgba(1, 104, 250, 0.15);
 	background-color: #fff;
 }
 
@@ -3610,8 +3886,8 @@ footer.footer {
 }
 
 .register-form .form-select:focus {
-	border-color: #00897B;
-	box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.15);
+	border-color: #0168fa;
+	box-shadow: 0 0 0 3px rgba(1, 104, 250, 0.15);
 	background-color: #fff;
 }
 
@@ -3628,7 +3904,7 @@ footer.footer {
 }
 
 .password-requirements {
-	font-size: 12px;
+	font-size: 14px;
 	color: #6c757d;
 	margin-top: 6px;
 }
@@ -3656,7 +3932,7 @@ footer.footer {
 }
 
 .terms-checkbox label {
-	font-size: 13px;
+	font-size: 14px;
 	color: #495057;
 	line-height: 1.5;
 	cursor: pointer;
@@ -3679,7 +3955,7 @@ footer.footer {
 }
 
 .btn-register {
-	background: linear-gradient(135deg, #00897B, #00695C);
+	background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
 	border: none;
 	color: #fff;
 	padding: 14px 30px;
@@ -3696,9 +3972,9 @@ footer.footer {
 }
 
 .btn-register:hover {
-	background: linear-gradient(135deg, #00695C, #004D40);
+	background: linear-gradient(135deg, #0056d6 0%, #5a32a3 100%);
 	transform: translateY(-2px);
-	box-shadow: 0 5px 20px rgba(0, 137, 123, 0.3);
+	box-shadow: 0 5px 20px rgba(1, 104, 250, 0.3);
 }
 
 .btn-register:active {
@@ -3719,7 +3995,7 @@ footer.footer {
 }
 
 .login-link a {
-	color: #00897B;
+	color: #0168fa;
 	font-weight: 600;
 	text-decoration: none;
 }
@@ -3778,7 +4054,7 @@ footer.footer {
 }
 
 .login-header {
-	background: linear-gradient(135deg, #00897B, #00695C);
+	background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
 	color: #fff;
 	padding: 30px;
 	text-align: center;
@@ -3803,7 +4079,7 @@ footer.footer {
 }
 
 .login-header p {
-	font-size: 14px;
+	font-size: 16px;
 	opacity: 0.9;
 	margin: 0;
 }
@@ -3817,7 +4093,7 @@ footer.footer {
 }
 
 .login-form .form-label {
-	font-size: 13px;
+	font-size: 14px;
 	font-weight: 600;
 	color: #495057;
 	margin-bottom: 6px;
@@ -3827,8 +4103,8 @@ footer.footer {
 }
 
 .login-form .form-label a {
-	font-size: 12px;
-	color: #00897B;
+	font-size: 14px;
+	color: #0168fa;
 	font-weight: 500;
 }
 
@@ -3841,8 +4117,8 @@ footer.footer {
 }
 
 .login-form .form-control:focus {
-	border-color: #00897B;
-	box-shadow: 0 0 0 3px rgba(0, 137, 123, 0.15);
+	border-color: #0168fa;
+	box-shadow: 0 0 0 3px rgba(1, 104, 250, 0.15);
 	background-color: #fff;
 }
 
@@ -3859,7 +4135,7 @@ footer.footer {
 }
 
 .btn-login {
-	background: linear-gradient(135deg, #00897B, #00695C);
+	background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
 	border: none;
 	color: #fff;
 	padding: 14px 30px;
@@ -3872,9 +4148,9 @@ footer.footer {
 }
 
 .btn-login:hover {
-	background: linear-gradient(135deg, #00695C, #004D40);
+	background: linear-gradient(135deg, #0056d6 0%, #5a32a3 100%);
 	transform: translateY(-2px);
-	box-shadow: 0 5px 20px rgba(0, 137, 123, 0.3);
+	box-shadow: 0 5px 20px rgba(1, 104, 250, 0.3);
 }
 
 .register-link {
@@ -3882,12 +4158,12 @@ footer.footer {
 	margin-top: 25px;
 	padding-top: 25px;
 	border-top: 1px solid #e9ecef;
-	font-size: 14px;
+	font-size: 16px;
 	color: #6c757d;
 }
 
 .register-link a {
-	color: #00897B;
+	color: #0168fa;
 	font-weight: 600;
 	text-decoration: none;
 }
@@ -3912,7 +4188,7 @@ footer.footer {
 }
 
 .forgot-header {
-	background: linear-gradient(135deg, #ff9800, #f57c00);
+	background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
 	color: #fff;
 	padding: 30px;
 	text-align: center;
@@ -3935,7 +4211,7 @@ footer.footer {
 }
 
 .btn-forgot {
-	background: linear-gradient(135deg, #ff9800, #f57c00);
+	background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
 	border: none;
 	color: #fff;
 	padding: 14px 30px;
@@ -3943,8 +4219,12 @@ footer.footer {
 	font-weight: 600;
 	border-radius: 8px;
 	width: 100%;
+	cursor: pointer;
+	transition: all 0.3s ease;
 }
 
 .btn-forgot:hover {
-	background: linear-gradient(135deg, #f57c00, #e65100);
+	background: linear-gradient(135deg, #0056d6 0%, #5a32a3 100%);
+	transform: translateY(-2px);
+	box-shadow: 0 5px 20px rgba(1, 104, 250, 0.3);
 }

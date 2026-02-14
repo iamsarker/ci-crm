@@ -202,7 +202,7 @@
 				  <a href="" class="dropdown-link" data-bs-toggle="dropdown" data-display="static">
 					  <div class="avatar avatar-sm"><img src="<?=base_url()?>/resources/assets/img/default.jpg" class="rounded-circle" alt=""></div>
 				  </a><!-- dropdown-link -->
-				  <div class="dropdown-menu dropdown-menu-end tx-13">
+				  <div class="dropdown-menu dropdown-menu-end tx-16">
 					  <div class="avatar avatar-lg mg-b-15"><img src="<?=base_url()?>/resources/assets/img/default.jpg" class="rounded-circle" alt=""></div>
 					  <h6 class="tx-semibold mg-b-5"><?=$user['first_name'].' '.$user['last_name']?></h6>
 					  <a href="<?=base_url()?>clientarea/changePassword" class="dropdown-item"><i data-feather="key"></i>Change Password</a>
@@ -215,7 +215,7 @@
 				  <a href="" class="dropdown-link" data-bs-toggle="dropdown" data-display="static">
 					  <div class="avatar avatar-sm"><img src="<?=base_url()?>/resources/assets/img/default.jpg" class="rounded-circle" alt=""></div>
 				  </a><!-- dropdown-link -->
-				  <div class="dropdown-menu dropdown-menu-end tx-13">
+				  <div class="dropdown-menu dropdown-menu-end tx-16">
 					  <div class="avatar avatar-lg mg-b-15"><img src="<?=base_url()?>/resources/assets/img/default.jpg" class="rounded-circle" alt=""></div>
 					  <h6 class="tx-semibold mg-b-5">WHMAZ</h6>
 					  <div class="dropdown-divider"></div>

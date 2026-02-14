@@ -34,7 +34,7 @@ class PaymentGateway_model extends CI_Model
      */
     function getActiveGateways($currencyCode = null)
     {
-        $this->db->select('id, gateway_code, gateway_type, pay_type, display_name, name, description, logo, icon_fa_unicode, fee_type, fee_fixed, fee_percent, fee_bearer, instructions, min_amount, max_amount, supported_currencies');
+        $this->db->select('id, gateway_code, gateway_type, pay_type, display_name, name, description, logo, icon_fa_unicode, fee_type, fee_fixed, fee_percent, fee_bearer, instructions, min_amount, max_amount, supported_currencies, bank_name, account_name, account_number, routing_number, swift_code, iban');
         $this->db->from($this->table);
         $this->db->where('status', 1);
         $this->db->order_by('sort_order', 'ASC');
