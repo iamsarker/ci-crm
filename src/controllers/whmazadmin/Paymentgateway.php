@@ -282,39 +282,69 @@ class Paymentgateway extends WHMAZADMIN_Controller
      */
     public function transactions_api()
     {
-        $this->processRestCall();
         header('Content-Type: application/json');
 
         try {
-            $params = $this->input->get();
-            $bindings = array();
-            $where = '';
+            $draw = $this->input->get('draw') ?: 0;
+            $start = $this->input->get('start') ?: 0;
+            $length = $this->input->get('length') ?: 25;
+            $searchValue = $this->input->get('search')['value'] ?? '';
+
+            // Build query
+            $this->db->from('payment_transactions');
 
             // Filter by gateway
             $gatewayCode = $this->input->get('gateway_code');
             if (!empty($gatewayCode)) {
-                $where = " WHERE gateway_code = ?";
-                $bindings[] = $gatewayCode;
+                $this->db->where('gateway_code', $gatewayCode);
             }
 
             // Filter by status
             $status = $this->input->get('status');
             if (!empty($status)) {
-                $where .= empty($where) ? " WHERE status = ?" : " AND status = ?";
-                $bindings[] = $status;
+                $this->db->where('status', $status);
             }
 
-            $sqlQuery = ssp_sql_query($params, "payment_transactions", $bindings, $where);
-            $data = $this->Payment_model->getDataTableRecords($sqlQuery, $bindings);
+            // Filter by txn_type
+            $txnType = $this->input->get('txn_type');
+            if (!empty($txnType)) {
+                $this->db->where('txn_type', $txnType);
+            }
 
-            $response = array(
-                "draw" => !empty($params['draw']) ? intval($params['draw']) : 0,
-                "recordsTotal" => intval($this->Payment_model->countDataTableTotalRecords()),
-                "recordsFiltered" => intval($this->Payment_model->countDataTableFilterRecords($where, $bindings)),
+            // Global search
+            if (!empty($searchValue)) {
+                $this->db->group_start();
+                $this->db->like('transaction_uuid', $searchValue);
+                $this->db->or_like('gateway_transaction_id', $searchValue);
+                $this->db->or_like('payer_email', $searchValue);
+                $this->db->or_like('payer_name', $searchValue);
+                $this->db->group_end();
+            }
+
+            // Get total filtered count
+            $filteredCount = $this->db->count_all_results('', false);
+
+            // Order
+            $orderColumn = $this->input->get('order')[0]['column'] ?? 0;
+            $orderDir = $this->input->get('order')[0]['dir'] ?? 'desc';
+            $columns = ['id', 'invoice_id', 'gateway_code', 'amount', 'txn_type', 'status', 'payer_email', 'payment_method', 'initiated_at'];
+            $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'id';
+            $this->db->order_by($orderBy, $orderDir);
+
+            // Pagination
+            $this->db->limit($length, $start);
+
+            $data = $this->db->get()->result_array();
+
+            // Get total count
+            $totalCount = $this->db->count_all('payment_transactions');
+
+            echo json_encode(array(
+                "draw" => intval($draw),
+                "recordsTotal" => $totalCount,
+                "recordsFiltered" => $filteredCount,
                 "data" => $data
-            );
-
-            echo json_encode($response);
+            ));
 
         } catch (Exception $e) {
             echo json_encode(array(
@@ -325,6 +355,28 @@ class Paymentgateway extends WHMAZADMIN_Controller
                 "error" => $e->getMessage()
             ));
         }
+    }
+
+    /**
+     * Get single transaction details
+     */
+    public function transaction_detail($id)
+    {
+        header('Content-Type: application/json');
+
+        if (empty($id)) {
+            echo json_encode(array('success' => false, 'message' => 'Transaction ID required'));
+            return;
+        }
+
+        $transaction = $this->db->get_where('payment_transactions', array('id' => $id))->row_array();
+
+        if (!$transaction) {
+            echo json_encode(array('success' => false, 'message' => 'Transaction not found'));
+            return;
+        }
+
+        echo json_encode(array('success' => true, 'data' => $transaction));
     }
 
     /**
@@ -367,5 +419,107 @@ class Paymentgateway extends WHMAZADMIN_Controller
             'success' => true,
             'data' => $logs
         ));
+    }
+
+    /**
+     * Webhook logs API for DataTables
+     */
+    public function webhooks_list_api()
+    {
+        header('Content-Type: application/json');
+
+        try {
+            $draw = $this->input->get('draw') ?: 0;
+            $start = $this->input->get('start') ?: 0;
+            $length = $this->input->get('length') ?: 25;
+            $searchValue = $this->input->get('search')['value'] ?? '';
+
+            // Build query
+            $this->db->from('webhook_logs');
+
+            // Filter by gateway
+            $gatewayCode = $this->input->get('gateway_code');
+            if (!empty($gatewayCode)) {
+                $this->db->where('gateway_code', $gatewayCode);
+            }
+
+            // Filter by processed
+            $processed = $this->input->get('processed');
+            if ($processed !== '' && $processed !== null) {
+                $this->db->where('processed', $processed);
+            }
+
+            // Filter by signature_valid
+            $signatureValid = $this->input->get('signature_valid');
+            if ($signatureValid !== '' && $signatureValid !== null) {
+                $this->db->where('signature_valid', $signatureValid);
+            }
+
+            // Global search
+            if (!empty($searchValue)) {
+                $this->db->group_start();
+                $this->db->like('event_type', $searchValue);
+                $this->db->or_like('event_id', $searchValue);
+                $this->db->or_like('gateway_code', $searchValue);
+                $this->db->or_like('process_result', $searchValue);
+                $this->db->group_end();
+            }
+
+            // Get total filtered count
+            $filteredCount = $this->db->count_all_results('', false);
+
+            // Order
+            $orderColumn = $this->input->get('order')[0]['column'] ?? 0;
+            $orderDir = $this->input->get('order')[0]['dir'] ?? 'desc';
+            $columns = ['id', 'gateway_code', 'event_type', 'event_id', 'signature_valid', 'processed', 'process_result', 'received_at'];
+            $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'id';
+            $this->db->order_by($orderBy, $orderDir);
+
+            // Pagination
+            $this->db->limit($length, $start);
+
+            $data = $this->db->get()->result_array();
+
+            // Get total count
+            $totalCount = $this->db->count_all('webhook_logs');
+
+            echo json_encode(array(
+                "draw" => intval($draw),
+                "recordsTotal" => $totalCount,
+                "recordsFiltered" => $filteredCount,
+                "data" => $data
+            ));
+
+        } catch (Exception $e) {
+            echo json_encode(array(
+                "draw" => 0,
+                "recordsTotal" => 0,
+                "recordsFiltered" => 0,
+                "data" => array(),
+                "error" => $e->getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Get single webhook details
+     */
+    public function webhook_detail($id)
+    {
+        header('Content-Type: application/json');
+
+        if (empty($id)) {
+            echo json_encode(array('success' => false, 'message' => 'Webhook ID required'));
+            return;
+        }
+
+        $webhook = $this->db->get_where('webhook_logs', array('id' => $id))->row_array();
+
+        if (!$webhook) {
+            echo json_encode(array('success' => false, 'message' => 'Webhook log not found'));
+            return;
+        }
+
+        echo json_encode(array('success' => true, 'data' => $webhook));
     }
 }

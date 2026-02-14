@@ -35,6 +35,21 @@
 .order-page-header .breadcrumb-item + .breadcrumb-item::before {
 	color: rgba(255,255,255,0.6);
 }
+.order-page-header .btn-back {
+	background: rgba(255,255,255,0.15);
+	border: 1px solid rgba(255,255,255,0.3);
+	color: #fff;
+	padding: 8px 18px;
+	border-radius: 8px;
+	font-weight: 600;
+	transition: all 0.3s ease;
+	text-decoration: none;
+}
+.order-page-header .btn-back:hover {
+	background: rgba(255,255,255,0.25);
+	transform: translateY(-2px);
+	color: #fff;
+}
 
 /* Section Cards */
 .order-card {

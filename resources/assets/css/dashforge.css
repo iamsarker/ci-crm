@@ -14283,7 +14283,7 @@ textarea.parsley-success:focus {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     padding: 0 20px;
     color: #001737;
@@ -14386,7 +14386,7 @@ textarea.parsley-success:focus {
   .navbar-menu-sub .nav-sub-link {
     color: #1b2e4b;
     white-space: nowrap;
-    font-size: 13px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     transition: all 0.2s ease-in-out; }
