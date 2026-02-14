@@ -473,6 +473,89 @@ class Webhook extends WHMAZ_Controller
     }
 
     /**
+     * SSLCommerz IPN Handler
+     * URL: /webhook/sslcommerz
+     */
+    public function sslcommerz()
+    {
+        // Get raw input
+        $payload = file_get_contents('php://input');
+
+        // Log the webhook
+        $webhookId = $this->Payment_model->logWebhook(
+            'sslcommerz',
+            $_POST['status'] ?? 'unknown',
+            $payload,
+            $this->getRequestHeaders(),
+            null
+        );
+
+        // Get transaction UUID from value_a
+        $transactionUuid = $_POST['value_a'] ?? null;
+        $status = $_POST['status'] ?? '';
+
+        if (empty($transactionUuid)) {
+            $this->Payment_model->markWebhookProcessed($webhookId, false, 'Missing transaction reference');
+            $this->sendResponse(400, 'Missing transaction reference');
+            return;
+        }
+
+        $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
+
+        if (!$transaction) {
+            $this->Payment_model->markWebhookProcessed($webhookId, false, 'Transaction not found');
+            $this->sendResponse(400, 'Transaction not found');
+            return;
+        }
+
+        // Already completed
+        if ($transaction['status'] === 'completed') {
+            $this->Payment_model->markWebhookProcessed($webhookId, true, 'Already processed');
+            $this->sendResponse(200, 'Already processed');
+            return;
+        }
+
+        if ($status === 'VALID' || $status === 'VALIDATED') {
+            // Validate with SSLCommerz
+            $this->load->library('Sslcommerz');
+            $validation = $this->sslcommerz->validateIPN($_POST);
+
+            if ($validation['success']) {
+                $details = $this->sslcommerz->extractPaymentDetails($validation);
+
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
+                    'gateway_transaction_id' => $details['bank_tran_id'],
+                    'payment_method' => $details['card_type'] ?? 'sslcommerz',
+                    'gateway_response' => $validation['data']
+                ));
+
+                $this->Payment_model->processSuccessfulPayment($transaction['id']);
+                $this->Payment_model->recordInvoiceTxn($transaction['id']);
+
+                $this->Payment_model->markWebhookProcessed($webhookId, true, 'Payment completed');
+                log_message('info', 'SSLCommerz IPN: Payment completed for transaction #' . $transaction['id']);
+            } else {
+                $this->Payment_model->markWebhookProcessed($webhookId, false, 'Validation failed');
+            }
+        } elseif ($status === 'FAILED') {
+            $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
+                'failure_reason' => $_POST['error'] ?? 'Payment failed',
+                'gateway_response' => $_POST
+            ));
+            $this->Payment_model->markWebhookProcessed($webhookId, true, 'Payment failed');
+            log_message('info', 'SSLCommerz IPN: Payment failed for transaction #' . $transaction['id']);
+        } elseif ($status === 'CANCELLED') {
+            $this->Payment_model->updateTransactionStatus($transaction['id'], 'cancelled', array(
+                'gateway_response' => $_POST
+            ));
+            $this->Payment_model->markWebhookProcessed($webhookId, true, 'Payment cancelled');
+            log_message('info', 'SSLCommerz IPN: Payment cancelled for transaction #' . $transaction['id']);
+        }
+
+        $this->sendResponse(200, 'IPN Received');
+    }
+
+    /**
      * Send JSON response
      */
     private function sendResponse($statusCode, $message)

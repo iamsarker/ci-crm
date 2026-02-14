@@ -6,7 +6,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  *
  * Handles SSLCommerz payment integration
  */
-class SSLCommerzPayment
+class Sslcommerz
 {
     private $CI;
     private $store_id;

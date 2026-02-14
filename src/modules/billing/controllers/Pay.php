@@ -51,16 +51,18 @@ class Pay extends WHMAZ_Controller
         $amountDue = floatval($invoice['total']) - $paidAmount;
 
         // Get active payment gateways
-        $gateways = $this->PaymentGateway_model->getActiveGateways($invoice['currency_code']);
+        $gateways = $this->PaymentGateway_model->getActiveGateways($invoice['currency_code'] ?? null);
 
         // Get invoice items
         $invoiceItems = $this->Billing_model->getInvoiceItems($invoice['id']);
 
         $data['invoice'] = $invoice;
-        $data['invoice_items'] = $invoiceItems;
+        $data['invoice_items'] = $invoiceItems ?: array();
         $data['amount_due'] = $amountDue;
         $data['paid_amount'] = $paidAmount;
-        $data['gateways'] = $gateways;
+        $data['gateways'] = $gateways ?: array();
+        $data['stripe_publishable_key'] = '';
+        $data['paypal_client_id'] = '';
 
         // Load gateway-specific keys for frontend
         $stripeGateway = $this->PaymentGateway_model->getByCode('stripe');
@@ -589,9 +591,9 @@ class Pay extends WHMAZ_Controller
         $customer = $this->db->where('id', $companyId)->get('companies')->row_array();
 
         // Load SSLCommerz library
-        $this->load->library('SSLCommerzPayment');
+        $this->load->library('Sslcommerz');
 
-        $result = $this->SSLCommerzPayment->initiatePayment(array(
+        $result = $this->sslcommerz->initiatePayment(array(
             'amount' => $totalAmount,
             'currency' => $invoice['currency_code'] === 'BDT' ? 'BDT' : 'USD',
             'transaction_id' => $transaction['transaction_uuid'],
@@ -658,11 +660,11 @@ class Pay extends WHMAZ_Controller
         }
 
         // Validate payment with SSLCommerz
-        $this->load->library('SSLCommerzPayment');
-        $validation = $this->SSLCommerzPayment->validateIPN($_POST);
+        $this->load->library('Sslcommerz');
+        $validation = $this->sslcommerz->validateIPN($_POST);
 
         if ($validation['success']) {
-            $details = $this->SSLCommerzPayment->extractPaymentDetails($validation);
+            $details = $this->sslcommerz->extractPaymentDetails($validation);
 
             // Update transaction
             $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(

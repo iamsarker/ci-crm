@@ -766,7 +766,7 @@ if (razorpayBtn) {
                 key: data.key_id,
                 amount: data.amount,
                 currency: data.currency,
-                name: '<?php echo addslashes(getSettingsValue('company_name', 'WHMAZ')); ?>',
+                name: 'Invoice Payment',
                 description: 'Invoice #<?php echo $invoice['invoice_no']; ?>',
                 order_id: data.order_id,
                 handler: function(response) {
