@@ -502,7 +502,12 @@ $config['csrf_exclude_uris'] = array(
 	'whmazadmin/package/filter_api',
 	'whmazadmin/package/prices',
 	'whmazadmin/domain_pricing/prices',
-	'whmazadmin/invoice/mark_as_paid'
+	'whmazadmin/invoice/mark_as_paid',
+	// SSLCommerz payment gateway callbacks (external POST requests)
+	'billing/pay/sslcommerz_success',
+	'billing/pay/sslcommerz_cancel',
+	'billing/pay/sslcommerz_fail',
+	'webhook/sslcommerz'
 );
 
 /*

@@ -26,15 +26,17 @@ class Sslcommerz
             if ($gateway) {
                 $this->is_test_mode = $gateway['is_test_mode'] == 1;
 
-                // Get credentials from extra_config
-                $extraConfig = json_decode($gateway['extra_config'], true);
-                $this->store_id = $extraConfig['store_id'] ?? '';
-                $this->store_password = $extraConfig['store_password'] ?? '';
-
+                // Get credentials based on mode
                 if ($this->is_test_mode) {
-                    $this->api_url = $extraConfig['sandbox_url'] ?? 'https://sandbox.sslcommerz.com';
+                    // Sandbox credentials
+                    $this->store_id = $gateway['test_public_key'] ?? '';
+                    $this->store_password = $gateway['test_secret_key'] ?? '';
+                    $this->api_url = 'https://sandbox.sslcommerz.com';
                 } else {
-                    $this->api_url = $extraConfig['live_url'] ?? 'https://securepay.sslcommerz.com';
+                    // Live credentials
+                    $this->store_id = $gateway['public_key'] ?? '';
+                    $this->store_password = $gateway['secret_key'] ?? '';
+                    $this->api_url = 'https://securepay.sslcommerz.com';
                 }
             }
         } else {
@@ -42,8 +44,8 @@ class Sslcommerz
             $this->store_password = $config['store_password'] ?? '';
             $this->is_test_mode = $config['is_test_mode'] ?? true;
             $this->api_url = $this->is_test_mode
-                ? ($config['sandbox_url'] ?? 'https://sandbox.sslcommerz.com')
-                : ($config['live_url'] ?? 'https://securepay.sslcommerz.com');
+                ? 'https://sandbox.sslcommerz.com'
+                : 'https://securepay.sslcommerz.com';
         }
     }
 

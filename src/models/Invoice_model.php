@@ -71,7 +71,7 @@ class Invoice_model extends CI_Model{
 	function getPendingServicesForInvoice($invoiceId) {
 		$sql = "SELECT os.*, ii.item_type, ps.cp_package, ps.server_id, s.hostname, s.username, s.access_hash
 				FROM invoice_items ii
-				JOIN order_service os ON ii.ref_id = os.id AND ii.item_type = 2
+				JOIN order_services os ON ii.ref_id = os.id AND ii.item_type = 2
 				LEFT JOIN product_services ps ON os.product_service_id = ps.id
 				LEFT JOIN servers s ON ps.server_id = s.id
 				WHERE ii.invoice_id = ?

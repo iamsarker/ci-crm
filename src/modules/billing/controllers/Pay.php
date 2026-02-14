@@ -19,7 +19,7 @@ class Pay extends WHMAZ_Controller
 
     /**
      * Payment page for invoice
-     * URL: /billing/pay/invoice/{invoice_uuid}
+     * URL: /pay/invoice/{invoice_uuid}
      */
     public function invoice($invoice_uuid)
     {
@@ -42,7 +42,7 @@ class Pay extends WHMAZ_Controller
         // Check if already paid
         if (strtoupper($invoice['pay_status']) === 'PAID') {
             $this->session->set_flashdata('alert_success', 'This invoice has already been paid.');
-            redirect(base_url() . 'billing/viewinvoice/' . $invoice_uuid);
+            redirect(base_url() . 'billing/view_invoice/' . $invoice_uuid);
             return;
         }
 
@@ -211,7 +211,7 @@ class Pay extends WHMAZ_Controller
             $this->session->set_flashdata('alert_info', 'Payment is being processed. You will receive a confirmation email shortly.');
         }
 
-        redirect(base_url() . 'billing/viewinvoice/' . $invoice['invoice_uuid']);
+        redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
     }
 
     /**
@@ -388,7 +388,7 @@ class Pay extends WHMAZ_Controller
 
             $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
             $this->session->set_flashdata('alert_info', 'Payment was cancelled.');
-            redirect(base_url() . 'billing/viewinvoice/' . $invoice['invoice_uuid']);
+            redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
         } else {
             redirect(base_url() . 'billing/invoices');
         }
@@ -680,7 +680,7 @@ class Pay extends WHMAZ_Controller
 
         // Redirect to invoice
         $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-        redirect(base_url() . 'billing/viewinvoice/' . $invoice['invoice_uuid']);
+        redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
     }
 
     /**
@@ -699,7 +699,7 @@ class Pay extends WHMAZ_Controller
 
                 $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
                 $this->session->set_flashdata('alert_error', 'Payment failed. Please try again.');
-                redirect(base_url() . 'billing/viewinvoice/' . $invoice['invoice_uuid']);
+                redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
                 return;
             }
         }
@@ -722,7 +722,7 @@ class Pay extends WHMAZ_Controller
 
                 $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
                 $this->session->set_flashdata('alert_info', 'Payment was cancelled.');
-                redirect(base_url() . 'billing/viewinvoice/' . $invoice['invoice_uuid']);
+                redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
                 return;
             }
         }
