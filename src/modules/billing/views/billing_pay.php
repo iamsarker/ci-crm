@@ -2,7 +2,7 @@
 
 <style>
 .payment-page {
-    max-width: 900px;
+    min-width: 800px;
     margin: 50px auto;
     padding: 20px;
 }
@@ -601,34 +601,54 @@ function hideProcessing() {
 
 <?php if (!empty($stripe_publishable_key)): ?>
 // Stripe Setup
-var stripe = Stripe('<?php echo $stripe_publishable_key; ?>');
-var elements = stripe.elements();
+var stripe = null;
+var elements = null;
 var cardElement = null;
 var stripeMounted = false;
+var stripeInitError = null;
+
+try {
+    stripe = Stripe('<?php echo htmlspecialchars($stripe_publishable_key, ENT_QUOTES); ?>');
+    if (stripe) {
+        elements = stripe.elements();
+    }
+} catch(e) {
+    console.error('Failed to initialize Stripe:', e);
+    stripeInitError = e.message;
+}
 
 function initStripeCard() {
+    if (!elements) {
+        showError('Stripe could not be initialized. Please check the payment gateway configuration.' + (stripeInitError ? ' Error: ' + stripeInitError : ''));
+        return;
+    }
     if (stripeMounted) return;
 
-    cardElement = elements.create('card', {
-        style: {
-            base: {
-                fontSize: '16px',
-                color: '#333',
-                '::placeholder': { color: '#aab7c4' }
+    try {
+        cardElement = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
+                    color: '#333',
+                    '::placeholder': { color: '#aab7c4' }
+                }
             }
-        }
-    });
-    cardElement.mount('#stripe-card-element');
-    stripeMounted = true;
+        });
+        cardElement.mount('#stripe-card-element');
+        stripeMounted = true;
 
-    cardElement.on('change', function(event) {
-        var displayError = document.getElementById('stripe-card-errors');
-        if (event.error) {
-            displayError.textContent = event.error.message;
-        } else {
-            displayError.textContent = '';
-        }
-    });
+        cardElement.on('change', function(event) {
+            var displayError = document.getElementById('stripe-card-errors');
+            if (event.error) {
+                displayError.textContent = event.error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+    } catch(e) {
+        console.error('Failed to create Stripe card element:', e);
+        showError('Failed to load card form: ' + e.message);
+    }
 }
 
 document.getElementById('stripe-pay-btn').addEventListener('click', function() {

@@ -37,10 +37,10 @@ class Webhook extends WHMAZ_Controller
         );
 
         // Load Stripe library
-        $this->load->library('StripePayment');
+        $this->load->library('Stripe');
 
         // Verify signature
-        $event = $this->StripePayment->verifyWebhook($payload, $signature);
+        $event = $this->stripe->verifyWebhook($payload, $signature);
 
         if (!$event) {
             $this->Payment_model->markWebhookProcessed($webhookId, false, 'Invalid signature');
@@ -252,17 +252,17 @@ class Webhook extends WHMAZ_Controller
         );
 
         // Load PayPal library
-        $this->load->library('PayPalPayment');
+        $this->load->library('Paypal');
 
         // Verify webhook
-        if (!$this->PayPalPayment->verifyWebhook($headers, $payload)) {
+        if (!$this->paypal->verifyWebhook($headers, $payload)) {
             $this->Payment_model->markWebhookProcessed($webhookId, false, 'Invalid signature');
             $this->sendResponse(400, 'Invalid signature');
             return;
         }
 
         // Parse event
-        $event = $this->PayPalPayment->parseWebhookEvent($payload);
+        $event = $this->paypal->parseWebhookEvent($payload);
 
         if (!$event) {
             $this->Payment_model->markWebhookProcessed($webhookId, false, 'Invalid payload');
@@ -334,11 +334,11 @@ class Webhook extends WHMAZ_Controller
         }
 
         // Auto-capture the order
-        $this->load->library('PayPalPayment');
-        $captureResult = $this->PayPalPayment->captureOrder($orderId);
+        $this->load->library('Paypal');
+        $captureResult = $this->paypal->captureOrder($orderId);
 
         if ($captureResult['success']) {
-            $details = $this->PayPalPayment->extractPaymentDetails($captureResult);
+            $details = $this->paypal->extractPaymentDetails($captureResult);
 
             $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
                 'gateway_transaction_id' => $details['transaction_id'],

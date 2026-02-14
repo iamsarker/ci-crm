@@ -87,7 +87,6 @@ class Pay extends WHMAZ_Controller
      */
     public function stripe_init()
     {
-        $this->processRestCall();
         header('Content-Type: application/json');
 
         $companyId = getCompanyId();
@@ -150,9 +149,9 @@ class Pay extends WHMAZ_Controller
         ));
 
         // Load Stripe library and create PaymentIntent
-        $this->load->library('StripePayment');
+        $this->load->library('Stripe');
 
-        $result = $this->StripePayment->createPaymentIntent(
+        $result = $this->stripe->createPaymentIntent(
             $totalAmount,
             $invoice['currency_code'],
             array(
@@ -221,7 +220,6 @@ class Pay extends WHMAZ_Controller
      */
     public function paypal_init()
     {
-        $this->processRestCall();
         header('Content-Type: application/json');
 
         $companyId = getCompanyId();
@@ -284,9 +282,9 @@ class Pay extends WHMAZ_Controller
         ));
 
         // Load PayPal library and create order
-        $this->load->library('PayPalPayment');
+        $this->load->library('Paypal');
 
-        $result = $this->PayPalPayment->createOrder(
+        $result = $this->paypal->createOrder(
             $totalAmount,
             $invoice['currency_code'],
             'Invoice #' . $invoice['invoice_no'],
@@ -325,7 +323,6 @@ class Pay extends WHMAZ_Controller
      */
     public function paypal_capture()
     {
-        $this->processRestCall();
         header('Content-Type: application/json');
 
         $orderId = $this->input->post('order_id');
@@ -344,12 +341,12 @@ class Pay extends WHMAZ_Controller
         }
 
         // Load PayPal library and capture
-        $this->load->library('PayPalPayment');
+        $this->load->library('Paypal');
 
-        $result = $this->PayPalPayment->captureOrder($orderId);
+        $result = $this->paypal->captureOrder($orderId);
 
         if ($result['success']) {
-            $details = $this->PayPalPayment->extractPaymentDetails($result);
+            $details = $this->paypal->extractPaymentDetails($result);
 
             // Update transaction
             $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(

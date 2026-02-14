@@ -2,12 +2,12 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * PayPalPayment Library
+ * PayPal Payment Library
  *
  * Handles PayPal payment processing via REST API
  * Documentation: https://developer.paypal.com/docs/api/overview/
  */
-class PayPalPayment
+class Paypal
 {
     private $CI;
     private $clientId;

@@ -221,22 +221,22 @@ class Paymentgateway extends WHMAZADMIN_Controller
      */
     private function testStripeConnection($gateway)
     {
-        $this->load->library('StripePayment', array(
+        $this->load->library('Stripe', array(
             'secret_key' => $gateway['is_test_mode'] ? $gateway['test_secret_key'] : $gateway['secret_key'],
             'publishable_key' => $gateway['is_test_mode'] ? $gateway['test_public_key'] : $gateway['public_key'],
             'is_test_mode' => $gateway['is_test_mode']
         ));
 
-        if (!$this->StripePayment->isConfigured()) {
+        if (!$this->stripe->isConfigured()) {
             return array('success' => false, 'message' => 'API keys not configured');
         }
 
         // Try to create a minimal PaymentIntent to test
-        $result = $this->StripePayment->createPaymentIntent(1.00, 'USD', array('test' => 'connection'));
+        $result = $this->stripe->createPaymentIntent(1.00, 'USD', array('test' => 'connection'));
 
         if ($result['success']) {
             // Cancel the test payment intent
-            $this->StripePayment->cancelPaymentIntent($result['data']['id']);
+            $this->stripe->cancelPaymentIntent($result['data']['id']);
             return array('success' => true, 'message' => 'Stripe connection successful!');
         } else {
             return array('success' => false, 'message' => 'Stripe error: ' . $result['error']);
@@ -248,18 +248,18 @@ class Paymentgateway extends WHMAZADMIN_Controller
      */
     private function testPayPalConnection($gateway)
     {
-        $this->load->library('PayPalPayment', array(
+        $this->load->library('Paypal', array(
             'client_id' => $gateway['is_test_mode'] ? $gateway['test_public_key'] : $gateway['public_key'],
             'client_secret' => $gateway['is_test_mode'] ? $gateway['test_secret_key'] : $gateway['secret_key'],
             'is_test_mode' => $gateway['is_test_mode']
         ));
 
-        if (!$this->PayPalPayment->isConfigured()) {
+        if (!$this->paypal->isConfigured()) {
             return array('success' => false, 'message' => 'API credentials not configured');
         }
 
         // Try to create a test order
-        $result = $this->PayPalPayment->createOrder(1.00, 'USD', 'Connection test');
+        $result = $this->paypal->createOrder(1.00, 'USD', 'Connection test');
 
         if ($result['success']) {
             return array('success' => true, 'message' => 'PayPal connection successful!');

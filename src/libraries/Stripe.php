@@ -2,12 +2,12 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * StripePayment Library
+ * Stripe Payment Library
  *
  * Handles Stripe payment processing via API
  * Documentation: https://stripe.com/docs/api
  */
-class StripePayment
+class Stripe
 {
     private $CI;
     private $secretKey;
