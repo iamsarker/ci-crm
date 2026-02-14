@@ -1,6 +1,6 @@
 {
-	"description": "The CodeIgniter framework",
-	"name": "codeigniter/framework",
+	"description": "WHMAZ CRM - Web Hosting Management System",
+	"name": "whmaz/crm",
 	"type": "project",
 	"homepage": "https://codeigniter.com",
 	"license": "MIT",
@@ -17,7 +17,16 @@
 		"paragonie/random_compat": "Provides better randomness in PHP 7.x"
 	},
 	"require-dev": {
-		"mikey179/vfsStream": "1.1.*",
-		"phpunit/phpunit": "4.* || 5.*"
+		"mikey179/vfsStream": "^1.6",
+		"phpunit/phpunit": "^9.5"
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Tests\\": "tests/"
+		}
+	},
+	"scripts": {
+		"test": "phpunit --configuration tests/phpunit.xml",
+		"test-coverage": "phpunit --configuration tests/phpunit.xml --coverage-html tests/coverage"
 	}
 }

@@ -128,62 +128,83 @@ class Pay extends WHMAZ_Controller
         }
         $totalAmount = $amountDue + $feeAmount;
 
-        // Create transaction record
-        $transaction = $this->Payment_model->createTransaction(array(
-            'invoice_id' => $invoice['id'],
-            'payment_gateway_id' => $gateway['id'],
-            'gateway_code' => 'stripe',
-            'amount' => $totalAmount,
-            'fee_amount' => $feeAmount,
-            'net_amount' => $amountDue,
-            'currency_code' => $invoice['currency_code'],
-            'txn_type' => 'payment',
-            'status' => 'pending',
-            'ip_address' => $this->input->ip_address(),
-            'user_agent' => $this->input->user_agent(),
-            'inserted_by' => $userId,
-            'metadata' => array(
-                'invoice_no' => $invoice['invoice_no'],
-                'company_id' => $companyId
-            )
-        ));
+        // Start database transaction
+        $this->db->trans_start();
 
-        // Load Stripe library and create PaymentIntent
-        $this->load->library('Stripe');
-
-        $result = $this->stripe->createPaymentIntent(
-            $totalAmount,
-            $invoice['currency_code'],
-            array(
+        try {
+            // Create transaction record
+            $transaction = $this->Payment_model->createTransaction(array(
                 'invoice_id' => $invoice['id'],
-                'invoice_uuid' => $invoice_uuid,
-                'transaction_id' => $transaction['id']
-            )
-        );
-
-        if ($result['success']) {
-            // Update transaction with gateway order ID
-            $this->Payment_model->updateTransactionStatus($transaction['id'], 'processing', array(
-                'gateway_order_id' => $result['data']['id'],
-                'gateway_response' => $result['data']
-            ));
-
-            echo json_encode(array(
-                'success' => true,
-                'client_secret' => $result['data']['client_secret'],
-                'transaction_uuid' => $transaction['transaction_uuid'],
+                'payment_gateway_id' => $gateway['id'],
+                'gateway_code' => 'stripe',
                 'amount' => $totalAmount,
-                'currency' => $invoice['currency_code']
-            ));
-        } else {
-            // Update transaction as failed
-            $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
-                'failure_reason' => $result['error']
+                'fee_amount' => $feeAmount,
+                'net_amount' => $amountDue,
+                'currency_code' => $invoice['currency_code'],
+                'txn_type' => 'payment',
+                'status' => 'pending',
+                'ip_address' => $this->input->ip_address(),
+                'user_agent' => $this->input->user_agent(),
+                'inserted_by' => $userId,
+                'metadata' => array(
+                    'invoice_no' => $invoice['invoice_no'],
+                    'company_id' => $companyId
+                )
             ));
 
+            // Load Stripe library and create PaymentIntent
+            $this->load->library('Stripe');
+
+            $result = $this->stripe->createPaymentIntent(
+                $totalAmount,
+                $invoice['currency_code'],
+                array(
+                    'invoice_id' => $invoice['id'],
+                    'invoice_uuid' => $invoice_uuid,
+                    'transaction_id' => $transaction['id']
+                )
+            );
+
+            if ($result['success']) {
+                // Update transaction with gateway order ID
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'processing', array(
+                    'gateway_order_id' => $result['data']['id'],
+                    'gateway_response' => $result['data']
+                ));
+
+                // Complete database transaction
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    throw new Exception('Database transaction failed');
+                }
+
+                echo json_encode(array(
+                    'success' => true,
+                    'client_secret' => $result['data']['client_secret'],
+                    'transaction_uuid' => $transaction['transaction_uuid'],
+                    'amount' => $totalAmount,
+                    'currency' => $invoice['currency_code']
+                ));
+            } else {
+                // Update transaction as failed
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
+                    'failure_reason' => $result['error']
+                ));
+
+                $this->db->trans_complete();
+
+                echo json_encode(array(
+                    'success' => false,
+                    'error' => $result['error']
+                ));
+            }
+        } catch (Exception $e) {
+            $this->db->trans_rollback();
+            log_message('error', 'Stripe payment init failed: ' . $e->getMessage());
             echo json_encode(array(
                 'success' => false,
-                'error' => $result['error']
+                'error' => 'Payment initialization failed. Please try again.'
             ));
         }
     }
@@ -261,59 +282,80 @@ class Pay extends WHMAZ_Controller
         }
         $totalAmount = $amountDue + $feeAmount;
 
-        // Create transaction record
-        $transaction = $this->Payment_model->createTransaction(array(
-            'invoice_id' => $invoice['id'],
-            'payment_gateway_id' => $gateway['id'],
-            'gateway_code' => 'paypal',
-            'amount' => $totalAmount,
-            'fee_amount' => $feeAmount,
-            'net_amount' => $amountDue,
-            'currency_code' => $invoice['currency_code'],
-            'txn_type' => 'payment',
-            'status' => 'pending',
-            'ip_address' => $this->input->ip_address(),
-            'user_agent' => $this->input->user_agent(),
-            'inserted_by' => $userId,
-            'metadata' => array(
-                'invoice_no' => $invoice['invoice_no'],
-                'company_id' => $companyId
-            )
-        ));
+        // Start database transaction
+        $this->db->trans_start();
 
-        // Load PayPal library and create order
-        $this->load->library('Paypal');
-
-        $result = $this->paypal->createOrder(
-            $totalAmount,
-            $invoice['currency_code'],
-            'Invoice #' . $invoice['invoice_no'],
-            array(
+        try {
+            // Create transaction record
+            $transaction = $this->Payment_model->createTransaction(array(
                 'invoice_id' => $invoice['id'],
-                'transaction_id' => $transaction['id']
-            )
-        );
-
-        if ($result['success']) {
-            // Update transaction with PayPal order ID
-            $this->Payment_model->updateTransactionStatus($transaction['id'], 'processing', array(
-                'gateway_order_id' => $result['data']['id'],
-                'gateway_response' => $result['data']
+                'payment_gateway_id' => $gateway['id'],
+                'gateway_code' => 'paypal',
+                'amount' => $totalAmount,
+                'fee_amount' => $feeAmount,
+                'net_amount' => $amountDue,
+                'currency_code' => $invoice['currency_code'],
+                'txn_type' => 'payment',
+                'status' => 'pending',
+                'ip_address' => $this->input->ip_address(),
+                'user_agent' => $this->input->user_agent(),
+                'inserted_by' => $userId,
+                'metadata' => array(
+                    'invoice_no' => $invoice['invoice_no'],
+                    'company_id' => $companyId
+                )
             ));
 
-            echo json_encode(array(
-                'success' => true,
-                'order_id' => $result['data']['id'],
-                'transaction_uuid' => $transaction['transaction_uuid']
-            ));
-        } else {
-            $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
-                'failure_reason' => $result['error']
-            ));
+            // Load PayPal library and create order
+            $this->load->library('Paypal');
 
+            $result = $this->paypal->createOrder(
+                $totalAmount,
+                $invoice['currency_code'],
+                'Invoice #' . $invoice['invoice_no'],
+                array(
+                    'invoice_id' => $invoice['id'],
+                    'transaction_id' => $transaction['id']
+                )
+            );
+
+            if ($result['success']) {
+                // Update transaction with PayPal order ID
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'processing', array(
+                    'gateway_order_id' => $result['data']['id'],
+                    'gateway_response' => $result['data']
+                ));
+
+                // Complete database transaction
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    throw new Exception('Database transaction failed');
+                }
+
+                echo json_encode(array(
+                    'success' => true,
+                    'order_id' => $result['data']['id'],
+                    'transaction_uuid' => $transaction['transaction_uuid']
+                ));
+            } else {
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
+                    'failure_reason' => $result['error']
+                ));
+
+                $this->db->trans_complete();
+
+                echo json_encode(array(
+                    'success' => false,
+                    'error' => $result['error']
+                ));
+            }
+        } catch (Exception $e) {
+            $this->db->trans_rollback();
+            log_message('error', 'PayPal payment init failed: ' . $e->getMessage());
             echo json_encode(array(
                 'success' => false,
-                'error' => $result['error']
+                'error' => 'Payment initialization failed. Please try again.'
             ));
         }
     }
@@ -340,6 +382,12 @@ class Pay extends WHMAZ_Controller
             return;
         }
 
+        // Check if already processed (prevent double-charging)
+        if ($transaction['status'] === 'completed') {
+            echo json_encode(array('success' => true, 'transaction_id' => $transaction['gateway_transaction_id'], 'message' => 'Payment already processed'));
+            return;
+        }
+
         // Load PayPal library and capture
         $this->load->library('Paypal');
 
@@ -348,22 +396,41 @@ class Pay extends WHMAZ_Controller
         if ($result['success']) {
             $details = $this->paypal->extractPaymentDetails($result);
 
-            // Update transaction
-            $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
-                'gateway_transaction_id' => $details['transaction_id'],
-                'payer_email' => $details['payer_email'],
-                'payer_name' => $details['payer_name'],
-                'gateway_response' => $result['data']
-            ));
+            // Start database transaction for critical payment processing
+            $this->db->trans_start();
 
-            // Process successful payment
-            $this->Payment_model->processSuccessfulPayment($transaction['id']);
-            $this->Payment_model->recordInvoiceTxn($transaction['id']);
+            try {
+                // Update transaction
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
+                    'gateway_transaction_id' => $details['transaction_id'],
+                    'payer_email' => $details['payer_email'],
+                    'payer_name' => $details['payer_name'],
+                    'gateway_response' => $result['data']
+                ));
 
-            echo json_encode(array(
-                'success' => true,
-                'transaction_id' => $details['transaction_id']
-            ));
+                // Process successful payment
+                $this->Payment_model->processSuccessfulPayment($transaction['id']);
+                $this->Payment_model->recordInvoiceTxn($transaction['id']);
+
+                // Complete database transaction
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    throw new Exception('Database transaction failed during payment processing');
+                }
+
+                echo json_encode(array(
+                    'success' => true,
+                    'transaction_id' => $details['transaction_id']
+                ));
+            } catch (Exception $e) {
+                $this->db->trans_rollback();
+                log_message('error', 'PayPal capture failed: ' . $e->getMessage());
+                echo json_encode(array(
+                    'success' => false,
+                    'error' => 'Payment processing failed. Please contact support.'
+                ));
+            }
         } else {
             $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
                 'failure_reason' => $result['error']
@@ -564,71 +631,92 @@ class Pay extends WHMAZ_Controller
         }
         $totalAmount = $amountDue + $feeAmount;
 
-        // Create transaction record
-        $transaction = $this->Payment_model->createTransaction(array(
-            'invoice_id' => $invoice['id'],
-            'payment_gateway_id' => $gateway['id'],
-            'gateway_code' => 'sslcommerz',
-            'amount' => $totalAmount,
-            'fee_amount' => $feeAmount,
-            'net_amount' => $amountDue,
-            'currency_code' => $invoice['currency_code'],
-            'txn_type' => 'payment',
-            'status' => 'pending',
-            'ip_address' => $this->input->ip_address(),
-            'user_agent' => $this->input->user_agent(),
-            'inserted_by' => $userId,
-            'metadata' => array(
-                'invoice_no' => $invoice['invoice_no'],
-                'company_id' => $companyId
-            )
-        ));
+        // Start database transaction
+        $this->db->trans_start();
 
-        // Get customer info
-        $customer = $this->db->where('id', $companyId)->get('companies')->row_array();
-
-        // Load SSLCommerz library
-        $this->load->library('Sslcommerz');
-
-        $result = $this->sslcommerz->initiatePayment(array(
-            'amount' => $totalAmount,
-            'currency' => $invoice['currency_code'] === 'BDT' ? 'BDT' : 'USD',
-            'transaction_id' => $transaction['transaction_uuid'],
-            'success_url' => base_url() . 'billing/pay/sslcommerz_success',
-            'fail_url' => base_url() . 'billing/pay/sslcommerz_fail',
-            'cancel_url' => base_url() . 'billing/pay/sslcommerz_cancel',
-            'ipn_url' => base_url() . 'webhook/sslcommerz',
-            'customer_name' => $customer['company_name'] ?? 'Customer',
-            'customer_email' => $customer['email'] ?? '',
-            'customer_phone' => $customer['phone'] ?? '',
-            'customer_address' => $customer['address'] ?? '',
-            'customer_city' => $customer['city'] ?? '',
-            'customer_country' => $customer['country'] ?? 'Bangladesh',
-            'product_name' => 'Invoice #' . $invoice['invoice_no'],
-            'value_a' => $transaction['transaction_uuid'],
-            'value_b' => $invoice_uuid
-        ));
-
-        if ($result['success']) {
-            // Update transaction with session key
-            $this->Payment_model->updateTransactionStatus($transaction['id'], 'processing', array(
-                'gateway_order_id' => $result['data']['session_key'],
-                'gateway_response' => $result['data']
+        try {
+            // Create transaction record
+            $transaction = $this->Payment_model->createTransaction(array(
+                'invoice_id' => $invoice['id'],
+                'payment_gateway_id' => $gateway['id'],
+                'gateway_code' => 'sslcommerz',
+                'amount' => $totalAmount,
+                'fee_amount' => $feeAmount,
+                'net_amount' => $amountDue,
+                'currency_code' => $invoice['currency_code'],
+                'txn_type' => 'payment',
+                'status' => 'pending',
+                'ip_address' => $this->input->ip_address(),
+                'user_agent' => $this->input->user_agent(),
+                'inserted_by' => $userId,
+                'metadata' => array(
+                    'invoice_no' => $invoice['invoice_no'],
+                    'company_id' => $companyId
+                )
             ));
 
-            echo json_encode(array(
-                'success' => true,
-                'gateway_url' => $result['data']['gateway_url'],
-                'transaction_uuid' => $transaction['transaction_uuid']
-            ));
-        } else {
-            $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
-                'failure_reason' => $result['error']
+            // Get customer info
+            $customer = $this->db->where('id', $companyId)->get('companies')->row_array();
+
+            // Load SSLCommerz library
+            $this->load->library('Sslcommerz');
+
+            $result = $this->sslcommerz->initiatePayment(array(
+                'amount' => $totalAmount,
+                'currency' => $invoice['currency_code'] === 'BDT' ? 'BDT' : 'USD',
+                'transaction_id' => $transaction['transaction_uuid'],
+                'success_url' => base_url() . 'billing/pay/sslcommerz_success',
+                'fail_url' => base_url() . 'billing/pay/sslcommerz_fail',
+                'cancel_url' => base_url() . 'billing/pay/sslcommerz_cancel',
+                'ipn_url' => base_url() . 'webhook/sslcommerz',
+                'customer_name' => $customer['company_name'] ?? 'Customer',
+                'customer_email' => $customer['email'] ?? '',
+                'customer_phone' => $customer['phone'] ?? '',
+                'customer_address' => $customer['address'] ?? '',
+                'customer_city' => $customer['city'] ?? '',
+                'customer_country' => $customer['country'] ?? 'Bangladesh',
+                'product_name' => 'Invoice #' . $invoice['invoice_no'],
+                'value_a' => $transaction['transaction_uuid'],
+                'value_b' => $invoice_uuid
             ));
 
+            if ($result['success']) {
+                // Update transaction with session key
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'processing', array(
+                    'gateway_order_id' => $result['data']['session_key'],
+                    'gateway_response' => $result['data']
+                ));
+
+                // Complete database transaction
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    throw new Exception('Database transaction failed');
+                }
+
+                echo json_encode(array(
+                    'success' => true,
+                    'gateway_url' => $result['data']['gateway_url'],
+                    'transaction_uuid' => $transaction['transaction_uuid']
+                ));
+            } else {
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
+                    'failure_reason' => $result['error']
+                ));
+
+                $this->db->trans_complete();
+
+                echo json_encode(array(
+                    'success' => false,
+                    'error' => $result['error']
+                ));
+            }
+        } catch (Exception $e) {
+            $this->db->trans_rollback();
+            log_message('error', 'SSLCommerz payment init failed: ' . $e->getMessage());
             echo json_encode(array(
                 'success' => false,
-                'error' => $result['error']
+                'error' => 'Payment initialization failed. Please try again.'
             ));
         }
     }
@@ -656,6 +744,14 @@ class Pay extends WHMAZ_Controller
             return;
         }
 
+        // Check if already processed (prevent double-charging)
+        if ($transaction['status'] === 'completed') {
+            $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
+            $this->session->set_flashdata('alert_success', 'Payment already processed.');
+            redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
+            return;
+        }
+
         // Validate payment with SSLCommerz
         $this->load->library('Sslcommerz');
         $validation = $this->sslcommerz->validateIPN($_POST);
@@ -663,17 +759,33 @@ class Pay extends WHMAZ_Controller
         if ($validation['success']) {
             $details = $this->sslcommerz->extractPaymentDetails($validation);
 
-            // Update transaction
-            $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
-                'gateway_transaction_id' => $details['bank_tran_id'],
-                'gateway_response' => $validation['data']
-            ));
+            // Start database transaction for critical payment processing
+            $this->db->trans_start();
 
-            // Process successful payment
-            $this->Payment_model->processSuccessfulPayment($transaction['id']);
-            $this->Payment_model->recordInvoiceTxn($transaction['id']);
+            try {
+                // Update transaction
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
+                    'gateway_transaction_id' => $details['bank_tran_id'],
+                    'gateway_response' => $validation['data']
+                ));
 
-            $this->session->set_flashdata('alert_success', 'Payment successful! Thank you for your payment.');
+                // Process successful payment
+                $this->Payment_model->processSuccessfulPayment($transaction['id']);
+                $this->Payment_model->recordInvoiceTxn($transaction['id']);
+
+                // Complete database transaction
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    throw new Exception('Database transaction failed during payment processing');
+                }
+
+                $this->session->set_flashdata('alert_success', 'Payment successful! Thank you for your payment.');
+            } catch (Exception $e) {
+                $this->db->trans_rollback();
+                log_message('error', 'SSLCommerz payment processing failed: ' . $e->getMessage());
+                $this->session->set_flashdata('alert_error', 'Payment processing failed. Please contact support.');
+            }
         } else {
             $this->session->set_flashdata('alert_info', 'Payment is being verified. You will receive confirmation shortly.');
         }

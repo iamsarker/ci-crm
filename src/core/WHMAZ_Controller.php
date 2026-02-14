@@ -64,12 +64,19 @@ class WHMAZ_Controller extends MX_Controller
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $finalUrl);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
 		// Execute
 		$responseJson = curl_exec($ch);
+		$error = curl_error($ch);
 		curl_close($ch);
+
+		if ($error) {
+			log_message('error', 'cURL Error: ' . $error);
+			return null;
+		}
 
 		// Decode JSON
 		$response = json_decode($responseJson, true);

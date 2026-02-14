@@ -36,7 +36,9 @@ class Invoice extends WHMAZADMIN_Controller
 		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
 		$data['invoice'] = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
 		$data['invoiceItems'] = $this->Billing_model->getInvoiceItems($data['invoice']['id']);
-		$logoPath = !empty($data['companyInfo']['logo']) ? $this->upload_dir.'/mics/'.$data['companyInfo']['logo'] : '';
+		// Use basename() to prevent path traversal attacks
+		$logoFilename = !empty($data['companyInfo']['logo']) ? basename($data['companyInfo']['logo']) : '';
+		$logoPath = !empty($logoFilename) ? $this->upload_dir.'/mics/'.$logoFilename : '';
 		$data['logoBase64'] = !empty($logoPath) && file_exists($logoPath) ? convertImageToBase65($logoPath) : '';
 		$data['txnHistory'] = array();
 		$data['viewMode'] = "HTML";
@@ -57,7 +59,9 @@ class Invoice extends WHMAZADMIN_Controller
 		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
 		$data['invoice'] = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
 		$data['invoiceItems'] = $this->Billing_model->getInvoiceItems($data['invoice']['id']);
-		$logoPath = !empty($data['companyInfo']['logo']) ? $this->upload_dir.'/mics/'.$data['companyInfo']['logo'] : '';
+		// Use basename() to prevent path traversal attacks
+		$logoFilename = !empty($data['companyInfo']['logo']) ? basename($data['companyInfo']['logo']) : '';
+		$logoPath = !empty($logoFilename) ? $this->upload_dir.'/mics/'.$logoFilename : '';
 		$data['logoBase64'] = !empty($logoPath) && file_exists($logoPath) ? convertImageToBase65($logoPath) : '';
 		$data['txnHistory'] = array();
 		$data['viewMode'] = "PDF";
