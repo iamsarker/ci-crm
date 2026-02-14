@@ -64,11 +64,12 @@ class WHMAZ_Controller extends MX_Controller
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $finalUrl);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 1);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 		curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		// SSL verification disabled for domain registrar APIs (httpapi.com, etc.)
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 
-		// Execute
 		$responseJson = curl_exec($ch);
 		$error = curl_error($ch);
 		curl_close($ch);
@@ -78,10 +79,7 @@ class WHMAZ_Controller extends MX_Controller
 			return null;
 		}
 
-		// Decode JSON
-		$response = json_decode($responseJson, true);
-
-		return $response;
+		return json_decode($responseJson, true);
 	}
 
 	function AppResponse($code, $msg, $data=array() ){

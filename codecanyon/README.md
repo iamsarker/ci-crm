@@ -567,7 +567,7 @@ WHMAZ is fully tested and compatible with:
 
 We're here to help you succeed with WHMAZ!
 
-**📧 Email Support:** support@yourcompany.com
+**📧 Email Support:** support@whmaz.com
 **⏰ Response Time:** Within 24 hours (Monday-Friday)
 **🕐 Support Hours:** 9 AM - 6 PM EST (Monday-Friday)
 
@@ -867,48 +867,26 @@ We're constantly improving WHMAZ. Upcoming features:
 
 ## 👨‍💻 About the Developer
 
-**Developed by:** [Your Company Name]
-**Website:** https://yourcompany.com
-**Email:** contact@yourcompany.com
-
-**Other Products:**
-- Product 1 - Description
-- Product 2 - Description
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! If you've fixed a bug or improved WHMAZ:
-
-1. Fork the project
-2. Create your feature branch
-3. Commit your changes
-4. Submit a pull request
-
-See **[CONTRIBUTING.md](contributing.md)** for guidelines.
+**Developed by:** WHMAZ
+**Website:** https://whmaz.com/
+**Email:** contact@whmaz.com
 
 ---
 
 ## 📞 Contact
 
-**Pre-Sales Questions:** sales@yourcompany.com
-**Technical Support:** support@yourcompany.com
-**General Inquiries:** info@yourcompany.com
-
-**Follow Us:**
-- 🐦 Twitter: [@yourhandle](https://twitter.com/yourhandle)
-- 💼 LinkedIn: [Your Company](https://linkedin.com/company/yourcompany)
-- 📘 Facebook: [Your Page](https://facebook.com/yourpage)
+**Pre-Sales Questions:** sales@whmaz.com
+**Technical Support:** support@whmaz.com
+**General Inquiries:** info@whmaz.com
 
 ---
 
 <div align="center">
 
-**Made with ❤️ by Your Company**
+**Made with ❤️ by WHMAZ**
 
-Copyright © 2026 Your Company. All rights reserved.
+Copyright © 2026 WHMAZ. All rights reserved.
 
-[Website](https://yourcompany.com) • [Documentation](INSTALLATION.md) • [Support](mailto:support@yourcompany.com) • [Changelog](CHANGELOG.md)
+[Website](https://whmaz.com/) • [Documentation](INSTALLATION.md) • [Support](mailto:support@whmaz.com) • [Changelog](CHANGELOG.md)
 
 </div>

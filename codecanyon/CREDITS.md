@@ -654,7 +654,7 @@ This credits file will be updated whenever:
 ## Questions & Concerns
 
 If you have questions about licensing or attribution:
-- **Email:** legal@yourcompany.com
+- **Email:** legal@whmaz.com
 - **Documentation:** See individual library websites
 - **License Issues:** Contact library maintainers
 
@@ -670,4 +670,4 @@ Special thanks to all the open-source developers and communities who have made t
 
 **Maintained by:** WHMAZ Development Team
 **Project:** WHMAZ - CI-CRM v1.0.0
-**Website:** https://yourcompany.com
+**Website:** https://whmaz.com/

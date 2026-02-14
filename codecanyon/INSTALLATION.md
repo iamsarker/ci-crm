@@ -207,30 +207,46 @@ You should see 40+ tables.
 
 ### Step 5: Configure Database Connection
 
-1. Navigate to `public_html/src/config/`
-2. Edit `database.php`
+WHMAZ uses a `.env` file for database configuration. This keeps your credentials secure and separate from the code.
 
-**Find this section:**
-```php
-$db['default'] = array(
-    'dsn'   => '',
-    'hostname' => 'localhost',
-    'username' => 'root',
-    'password' => '',
-    'database' => 'whmaz_crm',
+1. Navigate to your installation root folder (`public_html/`)
+2. Copy `.env.example` to `.env`
+3. Edit the `.env` file with your database details
+
+**Using File Manager:**
+1. Find `.env.example` in root folder
+2. Copy and rename to `.env`
+3. Edit `.env`
+
+**Using Terminal/SSH:**
+```bash
+cp .env.example .env
+nano .env
 ```
 
-**Replace with your details:**
-```php
-$db['default'] = array(
-    'dsn'   => '',
-    'hostname' => 'localhost',              // Usually 'localhost'
-    'username' => 'youruser_whmaz_user',    // Database username
-    'password' => 'YOUR_DB_PASSWORD',        // Database password
-    'database' => 'youruser_whmaz',          // Database name
+**Update the `.env` file with your details:**
+```env
+# Database Configuration
+DB_HOSTNAME=localhost
+DB_PORT=3306
+DB_DATABASE=youruser_whmaz
+DB_USERNAME=youruser_whmaz_user
+DB_PASSWORD=YOUR_SECURE_PASSWORD
 ```
 
-> 💡 **Tip:** In cPanel, the hostname is almost always `localhost`
+**Example with cPanel naming:**
+```env
+DB_HOSTNAME=localhost
+DB_PORT=3306
+DB_DATABASE=cpanelusername_whmaz
+DB_USERNAME=cpanelusername_dbuser
+DB_PASSWORD=YourSecurePassword123!
+```
+
+> 💡 **Tips:**
+> - In cPanel, hostname is almost always `localhost`
+> - Never share or commit your `.env` file
+> - The `.env` file is already in `.gitignore` for security
 
 ### Step 6: Configure Base URL
 
@@ -250,6 +266,7 @@ $config['base_url'] = 'https://yourdomain.com/';
 - Include `https://` if you have SSL (recommended)
 - Include trailing slash `/`
 - If installed in a subfolder: `https://yourdomain.com/whmaz/`
+- If installed in a subdomain: `https://whmaz.yourdomain.com/`
 
 ### Step 7: Set File Permissions
 
@@ -272,13 +289,13 @@ Right-click folders → File Attributes → `755`
 
 ### Step 8: Verify Installation
 
-1. **Visit your website:** `https://yourdomain.com/`
+1. **Visit your website:** `https://yourdomain.com/` or `https://yourdomain.com/whmaz/` or `https://whmaz.yourdomain.com/`
 
 You should see the WHMAZ client portal homepage.
 
 ![Client Portal](screenshots/install/client-homepage.png)
 
-2. **Access Admin Portal:** `https://yourdomain.com/whmazadmin/authenticate/login`
+2. **Access Admin Portal:** `https://yourdomain.com/whmazadmin/authenticate/login` or `https://yourdomain.com/whmaz/whmazadmin/authenticate/login` or `https://whmaz.yourdomain.com/whmazadmin/authenticate/login`
 
 ![Admin Login](screenshots/install/admin-login.png)
 
@@ -1236,7 +1253,7 @@ sudo systemctl reload nginx
 
 ### Support Channels
 
-**Email Support:** support@yourcompany.com
+**Email Support:** support@whmaz.com
 **Documentation:** [View All Guides](README.md)
 **FAQ:** [Common Questions](README.md#frequently-asked-questions)
 
@@ -1343,8 +1360,8 @@ Use this checklist to ensure complete installation:
 
 Your WHMAZ CRM is now ready to use!
 
-[Back to README](README.md) • [User Guide](USER_GUIDE.md) • [Get Support](mailto:support@yourcompany.com)
+[Back to README](README.md) • [User Guide](USER_GUIDE.md) • [Get Support](mailto:support@whmaz.com)
 
-**Made with ❤️ by Your Company**
+**Made with ❤️ by WHMAZ**
 
 </div>

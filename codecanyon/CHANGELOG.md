@@ -1401,7 +1401,7 @@ When upgrading from one version to another:
 ### Reporting Security Issues
 
 If you discover a security vulnerability, please email:
-- **Email:** security@yourcompany.com
+- **Email:** security@whmaz.com
 - **Response Time:** Within 24 hours
 
 **Do NOT** create public GitHub issues for security vulnerabilities.
@@ -1450,7 +1450,7 @@ For commercial use, please refer to CodeCanyon licensing:
 ### Getting Help
 
 - **Documentation:** See README.md and INSTALLATION.md
-- **Support Email:** support@yourcompany.com
+- **Support Email:** support@whmaz.com
 - **Support Period:** 6 months included (extendable)
 - **Response Time:** Within 48 hours (business days)
 

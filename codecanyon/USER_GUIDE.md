@@ -3278,7 +3278,7 @@ A: Backup database (MySQL dump) and files (entire directory). See INSTALLATION.m
 - CHANGELOG.md - Version history
 
 **Email Support:**
-- Email: support@yourcompany.com
+- Email: support@whmaz.com
 - Response time: Within 48 hours (business days)
 - Include: Order ID, version, detailed description, screenshots
 
@@ -3358,14 +3358,13 @@ This guide covered:
 7. Create knowledge base articles for customers
 
 **Need Help?**
-- 📧 Email: support@yourcompany.com
+- 📧 Email: support@whmaz.com
 - 📚 Documentation: See other guides
-- 🌐 Website: [YOUR WEBSITE URL]
+- 🌐 Website: https://whmaz.com/
 
 **Stay Updated:**
 - Check CHANGELOG.md for new features
 - Subscribe to announcements
-- Follow on social media
 
 ---
 
@@ -3373,4 +3372,4 @@ This guide covered:
 - Version: 1.7.0
 - Last Updated: February 13, 2026
 - Product: WHMAZ - CI-CRM
-- Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.
+- Copyright © 2026 WHMAZ. All Rights Reserved.
