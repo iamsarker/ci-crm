@@ -7,8 +7,9 @@ $(function(){
   ////////// NAVBAR //////////
 
   // Initialize PerfectScrollbar of navbar menu for mobile only
+  var psNavbar = null;
   if(window.matchMedia('(max-width: 991px)').matches) {
-    const psNavbar = new PerfectScrollbar('#navbarMenu', {
+    psNavbar = new PerfectScrollbar('#navbarMenu', {
       suppressScrollX: true
     });
   }
@@ -37,7 +38,7 @@ $(function(){
     $(this).parent().toggleClass('show');
     $(this).parent().siblings().removeClass('show');
 
-    if(window.matchMedia('(max-width: 991px)').matches) {
+    if(window.matchMedia('(max-width: 991px)').matches && psNavbar) {
       psNavbar.update();
     }
   })
