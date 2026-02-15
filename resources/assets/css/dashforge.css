@@ -992,12 +992,11 @@ BUGS:
   --bs-font-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --bs-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0));
   --bs-body-font-family: IBM Plex Sans, sans-serif;
-  --bs-body-font-size: 1.1rem;
+  --bs-body-font-size: 0.875rem;
   --bs-body-font-weight: 400;
   --bs-body-line-height: 1.5;
   --bs-body-color: #001737;
   --bs-body-bg: #fff;
-  --bs-nav-link-font-size: 0.875rem;
   --bs-border-width: 1px;
   --bs-border-style: solid;
   --bs-border-color: rgba(72, 94, 144, 0.16);
@@ -15202,7 +15201,7 @@ textarea.parsley-success:focus {
   flex: 1; }
 
 .footer {
-  font-size: 0.875rem;
+  font-size: 10px;
   font-family: -apple-system, BlinkMacSystemFont, "Inter UI", Roboto, sans-serif;
   letter-spacing: .3px;
   padding: 15px 25px;
