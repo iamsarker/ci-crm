@@ -116,6 +116,32 @@ resources/assets/css/
 - **DO NOT use** in AJAX handlers that receive form-urlencoded data (`application/x-www-form-urlencoded`)
 - Only use for true REST/JSON API endpoints
 
+### Payment Gateway Session Loss (SameSite Cookie Issue)
+When payment gateways redirect back to the app via **external POST**, browsers block session cookies due to `SameSite` policy, causing user logout.
+
+**Gateway Types:**
+| Gateway | Flow Type | Session Issue? |
+|---------|-----------|----------------|
+| Stripe | AJAX + client-side JS → same-origin redirect | No |
+| PayPal | AJAX + popup → AJAX capture → same-origin redirect | No |
+| Razorpay | AJAX + popup → same-origin redirect | No |
+| SSLCommerz | AJAX → **external redirect** → **external POST back** | **Yes** |
+
+**Solution for external-redirect gateways (SSLCommerz, etc.):**
+1. Generate secure token on init: `$paymentToken = bin2hex(random_bytes(32));`
+2. Store in transaction metadata: `'payment_token' => $paymentToken, 'user_id' => $userId`
+3. Pass to gateway (e.g., SSLCommerz `value_c` parameter)
+4. On callback, verify token and restore session via `Auth_model->getUserSessionData($userId)`
+
+**Reference implementation:** `src/modules/billing/controllers/Pay.php`
+- `sslcommerz_init()` - generates and stores token
+- `sslcommerz_success/fail/cancel()` - calls `_restoreSessionFromTransaction()`
+- `_restoreSessionFromTransaction()` - verifies token, restores session
+
+**When adding new payment gateways:**
+- If gateway uses popup/modal (Razorpay, PayPal style): No special handling needed
+- If gateway does full browser redirect + POST callback: Implement token-based session restoration
+
 ## Library Naming Convention
 Libraries follow CodeIgniter standard naming:
 - File: `Libraryname.php` (capital first letter only)

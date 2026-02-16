@@ -631,11 +631,14 @@ class Pay extends WHMAZ_Controller
         }
         $totalAmount = $amountDue + $feeAmount;
 
+        // Generate secure payment token for session restoration
+        $paymentToken = bin2hex(random_bytes(32));
+
         // Start database transaction
         $this->db->trans_start();
 
         try {
-            // Create transaction record
+            // Create transaction record with payment token
             $transaction = $this->Payment_model->createTransaction(array(
                 'invoice_id' => $invoice['id'],
                 'payment_gateway_id' => $gateway['id'],
@@ -651,7 +654,9 @@ class Pay extends WHMAZ_Controller
                 'inserted_by' => $userId,
                 'metadata' => array(
                     'invoice_no' => $invoice['invoice_no'],
-                    'company_id' => $companyId
+                    'company_id' => $companyId,
+                    'user_id' => $userId,
+                    'payment_token' => $paymentToken
                 )
             ));
 
@@ -677,7 +682,8 @@ class Pay extends WHMAZ_Controller
                 'customer_country' => $customer['country'] ?? 'Bangladesh',
                 'product_name' => 'Invoice #' . $invoice['invoice_no'],
                 'value_a' => $transaction['transaction_uuid'],
-                'value_b' => $invoice_uuid
+                'value_b' => $invoice_uuid,
+                'value_c' => $paymentToken
             ));
 
             if ($result['success']) {
@@ -723,124 +729,200 @@ class Pay extends WHMAZ_Controller
 
     /**
      * SSLCommerz payment success callback
+     * Restores user session using secure token passed through payment gateway
      */
     public function sslcommerz_success()
     {
         $transactionUuid = $this->input->post('value_a') ?? $this->input->get('value_a');
         $invoiceUuid = $this->input->post('value_b') ?? $this->input->get('value_b');
-        $valId = $this->input->post('val_id') ?? $this->input->get('val_id');
+        $paymentToken = $this->input->post('value_c') ?? $this->input->get('value_c');
 
-        if (empty($transactionUuid)) {
-            $this->session->set_flashdata('alert_error', 'Invalid payment response.');
-            redirect(base_url() . 'billing/invoices');
-            return;
-        }
+        // Default redirect URL
+        $redirectUrl = base_url() . 'billing/invoices';
+        $alertType = 'error';
+        $alertMessage = 'Invalid payment response.';
 
-        $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
+        if (!empty($transactionUuid)) {
+            $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
 
-        if (!$transaction) {
-            $this->session->set_flashdata('alert_error', 'Transaction not found.');
-            redirect(base_url() . 'billing/invoices');
-            return;
-        }
+            if ($transaction) {
+                $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
+                $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
 
-        // Check if already processed (prevent double-charging)
-        if ($transaction['status'] === 'completed') {
-            $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-            $this->session->set_flashdata('alert_success', 'Payment already processed.');
-            redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
-            return;
-        }
+                // Restore user session using secure token
+                $this->_restoreSessionFromTransaction($transaction, $paymentToken);
 
-        // Validate payment with SSLCommerz
-        $this->load->library('Sslcommerz');
-        $validation = $this->sslcommerz->validateIPN($_POST);
+                // Check if already processed (prevent double-charging)
+                if ($transaction['status'] === 'completed') {
+                    $alertType = 'success';
+                    $alertMessage = 'Payment already processed.';
+                } else {
+                    // Validate payment with SSLCommerz
+                    $this->load->library('Sslcommerz');
+                    $validation = $this->sslcommerz->validateIPN($_POST);
 
-        if ($validation['success']) {
-            $details = $this->sslcommerz->extractPaymentDetails($validation);
+                    if ($validation['success']) {
+                        $details = $this->sslcommerz->extractPaymentDetails($validation);
 
-            // Start database transaction for critical payment processing
-            $this->db->trans_start();
+                        // Start database transaction for critical payment processing
+                        $this->db->trans_start();
 
-            try {
-                // Update transaction
-                $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
-                    'gateway_transaction_id' => $details['bank_tran_id'],
-                    'gateway_response' => $validation['data']
-                ));
+                        try {
+                            // Update transaction
+                            $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
+                                'gateway_transaction_id' => $details['bank_tran_id'],
+                                'gateway_response' => $validation['data']
+                            ));
 
-                // Process successful payment
-                $this->Payment_model->processSuccessfulPayment($transaction['id']);
-                $this->Payment_model->recordInvoiceTxn($transaction['id']);
+                            // Process successful payment
+                            $this->Payment_model->processSuccessfulPayment($transaction['id']);
+                            $this->Payment_model->recordInvoiceTxn($transaction['id']);
 
-                // Complete database transaction
-                $this->db->trans_complete();
+                            // Complete database transaction
+                            $this->db->trans_complete();
 
-                if ($this->db->trans_status() === FALSE) {
-                    throw new Exception('Database transaction failed during payment processing');
+                            if ($this->db->trans_status() === FALSE) {
+                                throw new Exception('Database transaction failed during payment processing');
+                            }
+
+                            $alertType = 'success';
+                            $alertMessage = 'Payment successful! Thank you for your payment.';
+                        } catch (Exception $e) {
+                            $this->db->trans_rollback();
+                            log_message('error', 'SSLCommerz payment processing failed: ' . $e->getMessage());
+                            $alertType = 'error';
+                            $alertMessage = 'Payment processing failed. Please contact support.';
+                        }
+                    } else {
+                        $alertType = 'info';
+                        $alertMessage = 'Payment is being verified. You will receive confirmation shortly.';
+                    }
                 }
-
-                $this->session->set_flashdata('alert_success', 'Payment successful! Thank you for your payment.');
-            } catch (Exception $e) {
-                $this->db->trans_rollback();
-                log_message('error', 'SSLCommerz payment processing failed: ' . $e->getMessage());
-                $this->session->set_flashdata('alert_error', 'Payment processing failed. Please contact support.');
+            } else {
+                $alertMessage = 'Transaction not found.';
             }
-        } else {
-            $this->session->set_flashdata('alert_info', 'Payment is being verified. You will receive confirmation shortly.');
         }
 
-        // Redirect to invoice
-        $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-        redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
+        // Set flash message and redirect
+        $this->session->set_flashdata('alert_' . $alertType, $alertMessage);
+        redirect($redirectUrl);
     }
 
     /**
      * SSLCommerz payment fail callback
+     * Restores user session using secure token passed through payment gateway
      */
     public function sslcommerz_fail()
     {
         $transactionUuid = $this->input->post('value_a') ?? $this->input->get('value_a');
+        $paymentToken = $this->input->post('value_c') ?? $this->input->get('value_c');
+        $redirectUrl = base_url() . 'billing/invoices';
+        $alertMessage = 'Payment failed.';
 
         if (!empty($transactionUuid)) {
             $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
             if ($transaction) {
+                // Restore user session using secure token
+                $this->_restoreSessionFromTransaction($transaction, $paymentToken);
+
                 $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
                     'failure_reason' => 'Payment failed at gateway'
                 ));
 
                 $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-                $this->session->set_flashdata('alert_error', 'Payment failed. Please try again.');
-                redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
-                return;
+                $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
+                $alertMessage = 'Payment failed. Please try again.';
             }
         }
 
-        $this->session->set_flashdata('alert_error', 'Payment failed.');
-        redirect(base_url() . 'billing/invoices');
+        $this->session->set_flashdata('alert_error', $alertMessage);
+        redirect($redirectUrl);
     }
 
     /**
      * SSLCommerz payment cancel callback
+     * Restores user session using secure token passed through payment gateway
      */
     public function sslcommerz_cancel()
     {
         $transactionUuid = $this->input->post('value_a') ?? $this->input->get('value_a');
+        $paymentToken = $this->input->post('value_c') ?? $this->input->get('value_c');
+        $redirectUrl = base_url() . 'billing/invoices';
+        $alertMessage = 'Payment was cancelled.';
 
         if (!empty($transactionUuid)) {
             $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
             if ($transaction) {
+                // Restore user session using secure token
+                $this->_restoreSessionFromTransaction($transaction, $paymentToken);
+
                 $this->Payment_model->updateTransactionStatus($transaction['id'], 'cancelled');
 
                 $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-                $this->session->set_flashdata('alert_info', 'Payment was cancelled.');
-                redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
-                return;
+                $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
             }
         }
 
-        $this->session->set_flashdata('alert_info', 'Payment was cancelled.');
-        redirect(base_url() . 'billing/invoices');
+        $this->session->set_flashdata('alert_info', $alertMessage);
+        redirect($redirectUrl);
+    }
+
+    /**
+     * Restore user session from transaction data using secure payment token
+     *
+     * This method verifies the payment token passed through the gateway matches
+     * the one stored in the transaction metadata, then restores the user session.
+     *
+     * @param array $transaction The transaction record
+     * @param string $paymentToken The payment token from gateway callback
+     * @return bool True if session was restored, false otherwise
+     */
+    private function _restoreSessionFromTransaction($transaction, $paymentToken)
+    {
+        // Check if user is already logged in
+        if (getCompanyId() > 0) {
+            return true; // Session already active
+        }
+
+        // Get metadata from transaction
+        $metadata = $transaction['metadata'];
+        if (is_string($metadata)) {
+            $metadata = json_decode($metadata, true);
+        }
+
+        if (empty($metadata) || empty($paymentToken)) {
+            log_message('debug', 'Payment session restore: Missing metadata or token');
+            return false;
+        }
+
+        // Verify payment token matches (timing-safe comparison)
+        $storedToken = $metadata['payment_token'] ?? '';
+        if (empty($storedToken) || !hash_equals($storedToken, $paymentToken)) {
+            log_message('warning', 'Payment session restore: Token mismatch for transaction ' . $transaction['transaction_uuid']);
+            return false;
+        }
+
+        // Get user ID from metadata or transaction
+        $userId = $metadata['user_id'] ?? $transaction['inserted_by'] ?? 0;
+        if ($userId <= 0) {
+            log_message('warning', 'Payment session restore: No user ID found');
+            return false;
+        }
+
+        // Load Auth model and restore session
+        $this->load->model('Auth_model');
+        $userData = $this->Auth_model->getUserSessionData($userId);
+
+        if (empty($userData)) {
+            log_message('warning', 'Payment session restore: User not found - ID: ' . $userId);
+            return false;
+        }
+
+        // Restore the session
+        $this->session->set_userdata('CUSTOMER', $userData);
+        log_message('info', 'Payment session restored for user ID: ' . $userId);
+
+        return true;
     }
 
     /**

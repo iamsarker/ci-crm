@@ -113,6 +113,53 @@ class Auth_model extends CI_Model{
 		}
  	}
 
+	/**
+	 * Get user session data by user_id
+	 * Used to restore session after payment gateway callback
+	 *
+	 * @param int $userId The user ID
+	 * @return array|null User session data or null if not found
+	 */
+	function getUserSessionData($userId) {
+		try {
+			$sql = "SELECT u.*, c.name company, c.address, c.city, c.state, c.zip_code, c.country
+					FROM users u
+					JOIN companies c ON u.company_id = c.id
+					WHERE u.id = ? AND u.status = 1 AND c.status = 1";
+			$query = $this->db->query($sql, array((int)$userId));
+
+			if ($query->num_rows() == 0) {
+				return null;
+			}
+
+			$userdata = $query->row();
+
+			$resp = array();
+			$resp['id'] = $userdata->id;
+			$resp['first_name'] = $userdata->first_name;
+			$resp['last_name'] = $userdata->last_name;
+			$resp['email'] = $userdata->email;
+			$resp['mobile'] = $userdata->mobile;
+			$resp['phone'] = $userdata->phone;
+			$resp['address'] = $userdata->address;
+			$resp['zip_code'] = $userdata->zip_code;
+			$resp['city'] = $userdata->city;
+			$resp['state'] = $userdata->state;
+			$resp['country'] = $userdata->country;
+			$resp['company'] = $userdata->company;
+			$resp['designation'] = $userdata->designation;
+			$resp['user_type'] = $userdata->user_type;
+			$resp['company_id'] = $userdata->company_id;
+			$resp['profile_pic'] = $userdata->profile_pic;
+			$resp['terminal'] = getClientIp();
+
+			return $resp;
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('getUserSessionData', $this->db->last_query(), $e->getMessage());
+			return null;
+		}
+	}
+
 	function newRegistration($data) {
 		$return = array();
 
