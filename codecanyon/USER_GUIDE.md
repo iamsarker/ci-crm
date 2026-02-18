@@ -2731,8 +2731,8 @@ Password: Your SendGrid API Key
 
 2. **Get API Keys**
    - Go to Developers → API Keys
-   - Copy Publishable Key (starts with `pk_`)
-   - Copy Secret Key (starts with `sk_`)
+   - Copy Publishable Key
+   - Copy Secret Key
 
 3. **Configure Webhook (Required)**
    - Go to Developers → Webhooks in Stripe Dashboard
@@ -2744,20 +2744,20 @@ Password: Your SendGrid API Key
      - `checkout.session.completed`
      - `charge.refunded`
    - Click "Add endpoint"
-   - Copy the "Signing secret" (starts with `whsec_`)
+   - Copy the "Signing secret"
 
 4. **Configure in WHMAZ**
    - Go to Admin → Settings → Payment Gateways
    - Click "Configure" on Stripe
    - **Test Mode:** Toggle ON for testing, OFF for live
    - **Test Credentials** (when Test Mode is ON):
-     - Test Public Key: Your test publishable key (`pk_test_...`)
-     - Test Secret Key: Your test secret key (`sk_test_...`)
-     - Test Webhook Secret: Your test webhook signing secret (`whsec_...`)
+     - Test Public Key: Your test publishable key
+     - Test Secret Key: Your test secret key
+     - Test Webhook Secret: Your test webhook signing secret
    - **Live Credentials** (when Test Mode is OFF):
-     - Public Key: Your live publishable key (`pk_live_...`)
-     - Secret Key: Your live secret key (`sk_live_...`)
-     - Webhook Secret: Your live webhook signing secret (`whsec_...`)
+     - Public Key: Your live publishable key
+     - Secret Key: Your live secret key
+     - Webhook Secret: Your live webhook signing secret
    - Enable the gateway and Save
 
 5. **Test Payment**
