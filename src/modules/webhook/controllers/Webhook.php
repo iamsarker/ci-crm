@@ -103,8 +103,13 @@ class Webhook extends WHMAZ_Controller
     {
         $paymentIntentId = $data['id'];
 
-        // Find transaction by gateway_transaction_id or gateway_order_id
-        $transaction = $this->Payment_model->getByGatewayTxnId($paymentIntentId, 'stripe');
+        // Find transaction by gateway_order_id first (where PaymentIntent ID is stored during init)
+        $transaction = $this->Payment_model->getByGatewayOrderId($paymentIntentId, 'stripe');
+
+        // Fallback to gateway_transaction_id
+        if (!$transaction) {
+            $transaction = $this->Payment_model->getByGatewayTxnId($paymentIntentId, 'stripe');
+        }
 
         if (!$transaction) {
             // Try metadata

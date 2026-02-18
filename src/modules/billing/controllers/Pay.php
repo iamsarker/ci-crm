@@ -225,6 +225,37 @@ class Pay extends WHMAZ_Controller
         // Get invoice UUID for redirect
         $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
 
+        // If not yet completed, verify with Stripe API
+        if ($transaction['status'] !== 'completed' && !empty($transaction['gateway_order_id'])) {
+            $this->load->library('Stripe');
+            $paymentIntent = $this->stripe->getPaymentIntent($transaction['gateway_order_id']);
+
+            if ($paymentIntent['success'] && $paymentIntent['data']['status'] === 'succeeded') {
+                // Payment confirmed - update transaction
+                $updateData = array(
+                    'gateway_transaction_id' => $paymentIntent['data']['id'],
+                    'gateway_response' => $paymentIntent['data']
+                );
+
+                // Extract card details if available
+                if (isset($paymentIntent['data']['charges']['data'][0]['payment_method_details']['card'])) {
+                    $card = $paymentIntent['data']['charges']['data'][0]['payment_method_details']['card'];
+                    $updateData['card_brand'] = isset($card['brand']) ? $card['brand'] : null;
+                    $updateData['card_last4'] = isset($card['last4']) ? $card['last4'] : null;
+                }
+
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', $updateData);
+
+                // Process successful payment (update invoice, provision services)
+                $this->Payment_model->processSuccessfulPayment($transaction['id']);
+                $this->Payment_model->recordInvoiceTxn($transaction['id']);
+
+                $this->session->set_flashdata('alert_success', 'Payment successful! Thank you for your payment.');
+                redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
+                return;
+            }
+        }
+
         if ($transaction['status'] === 'completed') {
             $this->session->set_flashdata('alert_success', 'Payment successful! Thank you for your payment.');
         } else {
