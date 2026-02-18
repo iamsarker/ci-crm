@@ -440,7 +440,11 @@ class Cart extends WHMAZ_Controller
 
 				// BUGFIX: Don't return early, continue to echo JSON
 				if( is_null($resp) || empty($resp) ){
-					$resp_data['error'] = 'No response from domain registrar API';
+					$curlError = $this->getLastCurlError();
+					$resp_data['error'] = 'No response from domain registrar API' . ($curlError ? ': ' . $curlError : '');
+					// Log full details for debugging (mask API key)
+					$maskedUrl = preg_replace('/api-key=[^&]+/', 'api-key=***MASKED***', $checkUrl);
+					log_message('error', 'Domain search failed - ' . $curlError . ' | URL: ' . $maskedUrl . ' | UserID: ' . $regVendor['auth_userid']);
 					echo json_encode($resp_data);
 					return;
 				}
@@ -526,6 +530,10 @@ class Cart extends WHMAZ_Controller
 
 				// BUGFIX: Return empty array properly
 				if( is_null($list) || empty($list) ){
+					$curlError = $this->getLastCurlError();
+					if ($curlError) {
+						log_message('error', 'Domain suggestions failed - cURL error: ' . $curlError);
+					}
 					return array();
 				}
 

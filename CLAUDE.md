@@ -351,3 +351,70 @@ Reference: `src/views/whmazadmin/paymentgateway_manage.php`
 - `header-icon` - Icon container in card header
 - `form-label` - Styled form labels
 - `btn-create-order` - Blue gradient submit button
+
+## Domain Registrar Integration
+
+### API Configuration
+- **Database Table**: `dom_registers`
+- **Key Fields**: `auth_userid`, `auth_apikey`, `domain_check_api`, `suggestion_api`
+- **Model**: `src/models/Cart_model.php` → `getDomRegister()`
+
+### Troubleshooting Domain Search
+
+**Common Errors:**
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| "No response from domain registrar API" | cURL failed or empty response | Check server logs for details |
+| "HTTP Error: 403" | IP not whitelisted or invalid credentials | Whitelist server IP in registrar panel |
+| "Domain registrar not configured" | Missing `domain_check_api` in database | Configure registrar in admin panel |
+
+**403 Forbidden - "Request forbidden by administrative rules":**
+1. **Whitelist production server IP** in registrar panel (Settings → API → Allowed IPs)
+2. Try re-adding the IP if already listed
+3. Check if registrar has multiple whitelist locations
+4. Verify API credentials match registrar panel exactly
+5. Ensure using correct API endpoint (Live vs Test/OTE)
+
+**Debug from server:**
+```bash
+# Check server's outgoing IP
+curl ifconfig.me
+
+# Test API directly (replace credentials)
+curl -v "https://domaincheck.httpapi.com/api/domains/available.json?auth-userid=YOUR_ID&api-key=YOUR_KEY&domain-name=test&tlds=com"
+```
+
+**Logs location:** `src/logs/log-YYYY-MM-DD.php`
+
+### cURL Request Handling
+- **Base Controller**: `src/core/WHMAZ_Controller.php`
+- **Method**: `curlGetRequest($url)` - Returns decoded JSON or null on error
+- **Error Access**: `$this->getLastCurlError()` - Returns last cURL/HTTP error message
+- SSL verification disabled for domain registrar APIs (some use self-signed certs)
+
+## Payment Page Styling Notes
+
+### Stripe Card Element
+The Stripe card element requires explicit width styling to render properly:
+
+```css
+#stripe-form {
+    width: 100% !important;
+}
+
+#stripe-card-element {
+    width: 100% !important;
+    min-height: 44px;
+    box-sizing: border-box;
+}
+```
+
+**Initialization timing:** Mount Stripe element with a small delay (100ms) after showing the form to ensure container has proper dimensions:
+```javascript
+setTimeout(function() {
+    cardElement.mount('#stripe-card-element');
+}, 100);
+```
+
+**Reference:** `src/modules/billing/views/billing_pay.php`

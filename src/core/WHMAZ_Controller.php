@@ -59,7 +59,15 @@ class WHMAZ_Controller extends MX_Controller
 		header('X-CSRF-TOKEN-HASH: ' . $this->security->get_csrf_hash());
 	}
 
+	// Store last cURL error for debugging
+	protected $lastCurlError = '';
+
+	function getLastCurlError() {
+		return $this->lastCurlError;
+	}
+
 	function curlGetRequest($finalUrl){
+		$this->lastCurlError = '';
 
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $finalUrl);
@@ -72,10 +80,20 @@ class WHMAZ_Controller extends MX_Controller
 
 		$responseJson = curl_exec($ch);
 		$error = curl_error($ch);
+		$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		curl_close($ch);
 
 		if ($error) {
-			log_message('error', 'cURL Error: ' . $error);
+			$this->lastCurlError = $error;
+			log_message('error', 'cURL Error: ' . $error . ' | URL: ' . $finalUrl);
+			return null;
+		}
+
+		if ($httpCode >= 400) {
+			// Log response body for debugging 403/401 errors
+			$this->lastCurlError = 'HTTP Error: ' . $httpCode;
+			$maskedUrl = preg_replace('/api-key=[^&]+/', 'api-key=***', $finalUrl);
+			log_message('error', 'cURL HTTP Error: ' . $httpCode . ' | URL: ' . $maskedUrl . ' | Response: ' . substr($responseJson, 0, 500));
 			return null;
 		}
 
