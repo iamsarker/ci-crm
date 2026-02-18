@@ -20,7 +20,7 @@ class Cart extends WHMAZ_Controller
 		$data['dom_prices'] = $this->Cart_model->getDomPricing();
 		$data['services'] = $this->Cart_model->getServiceGroups();
 		$data['currency'] = $this->Cart_model->getCurrencies();
-		$data['cart_list'] = $this->Cart_model->getCartListData();
+		$data['cart_list'] = $this->Cart_model->getCartListWithChildren(); // Hierarchical cart data
 		$data['payment_gateway_list'] = $this->Common_model->get_data("payment_gateway");
 		$data['type'] = $type;
 		$this->load->view('view_card', $data);
@@ -29,9 +29,8 @@ class Cart extends WHMAZ_Controller
 
 	function delete($id)
 	{
-		//delete employee record
-		$this->db->where('id', $id);
-		$this->db->delete('add_to_carts');
+		// Delete cart item and its linked children
+		$this->Cart_model->deleteCartWithChildren($id);
 		echo json_encode("OK");
 	}
 
@@ -82,7 +81,8 @@ class Cart extends WHMAZ_Controller
 			$this->processRestCall();
 			$postData = $this->input->post();
 
-			$cartList = $this->Cart_model->getCartListData();
+			// Get hierarchical cart data (parents with children)
+			$cartList = $this->Cart_model->getCartListWithChildren();
 
 			if( !empty($cartList) ){
 
@@ -90,10 +90,20 @@ class Cart extends WHMAZ_Controller
 				$taxAmount = 0.0;
 				$totalAmount = 0.0;
 
+				// Calculate totals including children
 				foreach ($cartList as $key => $row) {
 					$vatAmount += $row['tax'];
 					$taxAmount += $row['vat'];
 					$totalAmount += $row['total'];
+
+					// Add children totals
+					if (!empty($row['children'])) {
+						foreach ($row['children'] as $child) {
+							$vatAmount += $child['tax'];
+							$taxAmount += $child['vat'];
+							$totalAmount += $child['total'];
+						}
+					}
 				}
 
 				$grandTotal = $totalAmount + $vatAmount + $taxAmount;
@@ -139,77 +149,22 @@ class Cart extends WHMAZ_Controller
 				$invoiceId = $this->Order_model->saveInvoice($invoice);
 				$invoice['id'] = $invoiceId;
 
+				// Process each parent item and its children
 				foreach ($cartList as $key => $row) {
-					$billingCycle = $this->Common_model->get_data_by_id("billing_cycle", $row['billing_cycle_id']);
+					// Process parent item
+					$parentRefId = $this->_processCartItem($row, $orderId, $invoiceId, $companyId, $userId);
 
-					$item['order_id'] = $orderId;
-					$item['company_id'] = $companyId;
-					$item['first_pay_amount'] = $row['total'];
-					$item['recurring_amount'] = $row['total'];
-					$item['is_synced'] = 1;
-					$item['remarks'] = "";
-					$item['reg_date'] = getDateAddDay(0);
-					$item['exp_date'] = getDateAddDay($billingCycle->cycle_days);
-					$item['due_date'] = getDateAddDay(7); // Payment due date: reg_date + 7 days
-					$item['next_renewal_date'] = getDateAddDay($billingCycle->cycle_days); // Service renewal date
-					$item['suspension_date'] = null;
-					$item['suspension_reason'] = null;
-					$item['termination_date'] = null;
-					$item['auto_renew'] = 1;
-					$item['inserted_on'] = getDateTime();
-					$item['inserted_by'] = $userId;
+					// Process children (linked items) if any
+					if (!empty($row['children'])) {
+						foreach ($row['children'] as $child) {
+							$childRefId = $this->_processCartItem($child, $orderId, $invoiceId, $companyId, $userId);
 
-					$refId = 0;
-
-					$invoiceItem['invoice_id'] = $invoiceId;
-					$invoiceItem['item'] = $row['note'];
-					$invoiceItem['item_desc'] = $row['note'].' - '.$row['hosting_domain'];
-					$invoiceItem['tax'] = $row['tax'];
-					$invoiceItem['vat'] = $row['vat'];
-					$invoiceItem['sub_total'] = $row['sub_total'];
-					$invoiceItem['total'] = $row['total'];
-					$invoiceItem['item_type'] = $row['item_type'];
-					$invoiceItem['inserted_on'] = getDateTime();
-					$invoiceItem['inserted_by'] = $userId;
-
-					if( $row['item_type'] == 1 ){ // 1=domain, 2=product_service
-						$item['dom_pricing_id'] = $row['dom_pricing_id'];
-						$item['reg_period'] = 1; // 1 year by default
-						$item['status'] = 0; // 0=pending reg, 1=active, 2=expired, 3=grace, 4=cancelled, 5=pending transfer
-
-						$refId = $this->Order_model->saveOrderDomain($item);
-
-					} else {
-						$item['billing_cycle_id'] = $row['billing_cycle_id'];
-						$item['status'] = 0; // 0=pending, 1=active, 2=expired, 3=suspended, 4=terminated
-						$item['hosting_domain'] = $row['hosting_domain'];
-						$item['description'] = $row['note'];
-						$item['product_service_id'] = !empty($row['product_service_id']) ? $row['product_service_id'] : 0;
-						$item['product_service_pricing_id'] = $row['product_service_pricing_id'];
-						$item['product_service_type_key'] = $this->Common_model->getProductServiceTypeKeyByPricingId($row['product_service_pricing_id']);
-						$item['is_synced'] = 0; // Will be set to 1 after successful provisioning
-
-						$refId = $this->Order_model->saveOrderService($item);
-
-						// NOTE: cPanel provisioning is NOT done here during checkout
-						// It will be triggered after payment is confirmed via:
-						// 1. Payment gateway callback (IPN/webhook)
-						// 2. Admin manually marking invoice as paid
-						// See: Order_model->provisionPaidServices() or admin invoice management
+							// Link parent and child together
+							if ($parentRefId > 0 && $childRefId > 0) {
+								$this->_linkOrderItems($row, $parentRefId, $child, $childRefId);
+							}
+						}
 					}
-
-					// New invoice_item fields
-					$qty = !empty($row['quantity']) ? intval($row['quantity']) : 1;
-					$invoiceItem['ref_id'] = ($refId > 0) ? $refId : null;
-					$invoiceItem['billing_cycle_id'] = $row['billing_cycle_id'];
-					$invoiceItem['quantity'] = $qty;
-					$invoiceItem['unit_price'] = ($qty > 0) ? ($row['sub_total'] / $qty) : $row['sub_total'];
-					$invoiceItem['discount'] = 0;
-					$invoiceItem['billing_period_start'] = getDateAddDay(0);
-					$invoiceItem['billing_period_end'] = ($billingCycle->cycle_days > 0) ? getDateAddDay($billingCycle->cycle_days) : null;
-
-					$this->Order_model->saveInvoiceItem($invoiceItem);
-
 				}
 
 				$this->Cart_model->deleteAllCarts($userId, $sessionId);
@@ -225,6 +180,124 @@ class Cart extends WHMAZ_Controller
 		}
 	}
 
+	/**
+	 * Process a single cart item (domain or hosting service)
+	 * @return int The saved order item ID (order_domains.id or order_services.id)
+	 */
+	private function _processCartItem($row, $orderId, $invoiceId, $companyId, $userId)
+	{
+		$billingCycle = $this->Common_model->get_data_by_id("billing_cycle", $row['billing_cycle_id']);
+		$cycleDays = !empty($billingCycle->cycle_days) ? $billingCycle->cycle_days : 365;
+
+		$item = array();
+		$item['order_id'] = $orderId;
+		$item['company_id'] = $companyId;
+		$item['first_pay_amount'] = $row['total'];
+		$item['recurring_amount'] = $row['total'];
+		$item['is_synced'] = 1;
+		$item['remarks'] = "";
+		$item['reg_date'] = getDateAddDay(0);
+		$item['exp_date'] = getDateAddDay($cycleDays);
+		$item['due_date'] = getDateAddDay(7);
+		$item['next_renewal_date'] = getDateAddDay($cycleDays);
+		$item['suspension_date'] = null;
+		$item['suspension_reason'] = null;
+		$item['termination_date'] = null;
+		$item['auto_renew'] = 1;
+		$item['inserted_on'] = getDateTime();
+		$item['inserted_by'] = $userId;
+
+		$refId = 0;
+
+		// Invoice item data
+		$invoiceItem = array();
+		$invoiceItem['invoice_id'] = $invoiceId;
+		$invoiceItem['item'] = $row['note'];
+		$invoiceItem['item_desc'] = $row['note'] . (!empty($row['hosting_domain']) ? ' - ' . $row['hosting_domain'] : '');
+		$invoiceItem['tax'] = $row['tax'];
+		$invoiceItem['vat'] = $row['vat'];
+		$invoiceItem['sub_total'] = $row['sub_total'];
+		$invoiceItem['total'] = $row['total'];
+		$invoiceItem['item_type'] = $row['item_type'];
+		$invoiceItem['inserted_on'] = getDateTime();
+		$invoiceItem['inserted_by'] = $userId;
+
+		if ($row['item_type'] == 1) {
+			// Domain item
+			$item['dom_pricing_id'] = $row['dom_pricing_id'];
+			$item['reg_period'] = 1; // 1 year by default
+			$item['domain'] = $row['hosting_domain'];
+			$item['epp_code'] = !empty($row['epp_code']) ? $row['epp_code'] : null;
+
+			// Set order_type based on domain_action
+			// 1=register, 2=transfer, 3=dns_update (nothing to register)
+			$domainAction = !empty($row['domain_action']) ? $row['domain_action'] : 'register';
+			if ($domainAction == 'register') {
+				$item['order_type'] = 1;
+				$item['status'] = 0; // 0=pending registration
+			} elseif ($domainAction == 'transfer') {
+				$item['order_type'] = 2;
+				$item['status'] = 5; // 5=pending transfer
+			} else {
+				// dns_update - no domain registration needed
+				$item['order_type'] = 3;
+				$item['status'] = 1; // 1=active (just DNS update)
+				$item['is_synced'] = 1;
+			}
+
+			$refId = $this->Order_model->saveOrderDomain($item);
+
+		} else {
+			// Hosting/Service item
+			$item['billing_cycle_id'] = $row['billing_cycle_id'];
+			$item['status'] = 0; // 0=pending
+			$item['hosting_domain'] = $row['hosting_domain'];
+			$item['description'] = $row['note'];
+			$item['product_service_id'] = !empty($row['product_service_id']) ? $row['product_service_id'] : 0;
+			$item['product_service_pricing_id'] = $row['product_service_pricing_id'];
+			$item['product_service_type_key'] = $this->Common_model->getProductServiceTypeKeyByPricingId($row['product_service_pricing_id']);
+			$item['is_synced'] = 0; // Will be set to 1 after provisioning
+
+			$refId = $this->Order_model->saveOrderService($item);
+		}
+
+		// Save invoice item
+		$qty = !empty($row['quantity']) ? intval($row['quantity']) : 1;
+		$invoiceItem['ref_id'] = ($refId > 0) ? $refId : null;
+		$invoiceItem['billing_cycle_id'] = $row['billing_cycle_id'];
+		$invoiceItem['quantity'] = $qty;
+		$invoiceItem['unit_price'] = ($qty > 0) ? ($row['sub_total'] / $qty) : $row['sub_total'];
+		$invoiceItem['discount'] = 0;
+		$invoiceItem['billing_period_start'] = getDateAddDay(0);
+		$invoiceItem['billing_period_end'] = ($cycleDays > 0) ? getDateAddDay($cycleDays) : null;
+
+		$this->Order_model->saveInvoiceItem($invoiceItem);
+
+		return $refId;
+	}
+
+	/**
+	 * Link parent and child order items together
+	 */
+	private function _linkOrderItems($parent, $parentRefId, $child, $childRefId)
+	{
+		// Determine which is hosting and which is domain
+		if ($parent['item_type'] == 1) {
+			// Parent is domain, child is hosting
+			$domainId = $parentRefId;
+			$serviceId = $childRefId;
+		} else {
+			// Parent is hosting, child is domain
+			$domainId = $childRefId;
+			$serviceId = $parentRefId;
+		}
+
+		// Update order_services with linked_domain_id
+		if ($serviceId > 0 && $domainId > 0) {
+			$this->Order_model->updateOrderService($serviceId, array('linked_domain_id' => $domainId));
+			$this->Order_model->updateOrderDomain($domainId, array('linked_service_id' => $serviceId));
+		}
+	}
 
 
 	public function domain() // type = register, transfer
@@ -509,6 +582,389 @@ class Cart extends WHMAZ_Controller
 		} else {
 			echo $this->AppResponse(0, "Cart item cannot add!");
 		}
+	}
+
+	/**
+	 * Flow-1: Add Hosting to Cart (Domain Required)
+	 * Creates hosting cart item, then requires domain selection
+	 *
+	 * POST params:
+	 * - product_service_pricing_id: Hosting pricing ID
+	 * - quantity: Number of items (default 1)
+	 */
+	public function addHostingToCart()
+	{
+		$this->processRestCall();
+		$postData = $this->input->post();
+
+		$pricingId = !empty($postData['product_service_pricing_id']) ? intval($postData['product_service_pricing_id']) : 0;
+		$quantity = !empty($postData['quantity']) ? intval($postData['quantity']) : 1;
+
+		if ($pricingId <= 0) {
+			echo json_encode(buildFailedResponse("Invalid hosting package selected"));
+			return;
+		}
+
+		// Get hosting pricing details
+		$itemPrice = $this->Cart_model->getCartServicePrice($pricingId);
+		if (empty($itemPrice)) {
+			echo json_encode(buildFailedResponse("Hosting package not found"));
+			return;
+		}
+
+		$pricingDetails = $this->Cart_model->getProductServicePricingById($pricingId);
+
+		// Create hosting cart item
+		$cartArr = array(
+			'customer_session_id' => getCustomerSessionId(),
+			'user_id' => getCustomerId(),
+			'parent_cart_id' => null, // This is parent
+			'item_type' => 2, // product_service
+			'product_service_id' => !empty($itemPrice['product_service_id']) ? $itemPrice['product_service_id'] : 0,
+			'product_service_pricing_id' => $pricingId,
+			'note' => !empty($pricingDetails['product_name']) ? $pricingDetails['product_name'] : 'Hosting Package',
+			'hosting_domain' => null, // Will be set when domain is added
+			'hosting_domain_type' => 0,
+			'domain_action' => null,
+			'sub_total' => $itemPrice['item_price'] * $quantity,
+			'billing_cycle_id' => $itemPrice['billing_cycle_id'],
+			'billing_cycle' => $itemPrice['cycle_name'],
+			'currency_id' => $itemPrice['currency_id'],
+			'currency_code' => getCurrencyCode(),
+			'tax' => 0,
+			'vat' => 0,
+			'quantity' => $quantity,
+			'total' => $itemPrice['item_price'] * $quantity,
+			'inserted_on' => getDateTime(),
+			'inserted_by' => getCustomerId()
+		);
+
+		$cartId = $this->Cart_model->saveCart($cartArr);
+
+		if ($cartId) {
+			echo json_encode(buildSuccessResponse(
+				array(
+					'cart_id' => $cartId,
+					'requires_domain' => true,
+					'hosting_type' => !empty($pricingDetails['service_type_key']) ? $pricingDetails['service_type_key'] : 'shared'
+				),
+				"Hosting added to cart. Please select a domain."
+			));
+		} else {
+			echo json_encode(buildFailedResponse("Failed to add hosting to cart"));
+		}
+	}
+
+	/**
+	 * Flow-1 Part 2: Link Domain to Hosting Cart Item
+	 *
+	 * POST params:
+	 * - parent_cart_id: The hosting cart ID
+	 * - domain_action: 'register', 'transfer', 'dns_update'
+	 * - domain_name: The domain name
+	 * - epp_code: EPP/Auth code (required for transfer)
+	 * - dom_pricing_id: Domain pricing ID (required for register/transfer)
+	 */
+	public function linkDomainToHosting()
+	{
+		$this->processRestCall();
+		$postData = $this->input->post();
+
+		$parentCartId = !empty($postData['parent_cart_id']) ? intval($postData['parent_cart_id']) : 0;
+		$domainAction = !empty($postData['domain_action']) ? $postData['domain_action'] : '';
+		$domainName = !empty($postData['domain_name']) ? trim($postData['domain_name']) : '';
+		$eppCode = !empty($postData['epp_code']) ? trim($postData['epp_code']) : null;
+		$domPricingId = !empty($postData['dom_pricing_id']) ? intval($postData['dom_pricing_id']) : 0;
+
+		// Validate inputs
+		if ($parentCartId <= 0) {
+			echo json_encode(buildFailedResponse("Invalid hosting cart ID"));
+			return;
+		}
+
+		if (empty($domainName)) {
+			echo json_encode(buildFailedResponse("Domain name is required"));
+			return;
+		}
+
+		if (!in_array($domainAction, array('register', 'transfer', 'dns_update'))) {
+			echo json_encode(buildFailedResponse("Invalid domain action"));
+			return;
+		}
+
+		// Check parent cart exists
+		$parentCart = $this->Cart_model->getCartById($parentCartId);
+		if (empty($parentCart) || $parentCart['item_type'] != 2) {
+			echo json_encode(buildFailedResponse("Hosting cart item not found"));
+			return;
+		}
+
+		// Validate transfer requires EPP code
+		if ($domainAction == 'transfer' && empty($eppCode)) {
+			echo json_encode(buildFailedResponse("EPP/Auth code is required for domain transfer"));
+			return;
+		}
+
+		// For register/transfer, validate domain pricing
+		$domainTotal = 0;
+		$billingCycleId = 1; // Default yearly for domains
+		$billingCycle = 'Yearly';
+
+		if ($domainAction == 'register' || $domainAction == 'transfer') {
+			if ($domPricingId <= 0) {
+				echo json_encode(buildFailedResponse("Domain pricing is required"));
+				return;
+			}
+
+			$domPrice = $this->Cart_model->getCartDomainPrice($domPricingId);
+			if (empty($domPrice)) {
+				echo json_encode(buildFailedResponse("Domain pricing not found"));
+				return;
+			}
+
+			$domainTotal = $domainAction == 'transfer' ?
+				(!empty($domPrice['transfer']) ? $domPrice['transfer'] : $domPrice['item_price']) :
+				$domPrice['item_price'];
+
+			$billingCycleId = !empty($domPrice['billing_cycle_id']) ? $domPrice['billing_cycle_id'] : 1;
+		}
+
+		// Map domain_action to hosting_domain_type for legacy compatibility
+		$hostingDomainType = 0; // DNS
+		if ($domainAction == 'register') $hostingDomainType = 1;
+		if ($domainAction == 'transfer') $hostingDomainType = 2;
+
+		// Create domain cart item linked to hosting
+		$domainCart = array(
+			'customer_session_id' => getCustomerSessionId(),
+			'user_id' => getCustomerId(),
+			'parent_cart_id' => $parentCartId,
+			'item_type' => 1, // domain
+			'product_service_id' => 0,
+			'dom_pricing_id' => $domPricingId,
+			'note' => ucfirst($domainAction) . ': ' . $domainName,
+			'hosting_domain' => $domainName,
+			'hosting_domain_type' => $hostingDomainType,
+			'domain_action' => $domainAction,
+			'epp_code' => $eppCode,
+			'sub_total' => $domainTotal,
+			'billing_cycle_id' => $billingCycleId,
+			'billing_cycle' => $billingCycle,
+			'currency_id' => getCurrencyId(),
+			'currency_code' => getCurrencyCode(),
+			'tax' => 0,
+			'vat' => 0,
+			'quantity' => 1,
+			'total' => $domainTotal,
+			'inserted_on' => getDateTime(),
+			'inserted_by' => getCustomerId()
+		);
+
+		$domainCartId = $this->Cart_model->saveCart($domainCart);
+
+		if ($domainCartId) {
+			// Update parent hosting cart with domain name
+			$this->Cart_model->updateCart($parentCartId, array(
+				'hosting_domain' => $domainName,
+				'hosting_domain_type' => $hostingDomainType,
+				'domain_action' => $domainAction,
+				'updated_on' => getDateTime()
+			));
+
+			echo json_encode(buildSuccessResponse(
+				array('domain_cart_id' => $domainCartId),
+				"Domain linked to hosting successfully"
+			));
+		} else {
+			echo json_encode(buildFailedResponse("Failed to add domain to cart"));
+		}
+	}
+
+	/**
+	 * Flow-2: Add Domain to Cart (Hosting Optional)
+	 *
+	 * POST params:
+	 * - domain_action: 'register', 'transfer'
+	 * - domain_name: The domain name
+	 * - dom_pricing_id: Domain pricing ID
+	 * - epp_code: EPP/Auth code (required for transfer)
+	 */
+	public function addDomainToCart()
+	{
+		$this->processRestCall();
+		$postData = $this->input->post();
+
+		$domainAction = !empty($postData['domain_action']) ? $postData['domain_action'] : '';
+		$domainName = !empty($postData['domain_name']) ? trim($postData['domain_name']) : '';
+		$domPricingId = !empty($postData['dom_pricing_id']) ? intval($postData['dom_pricing_id']) : 0;
+		$eppCode = !empty($postData['epp_code']) ? trim($postData['epp_code']) : null;
+
+		// Validate inputs
+		if (empty($domainName)) {
+			echo json_encode(buildFailedResponse("Domain name is required"));
+			return;
+		}
+
+		if (!in_array($domainAction, array('register', 'transfer'))) {
+			echo json_encode(buildFailedResponse("Invalid domain action. Use 'register' or 'transfer'"));
+			return;
+		}
+
+		if ($domPricingId <= 0) {
+			echo json_encode(buildFailedResponse("Domain pricing is required"));
+			return;
+		}
+
+		// Validate transfer requires EPP code
+		if ($domainAction == 'transfer' && empty($eppCode)) {
+			echo json_encode(buildFailedResponse("EPP/Auth code is required for domain transfer"));
+			return;
+		}
+
+		// Get domain pricing
+		$domPrice = $this->Cart_model->getCartDomainPrice($domPricingId);
+		if (empty($domPrice)) {
+			echo json_encode(buildFailedResponse("Domain pricing not found"));
+			return;
+		}
+
+		$domainTotal = $domainAction == 'transfer' ?
+			(!empty($domPrice['transfer']) ? $domPrice['transfer'] : $domPrice['item_price']) :
+			$domPrice['item_price'];
+
+		// Map domain_action to hosting_domain_type
+		$hostingDomainType = $domainAction == 'register' ? 1 : 2;
+
+		// Create domain cart item (standalone, no parent)
+		$domainCart = array(
+			'customer_session_id' => getCustomerSessionId(),
+			'user_id' => getCustomerId(),
+			'parent_cart_id' => null, // Standalone domain
+			'item_type' => 1, // domain
+			'product_service_id' => 0,
+			'dom_pricing_id' => $domPricingId,
+			'note' => ucfirst($domainAction) . ': ' . $domainName,
+			'hosting_domain' => $domainName,
+			'hosting_domain_type' => $hostingDomainType,
+			'domain_action' => $domainAction,
+			'epp_code' => $eppCode,
+			'sub_total' => $domainTotal,
+			'billing_cycle_id' => !empty($domPrice['billing_cycle_id']) ? $domPrice['billing_cycle_id'] : 1,
+			'billing_cycle' => 'Yearly',
+			'currency_id' => getCurrencyId(),
+			'currency_code' => getCurrencyCode(),
+			'tax' => 0,
+			'vat' => 0,
+			'quantity' => 1,
+			'total' => $domainTotal,
+			'inserted_on' => getDateTime(),
+			'inserted_by' => getCustomerId()
+		);
+
+		$domainCartId = $this->Cart_model->saveCart($domainCart);
+
+		if ($domainCartId) {
+			echo json_encode(buildSuccessResponse(
+				array(
+					'cart_id' => $domainCartId,
+					'show_hosting_options' => true
+				),
+				"Domain added to cart. You can optionally add hosting."
+			));
+		} else {
+			echo json_encode(buildFailedResponse("Failed to add domain to cart"));
+		}
+	}
+
+	/**
+	 * Flow-2 Part 2: Link Hosting to Domain Cart Item (Optional)
+	 *
+	 * POST params:
+	 * - parent_cart_id: The domain cart ID
+	 * - product_service_pricing_id: Hosting pricing ID
+	 * - quantity: Number of items (default 1)
+	 */
+	public function linkHostingToDomain()
+	{
+		$this->processRestCall();
+		$postData = $this->input->post();
+
+		$parentCartId = !empty($postData['parent_cart_id']) ? intval($postData['parent_cart_id']) : 0;
+		$pricingId = !empty($postData['product_service_pricing_id']) ? intval($postData['product_service_pricing_id']) : 0;
+		$quantity = !empty($postData['quantity']) ? intval($postData['quantity']) : 1;
+
+		// Validate inputs
+		if ($parentCartId <= 0) {
+			echo json_encode(buildFailedResponse("Invalid domain cart ID"));
+			return;
+		}
+
+		if ($pricingId <= 0) {
+			echo json_encode(buildFailedResponse("Invalid hosting package selected"));
+			return;
+		}
+
+		// Check parent cart exists and is a domain
+		$parentCart = $this->Cart_model->getCartById($parentCartId);
+		if (empty($parentCart) || $parentCart['item_type'] != 1) {
+			echo json_encode(buildFailedResponse("Domain cart item not found"));
+			return;
+		}
+
+		// Get hosting pricing details
+		$itemPrice = $this->Cart_model->getCartServicePrice($pricingId);
+		if (empty($itemPrice)) {
+			echo json_encode(buildFailedResponse("Hosting package not found"));
+			return;
+		}
+
+		$pricingDetails = $this->Cart_model->getProductServicePricingById($pricingId);
+
+		// Create hosting cart item linked to domain
+		$hostingCart = array(
+			'customer_session_id' => getCustomerSessionId(),
+			'user_id' => getCustomerId(),
+			'parent_cart_id' => $parentCartId,
+			'item_type' => 2, // product_service
+			'product_service_id' => !empty($itemPrice['product_service_id']) ? $itemPrice['product_service_id'] : 0,
+			'product_service_pricing_id' => $pricingId,
+			'note' => !empty($pricingDetails['product_name']) ? $pricingDetails['product_name'] : 'Hosting Package',
+			'hosting_domain' => $parentCart['hosting_domain'], // Copy domain from parent
+			'hosting_domain_type' => $parentCart['hosting_domain_type'],
+			'domain_action' => $parentCart['domain_action'],
+			'sub_total' => $itemPrice['item_price'] * $quantity,
+			'billing_cycle_id' => $itemPrice['billing_cycle_id'],
+			'billing_cycle' => $itemPrice['cycle_name'],
+			'currency_id' => $itemPrice['currency_id'],
+			'currency_code' => getCurrencyCode(),
+			'tax' => 0,
+			'vat' => 0,
+			'quantity' => $quantity,
+			'total' => $itemPrice['item_price'] * $quantity,
+			'inserted_on' => getDateTime(),
+			'inserted_by' => getCustomerId()
+		);
+
+		$hostingCartId = $this->Cart_model->saveCart($hostingCart);
+
+		if ($hostingCartId) {
+			echo json_encode(buildSuccessResponse(
+				array('hosting_cart_id' => $hostingCartId),
+				"Hosting linked to domain successfully"
+			));
+		} else {
+			echo json_encode(buildFailedResponse("Failed to add hosting to cart"));
+		}
+	}
+
+	/**
+	 * Get cart list with hierarchical structure
+	 * Returns items grouped by parent-child relationship
+	 */
+	public function getCartWithLinkedItems()
+	{
+		$cartList = $this->Cart_model->getCartListWithChildren();
+		echo json_encode(buildSuccessResponse($cartList));
 	}
 
 }

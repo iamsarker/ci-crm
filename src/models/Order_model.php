@@ -235,6 +235,26 @@ class Order_model extends CI_Model{
 	}
 
 	/**
+	 * Update order domain record
+	 * @param int $orderDomainId The order_domains.id
+	 * @param array $data Data to update
+	 * @return bool Success status
+	 */
+	function updateOrderDomain($orderDomainId, $data) {
+		if (!is_numeric($orderDomainId) || $orderDomainId <= 0 || empty($data)) {
+			return false;
+		}
+
+		try {
+			$this->db->where('id', intval($orderDomainId));
+			return $this->db->update('order_domains', $data);
+		} catch (Exception $e) {
+			log_message('error', 'updateOrderDomain error: ' . $e->getMessage());
+			return false;
+		}
+	}
+
+	/**
 	 * Get product_services info by pricing ID
 	 * Used to get cp_package for auto-provisioning
 	 * @param int $pricingId product_service_pricing.id

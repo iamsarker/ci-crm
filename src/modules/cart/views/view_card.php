@@ -36,11 +36,21 @@
                 <?php $ITEM_SL = 0; $hasItems = !empty($cart_list); ?>
 
                 <?php if ($hasItems): ?>
+                <?php
+                    // Count total items including children
+                    $totalItems = 0;
+                    foreach ($cart_list as $item) {
+                        $totalItems++;
+                        if (!empty($item['children'])) {
+                            $totalItems += count($item['children']);
+                        }
+                    }
+                ?>
                 <!-- Cart Items Card -->
                 <div class="card cart-items-card mg-b-20">
                     <div class="card-header cart-card-header">
                         <h5 class="mg-b-0"><i class="fa fa-list mg-r-10"></i>Cart Items</h5>
-                        <span class="cart-item-count"><?= count($cart_list) ?> item(s)</span>
+                        <span class="cart-item-count"><?= $totalItems ?> item(s)</span>
                     </div>
                     <div class="card-body pd-0">
                         <div class="table-responsive">
@@ -56,35 +66,81 @@
                                 </thead>
                                 <tbody>
                                     <?php foreach ($cart_list as $dp): ?>
-                                    <tr class="cart-item-row">
+                                    <!-- Parent Item -->
+                                    <tr class="cart-item-row cart-item-parent">
                                         <td class="text-center">
                                             <span class="item-number"><?= ++$ITEM_SL; ?></span>
                                         </td>
                                         <td>
                                             <div class="item-details">
                                                 <span class="item-name"><?= htmlspecialchars($dp['note'], ENT_QUOTES, 'UTF-8') ?></span>
+                                                <?php if (!empty($dp['hosting_domain'])): ?>
+                                                <br><small class="text-muted"><i class="fa fa-globe mg-r-5"></i><?= htmlspecialchars($dp['hosting_domain'], ENT_QUOTES, 'UTF-8') ?></small>
+                                                <?php endif; ?>
                                             </div>
                                         </td>
                                         <td class="text-center">
                                             <?php if ($dp['item_type'] == 1): ?>
                                                 <span class="badge badge-type badge-domain"><i class="fa fa-globe mg-r-5"></i>Domain</span>
+                                                <?php if (!empty($dp['domain_action'])): ?>
+                                                <br><small class="text-muted"><?= ucfirst($dp['domain_action']) ?></small>
+                                                <?php endif; ?>
                                             <?php else: ?>
                                                 <span class="badge badge-type badge-hosting"><i class="fa fa-server mg-r-5"></i>Hosting</span>
                                             <?php endif; ?>
                                         </td>
                                         <td class="text-right">
                                             <div class="item-price">
-                                                <span class="price-amount" id="subtotal"><?= htmlspecialchars($dp['sub_total'], ENT_QUOTES, 'UTF-8') ?></span>
+                                                <span class="price-amount subtotal-item"><?= htmlspecialchars($dp['sub_total'], ENT_QUOTES, 'UTF-8') ?></span>
                                                 <span class="price-currency"><?= htmlspecialchars($dp['currency_code'], ENT_QUOTES, 'UTF-8') ?></span>
                                                 <span class="price-cycle">/ <?= htmlspecialchars($dp['billing_cycle'], ENT_QUOTES, 'UTF-8') ?></span>
                                             </div>
                                         </td>
                                         <td class="text-center">
-                                            <button class="btn btn-sm btn-remove" ng-click="clearCartData('cart/delete/<?= $dp['id'] ?>')" title="Remove Item">
+                                            <button class="btn btn-sm btn-remove" ng-click="clearCartData('cart/delete/<?= $dp['id'] ?>')" title="Remove Item<?= !empty($dp['children']) ? ' (includes linked items)' : '' ?>">
                                                 <i class="fa fa-trash-alt"></i>
                                             </button>
                                         </td>
                                     </tr>
+
+                                    <!-- Child Items (linked domain or hosting) -->
+                                    <?php if (!empty($dp['children'])): ?>
+                                        <?php foreach ($dp['children'] as $child): ?>
+                                        <tr class="cart-item-row cart-item-child">
+                                            <td class="text-center">
+                                                <span class="item-number-child"><i class="fa fa-level-up-alt fa-rotate-90 text-muted"></i></span>
+                                            </td>
+                                            <td>
+                                                <div class="item-details item-details-child">
+                                                    <span class="item-name"><?= htmlspecialchars($child['note'], ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <?php if (!empty($child['hosting_domain'])): ?>
+                                                    <br><small class="text-muted"><i class="fa fa-link mg-r-5"></i><?= htmlspecialchars($child['hosting_domain'], ENT_QUOTES, 'UTF-8') ?></small>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <?php if ($child['item_type'] == 1): ?>
+                                                    <span class="badge badge-type badge-domain badge-sm"><i class="fa fa-globe mg-r-5"></i>Domain</span>
+                                                    <?php if (!empty($child['domain_action'])): ?>
+                                                    <br><small class="text-muted"><?= ucfirst($child['domain_action']) ?></small>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <span class="badge badge-type badge-hosting badge-sm"><i class="fa fa-server mg-r-5"></i>Hosting</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="text-right">
+                                                <div class="item-price">
+                                                    <span class="price-amount subtotal-item"><?= htmlspecialchars($child['sub_total'], ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <span class="price-currency"><?= htmlspecialchars($child['currency_code'], ENT_QUOTES, 'UTF-8') ?></span>
+                                                    <span class="price-cycle">/ <?= htmlspecialchars($child['billing_cycle'], ENT_QUOTES, 'UTF-8') ?></span>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="text-muted" title="Linked to parent item"><i class="fa fa-link"></i></span>
+                                            </td>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
@@ -156,11 +212,11 @@
 <script type="text/javascript">
     var app = angular.module('ServicesApp', ['ngDialog', 'ngToast', 'ngMaterial', 'ngMessages', 'ngSanitize', 'ngAnimate']);
 
-    // Calculate total on page load
+    // Calculate total on page load (handles hierarchical cart items)
     $(function () {
         var TotalValue = 0;
-        $("span#subtotal").each(function (index, value) {
-            currentRow = parseFloat($(this).text());
+        $("span.subtotal-item").each(function (index, value) {
+            var currentRow = parseFloat($(this).text()) || 0;
             TotalValue += currentRow;
         });
         document.getElementById('total').innerHTML = TotalValue.toFixed(2);

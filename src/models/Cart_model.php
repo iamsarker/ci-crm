@@ -134,9 +134,129 @@ class Cart_model extends CI_Model
 	function saveCart($data)
 	{
 		if ($this->db->insert('add_to_carts', $data)) {
-			return true;
+			return $this->db->insert_id();
 		}
 		return false;
+	}
+
+	/**
+	 * Get cart list with linked items (parent-child relationship)
+	 * Returns hierarchical structure for display
+	 */
+	function getCartListWithChildren()
+	{
+		$customerId = (int)getCustomerId();
+		$customerSessionId = (int)getCustomerSessionId();
+
+		// Get all parent items (no parent_cart_id)
+		$sql = "SELECT * FROM add_to_carts
+				WHERE (user_id=? OR customer_session_id=?) AND parent_cart_id IS NULL
+				ORDER BY id ASC";
+		$parents = $this->db->query($sql, array($customerId, $customerSessionId))->result_array();
+
+		// Get all child items
+		$sql = "SELECT * FROM add_to_carts
+				WHERE (user_id=? OR customer_session_id=?) AND parent_cart_id IS NOT NULL
+				ORDER BY id ASC";
+		$children = $this->db->query($sql, array($customerId, $customerSessionId))->result_array();
+
+		// Attach children to parents
+		foreach ($parents as &$parent) {
+			$parent['children'] = array();
+			foreach ($children as $child) {
+				if ($child['parent_cart_id'] == $parent['id']) {
+					$parent['children'][] = $child;
+				}
+			}
+		}
+
+		return $parents;
+	}
+
+	/**
+	 * Delete cart item and its linked children
+	 */
+	function deleteCartWithChildren($cartId)
+	{
+		$cartId = (int)$cartId;
+		$customerId = (int)getCustomerId();
+		$customerSessionId = (int)getCustomerSessionId();
+
+		// First delete children
+		$this->db->where('parent_cart_id', $cartId);
+		$this->db->where_group_start();
+		$this->db->where('user_id', $customerId);
+		$this->db->or_where('customer_session_id', $customerSessionId);
+		$this->db->where_group_end();
+		$this->db->delete('add_to_carts');
+
+		// Then delete parent
+		$this->db->where('id', $cartId);
+		$this->db->where_group_start();
+		$this->db->where('user_id', $customerId);
+		$this->db->or_where('customer_session_id', $customerSessionId);
+		$this->db->where_group_end();
+		$this->db->delete('add_to_carts');
+
+		return true;
+	}
+
+	/**
+	 * Get cart item by ID
+	 */
+	function getCartById($cartId)
+	{
+		$cartId = (int)$cartId;
+		return $this->db->get_where('add_to_carts', array('id' => $cartId))->row_array();
+	}
+
+	/**
+	 * Get children of a cart item
+	 */
+	function getCartChildren($parentCartId)
+	{
+		$parentCartId = (int)$parentCartId;
+		return $this->db->get_where('add_to_carts', array('parent_cart_id' => $parentCartId))->result_array();
+	}
+
+	/**
+	 * Update cart item
+	 */
+	function updateCart($cartId, $data)
+	{
+		$this->db->where('id', (int)$cartId);
+		return $this->db->update('add_to_carts', $data);
+	}
+
+	/**
+	 * Get domain pricing by ID
+	 */
+	function getDomPricingById($domPricingId)
+	{
+		$domPricingId = (int)$domPricingId;
+		$sql = "SELECT dp.*, de.extension, bc.cycle_name, bc.cycle_days
+				FROM dom_pricing dp
+				JOIN dom_extensions de ON dp.dom_extension_id = de.id
+				LEFT JOIN billing_cycle bc ON bc.id = 1
+				WHERE dp.id = ?";
+		return $this->db->query($sql, array($domPricingId))->row_array();
+	}
+
+	/**
+	 * Get product service pricing by ID with details
+	 */
+	function getProductServicePricingById($pricingId)
+	{
+		$pricingId = (int)$pricingId;
+		$sql = "SELECT psp.*, ps.product_name, ps.product_desc,
+				pst.servce_type_name, pst.service_type_key,
+				bc.cycle_name, bc.cycle_days
+				FROM product_service_pricing psp
+				JOIN product_services ps ON psp.product_service_id = ps.id
+				JOIN product_service_types pst ON ps.product_service_type_id = pst.id
+				JOIN billing_cycle bc ON psp.billing_cycle_id = bc.id
+				WHERE psp.id = ?";
+		return $this->db->query($sql, array($pricingId))->row_array();
 	}
 
 }

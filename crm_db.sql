@@ -31,11 +31,14 @@ CREATE TABLE `add_to_carts` (
   `id` bigint(20) NOT NULL,
   `user_id` int(11) NOT NULL DEFAULT 0,
   `customer_session_id` bigint(20) DEFAULT NULL,
+  `parent_cart_id` bigint(20) DEFAULT NULL COMMENT 'Links related cart items (e.g., domain linked to hosting)',
   `item_type` tinyint(4) NOT NULL COMMENT '1=domain, 2=product_service',
   `product_service_id` int(11) NOT NULL DEFAULT 0,
   `note` text DEFAULT NULL,
   `hosting_domain` varchar(200) DEFAULT NULL,
   `hosting_domain_type` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0=DNS,1=REGISTER,2=TRANSFER',
+  `domain_action` enum('register','transfer','dns_update') DEFAULT NULL COMMENT 'Domain action type',
+  `epp_code` varchar(100) DEFAULT NULL COMMENT 'EPP/Auth code for domain transfers',
   `sub_total` decimal(15,2) NOT NULL DEFAULT 0.00,
   `tax` decimal(15,2) NOT NULL DEFAULT 0.00,
   `vat` decimal(15,2) NOT NULL DEFAULT 0.00,
@@ -1513,6 +1516,7 @@ CREATE TABLE `order_domains` (
   `order_type` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1=reg, 2=transfer, 3=nothing',
   `epp_code` varchar(200) DEFAULT NULL,
   `domain` text NOT NULL,
+  `linked_service_id` bigint(20) DEFAULT NULL COMMENT 'Links to order_services.id when hosting is purchased with domain',
   `first_pay_amount` decimal(15,2) NOT NULL,
   `recurring_amount` decimal(15,2) NOT NULL,
   `reg_date` date NOT NULL,
@@ -1613,6 +1617,7 @@ CREATE TABLE `order_services` (
   `first_pay_amount` decimal(15,2) NOT NULL,
   `recurring_amount` decimal(15,2) NOT NULL,
   `hosting_domain` varchar(200) DEFAULT NULL,
+  `linked_domain_id` bigint(20) DEFAULT NULL COMMENT 'Links to order_domains.id when domain is purchased with hosting',
   `license_key` varchar(255) DEFAULT NULL COMMENT 'Software license key',
   `license_seats` int(11) DEFAULT NULL COMMENT 'Number of allowed activations/seats',
   `auto_renew` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=auto renew, 0=manual',
@@ -2480,7 +2485,8 @@ CREATE TABLE `webhook_logs` (
 ALTER TABLE `add_to_carts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
-  ADD KEY `customer_session_id` (`customer_session_id`);
+  ADD KEY `customer_session_id` (`customer_session_id`),
+  ADD KEY `idx_parent_cart` (`parent_cart_id`);
 
 --
 -- Indexes for table `admin_logins`

@@ -137,6 +137,19 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
 ### Database
 - **Database Config**: `src/config/database.php`
 - **SQL Schema**: `crm_db.sql`
+- **DB Views**: `crm_db_views.sql`
+- **Migrations**: `migrations/` directory
+
+### Database Migrations
+When adding new features that require schema changes:
+1. Create migration file in `migrations/` directory
+2. Update main `crm_db.sql` schema for fresh installs
+3. Document migration in this file
+
+**Available Migrations:**
+| Migration | Description |
+|-----------|-------------|
+| `cart_enhancements.sql` | Cart linking (parent_cart_id, domain_action, epp_code) + Order linking (linked_domain_id, linked_service_id) |
 
 ### Views
 - **Customer Payment Page**: `src/modules/billing/views/billing_pay.php`
@@ -174,6 +187,97 @@ When payment gateways redirect back to the app via **external POST**, browsers b
 **When adding new payment gateways:**
 - If gateway uses popup/modal (Razorpay, PayPal style): No special handling needed
 - If gateway does full browser redirect + POST callback: Implement token-based session restoration
+
+## Cart & Checkout Implementation
+
+### Cart User Flows
+
+**Flow-1: Hosting → Domain (Required)**
+1. User selects hosting package (SHARED/RESELLER/VPS)
+2. User must provide domain info:
+   - **Register**: Search domain availability via registrar API
+   - **Transfer**: Enter EPP/Auth code
+   - **DNS Update**: Just enter domain name
+3. Creates 2 linked cart records:
+   - Record 1: Hosting (`item_type=2`, `parent_cart_id=NULL`)
+   - Record 2: Domain (`item_type=1`, `parent_cart_id=Record1.id`)
+
+**Flow-2: Domain → Hosting (Optional)**
+1. User searches/selects domain
+2. Hosting selection is optional
+3. Creates 1 or 2 records:
+   - Domain only: 1 record (`item_type=1`, `parent_cart_id=NULL`)
+   - Domain + Hosting: Domain record + Hosting record (`parent_cart_id=Domain.id`)
+
+### Cart Table Fields
+```
+add_to_carts:
+- item_type: 1=domain, 2=product_service
+- parent_cart_id: Links related items (domain ↔ hosting)
+- domain_action: 'register', 'transfer', 'dns_update'
+- epp_code: For domain transfers
+- hosting_domain: The domain name
+- hosting_domain_type: 0=DNS, 1=REGISTER, 2=TRANSFER (legacy, use domain_action)
+```
+
+### Cart Linking Logic
+- Parent item: `parent_cart_id = NULL`
+- Child item: `parent_cart_id = parent.id`
+- When deleting parent, also delete children
+- Invoice shows hierarchical line items
+
+### Order Table Linking
+```
+order_services:
+- linked_domain_id: Links to order_domains.id when domain is purchased with hosting
+
+order_domains:
+- linked_service_id: Links to order_services.id when hosting is purchased with domain
+```
+
+### Checkout Process
+1. `checkoutSubmit()` uses `getCartListWithChildren()` for hierarchical data
+2. Parent items processed first, then children
+3. `_processCartItem()` handles domain/service record creation
+4. `_linkOrderItems()` establishes bi-directional linking between order_services and order_domains
+
+### Cart API Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `cart/services/{groupId}` | GET | Browse hosting packages by group |
+| `cart/view` | GET | View cart with hierarchical items |
+| `cart/addHostingToCart` | POST | Flow-1: Add hosting to cart |
+| `cart/linkDomainToHosting` | POST | Flow-1: Link domain to hosting |
+| `cart/addDomainToCart` | POST | Flow-2: Add domain to cart |
+| `cart/linkHostingToDomain` | POST | Flow-2: Link hosting to domain |
+| `cart/delete/{id}` | GET | Delete cart item (with children) |
+| `cart/delete_all` | GET | Empty entire cart |
+| `cart/checkoutSubmit` | POST | Process checkout |
+| `cart/getCount` | GET | Get cart item count |
+| `domain-search` | GET | Search domain availability |
+| `domain-suggestion` | GET | Get domain name suggestions |
+
+### Domain Order Types
+```
+order_domains.order_type:
+- 1 = Registration (new domain)
+- 2 = Transfer (from another registrar)
+- 3 = DNS Update only (no registration needed)
+```
+
+### Cart Files Reference
+- **Controller**: `src/modules/cart/controllers/Cart.php`
+- **Model**: `src/models/Cart_model.php`
+- **Views**:
+  - `src/modules/cart/views/cart_services.php` - Hosting packages listing
+  - `src/modules/cart/views/view_card.php` - Cart view with items
+  - `src/modules/cart/views/cart_regnewdomain.php` - Domain search page
+- **Angular**: `resources/angular/app/services_controller.js`
+
+### Hosting Types
+- SHARED (product_service_type_key = 'shared')
+- RESELLER (product_service_type_key = 'reseller')
+- VPS (product_service_type_key = 'vps')
 
 ## Library Naming Convention
 Libraries follow CodeIgniter standard naming:

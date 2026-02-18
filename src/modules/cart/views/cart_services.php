@@ -113,7 +113,7 @@
             </div>
         </div>
 
-        <!-- Domain Modal -->
+        <!-- Domain Modal - Enhanced for Flow-1 -->
         <div class="modal fade" id="hostingDomainModal" tabindex="-1" role="dialog" aria-labelledby="domainModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content domain-modal-content">
@@ -128,25 +128,14 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body domain-modal-body">
-                        <div class="domain-input-section">
-                            <label for="hosting_domain" class="domain-label">
-                                <i class="fa fa-link mg-r-5"></i> Domain Name
-                            </label>
-                            <div class="domain-input-wrapper">
-                                <span class="domain-prefix">www.</span>
-                                <input type="text" class="form-control domain-input" id="hosting_domain"
-                                       placeholder="example.com" ng-model="hosting_domain" />
-                            </div>
-                            <small class="domain-hint">Enter your domain name with extension (e.g., example.com)</small>
-                        </div>
-
-                        <div class="domain-type-section">
+                        <!-- Domain Type Selection -->
+                        <div class="domain-type-section mg-b-20">
                             <label class="domain-label">
                                 <i class="fa fa-cog mg-r-5"></i> Domain Option
                             </label>
                             <div class="domain-type-options">
-                                <label class="domain-type-option active">
-                                    <input type="radio" name="domain_type" value="0" ng-model="hosting_domain_type" checked>
+                                <label class="domain-type-option" ng-class="{'active': domain_action == 'dns_update'}">
+                                    <input type="radio" name="domain_type" value="dns_update" ng-model="domain_action" ng-change="onDomainActionChange()">
                                     <div class="option-content">
                                         <div class="option-icon"><i class="fa fa-exchange-alt"></i></div>
                                         <div class="option-text">
@@ -155,8 +144,8 @@
                                         </div>
                                     </div>
                                 </label>
-                                <label class="domain-type-option">
-                                    <input type="radio" name="domain_type" value="1" ng-model="hosting_domain_type">
+                                <label class="domain-type-option" ng-class="{'active': domain_action == 'register'}">
+                                    <input type="radio" name="domain_type" value="register" ng-model="domain_action" ng-change="onDomainActionChange()">
                                     <div class="option-content">
                                         <div class="option-icon"><i class="fa fa-plus-circle"></i></div>
                                         <div class="option-text">
@@ -165,8 +154,8 @@
                                         </div>
                                     </div>
                                 </label>
-                                <label class="domain-type-option">
-                                    <input type="radio" name="domain_type" value="2" ng-model="hosting_domain_type">
+                                <label class="domain-type-option" ng-class="{'active': domain_action == 'transfer'}">
+                                    <input type="radio" name="domain_type" value="transfer" ng-model="domain_action" ng-change="onDomainActionChange()">
                                     <div class="option-content">
                                         <div class="option-icon"><i class="fa fa-arrow-right"></i></div>
                                         <div class="option-text">
@@ -177,12 +166,96 @@
                                 </label>
                             </div>
                         </div>
+
+                        <!-- DNS Update: Simple domain input -->
+                        <div class="domain-input-section" ng-show="domain_action == 'dns_update'">
+                            <label for="hosting_domain_dns" class="domain-label">
+                                <i class="fa fa-link mg-r-5"></i> Domain Name
+                            </label>
+                            <div class="domain-input-wrapper">
+                                <span class="domain-prefix">www.</span>
+                                <input type="text" class="form-control domain-input" id="hosting_domain_dns"
+                                       placeholder="example.com" ng-model="hosting_domain" />
+                            </div>
+                            <small class="domain-hint">Enter your existing domain name (e.g., example.com)</small>
+                        </div>
+
+                        <!-- Register: Domain search -->
+                        <div class="domain-register-section" ng-show="domain_action == 'register'">
+                            <label class="domain-label">
+                                <i class="fa fa-search mg-r-5"></i> Search Domain
+                            </label>
+                            <div class="input-group mg-b-10">
+                                <input type="text" class="form-control" id="domain_search_input"
+                                       placeholder="Enter domain name to check availability" ng-model="domain_search_keyword"
+                                       ng-keypress="$event.keyCode == 13 && searchDomainAvailability()" />
+                                <button class="btn btn-primary" type="button" ng-click="searchDomainAvailability()" ng-disabled="domain_searching">
+                                    <i class="fa fa-search" ng-hide="domain_searching"></i>
+                                    <i class="fa fa-spinner fa-spin" ng-show="domain_searching"></i>
+                                    Search
+                                </button>
+                            </div>
+
+                            <!-- Domain Search Results -->
+                            <div class="domain-search-results" ng-show="domain_search_results.length > 0">
+                                <div class="result-item" ng-repeat="result in domain_search_results"
+                                     ng-class="{'selected': selected_domain.name == result.name}"
+                                     ng-click="selectDomain(result)">
+                                    <div class="result-domain">
+                                        <i class="fa fa-check-circle text-success" ng-show="selected_domain.name == result.name"></i>
+                                        <i class="fa fa-globe" ng-hide="selected_domain.name == result.name"></i>
+                                        <span>{{result.name}}</span>
+                                    </div>
+                                    <div class="result-price">
+                                        <span class="price">{{result.price | number:2}}</span>
+                                        <span class="currency"><?= getCurrencyCode() ?>/yr</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning mg-t-10" ng-show="domain_search_no_results">
+                                <i class="fa fa-exclamation-triangle mg-r-5"></i> Domain not available. Try a different name.
+                            </div>
+                        </div>
+
+                        <!-- Transfer: Domain + EPP Code -->
+                        <div class="domain-transfer-section" ng-show="domain_action == 'transfer'">
+                            <div class="row">
+                                <div class="col-md-7">
+                                    <label for="transfer_domain" class="domain-label">
+                                        <i class="fa fa-globe mg-r-5"></i> Domain Name
+                                    </label>
+                                    <div class="domain-input-wrapper mg-b-15">
+                                        <span class="domain-prefix">www.</span>
+                                        <input type="text" class="form-control domain-input" id="transfer_domain"
+                                               placeholder="example.com" ng-model="hosting_domain" ng-change="onTransferDomainChange()" />
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    <label for="epp_code" class="domain-label">
+                                        <i class="fa fa-key mg-r-5"></i> EPP/Auth Code
+                                    </label>
+                                    <input type="text" class="form-control" id="epp_code"
+                                           placeholder="Enter EPP code" ng-model="epp_code" />
+                                </div>
+                            </div>
+                            <small class="domain-hint">Get the EPP/Auth code from your current registrar</small>
+
+                            <!-- Transfer Price Display -->
+                            <div class="transfer-price-info mg-t-15" ng-show="transfer_price_info">
+                                <div class="alert alert-info">
+                                    <i class="fa fa-info-circle mg-r-5"></i>
+                                    Transfer price for <strong>{{hosting_domain}}</strong>:
+                                    <strong>{{transfer_price_info.price | number:2}} <?= getCurrencyCode() ?>/yr</strong>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer domain-modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">
                             <i class="fa fa-times mg-r-5"></i> Cancel
                         </button>
-                        <button type="button" class="btn btn-primary" ng-click="addToCartApiCall()">
+                        <button type="button" class="btn btn-primary" ng-click="addHostingWithDomain()" ng-disabled="!canAddToCart()">
                             <i class="fa fa-cart-plus mg-r-5"></i> Add to Cart
                         </button>
                     </div>

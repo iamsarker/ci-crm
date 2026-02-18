@@ -436,36 +436,89 @@ Each stat card features:
 
 ### Placing an Order
 
-**Step 1: Select Package**
-- Click "Order Now" on desired package
-- Choose billing cycle (1 month, 3 months, 6 months, 12 months)
-- Select any add-ons or upgrades
+There are two ways to place an order depending on whether you start with a hosting package or a domain:
 
-**Step 2: Configure Service**
-- Enter domain name (if applicable)
-- Choose server location (if options available)
-- Select operating system or control panel (if applicable)
-- Add any custom notes or requirements
+#### Flow 1: Hosting First (Recommended)
 
-**Step 3: Review Order**
-- Verify package details
-- Check pricing and billing cycle
-- Review total amount
-- Apply coupon code (if you have one)
+**Step 1: Select Hosting Package**
+- Navigate to "Services" → "Hosting Services"
+- Browse available hosting packages (Shared, Reseller, VPS)
+- Choose billing cycle (monthly, quarterly, annually)
+- Click "Choose Plan"
 
-**Step 4: Checkout**
-- Review order summary
-- Accept Terms of Service
-- Click "Complete Order" or "Checkout"
+**Step 2: Configure Domain**
+A modal will appear asking for your domain information. Choose one of three options:
 
-**Step 5: Payment**
+| Option | Description |
+|--------|-------------|
+| **Update DNS** | Use your existing domain - just point the DNS to our servers |
+| **Register New** | Search for and register a new domain with your hosting |
+| **Transfer** | Transfer your domain from another registrar (requires EPP/Auth code) |
+
+- **Update DNS:** Enter your existing domain name (e.g., example.com)
+- **Register New:** Search for available domains, select one from the results
+- **Transfer:** Enter domain name and the EPP/Auth code from your current registrar
+
+**Step 3: Add to Cart**
+- Click "Add to Cart" to add both hosting and domain to your cart
+- Both items are linked together for easy management
+
+**Step 4: Review Cart**
+- Navigate to "View Cart" to see your order
+- Cart displays hosting package with linked domain underneath
+- Verify pricing for both services
+
+**Step 5: Checkout**
+- Select payment method
+- Add any special instructions (optional)
+- Click "Proceed to Checkout"
+
+**Step 6: Payment**
 - Invoice is generated automatically
-- Redirected to payment page
-- Choose payment method
-- Complete payment
+- Complete payment via selected gateway
+- Service activation begins after payment confirmation
+
+#### Flow 2: Domain First
+
+**Step 1: Search Domain**
+- Navigate to "Services" → "Register Domain"
+- Enter desired domain name
+- Complete reCAPTCHA verification (if enabled)
+- Click "Search"
+
+**Step 2: Select Domain**
+- View search results showing availability and pricing
+- Click "Add to Cart" on available domain
+- View domain suggestions for alternatives
+
+**Step 3: Add Hosting (Optional)**
+- After adding domain, you can optionally add a hosting package
+- Select hosting package and billing cycle
+- Domain will be automatically linked to hosting
+
+**Step 4: Complete Order**
+- Review cart with domain (and hosting if selected)
+- Proceed to checkout and payment
 
 ![Order Checkout](screenshots/order-checkout.png)
-*[Screenshot Placeholder: Order checkout page with order summary]*
+*[Screenshot Placeholder: Order checkout page with linked hosting and domain]*
+
+### Shopping Cart Features
+
+**Cart Item Linking:**
+- When hosting and domain are purchased together, they are linked
+- Linked items appear as parent-child in cart view
+- Deleting parent item also removes linked child items
+
+**Cart Actions:**
+- **Add More Services:** Add additional packages to your order
+- **Remove Item:** Delete individual items from cart
+- **Empty Cart:** Clear all items from cart
+
+**Payment Options:**
+- Select from available payment gateways
+- Add special instructions for your order
+- Apply promotional codes (if available)
 
 ### Order Status
 
@@ -539,15 +592,20 @@ For hosting services with cPanel, you can sync real-time usage statistics from y
    - Or use search box on homepage
 
 2. **Enter Domain Name**
-   - Type desired domain name
-   - Select extensions (.com, .net, .org, etc.)
+   - Type desired domain name (e.g., "mybusiness" or "mybusiness.com")
+   - Complete reCAPTCHA verification (if enabled by administrator)
    - Click "Search"
 
 3. **View Results**
-   - Available domains shown in green
-   - Unavailable domains shown in red
-   - Alternative suggestions displayed
-   - Pricing shown for each extension
+   - Available domains shown with pricing
+   - Unavailable domains indicated
+   - Alternative domain suggestions displayed below
+   - Pricing shown for each available extension
+
+4. **Domain Suggestions**
+   - System automatically shows alternative domain names
+   - Suggestions based on your search keyword
+   - Different extensions offered (.com, .net, .org, etc.)
 
 ![Domain Search](screenshots/domain-search.png)
 *[Screenshot Placeholder: Domain search results page]*
@@ -592,27 +650,36 @@ For hosting services with cPanel, you can sync real-time usage statistics from y
 
 **Transferring Domain to Your Account:**
 
-1. **Initiate Transfer**
-   - Go to "Domains" → "Transfer Domain"
-   - Enter domain name
-   - Enter authorization/EPP code
+There are two ways to transfer a domain:
 
-2. **Verify Transfer**
-   - System checks domain eligibility
-   - Shows transfer pricing
-   - Adds 1 year to registration
+#### Option 1: Transfer with Hosting Purchase
+1. Select a hosting package
+2. In the domain modal, choose "Transfer"
+3. Enter your domain name
+4. Enter the EPP/Auth code from your current registrar
+5. Domain transfer and hosting are added to cart together
+6. Complete checkout and payment
 
-3. **Complete Transfer**
-   - Confirm transfer request
-   - Pay transfer fee
-   - Approve transfer email (from current registrar)
-   - Wait 5-7 days for transfer completion
+#### Option 2: Transfer Domain Only
+1. Go to "Domains" → "Transfer Domain"
+2. Enter domain name
+3. Enter authorization/EPP code
+4. Add to cart
+5. Optionally add hosting package
+6. Complete checkout and payment
+
+**After Checkout:**
+- Transfer request is submitted to registry
+- You'll receive a confirmation email from current registrar
+- Approve the transfer via email link
+- Transfer completes within 5-7 days
+- 1 year is added to your domain registration
 
 **Transfer Requirements:**
 - Domain must be unlocked at current registrar
-- Domain must not be within 60 days of registration
-- Valid authorization/EPP code required
-- Admin email must be accessible
+- Domain must not be within 60 days of registration or last transfer
+- Valid authorization/EPP code required (get from current registrar)
+- Admin contact email must be accessible for approval
 
 ---
 
