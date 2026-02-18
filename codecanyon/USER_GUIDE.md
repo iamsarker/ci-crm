@@ -1,8 +1,8 @@
 # WHMAZ - CI-CRM User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.7.0
-**Last Updated:** February 13, 2026
+**Version:** 1.7.1
+**Last Updated:** February 18, 2026
 **Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 
 ---
@@ -2731,44 +2731,124 @@ Password: Your SendGrid API Key
 
 2. **Get API Keys**
    - Go to Developers → API Keys
-   - Copy Publishable Key
-   - Copy Secret Key
+   - Copy Publishable Key (starts with `pk_`)
+   - Copy Secret Key (starts with `sk_`)
 
-3. **Configure in WHMAZ**
-   - Go to Settings → Payment Gateways
-   - Enable Stripe
-   - Paste Publishable Key
-   - Paste Secret Key
-   - Set to Test or Live mode
-   - Save settings
+3. **Configure Webhook (Required)**
+   - Go to Developers → Webhooks in Stripe Dashboard
+   - Click "Add endpoint"
+   - Enter Webhook URL: `https://yourdomain.com/webhook/stripe`
+   - Select events to listen:
+     - `payment_intent.succeeded`
+     - `payment_intent.payment_failed`
+     - `checkout.session.completed`
+     - `charge.refunded`
+   - Click "Add endpoint"
+   - Copy the "Signing secret" (starts with `whsec_`)
 
-4. **Test Payment**
+4. **Configure in WHMAZ**
+   - Go to Admin → Settings → Payment Gateways
+   - Click "Configure" on Stripe
+   - **Test Mode:** Toggle ON for testing, OFF for live
+   - **Test Credentials** (when Test Mode is ON):
+     - Test Public Key: Your test publishable key (`pk_test_...`)
+     - Test Secret Key: Your test secret key (`sk_test_...`)
+     - Test Webhook Secret: Your test webhook signing secret (`whsec_...`)
+   - **Live Credentials** (when Test Mode is OFF):
+     - Public Key: Your live publishable key (`pk_live_...`)
+     - Secret Key: Your live secret key (`sk_live_...`)
+     - Webhook Secret: Your live webhook signing secret (`whsec_...`)
+   - Enable the gateway and Save
+
+5. **Test Payment**
+   - Enable Test Mode in WHMAZ
    - Create test invoice
-   - Attempt payment with test card
-   - Stripe test card: 4242 4242 4242 4242
-   - Verify payment successful
+   - Pay with Stripe test card: `4242 4242 4242 4242`
+   - Expiry: Any future date, CVC: Any 3 digits
+   - Verify payment successful and webhook received
+
+**Stripe Test Cards:**
+| Card Number | Description |
+|-------------|-------------|
+| 4242 4242 4242 4242 | Successful payment |
+| 4000 0000 0000 0002 | Card declined |
+| 4000 0000 0000 9995 | Insufficient funds |
 
 ### PayPal Configuration
 
 1. **PayPal Business Account**
-   - Sign up for PayPal Business account
-   - Verify account
+   - Sign up for PayPal Business account at paypal.com
+   - Complete business verification
 
 2. **Get API Credentials**
-   - Go to Account Settings → API Access
-   - Choose NVP/SOAP API integration
-   - Get API Username, Password, and Signature
+   - Go to Developer Dashboard: developer.paypal.com
+   - Navigate to Apps & Credentials
+   - Create a new app or use default
+   - Copy Client ID and Client Secret
 
-3. **Configure in WHMAZ**
-   - Enable PayPal gateway
-   - Paste API credentials
-   - Set to Sandbox or Live
-   - Save settings
+3. **Configure Webhook (Required)**
+   - In PayPal Developer Dashboard → Your App → Webhooks
+   - Click "Add Webhook"
+   - Enter Webhook URL: `https://yourdomain.com/webhook/paypal`
+   - Select events:
+     - `CHECKOUT.ORDER.APPROVED`
+     - `PAYMENT.CAPTURE.COMPLETED`
+     - `PAYMENT.CAPTURE.DENIED`
+     - `PAYMENT.CAPTURE.REFUNDED`
+   - Save and copy the Webhook ID
 
-4. **Test Payment**
-   - Use PayPal Sandbox for testing
-   - Create sandbox buyer account
-   - Test payment flow
+4. **Configure in WHMAZ**
+   - Go to Admin → Settings → Payment Gateways
+   - Click "Configure" on PayPal
+   - **Test Mode:** Toggle ON for Sandbox, OFF for Live
+   - **Sandbox Credentials** (when Test Mode is ON):
+     - Sandbox Client ID
+     - Sandbox Client Secret
+     - Sandbox Webhook ID
+   - **Live Credentials** (when Test Mode is OFF):
+     - Client ID
+     - Client Secret
+     - Webhook ID
+   - Enable and Save
+
+5. **Test Payment**
+   - Enable Test Mode
+   - Create test invoice
+   - Use PayPal Sandbox buyer account
+   - Complete payment flow
+   - Verify payment and webhook received
+
+### SSLCommerz Configuration (Bangladesh)
+
+1. **Create SSLCommerz Account**
+   - Go to sslcommerz.com
+   - Sign up for merchant account
+   - Complete business verification
+
+2. **Get API Credentials**
+   - Login to SSLCommerz Merchant Panel
+   - Go to Developers → API Credentials
+   - Copy Store ID and Store Password
+
+3. **Configure IPN (Webhook)**
+   - IPN URL: `https://yourdomain.com/webhook/sslcommerz`
+   - SSLCommerz automatically sends payment notifications to this URL
+
+4. **Configure in WHMAZ**
+   - Go to Admin → Settings → Payment Gateways
+   - Click "Configure" on SSLCommerz
+   - **Test Mode:** Toggle ON for Sandbox
+   - Enter Store ID and Store Password
+   - Enter Webhook Secret (if applicable)
+   - Enable and Save
+
+5. **Test Payment**
+   - Enable Sandbox Mode
+   - Create test invoice with BDT currency
+   - Complete payment using sandbox credentials
+   - Verify IPN received
+
+**Note:** SSLCommerz uses external redirect flow. The system handles session restoration automatically using secure payment tokens.
 
 ### Bank Transfer
 

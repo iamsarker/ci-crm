@@ -131,13 +131,13 @@ class Webhook extends WHMAZ_Controller
             'gateway_response' => $data
         );
 
-        // Extract card details if available
-        if (isset($data['charges']['data'][0]['payment_method_details']['card'])) {
-            $card = $data['charges']['data'][0]['payment_method_details']['card'];
-            $updateData['card_brand'] = isset($card['brand']) ? $card['brand'] : null;
-            $updateData['card_last4'] = isset($card['last4']) ? $card['last4'] : null;
-            $updateData['card_exp_month'] = isset($card['exp_month']) ? $card['exp_month'] : null;
-            $updateData['card_exp_year'] = isset($card['exp_year']) ? $card['exp_year'] : null;
+        // Extract card details using library method (handles both old and new API formats)
+        $card = $this->stripe->extractCardDetails($data);
+        if (!empty($card)) {
+            $updateData['card_brand'] = $card['brand'];
+            $updateData['card_last4'] = $card['last4'];
+            $updateData['card_exp_month'] = $card['exp_month'];
+            $updateData['card_exp_year'] = $card['exp_year'];
         }
 
         $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', $updateData);

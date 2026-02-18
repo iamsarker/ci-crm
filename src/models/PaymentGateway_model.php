@@ -44,6 +44,10 @@ class PaymentGateway_model extends CI_Model
         // Filter by currency if specified
         if ($currencyCode) {
             $gateways = array_filter($gateways, function($gw) use ($currencyCode) {
+                // If supported_currencies is empty, gateway supports all currencies
+                if (empty(trim($gw['supported_currencies']))) {
+                    return true;
+                }
                 $currencies = explode(',', $gw['supported_currencies']);
                 return in_array($currencyCode, array_map('trim', $currencies));
             });
@@ -91,7 +95,7 @@ class PaymentGateway_model extends CI_Model
             'is_test_mode' => $isTestMode,
             'public_key' => $isTestMode ? $gateway['test_public_key'] : $gateway['public_key'],
             'secret_key' => $isTestMode ? $gateway['test_secret_key'] : $gateway['secret_key'],
-            'webhook_secret' => $gateway['webhook_secret'],
+            'webhook_secret' => $isTestMode ? $gateway['test_webhook_secret'] : $gateway['webhook_secret'],
             'merchant_id' => $gateway['merchant_id'],
             'extra_config' => !empty($gateway['extra_config']) ? json_decode($gateway['extra_config'], true) : array(),
             'supported_currencies' => explode(',', $gateway['supported_currencies']),

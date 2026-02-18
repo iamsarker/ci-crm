@@ -84,6 +84,7 @@ class Paymentgateway extends WHMAZADMIN_Controller
                 // Test credentials
                 'test_public_key' => trim($this->input->post('test_public_key') ?? ''),
                 'test_secret_key' => trim($this->input->post('test_secret_key') ?? ''),
+                'test_webhook_secret' => trim($this->input->post('test_webhook_secret') ?? ''),
 
                 // Currency and limits
                 'supported_currencies' => trim($this->input->post('supported_currencies') ?? ''),

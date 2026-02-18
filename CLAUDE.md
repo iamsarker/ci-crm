@@ -101,6 +101,39 @@ resources/assets/css/
   - `src/models/Payment_model.php` - Transaction handling
   - `src/models/PaymentGateway_model.php` - Gateway configuration
 
+### Webhook Configuration
+Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
+
+**Webhook URLs:**
+| Gateway | Webhook URL |
+|---------|-------------|
+| Stripe | `https://yourdomain.com/webhook/stripe` |
+| PayPal | `https://yourdomain.com/webhook/paypal` |
+| SSLCommerz | `https://yourdomain.com/webhook/sslcommerz` |
+
+**Database Fields (payment_gateway table):**
+| Field | Description |
+|-------|-------------|
+| `public_key` | Live publishable/public key |
+| `secret_key` | Live secret key |
+| `webhook_secret` | Live webhook signing secret |
+| `test_public_key` | Test/Sandbox public key |
+| `test_secret_key` | Test/Sandbox secret key |
+| `test_webhook_secret` | Test/Sandbox webhook signing secret |
+| `is_test_mode` | 1 = Test mode, 0 = Live mode |
+
+**Stripe Webhook Events Handled:**
+- `payment_intent.succeeded` - Payment completed
+- `payment_intent.payment_failed` - Payment failed
+- `checkout.session.completed` - Checkout session completed
+- `charge.refunded` - Refund processed
+
+**Webhook Security:**
+- Stripe: Signature verification via `Stripe::verifyWebhook()`
+- PayPal: Signature verification via `Paypal::verifyWebhook()`
+- All webhooks logged to `webhook_logs` table
+- Duplicate event detection via `Payment_model::isWebhookProcessed()`
+
 ### Database
 - **Database Config**: `src/config/database.php`
 - **SQL Schema**: `crm_db.sql`

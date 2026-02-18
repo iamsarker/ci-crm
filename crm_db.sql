@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 13, 2026 at 07:59 PM
+-- Generation Time: Feb 18, 2026 at 07:57 AM
 -- Server version: 10.11.11-MariaDB-cll-lve
 -- PHP Version: 8.3.20
 
@@ -159,7 +159,13 @@ INSERT INTO `admin_logins` (`id`, `admin_id`, `login_time`, `session_val`, `term
 (83, 1, '2026-02-12 05:37:30', '0', '127.0.0.1', NULL, 1),
 (84, 1, '2026-02-13 01:22:34', '0', '127.0.0.1', NULL, 1),
 (85, 1, '2026-02-13 15:47:18', '0', '127.0.0.1', NULL, 1),
-(86, 1, '2026-02-13 16:51:27', '0', '127.0.0.1', NULL, 1);
+(86, 1, '2026-02-13 16:51:27', '0', '127.0.0.1', NULL, 1),
+(87, 1, '2026-02-14 02:53:51', '0', '127.0.0.1', NULL, 1),
+(88, 1, '2026-02-14 06:57:06', '0', '127.0.0.1', NULL, 1),
+(89, 1, '2026-02-14 07:48:20', '0', '127.0.0.1', NULL, 1),
+(90, 1, '2026-02-14 13:33:38', '0', '127.0.0.1', NULL, 1),
+(91, 1, '2026-02-18 02:10:37', '0', '::1', NULL, 1),
+(92, 1, '2026-02-18 14:49:17', '0', '::1', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1165,7 +1171,7 @@ INSERT INTO `invoices` (`id`, `invoice_uuid`, `company_id`, `order_id`, `currenc
 (550, '91edf252-bca1-40d9-bf3f-71ab2f56d726', 2, 725, 1, 'USD', '1532', 69.50, 0.00, 0.00, 69.50, '2026-12-04', '2025-12-04', NULL, NULL, NULL, 1, 'PAID', 0, '2025-12-04 14:32:13', 1, '2026-01-13 15:04:40', NULL, NULL, NULL),
 (551, 'b26a4187-295c-4a0d-8b6b-c95ed23bbebc', 2, 720, 1, 'USD', '1533', 69.50, 0.00, 0.00, 69.50, '2027-01-16', '2025-01-16', NULL, NULL, NULL, 1, 'PAID', 0, '2026-01-13 16:43:04', 1, '2026-01-23 08:06:39', 1, NULL, NULL),
 (552, '9fcf6d9c-90c3-4317-bc77-75a07bc44ee0', 14, 726, 1, 'USD', '1534', 33.14, 0.00, 0.00, 33.14, '2025-04-21', '2025-04-14', NULL, NULL, NULL, 1, 'PAID', 0, '2025-04-14 10:24:18', 1, '2026-02-12 16:35:27', 1, NULL, NULL),
-(553, 'ac8e5c4f-30ff-4690-ba7d-b77d045736bc', 1, 727, 1, 'USD', '1535', 32.95, 0.00, 0.00, 32.95, '2026-02-13', '2026-02-13', NULL, NULL, NULL, 1, 'DUE', 0, '2026-02-13 15:55:37', 1, '2026-02-13 15:55:39', NULL, NULL, NULL);
+(553, 'ac8e5c4f-30ff-4690-ba7d-b77d045736bc', 1, 727, 1, 'USD', '1535', 32.95, 0.00, 0.00, 32.95, '2026-02-13', '2026-02-13', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-13 15:55:37', 1, '2026-02-18 08:30:47', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1280,7 +1286,11 @@ CREATE TABLE `invoice_txn` (
 
 INSERT INTO `invoice_txn` (`id`, `invoice_id`, `payment_gateway_id`, `payment_transaction_id`, `transaction_id`, `txn_date`, `amount`, `currency_code`, `type`, `status`, `remarks`, `attachments`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (1, 505, NULL, NULL, NULL, '2024-08-22', 23.00, NULL, 'payment', 1, 'paid - 2250 tk', NULL, '2024-08-22 10:19:48', 1, NULL, NULL, NULL, NULL),
-(2, 506, NULL, NULL, NULL, '2024-08-30', 12.99, NULL, 'payment', 1, 'paid - 1600 tk', NULL, '2024-08-22 10:19:48', 1, NULL, NULL, NULL, NULL);
+(2, 506, NULL, NULL, NULL, '2024-08-30', 12.99, NULL, 'payment', 1, 'paid - 1600 tk', NULL, '2024-08-22 10:19:48', 1, NULL, NULL, NULL, NULL),
+(4, 553, 6, 2, '260216725092TMO21ejmLUIsKt', '2026-02-16', 32.95, 'USD', 'payment', 1, 'Payment via Sslcommerz', NULL, '2026-02-16 02:25:19', 1, NULL, NULL, NULL, NULL),
+(5, 553, 6, 3, '26021673857wdziPSQ6hIvMmYP', '2026-02-16', 32.95, 'USD', 'payment', 1, 'Payment via Sslcommerz', NULL, '2026-02-16 02:39:08', 1, NULL, NULL, NULL, NULL),
+(6, 553, 6, 4, '26021681321MHMzrbxMiVngUA0', '2026-02-16', 32.95, 'USD', 'payment', 1, 'Payment via Sslcommerz', NULL, '2026-02-16 03:13:31', 1, NULL, NULL, NULL, NULL),
+(7, 553, 2, 6, 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', '2026-02-18', 32.95, 'USD', 'payment', 1, 'Payment via Stripe', NULL, '2026-02-18 02:30:49', 1, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1642,7 +1652,7 @@ INSERT INTO `order_services` (`id`, `order_id`, `company_id`, `product_service_i
 (712, 723, 13, 5, 9, 'SHARED_HOSTING', 'dwacombd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'dwa.com.bd', NULL, NULL, 1, '2024-12-03', '2024-12-03', '2025-12-03', '2024-12-03', NULL, NULL, NULL, 0, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
 (713, 724, 14, 20, 27, 'SHARED_HOSTING', 'brandnstitc', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 65.00, 65.00, 'brandnstitch.com', NULL, NULL, 1, '2025-08-12', '2026-08-12', '2026-08-12', '2026-08-12', NULL, NULL, NULL, 1, NULL, 1, '', '2025-08-12 03:41:24', 1, '2026-02-12 17:23:21', 1, NULL, NULL),
 (714, 725, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-12-04', '2025-12-04', '2025-12-04', '2025-12-04', NULL, NULL, NULL, 0, NULL, 1, '', '2025-12-04 14:32:15', 1, '2026-02-12 11:14:53', NULL, NULL, NULL),
-(715, 726, 14, 2, 3, 'SHARED_HOSTING', 'emonisla', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 20.15, 20.15, 'emonislam.com', NULL, NULL, 1, '2025-04-14', '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 1, NULL, 1, '', '2025-04-14 10:24:19', 1, '2026-02-12 17:22:31', 1, NULL, NULL),
+(715, 726, 14, 2, 3, 'SHARED_HOSTING', 'emonisla', '0', 545.00, 2024.00, 160.95, 20000.00, 3, 0, 1, 0, 0, 5, 0, 0, '2026-02-16 09:36:27', 4, '', 20.15, 20.15, 'emonislam.com', NULL, NULL, 1, '2025-04-14', '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 1, NULL, 1, '', '2025-04-14 10:24:19', 1, '2026-02-16 15:36:27', 1, NULL, NULL),
 (716, 727, 1, 4, 7, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '5GB_SHARED', 32.95, 32.95, 'narikel.com', NULL, NULL, 1, '2026-02-13', '2027-02-13', '2026-02-20', '2027-02-13', NULL, NULL, NULL, 0, NULL, 0, '', '2026-02-13 15:55:37', 1, '2026-02-13 15:55:40', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
@@ -1677,9 +1687,9 @@ CREATE TABLE `pages` (
 --
 
 INSERT INTO `pages` (`id`, `page_title`, `page_slug`, `page_content`, `meta_title`, `meta_description`, `meta_keywords`, `is_published`, `is_system`, `sort_order`, `total_view`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`, `status`) VALUES
-(1, 'Terms and Conditions', 'terms-and-conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', '', 1, 1, 1, 3, '2026-02-12 21:24:40', NULL, '2026-02-13 03:35:49', 1, NULL, NULL, 1),
-(2, 'Privacy Policy', 'privacy-policy', '<h2>Privacy Policy</h2><p>Please add your privacy policy here.</p>', 'Privacy Policy', NULL, NULL, 1, 1, 2, 1, '2026-02-12 21:24:40', NULL, NULL, NULL, NULL, NULL, 1),
-(3, 'Refund Policy', 'refund-policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', '', 1, 0, 3, 0, '2026-02-12 21:24:40', NULL, '2026-02-13 03:38:09', 1, NULL, NULL, 1);
+(1, 'Terms and Conditions', 'terms-and-conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', '', 1, 1, 1, 4, '2026-02-12 21:24:40', NULL, '2026-02-13 03:35:49', 1, NULL, NULL, 1),
+(2, 'Privacy Policy', 'privacy-policy', '<h2>Privacy Policy</h2><p>Please add your privacy policy here.</p>', 'Privacy Policy', NULL, NULL, 1, 1, 2, 2, '2026-02-12 21:24:40', NULL, NULL, NULL, NULL, NULL, 1),
+(3, 'Refund Policy', 'refund-policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', '', 1, 0, 3, 1, '2026-02-12 21:24:40', NULL, '2026-02-13 03:38:09', 1, NULL, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1739,6 +1749,7 @@ CREATE TABLE `payment_gateway` (
   `is_test_mode` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=Sandbox/Test, 0=Live/Production',
   `test_public_key` varchar(500) DEFAULT NULL COMMENT 'Test/Sandbox public key',
   `test_secret_key` varchar(500) DEFAULT NULL COMMENT 'Test/Sandbox secret key',
+  `test_webhook_secret` varchar(255) DEFAULT NULL COMMENT 'Test/Sandbox webhook secret',
   `extra_config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Gateway-specific settings as JSON' CHECK (json_valid(`extra_config`)),
   `bank_name` varchar(200) DEFAULT NULL,
   `account_name` varchar(200) DEFAULT NULL,
@@ -1772,14 +1783,14 @@ CREATE TABLE `payment_gateway` (
 -- Dumping data for table `payment_gateway`
 --
 
-INSERT INTO `payment_gateway` (`id`, `name`, `gateway_code`, `gateway_type`, `icon_fa_unicode`, `pay_type`, `public_key`, `secret_key`, `webhook_secret`, `is_test_mode`, `test_public_key`, `test_secret_key`, `extra_config`, `bank_name`, `account_name`, `account_number`, `routing_number`, `swift_code`, `iban`, `supported_currencies`, `min_amount`, `max_amount`, `fee_type`, `fee_fixed`, `fee_percent`, `fee_bearer`, `logo`, `display_name`, `description`, `sort_order`, `webhook_url`, `merchant_id`, `merchant_pwd`, `instructions`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Offline Payment', 'manual', 'manual', 'f3d1', 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Manual Payment', 'Pay via bank transfer or other offline methods. Your order will be processed after payment confirmation.', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL),
-(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Credit/Debit Card', 'Pay securely with your credit or debit card via Stripe.', 1, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
-(3, 'PayPal', 'paypal', 'online_wallet', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,JPY,CHF,HKD,SGD,SEK,DKK,PLN,NOK,CZK,ILS,MXN,BRL,PHP,TWD,THB,MYR', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'PayPal', 'Pay securely using your PayPal account or card.', 2, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
-(4, 'Razorpay', 'razorpay', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'INR', 0.00, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'Razorpay', 'Pay with UPI, Cards, Netbanking, or Wallets via Razorpay.', 3, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
-(5, 'Paystack', 'paystack', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NGN,GHS,ZAR,KES', 0.00, 0.00, 'both', 100.00, 1.50, 'merchant', NULL, 'Paystack', 'Pay with card or bank transfer via Paystack.', 4, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
-(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', 'http://localhost/webhook/sslcommerz', 1, 'test@admin.com', '12345', '{\r\n    \"store_id\": \"titum5d71b6d6edd13@ssl\",\r\n    \"store_password\": \"titum5d71b6d6edd13\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, 'http://localhost/webhook/sslcommerz', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-02-13 23:25:55', 1),
-(7, 'Bank Transfer', 'bank_transfer', 'bank_transfer', NULL, 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,BDT,INR', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Bank Transfer', 'Transfer funds directly to our bank account. Order will be processed after payment confirmation.', 10, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL);
+INSERT INTO `payment_gateway` (`id`, `name`, `gateway_code`, `gateway_type`, `icon_fa_unicode`, `pay_type`, `public_key`, `secret_key`, `webhook_secret`, `is_test_mode`, `test_public_key`, `test_secret_key`, `test_webhook_secret`, `extra_config`, `bank_name`, `account_name`, `account_number`, `routing_number`, `swift_code`, `iban`, `supported_currencies`, `min_amount`, `max_amount`, `fee_type`, `fee_fixed`, `fee_percent`, `fee_bearer`, `logo`, `display_name`, `description`, `sort_order`, `webhook_url`, `merchant_id`, `merchant_pwd`, `instructions`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(1, 'Offline Payment', 'manual', 'manual', 'f3d1', 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Manual Payment', 'Pay via bank transfer or other offline methods. Your order will be processed after payment confirmation.', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL),
+(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', 1, 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Credit/Debit Card', 'Pay securely with your credit or debit card via Stripe.', 1, 'http://localhost/ci-crm/webhook/stripe', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-02-18 20:49:59', 1),
+(3, 'PayPal', 'paypal', 'online_wallet', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,JPY,CHF,HKD,SGD,SEK,DKK,PLN,NOK,CZK,ILS,MXN,BRL,PHP,TWD,THB,MYR', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'PayPal', 'Pay securely using your PayPal account or card.', 2, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
+(4, 'Razorpay', 'razorpay', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'INR', 0.00, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'Razorpay', 'Pay with UPI, Cards, Netbanking, or Wallets via Razorpay.', 3, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
+(5, 'Paystack', 'paystack', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NGN,GHS,ZAR,KES', 0.00, 0.00, 'both', 100.00, 1.50, 'merchant', NULL, 'Paystack', 'Pay with card or bank transfer via Paystack.', 4, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
+(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', 'http://localhost/webhook/sslcommerz', 1, 'titum5d71b6d6edd13', 'titum5d71b6d6edd13@ssl', NULL, '{\r\n    \"store_id\": \"titum5d71b6d6edd13\",\r\n    \"store_password\": \"titum5d71b6d6edd13@ssl\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD,BDT', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, 'http://localhost/webhook/sslcommerz', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-02-14 12:58:37', 1),
+(7, 'Bank Transfer', 'bank_transfer', 'bank_transfer', NULL, 'OFFLINE', '', '', '', 0, '', '', NULL, NULL, 'TEST Bank PLC', 'WHMAZ', '1234567890123', '1234567', '12345678', '1234567', 'USD,EUR,GBP,BDT,INR', 0.10, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Bank Transfer', 'Transfer funds directly to our bank account. Order will be processed after payment confirmation.', 10, 'http://localhost/webhook/bank_transfer', '', NULL, 'Please share the TXN number after payment', 1, '2026-02-13 10:28:21', NULL, '2026-02-14 08:56:29', 1);
 
 -- --------------------------------------------------------
 
@@ -1851,6 +1862,13 @@ CREATE TABLE `payment_transactions` (
   `updated_on` datetime DEFAULT NULL ON UPDATE current_timestamp(),
   `updated_by` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `payment_transactions`
+--
+
+INSERT INTO `payment_transactions` (`id`, `transaction_uuid`, `invoice_id`, `payment_gateway_id`, `gateway_code`, `gateway_transaction_id`, `gateway_payment_id`, `gateway_order_id`, `gateway_subscription_id`, `amount`, `fee_amount`, `net_amount`, `currency_code`, `exchange_rate`, `txn_type`, `status`, `failure_reason`, `payment_method`, `card_brand`, `card_last4`, `card_exp_month`, `card_exp_year`, `bank_name`, `wallet_name`, `payer_email`, `payer_name`, `payer_phone`, `gateway_response`, `webhook_payload`, `ip_address`, `user_agent`, `metadata`, `initiated_at`, `completed_at`, `refunded_at`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(6, '4b14991a-5c9b-4ba3-955c-d8b0ee011e6e', 553, 2, 'stripe', 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', NULL, 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', NULL, 32.95, 0.00, 32.95, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"id\":\"pi_3T1zb9Q1EoHKEhCU2kUfne5P\",\"object\":\"payment_intent\",\"amount\":3295,\"amount_capturable\":0,\"amount_details\":{\"tip\":[]},\"amount_received\":3295,\"application\":null,\"application_fee_amount\":null,\"automatic_payment_methods\":{\"allow_redirects\":\"always\",\"enabled\":true},\"canceled_at\":null,\"cancellation_reason\":null,\"capture_method\":\"automatic\",\"client_secret\":\"pi_3T1zb9Q1EoHKEhCU2kUfne5P_secret_DjxY2stXlz92Rn0XYXPdAXzEq\",\"confirmation_method\":\"automatic\",\"created\":1771378239,\"currency\":\"usd\",\"customer\":null,\"customer_account\":null,\"description\":null,\"excluded_payment_method_types\":null,\"invoice\":null,\"last_payment_error\":null,\"latest_charge\":\"ch_3T1zb9Q1EoHKEhCU2QWxuWfD\",\"livemode\":false,\"metadata\":{\"invoice_id\":\"553\",\"invoice_uuid\":\"ac8e5c4f-30ff-4690-ba7d-b77d045736bc\",\"transaction_id\":\"6\"},\"next_action\":null,\"on_behalf_of\":null,\"payment_method\":\"pm_1T1zbBQ1EoHKEhCUrVnQemKI\",\"payment_method_configuration_details\":{\"id\":\"pmc_1T0Z8RQ1EoHKEhCUitfkyb1e\",\"parent\":null},\"payment_method_options\":{\"card\":{\"installments\":null,\"mandate_options\":null,\"network\":null,\"request_three_d_secure\":\"automatic\"},\"link\":{\"persistent_token\":null}},\"payment_method_types\":[\"card\",\"link\"],\"processing\":null,\"receipt_email\":null,\"review\":null,\"setup_future_usage\":null,\"shipping\":null,\"source\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null}', NULL, '::1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '{\"invoice_no\":\"1535\",\"company_id\":\"1\"}', '2026-02-18 02:30:38', '2026-02-18 02:30:46', NULL, '2026-02-18 02:30:38', 1, '2026-02-18 02:30:46', NULL);
 
 -- --------------------------------------------------------
 
@@ -2419,7 +2437,16 @@ INSERT INTO `user_logins` (`id`, `user_id`, `login_time`, `session_val`, `termin
 (107, 1, '2026-02-12 06:59:30', '0', '127.0.0.1', NULL, 1),
 (108, 1, '2026-02-12 06:24:59', '0', '103.159.72.16', NULL, 1),
 (109, 1, '2026-02-13 15:54:15', '0', '127.0.0.1', NULL, 1),
-(110, 1, '2026-02-14 01:27:22', '0', '127.0.0.1', NULL, 1);
+(110, 1, '2026-02-14 01:27:22', '0', '127.0.0.1', NULL, 1),
+(111, 1, '2026-02-14 06:43:27', '0', '127.0.0.1', NULL, 1),
+(112, 1, '2026-02-14 07:20:39', '0', '127.0.0.1', NULL, 1),
+(113, 1, '2026-02-14 07:30:35', '0', '127.0.0.1', NULL, 1),
+(114, 1, '2026-02-14 07:40:50', '0', '127.0.0.1', NULL, 1),
+(115, 1, '2026-02-16 02:11:58', '0', '::1', NULL, 1),
+(116, 1, '2026-02-16 02:25:45', '0', '::1', NULL, 1),
+(117, 1, '2026-02-16 03:12:17', '0', '::1', NULL, 1),
+(118, 15, '2026-02-16 07:37:36', '0', '103.59.38.166', NULL, 1),
+(119, 1, '2026-02-18 02:04:07', '0', '::1', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -2844,7 +2871,7 @@ ALTER TABLE `add_to_carts`
 -- AUTO_INCREMENT for table `admin_logins`
 --
 ALTER TABLE `admin_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=87;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
 
 --
 -- AUTO_INCREMENT for table `admin_roles`
@@ -2988,7 +3015,7 @@ ALTER TABLE `invoice_items`
 -- AUTO_INCREMENT for table `invoice_txn`
 --
 ALTER TABLE `invoice_txn`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `kbs`
@@ -3012,7 +3039,7 @@ ALTER TABLE `kb_cat_mapping`
 -- AUTO_INCREMENT for table `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -3066,7 +3093,7 @@ ALTER TABLE `payment_refunds`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `pending_executions`
@@ -3144,7 +3171,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_logins`
 --
 ALTER TABLE `user_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
 
 --
 -- AUTO_INCREMENT for table `webhook_logs`

@@ -127,13 +127,28 @@
 										</div>
 									</div>
 
-									<div class="mb-3">
-										<label class="form-label">
-											<?php echo $gateway['gateway_code'] === 'paypal' ? 'Webhook ID' : 'Webhook Secret'; ?>
-										</label>
-										<input type="text" class="form-control" name="webhook_secret"
-											value="<?php echo htmlspecialchars($gateway['webhook_secret'] ?? ''); ?>">
-										<small class="text-muted">Required for receiving payment notifications</small>
+									<!-- Live Webhook Secret -->
+									<div class="live-credentials" style="<?php echo $gateway['is_test_mode'] ? 'display:none;' : ''; ?>">
+										<div class="mb-3">
+											<label class="form-label">
+												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Webhook ID' : 'Webhook Secret'; ?>
+											</label>
+											<input type="text" class="form-control" name="webhook_secret"
+												value="<?php echo htmlspecialchars($gateway['webhook_secret'] ?? ''); ?>">
+											<small class="text-muted">Required for receiving payment notifications</small>
+										</div>
+									</div>
+
+									<!-- Test Webhook Secret -->
+									<div class="test-credentials" style="<?php echo $gateway['is_test_mode'] ? '' : 'display:none;'; ?>">
+										<div class="mb-3">
+											<label class="form-label">
+												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Sandbox Webhook ID' : 'Test Webhook Secret'; ?>
+											</label>
+											<input type="text" class="form-control" name="test_webhook_secret"
+												value="<?php echo htmlspecialchars($gateway['test_webhook_secret'] ?? ''); ?>">
+											<small class="text-muted">Required for receiving test payment notifications</small>
+										</div>
 									</div>
 
 									<div class="alert alert-info">

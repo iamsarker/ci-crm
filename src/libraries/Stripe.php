@@ -80,10 +80,46 @@ class Stripe
 
     /**
      * Retrieve a PaymentIntent
+     * Expands latest_charge to get payment details
      */
     public function getPaymentIntent($paymentIntentId)
     {
-        return $this->apiRequest('GET', '/payment_intents/' . $paymentIntentId);
+        return $this->apiRequest('GET', '/payment_intents/' . $paymentIntentId . '?expand[]=latest_charge');
+    }
+
+    /**
+     * Extract card details from PaymentIntent or Charge object
+     * Handles both old (charges array) and new (latest_charge) Stripe API formats
+     *
+     * @param array $data PaymentIntent or webhook data
+     * @return array Card details (brand, last4, exp_month, exp_year) or empty array
+     */
+    public function extractCardDetails($data)
+    {
+        $card = array();
+
+        // Try latest_charge first (newer Stripe API)
+        if (isset($data['latest_charge']['payment_method_details']['card'])) {
+            $cardData = $data['latest_charge']['payment_method_details']['card'];
+            $card = array(
+                'brand' => $cardData['brand'] ?? null,
+                'last4' => $cardData['last4'] ?? null,
+                'exp_month' => $cardData['exp_month'] ?? null,
+                'exp_year' => $cardData['exp_year'] ?? null
+            );
+        }
+        // Fallback to charges array (older format / some webhook payloads)
+        elseif (isset($data['charges']['data'][0]['payment_method_details']['card'])) {
+            $cardData = $data['charges']['data'][0]['payment_method_details']['card'];
+            $card = array(
+                'brand' => $cardData['brand'] ?? null,
+                'last4' => $cardData['last4'] ?? null,
+                'exp_month' => $cardData['exp_month'] ?? null,
+                'exp_year' => $cardData['exp_year'] ?? null
+            );
+        }
+
+        return $card;
     }
 
     /**

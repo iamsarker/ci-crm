@@ -11,7 +11,8 @@
       "Bash(ls:*)",
       "Bash(dir:*)",
       "Bash(php -l:*)",
-      "Bash(del \"E:\\OwnLibs\\ci-crm\\src\\libraries\\SSLCommerzPayment.php\")"
+      "Bash(del \"E:\\OwnLibs\\ci-crm\\src\\libraries\\SSLCommerzPayment.php\")",
+      "Bash(mysql:*)"
     ]
   }
 }
