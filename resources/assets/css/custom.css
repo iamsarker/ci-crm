@@ -4503,7 +4503,7 @@ footer.footer {
 
 /* Stripe Form Specific Styles */
 #stripe-form {
-    width: 100% !important;
+    width: 600px !important;
     max-width: 100% !important;
     box-sizing: border-box;
 }
