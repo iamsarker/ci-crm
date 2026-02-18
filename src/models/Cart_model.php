@@ -126,7 +126,7 @@ class Cart_model extends CI_Model
 		// SQL Injection Fix: Cast to integer and use parameterized query
 		$id = (int)$id;
 
-		$sql = "SELECT dp.price as item_price, dp.currency_id, dp.reg_period  FROM dom_pricing dp WHERE dp.id=? and dp.status=1 ";
+		$sql = "SELECT dp.price as item_price, dp.transfer, dp.renewal, dp.currency_id, dp.reg_period FROM dom_pricing dp WHERE dp.id=? and dp.status=1 ";
 		$data = $this->db->query($sql, array($id))->result_array();
 		return !empty($data) ? $data[0] : array();
 	}
@@ -249,7 +249,7 @@ class Cart_model extends CI_Model
 	{
 		$pricingId = (int)$pricingId;
 		$sql = "SELECT psp.*, ps.product_name, ps.product_desc,
-				pst.servce_type_name, pst.service_type_key,
+				pst.servce_type_name, pst.key_name as service_type_key,
 				bc.cycle_name, bc.cycle_days
 				FROM product_service_pricing psp
 				JOIN product_services ps ON psp.product_service_id = ps.id

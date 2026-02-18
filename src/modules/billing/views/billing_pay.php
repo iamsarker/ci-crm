@@ -226,7 +226,7 @@
         </div>
 
         <div style="text-align: center; margin-top: 20px;">
-            <a href="<?php echo base_url(); ?>billing/viewinvoice/<?php echo $invoice['invoice_uuid']; ?>" class="btn btn-secondary">
+            <a href="<?php echo base_url(); ?>billing/view_invoice/<?php echo $invoice['invoice_uuid']; ?>" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Invoice
             </a>
         </div>
@@ -290,10 +290,16 @@ document.addEventListener('DOMContentLoaded', function() {
         var form = document.getElementById(formId);
         if (form) {
             form.style.display = 'block';
+            form.style.width = '100%';
         }
 
         // Initialize gateway-specific components when visible
         if (selectedGateway === 'stripe' && typeof initStripeCard === 'function') {
+            // Ensure stripe container has proper width before initializing
+            var stripeContainer = document.getElementById('stripe-card-element');
+            if (stripeContainer) {
+                stripeContainer.style.width = '100%';
+            }
             initStripeCard();
         }
         if (selectedGateway === 'paypal' && typeof initPayPalButtons === 'function') {
@@ -353,31 +359,35 @@ function initStripeCard() {
     }
     if (stripeMounted) return;
 
-    try {
-        cardElement = elements.create('card', {
-            style: {
-                base: {
-                    fontSize: '16px',
-                    color: '#333',
-                    '::placeholder': { color: '#aab7c4' }
+    // Small delay to ensure container has proper dimensions after display change
+    setTimeout(function() {
+        try {
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#333',
+                        lineHeight: '24px',
+                        '::placeholder': { color: '#aab7c4' }
+                    }
                 }
-            }
-        });
-        cardElement.mount('#stripe-card-element');
-        stripeMounted = true;
+            });
+            cardElement.mount('#stripe-card-element');
+            stripeMounted = true;
 
-        cardElement.on('change', function(event) {
-            var displayError = document.getElementById('stripe-card-errors');
-            if (event.error) {
-                displayError.textContent = event.error.message;
-            } else {
-                displayError.textContent = '';
-            }
-        });
-    } catch(e) {
-        console.error('Failed to create Stripe card element:', e);
-        showError('Failed to load card form: ' + e.message);
-    }
+            cardElement.on('change', function(event) {
+                var displayError = document.getElementById('stripe-card-errors');
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            });
+        } catch(e) {
+            console.error('Failed to create Stripe card element:', e);
+            showError('Failed to load card form: ' + e.message);
+        }
+    }, 100);
 }
 
 document.getElementById('stripe-pay-btn').addEventListener('click', function() {

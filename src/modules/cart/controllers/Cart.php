@@ -11,6 +11,7 @@ class Cart extends WHMAZ_Controller
 		$this->load->model('Cart_model');
 		$this->load->model('Order_model');
 		$this->load->model('Appsetting_model');
+		$this->load->model('PaymentGateway_model');
 	}
 
 	public function view()
@@ -21,7 +22,7 @@ class Cart extends WHMAZ_Controller
 		$data['services'] = $this->Cart_model->getServiceGroups();
 		$data['currency'] = $this->Cart_model->getCurrencies();
 		$data['cart_list'] = $this->Cart_model->getCartListWithChildren(); // Hierarchical cart data
-		$data['payment_gateway_list'] = $this->Common_model->get_data("payment_gateway");
+		$data['payment_gateway_list'] = $this->PaymentGateway_model->getActiveGateways(getCurrencyCode());
 		$data['type'] = $type;
 		$this->load->view('view_card', $data);
 
@@ -48,6 +49,36 @@ class Cart extends WHMAZ_Controller
 	{
 		$count = getCartCount();
 		echo json_encode(array('count' => $count));
+	}
+
+	/**
+	 * Get available hosting packages for Flow-2 (Domain → Hosting)
+	 * Returns list of hosting packages with billing options
+	 */
+	public function getHostingPackages()
+	{
+		$packages = array();
+
+		// Get all service groups that have hosting packages
+		$groups = $this->Cart_model->getServiceGroups();
+
+		foreach ($groups as $group) {
+			$items = $this->Cart_model->getProductServiceItems($group['id']);
+			foreach ($items as $item) {
+				$billing = is_array($item['billing']) ? $item['billing'] : json_decode($item['billing'], true);
+				if (!empty($billing)) {
+					$packages[] = array(
+						'id' => $item['id'],
+						'product_name' => $item['product_name'],
+						'product_desc' => strip_tags($item['product_desc']),
+						'group_name' => $group['group_name'],
+						'billing' => $billing
+					);
+				}
+			}
+		}
+
+		echo json_encode(buildSuccessResponse($packages, "Hosting packages loaded"));
 	}
 
 
@@ -169,14 +200,26 @@ class Cart extends WHMAZ_Controller
 
 				$this->Cart_model->deleteAllCarts($userId, $sessionId);
 
-				echo json_encode(buildSuccessResponse($invoice, "Order has been placed successfully"));
+				// Return invoice data with UUID for redirect to payment page
+				$responseData = array(
+					'invoice_id' => $invoiceId,
+					'invoice_uuid' => $invoice['invoice_uuid'],
+					'invoice_no' => $invoice['invoice_no'],
+					'total' => $grandTotal
+				);
+				echo json_encode(buildSuccessResponse($responseData, "Order has been placed successfully"));
 
 			} else {
 				echo json_encode(buildFailedResponse("Cart data is not available!"));
 			}
 
 		} else{
-			echo json_encode(buildFailedResponse("Please login first to proceed the checkout!"));
+			// User not logged in - return 401 code
+			echo json_encode(array(
+				'code' => 401,
+				'msg' => 'Please login first to proceed the checkout!',
+				'data' => null
+			));
 		}
 	}
 
@@ -551,31 +594,38 @@ class Cart extends WHMAZ_Controller
 		$cartArr['item_type'] = $type;
 
 		if ($type == 2) {
+			// Hosting/Service
 			$cartArr['product_service_pricing_id'] = $orderId;
 			$itemPrice = $this->Cart_model->getCartServicePrice($orderId);
 			$cartArr['product_service_id'] = !empty($itemPrice['product_service_id']) ? $itemPrice['product_service_id'] : 0;
+			$cartArr['billing_cycle_id'] = !empty($itemPrice['billing_cycle_id']) ? $itemPrice['billing_cycle_id'] : 0;
+			$cartArr['billing_cycle'] = !empty($itemPrice['cycle_name']) ? $itemPrice['cycle_name'] : '';
 		} else {
+			// Domain (type == 1)
 			$cartArr['dom_pricing_id'] = $orderId;
 			$itemPrice = $this->Cart_model->getCartDomainPrice($orderId);
 			$cartArr['product_service_id'] = 0;
+			// Domains use reg_period (years), not billing_cycle
+			// Use billing_cycle_id = 1 (yearly) for domains
+			$cartArr['billing_cycle_id'] = 1; // Yearly billing cycle
+			$regPeriod = !empty($itemPrice['reg_period']) ? $itemPrice['reg_period'] : 1;
+			$cartArr['billing_cycle'] = $regPeriod . ' Year' . ($regPeriod > 1 ? 's' : '');
 		}
 
 		$quantity = !empty($postData['quantity']) ? intval($postData['quantity']) : 1;
 
 		$cartArr['note'] = $postData['item'];
-		$cartArr['hosting_domain_type'] = $postData['hosting_domain_type'];
-		$cartArr['hosting_domain'] = $postData['hosting_domain'];
-		$cartArr['sub_total'] = $itemPrice['item_price'] * $quantity;
-		$cartArr['billing_cycle_id'] = $itemPrice['billing_cycle_id'];
-		$cartArr['billing_cycle'] = $itemPrice['cycle_name'];
-		$cartArr['currency_id'] = $itemPrice['currency_id'];
+		$cartArr['hosting_domain_type'] = !empty($postData['hosting_domain_type']) ? $postData['hosting_domain_type'] : 0;
+		$cartArr['hosting_domain'] = !empty($postData['hosting_domain']) ? $postData['hosting_domain'] : '';
+		$cartArr['sub_total'] = !empty($itemPrice['item_price']) ? $itemPrice['item_price'] * $quantity : 0;
+		$cartArr['currency_id'] = !empty($itemPrice['currency_id']) ? $itemPrice['currency_id'] : getCurrencyId();
 		$cartArr['currency_code'] = getCurrencyCode();
 		$cartArr['tax'] = 0;
 		$cartArr['vat'] = 0;
 		$cartArr['quantity'] = $quantity;
 		$cartArr['inserted_on'] = getDateTime();
 		$cartArr['inserted_by'] = getCustomerId();
-		$cartArr['total'] = $itemPrice['item_price'] * $quantity;
+		$cartArr['total'] = !empty($itemPrice['item_price']) ? $itemPrice['item_price'] * $quantity : 0;
 
 		if ($this->Cart_model->saveCart($cartArr)) {
 			echo $this->AppResponse(1, "Cart item has been added successfully");

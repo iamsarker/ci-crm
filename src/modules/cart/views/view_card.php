@@ -166,7 +166,7 @@
                                 <select class="form-select payment-select fontawesome" ng-model="payment_gateway">
                                     <option value="0">-- Select Payment Method --</option>
                                     <?php foreach ($payment_gateway_list as $item): ?>
-                                        <option value="<?= $item->id ?>">&#x<?= $item->icon_fa_unicode ?> <?= htmlspecialchars($item->name, ENT_QUOTES, 'UTF-8') ?></option>
+                                        <option value="<?= $item['id'] ?>">&#x<?= $item['icon_fa_unicode'] ?> <?= htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>

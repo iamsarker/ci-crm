@@ -205,8 +205,8 @@ app.controller('ServiceProductCtrl', function ($scope, $http, $timeout, $rootSco
 				$scope.sericeId = "";
 				$scope.sericeName = "";
 
-				// Update cart count
-				$scope.updateCartCount();
+				// Redirect to cart view
+				window.location.href = BASE_URL + 'cart/view';
 
 			} else {
 				toastError(resp.msg || "Failed to link domain to hosting");
@@ -267,6 +267,15 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 		info:{}
 	};
 	$scope.suggestionList = [];
+	$scope.showPricing = true;      // Show pricing table initially
+	$scope.showSuggestions = false; // Hide suggestions initially
+
+	// Flow-2: Hosting selection after domain
+	$scope.added_domain_name = "";
+	$scope.added_domain_cart_id = null;
+	$scope.hosting_packages = [];
+	$scope.selected_hosting = {};
+	$scope.loading_packages = false;
 
 	$scope.loadDomainToVar = function(){
 		$scope.search_domain_name = document.getElementById("search_domain_name").value;
@@ -336,8 +345,9 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 	$scope.getDomainSuggestion = function(){
 		$scope.suggestionList = [];
 
-		document.getElementById('avail-ext-price').style.display = 'none';
-		document.getElementById('domain-suggestions').style.display = 'block';
+		// Hide pricing, show suggestions area
+		$scope.showPricing = false;
+		$scope.showSuggestions = true;
 
 		let req = Communication.request("GET", BASE_URL + 'domain-suggestion?domkeyword='+$scope.search_domain_name, {});
 		req.then(function (resp) {
@@ -354,22 +364,28 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 		let item_type = 1; // Domain
 
 		DialogBox.showProgress();
-		let req = Communication.request("POST", BASE_URL + 'cart/addToCartAjax/'+item_type+'/'+domPriceId,
+		let req = Communication.request("POST", BASE_URL + 'cart/addDomainToCart',
 			{
-				"serviceId": domPriceId,
-				"item": fullDomain + " - Domain Registration",
-				"hosting_domain": fullDomain,
-				"hosting_domain_type": 1, // 0=DNS, 1=REGISTER, 2=TRANSFER
+				"dom_pricing_id": domPriceId,
+				"domain_name": fullDomain,
+				"domain_action": "register",
 				"quantity": 1,
 			}
 		);
 		req.then(function (resp) {
 			DialogBox.hideProgress();
-			if( resp.code == 1 ){
-				toastSuccess(resp.msg);
+			if( resp.code == 200 && resp.data && resp.data.cart_id ){
+				toastSuccess(resp.msg || "Domain added to cart!");
+
+				// Store domain info for hosting selection
+				$scope.added_domain_name = fullDomain;
+				$scope.added_domain_cart_id = resp.data.cart_id;
+
+				// Load hosting packages and show modal
+				$scope.loadHostingPackages();
 
 			} else{
-				toastError(resp.msg);
+				toastError(resp.msg || "Failed to add domain to cart");
 			}
 
 		}, function (err) {
@@ -377,8 +393,109 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 			log("addToService error", JSON.stringify(err));
 		});
 
-	}
-    
+	};
+
+	// Load available hosting packages
+	$scope.loadHostingPackages = function() {
+		$scope.hosting_packages = [];
+		$scope.selected_hosting = {};
+		$scope.loading_packages = true;
+
+		// Show modal first
+		var modalEl = document.getElementById('hostingSelectionModal');
+		var modal = bootstrap.Modal.getOrCreateInstance(modalEl, {backdrop: 'static', keyboard: false});
+		modal.show();
+
+		// Get hosting packages (group 0 = all, or specific group)
+		let req = Communication.request("GET", BASE_URL + 'cart/getHostingPackages', {});
+		req.then(function (resp) {
+			$scope.loading_packages = false;
+			if (resp.code == 200 && resp.data) {
+				$scope.hosting_packages = resp.data;
+				// Set default selected pricing for each package
+				angular.forEach($scope.hosting_packages, function(pkg) {
+					if (pkg.billing && pkg.billing.length > 0) {
+						pkg.selected_pricing = pkg.billing[0].service_pricing_id;
+					}
+				});
+			}
+		}, function (err) {
+			$scope.loading_packages = false;
+			log("loadHostingPackages error", JSON.stringify(err));
+		});
+	};
+
+	// Select a hosting package
+	$scope.selectHostingPackage = function(pkg) {
+		$scope.selected_hosting = pkg;
+	};
+
+	// Add hosting to the domain (Flow-2 completion)
+	$scope.addHostingToDomain = function() {
+		if (!$scope.selected_hosting.id || !$scope.added_domain_cart_id) {
+			toastWarning("Please select a hosting package");
+			return;
+		}
+
+		DialogBox.showProgress();
+
+		let pricingId = $scope.selected_hosting.selected_pricing;
+
+		let req = Communication.request("POST", BASE_URL + 'cart/linkHostingToDomain', {
+			"parent_cart_id": $scope.added_domain_cart_id,
+			"product_service_pricing_id": pricingId
+		});
+
+		req.then(function (resp) {
+			DialogBox.hideProgress();
+
+			if (resp.code == 200) {
+				toastSuccess("Hosting added to cart with domain!");
+
+				// Close modal
+				var modalEl = document.getElementById('hostingSelectionModal');
+				var modal = bootstrap.Modal.getInstance(modalEl);
+				if (modal) modal.hide();
+
+				// Reset state
+				$scope.resetHostingState();
+
+				// Redirect to cart view
+				window.location.href = BASE_URL + 'cart/view';
+
+			} else {
+				toastError(resp.msg || "Failed to add hosting");
+			}
+
+		}, function (err) {
+			DialogBox.hideProgress();
+			toastError("Failed to add hosting to cart");
+			log("addHostingToDomain error", JSON.stringify(err));
+		});
+	};
+
+	// Skip hosting, just continue with domain only
+	$scope.skipHosting = function() {
+		// Close modal
+		var modalEl = document.getElementById('hostingSelectionModal');
+		var modal = bootstrap.Modal.getInstance(modalEl);
+		if (modal) modal.hide();
+
+		// Reset state
+		$scope.resetHostingState();
+
+		// Redirect to cart view
+		window.location.href = BASE_URL + 'cart/view';
+	};
+
+	// Reset hosting selection state
+	$scope.resetHostingState = function() {
+		$scope.added_domain_name = "";
+		$scope.added_domain_cart_id = null;
+		$scope.hosting_packages = [];
+		$scope.selected_hosting = {};
+		$scope.loading_packages = false;
+	};
 
 });
 
@@ -394,8 +511,9 @@ app.controller('ServiceCheckoutCtrl', function ($scope, $http, $timeout, $rootSc
 			if( confirm ){
 
 				DialogBox.showProgress();
-				let req = Communication.request("GET", BASE_URL + path, {});
-				req.then(function (resp) {
+
+				// Use $http directly for simple GET request
+				$http.get(BASE_URL + path).then(function (resp) {
 					DialogBox.hideProgress();
 
 					setTimeout(function (){
@@ -428,13 +546,28 @@ app.controller('ServiceCheckoutCtrl', function ($scope, $http, $timeout, $rootSc
 
 			if( resp.code == 200 ){
 				toastSuccess(resp.msg);
+
+				// Redirect to invoice payment page
+				if( resp.data && resp.data.invoice_uuid ){
+					setTimeout(function(){
+						window.location.href = BASE_URL + 'billing/pay/invoice/' + resp.data.invoice_uuid;
+					}, 500);
+				}
+
+			} else if( resp.code == 401 ){
+				// User not logged in - redirect to login
+				toastWarning(resp.msg);
+				setTimeout(function(){
+					window.location.href = BASE_URL + 'auth/login?redirect-url=' + encodeURIComponent(BASE_URL + 'cart/view');
+				}, 500);
+
 			} else {
 				toastWarning(resp.msg);
 			}
 
 		}, function (err) {
 			DialogBox.hideProgress();
-			toastError(err.msg);
+			toastError(err.msg || "Checkout failed. Please try again.");
 		});
 	};
 

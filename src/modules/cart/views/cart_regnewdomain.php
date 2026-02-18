@@ -114,7 +114,7 @@
 				</div>
 
 				<!-- Domain Extensions & Prices -->
-				<div class="domain-pricing-card mg-b-25">
+				<div class="domain-pricing-card mg-b-25" ng-show="showPricing">
 					<div class="domain-pricing-header">
 						<i class="fa fa-tags"></i>
 						<h5>Available Extensions & Prices</h5>
@@ -146,7 +146,7 @@
 				</div>
 
 				<!-- Domain Suggestions -->
-				<div class="domain-suggestions-card" ng-if="suggestionList.length > 0">
+				<div class="domain-suggestions-card" ng-show="showSuggestions && suggestionList.length > 0">
 					<div class="domain-suggestions-header">
 						<i class="fa fa-lightbulb"></i>
 						<h5>Domain Suggestions</h5>
@@ -177,6 +177,66 @@
 					</div>
 				</div>
 
+			</div>
+		</div>
+
+		<!-- Hosting Selection Modal (Flow-2: Domain → Hosting) -->
+		<div class="modal fade" id="hostingSelectionModal" tabindex="-1" role="dialog" aria-labelledby="hostingModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered modal-lg">
+				<div class="modal-content domain-modal-content">
+					<div class="modal-header domain-modal-header">
+						<div class="modal-header-icon">
+							<i class="fa fa-server"></i>
+						</div>
+						<div class="modal-header-text">
+							<h5 class="modal-title" id="hostingModalLabel">Add Hosting Service</h5>
+							<p class="modal-subtitle">Would you like to add hosting for <strong>{{added_domain_name}}</strong>?</p>
+						</div>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body domain-modal-body">
+						<!-- Hosting Package Selection -->
+						<div class="hosting-selection-section">
+							<label class="domain-label mg-b-15">
+								<i class="fa fa-cubes mg-r-5"></i> Select Hosting Package (Optional)
+							</label>
+
+							<div class="row" ng-if="hosting_packages.length > 0">
+								<div class="col-md-6 mg-b-15" ng-repeat="pkg in hosting_packages">
+									<div class="hosting-option-card" ng-class="{'selected': selected_hosting.id == pkg.id}" ng-click="selectHostingPackage(pkg)">
+										<div class="hosting-option-header">
+											<i class="fa fa-check-circle selected-icon" ng-show="selected_hosting.id == pkg.id"></i>
+											<h6>{{pkg.product_name}}</h6>
+										</div>
+										<div class="hosting-option-body">
+											<div class="hosting-price">
+												<select class="form-select form-select-sm" ng-model="pkg.selected_pricing" ng-options="b.service_pricing_id as (b.price + ' ' + b.currency + ' / ' + b.cycle_name) for b in pkg.billing" ng-click="$event.stopPropagation()">
+												</select>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="alert alert-info" ng-if="hosting_packages.length == 0 && !loading_packages">
+								<i class="fa fa-info-circle mg-r-5"></i> No hosting packages available. You can continue with domain only.
+							</div>
+
+							<div class="text-center pd-20" ng-if="loading_packages">
+								<i class="fa fa-spinner fa-spin fa-2x"></i>
+								<p class="mg-t-10">Loading hosting packages...</p>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer domain-modal-footer">
+						<button type="button" class="btn btn-light" data-bs-dismiss="modal" ng-click="skipHosting()">
+							<i class="fa fa-arrow-right mg-r-5"></i> Skip, Domain Only
+						</button>
+						<button type="button" class="btn btn-primary" ng-click="addHostingToDomain()" ng-disabled="!selected_hosting.id">
+							<i class="fa fa-cart-plus mg-r-5"></i> Add Hosting to Cart
+						</button>
+					</div>
+				</div>
 			</div>
 		</div>
 

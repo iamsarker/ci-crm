@@ -493,6 +493,11 @@ $config['csrf_exclude_uris'] = array(
 	'billing/invoice_list_api',
 	// Cart Angular JSON API endpoints (require authentication)
 	'cart/addToCartAjax/.*',
+	'cart/addDomainToCart',
+	'cart/addHostingToCart',
+	'cart/linkDomainToHosting',
+	'cart/linkHostingToDomain',
+	'cart/getHostingPackages',
 	'cart/checkoutSubmit',
 	'cart/delete/.*',
 	'pages/.*',
