@@ -62,7 +62,7 @@ LEFT JOIN (
     FROM order_domains
     WHERE deleted_on IS NULL
     GROUP BY order_id
-) dm ON o.id = dm.order_id
+) dm ON o.id = dm.order_id;
 
 
 -- product_service_view or package_view
