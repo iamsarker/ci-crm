@@ -6,14 +6,14 @@ WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
 Last Updated: January 25, 2026
 Version: 1.0.0
 Product: WHMAZ - CI-CRM
-Vendor: [YOUR COMPANY NAME]
-Website: [YOUR WEBSITE URL]
+Vendor: TongBari
+Website: https://tongbari.com
 
 ================================================================================
 
 IMPORTANT - READ CAREFULLY
 
-This End User License Agreement ("EULA") is a legal agreement between you (either an individual or a single entity, referred to as "You" or "Licensee") and [YOUR COMPANY NAME] ("Licensor", "We", "Us", or "Our") for the software product identified above, which includes computer software and may include associated media, printed materials, and "online" or electronic documentation ("Software").
+This End User License Agreement ("EULA") is a legal agreement between you (either an individual or a single entity, referred to as "You" or "Licensee") and TongBari ("Licensor", "We", "Us", or "Our") for the software product identified above, which includes computer software and may include associated media, printed materials, and "online" or electronic documentation ("Software").
 
 By purchasing, downloading, installing, or using the Software, you agree to be bound by the terms of this EULA. If you do not agree to the terms of this EULA, do not install or use the Software.
 
@@ -81,7 +81,7 @@ Examples of prohibited use under Extended License:
 
 2.1 Copyright Notice
 
-Copyright © 2026 [YOUR COMPANY NAME]. All rights reserved.
+Copyright © 2026 TongBari. All rights reserved.
 
 The Software is protected by copyright laws and international copyright treaties, as well as other intellectual property laws and treaties. The Software is licensed, not sold.
 
@@ -165,7 +165,7 @@ Major version updates (e.g., 1.x to 2.x) may require a separate purchase or upgr
 5.3 Support Channels
 
 Support is provided via:
-- Email: support@yourcompany.com
+- Email: support@tongbari.com
 - Support ticket system (if available)
 - Documentation: README.md, INSTALLATION.md, USER_GUIDE.md
 
@@ -259,7 +259,7 @@ You are responsible for:
 9.2 Security Vulnerabilities
 
 If you discover a security vulnerability in the Software:
-- Report it immediately to: security@yourcompany.com
+- Report it immediately to: security@tongbari.com
 - Do NOT publicly disclose the vulnerability before it is patched
 - Allow reasonable time for the Licensor to address the issue
 
@@ -300,7 +300,7 @@ This EULA constitutes the entire agreement between you and the Licensor concerni
 
 11.2 Amendments
 
-The Licensor reserves the right to modify this EULA at any time. Updated versions will be posted at [YOUR WEBSITE URL]. Continued use of the Software after changes constitutes acceptance of the modified EULA.
+The Licensor reserves the right to modify this EULA at any time. Updated versions will be posted at https://tongbari.com. Continued use of the Software after changes constitutes acceptance of the modified EULA.
 
 11.3 Severability
 
@@ -312,7 +312,7 @@ Failure to enforce any provision of this EULA shall not constitute a waiver of s
 
 11.5 Governing Law
 
-This EULA shall be governed by and construed in accordance with the laws of [YOUR JURISDICTION], without regard to its conflict of law provisions.
+This EULA shall be governed by and construed in accordance with the laws of Bangladesh, without regard to its conflict of law provisions.
 
 11.6 Dispute Resolution
 
@@ -409,10 +409,10 @@ You agree to comply with all applicable export and import laws and regulations. 
 
 For questions about this EULA, please contact:
 
-[YOUR COMPANY NAME]
-Email: legal@yourcompany.com
-Support: support@yourcompany.com
-Website: [YOUR WEBSITE URL]
+TongBari
+Email: legal@tongbari.com
+Support: support@tongbari.com
+Website: https://tongbari.com
 
 For CodeCanyon/Envato related issues:
 Envato Market Support: https://help.market.envato.com/
@@ -432,4 +432,4 @@ END OF LICENSE AGREEMENT
 Product: WHMAZ - CI-CRM v1.0.0
 License Version: 1.0
 Effective Date: January 25, 2026
-Copyright © 2026 [YOUR COMPANY NAME]. All Rights Reserved.
+Copyright © 2026 TongBari. All Rights Reserved.

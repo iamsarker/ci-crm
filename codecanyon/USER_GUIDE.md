@@ -2202,11 +2202,31 @@ The Dunning tab includes a visual workflow preview card that shows all active ru
 - Enable/disable payment methods
 - Configure API credentials
 
+**Gateway List Page Features:**
+- **Toggle Status:** Enable/disable gateways with confirmation dialog
+- **Test Connection:** Test API connectivity for Stripe and PayPal
+- **Configure:** Set up API keys, webhook secrets, and gateway settings
+- **Mode Indicator:** Shows Test/Live mode status
+- **Supported Currencies:** View configured currencies per gateway
+
+**Gateway Actions:**
+| Action | Description |
+|--------|-------------|
+| Toggle Switch | Enable/disable gateway (with confirmation) |
+| Configure Button | Open gateway settings page |
+| Test Button | Verify API credentials work correctly |
+
 **Supported Gateways:**
-- Credit/Debit Cards (Stripe, etc.)
-- PayPal
-- Bank Transfer (manual processing)
-- More via plugins
+| Gateway | Status | Features |
+|---------|--------|----------|
+| Stripe | ✅ Fully Working | Cards, webhooks, refunds |
+| SSLCommerz | ✅ Fully Working | Bangladesh payments, IPN |
+| PayPal | ⚠️ Ready | Orders, capture, webhooks |
+| Bank Transfer | ✅ Working | Manual payment recording |
+
+**Additional Admin Pages:**
+- **Transactions:** View all payment transactions with filtering
+- **Webhook Logs:** Monitor incoming webhook events and processing status
 
 ### Refunding Payments
 
@@ -2788,6 +2808,15 @@ Password: Your SendGrid API Key
 ---
 
 ## Payment Gateway Setup
+
+### Gateway Status Overview
+
+| Gateway | Status | Description |
+|---------|--------|-------------|
+| **Stripe** | ✅ Fully Working | Complete integration with PaymentIntent API and webhook support |
+| **SSLCommerz** | ✅ Fully Working | Full integration with automatic session restoration for external redirects |
+| **PayPal** | ⚠️ Ready | Webhook implemented, requires configuration and testing |
+| **Bank Transfer** | ✅ Working | Manual payment recording |
 
 ### Stripe Configuration
 

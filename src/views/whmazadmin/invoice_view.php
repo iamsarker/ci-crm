@@ -49,7 +49,6 @@
 
 <script>
 	function downloadInvoiceDetail() {
-		console.log("downloading...")
 		window.location = "<?=base_url()?>whmazadmin/invoice/download_invoice/<?=$company_id?>/<?=$invoice_uuid?>";
 	}
 

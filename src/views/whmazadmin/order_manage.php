@@ -343,7 +343,6 @@ function loadHostingPackage(){
 			},
 			error: function(err){
 				$("select#product_service_id").html("<option value=''>-- Error loading --</option>");
-				console.log(err);
 			}
 		});
 	}
@@ -381,7 +380,6 @@ function loadHostingPrice(){
 				$("input#package_amount").val("0.00");
 				$("input#display_package_amount").val("0.00");
 				calculateTotalAmount();
-				console.log(err);
 			}
 		});
 	}
@@ -419,7 +417,6 @@ function loadDomainPrice(){
 				$("input#domain_amount").val("0.00");
 				$("input#display_domain_amount").val("0.00");
 				calculateTotalAmount();
-				console.log(err);
 			}
 		});
 	}

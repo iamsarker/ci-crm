@@ -136,31 +136,75 @@
 <script>
 $(document).ready(function() {
     // Toggle gateway status
-    $('.gateway-status-toggle').on('change', function() {
+    $('.gateway-status-toggle').on('change', function(e) {
+        e.preventDefault();
         var checkbox = $(this);
         var id = checkbox.data('id');
         var status = checkbox.is(':checked') ? 1 : 0;
+        var actionText = status ? 'enable' : 'disable';
+        var gatewayName = checkbox.closest('tr').find('strong').text();
 
-        $.ajax({
-            url: '<?php echo base_url(); ?>whmazadmin/paymentgateway/toggle_status',
-            type: 'POST',
-            data: {
-                id: id,
-                status: status,
-                '<?php echo $this->security->get_csrf_token_name(); ?>': '<?php echo $this->security->get_csrf_hash(); ?>'
-            },
-            dataType: 'json',
-            success: function(response) {
-                if (response.success) {
-                    toastr.success(response.message);
-                } else {
-                    toastr.error(response.message);
-                    checkbox.prop('checked', !status);
-                }
-            },
-            error: function() {
-                toastr.error('Failed to update status');
-                checkbox.prop('checked', !status);
+        // Revert checkbox state until confirmed
+        checkbox.prop('checked', !status);
+
+        Swal.fire({
+            title: 'Confirm Action',
+            text: 'Are you sure you want to ' + actionText + ' "' + gatewayName + '" payment gateway?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: status ? '#28a745' : '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: status ? '<i class="fas fa-check"></i> Yes, Enable' : '<i class="fas fa-ban"></i> Yes, Disable',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading state
+                Swal.fire({
+                    title: 'Processing...',
+                    text: 'Updating gateway status',
+                    allowOutsideClick: false,
+                    allowEscapeKey: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                $.ajax({
+                    url: '<?php echo base_url(); ?>whmazadmin/paymentgateway/toggle_status',
+                    type: 'POST',
+                    data: {
+                        id: id,
+                        status: status,
+                        '<?php echo $this->security->get_csrf_token_name(); ?>': '<?php echo $this->security->get_csrf_hash(); ?>'
+                    },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            checkbox.prop('checked', status);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: response.message,
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to update gateway status. Please try again.'
+                        });
+                    }
+                });
             }
         });
     });

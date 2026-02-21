@@ -147,7 +147,8 @@ class Paymentgateway extends WHMAZADMIN_Controller
      */
     public function toggle_status()
     {
-        $this->processRestCall();
+        // Note: Do NOT use processRestCall() here - it overwrites $_POST with JSON data
+        // but AJAX sends form-urlencoded data
         header('Content-Type: application/json');
 
         $id = $this->input->post('id');

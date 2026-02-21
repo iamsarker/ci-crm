@@ -90,7 +90,6 @@
 
 		$(document).on("change", "select.currency", function(e){
 			var vals = $(this).val();
-			console.log(vals);
 			var arr = vals.split("-");
 
 			$.ajax({

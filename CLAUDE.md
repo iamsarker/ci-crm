@@ -82,11 +82,50 @@ resources/assets/css/
 
 ## Important Configuration Locations
 
+### Configuration Storage (Database vs .env)
+
+**Stored in Database (Admin Portal managed):**
+| Setting | Table | Admin Location |
+|---------|-------|----------------|
+| Company Info | `app_settings` | Settings → General |
+| Google reCAPTCHA | `app_settings` | Settings → General |
+| Payment Gateways | `payment_gateway` | Settings → Payment Gateways |
+| Email Templates | `email_templates` | Settings → Email Templates |
+| Domain Registrar | `dom_registers` | Settings → Domain Registrar |
+| Billing Configuration | `sys_cnf` | Settings → Billing |
+| Automation / Cron Jobs | `sys_cnf` | Settings → Automation |
+| Feature Flags | `sys_cnf` | Settings → Features |
+| Notifications | `sys_cnf` | Settings → Notifications |
+| Customer Portal | `sys_cnf` | Settings → Customer Portal |
+| Support System | `sys_cnf` | Settings → Support |
+
+**Stored in .env file (environment-specific):**
+- Database credentials (DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD)
+- Encryption key
+- Session configuration
+- CSRF settings
+- Environment mode (development/production)
+
+**DO NOT put in .env:**
+- Payment gateway API keys (use Admin Portal)
+- Company information (use Admin Portal)
+- Google reCAPTCHA keys (use Admin Portal)
+- Domain registrar credentials (use Admin Portal)
+- Any setting that has an Admin Portal interface
+
 ### Security
 - **Content Security Policy (CSP)**: `src/config/config.php` (line ~599)
   - Add external script domains here for payment gateways, analytics, etc.
 
 ### Payment Gateways
+
+**Implementation Status:**
+| Gateway | Status | Webhook | Notes |
+|---------|--------|---------|-------|
+| Stripe | ✅ Working | ✅ Implemented | Full integration with PaymentIntent API |
+| SSLCommerz | ✅ Working | ✅ Implemented | Session restoration for external redirects |
+| PayPal | ⚠️ Partial | ✅ Implemented | Webhook ready, needs testing |
+
 - **Payment Libraries**: `src/libraries/`
   - `Stripe.php` - Stripe payment integration
   - `Paypal.php` - PayPal payment integration
@@ -100,6 +139,18 @@ resources/assets/css/
 - **Payment Models**:
   - `src/models/Payment_model.php` - Transaction handling
   - `src/models/PaymentGateway_model.php` - Gateway configuration
+
+- **Admin Payment Gateway Pages**:
+  - List page: `src/views/whmazadmin/paymentgateway_list.php`
+  - Configure page: `src/views/whmazadmin/paymentgateway_manage.php`
+  - Transactions: `src/views/whmazadmin/paymentgateway_transactions.php`
+  - Webhook logs: `src/views/whmazadmin/paymentgateway_webhooks.php`
+
+- **Admin Gateway Features**:
+  - Toggle gateway status (enable/disable) with SweetAlert2 confirmation
+  - Test connection button for Stripe/PayPal
+  - View transaction history with DataTables
+  - View webhook logs with filtering
 
 ### Webhook Configuration
 Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
@@ -150,6 +201,7 @@ When adding new features that require schema changes:
 | Migration | Description |
 |-----------|-------------|
 | `cart_enhancements.sql` | Cart linking (parent_cart_id, domain_action, epp_code) + Order linking (linked_domain_id, linked_service_id) |
+| `sys_cnf_billing_automation.sql` | System config: Billing, Automation, Features, Notifications, Portal, Support |
 
 ### Views
 - **Customer Payment Page**: `src/modules/billing/views/billing_pay.php`
