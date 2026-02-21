@@ -636,7 +636,7 @@ class Provisioning_model extends CI_Model
             'success' => $result['success'] ? 1 : 0,
             'error_message' => $result['error'] ?? null,
             'response_data' => json_encode($result),
-            'created_on' => date('Y-m-d H:i:s')
+            'inserted_on' => date('Y-m-d H:i:s')
         );
 
         $this->db->insert($this->logTable, $logData);
@@ -652,7 +652,7 @@ class Provisioning_model extends CI_Model
         }
 
         return $this->db->where('invoice_id', $invoiceId)
-            ->order_by('created_on', 'DESC')
+            ->order_by('inserted_on', 'DESC')
             ->get($this->logTable)
             ->result_array();
     }

@@ -29,9 +29,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Logs all provisioning attempts to `provisioning_logs` table
 - Supports retry for failed provisioning
 
+#### Admin Provisioning Logs UI
+- **Dashboard Stats**: Total logs, successful, failed, and today's count
+- **Filters**: Filter by status (success/failed), item type (domain/service), action
+- **Server-side DataTable**: Paginated log list with sorting and search
+- **Log Details Modal**: View full error messages and API response data
+- **Retry Functionality**: Retry failed provisioning items individually
+- **Menu Access**: Orders → Provisioning Logs
+
 #### New Files
 - `src/models/Provisioning_model.php` - Main provisioning logic
 - `src/helpers/domain_helper.php` - Domain registrar API functions
+- `src/controllers/whmazadmin/Provisioning.php` - Admin provisioning controller
+- `src/views/whmazadmin/provisioning_logs.php` - Provisioning logs list view
 - `migrations/provisioning_system.sql` - Provisioning logs table
 
 #### Domain Helper Functions
@@ -45,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Modified Files
 - `src/models/Invoice_model.php` - Now uses Provisioning_model
 - `src/config/autoload.php` - Added domain_helper to autoload
+- `src/views/whmazadmin/include/header_menus.php` - Added Provisioning Logs menu
 - `CLAUDE.md` - Added provisioning documentation
 
 ---
@@ -1317,7 +1328,8 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 - Affiliate/referral system
 - Client credit system
 - Product bundles
-- Automated service provisioning (cPanel account creation/suspension, Plesk integration)
+- ~~Automated service provisioning (cPanel account creation/suspension)~~ ✅ Implemented in v1.9.0
+- Plesk integration
 - Domain reseller management
 - Email marketing integration
 - Social media login (OAuth)
@@ -1326,6 +1338,27 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 ---
 
 ## Version History
+
+### [1.9.0] - 2026-02-22 - New Feature
+- Auto-provisioning system for domains and hosting after payment
+- Domain registration, transfer, and renewal via registrar API
+- Hosting provisioning via cPanel/WHM API
+- Hosting renewal with auto-unsuspend if suspended
+- Admin Provisioning Logs UI with stats dashboard
+- Filter, search, and retry failed provisioning items
+- Provisioning logs table with full API response tracking
+
+### [1.8.0] - 2026-02-22 - New Feature
+- Order confirmation emails to customer and admin
+- Ticket notification emails (new ticket, replies)
+- Department email notifications for client tickets
+- Customer email notifications for admin tickets
+
+### [1.7.0] - 2026-02-13 - New Feature
+- Contact Us page in client portal
+- Client portal auth pages beautification (login, register, forgot/reset password)
+- reCAPTCHA integration for contact form
+- Mobile-responsive design with teal color scheme
 
 ### [1.6.0] - 2026-02-13 - New Feature
 - Dynamic Pages Management with version history

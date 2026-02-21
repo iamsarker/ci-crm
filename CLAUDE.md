@@ -248,6 +248,28 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 - `src/helpers/domain_helper.php` - Domain registrar API functions
 - `src/helpers/cpanel_helper.php` - cPanel/WHM API functions
 
+**Admin Provisioning Logs:**
+- **URL**: `whmazadmin/provisioning/index`
+- **Menu**: Orders → Provisioning Logs
+- **Controller**: `src/controllers/whmazadmin/Provisioning.php`
+- **View**: `src/views/whmazadmin/provisioning_logs.php`
+
+| Feature | Description |
+|---------|-------------|
+| Stats Dashboard | Total, success, failed, and today's counts |
+| Filters | Status (success/failed), item type (domain/service), action |
+| DataTable | Server-side pagination with sorting and search |
+| Log Details | Modal with error messages and API response data |
+| Retry | Retry failed provisioning items individually |
+
+**Admin Controller Methods:**
+- `index()` - Main page with stats cards
+- `logs_list_api()` - Server-side DataTable endpoint
+- `log_detail($id)` - AJAX endpoint for log details
+- `retry_item($logId)` - Retry single failed item
+- `retry($invoiceId)` - Retry all failed items for invoice
+- `failed_count_api()` - Get failed count (for dashboard widget)
+
 **Provisioning Entry Points:**
 - `Payment_model::processSuccessfulPayment()` → `Invoice_model::provisionPaidServices()`
 - `Invoice_model::updateInvoiceStatus()` (admin mark as paid) → `provisionPaidServices()`

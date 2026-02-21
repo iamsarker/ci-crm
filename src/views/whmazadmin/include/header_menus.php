@@ -28,6 +28,7 @@
 					<ul class="navbar-menu-sub">
 						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/order/index" class="nav-sub-link"><i data-feather="shopping-cart"></i>Orders</a></li>
 						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/order/manage" class="nav-sub-link"><i data-feather="plus-square"></i>New order</a></li>
+						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/provisioning/index" class="nav-sub-link"><i data-feather="settings"></i>Provisioning Logs</a></li>
 					</ul>
 				</li>
 
