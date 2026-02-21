@@ -57,8 +57,14 @@ class Ticket extends WHMAZADMIN_Controller {
                     );
 
                     if($this->Common_model->save('tickets', $form_data)){
+                            // Get the inserted ticket ID and send notification email to customer
+                            $ticketId = $this->db->insert_id();
+                            if ($ticketId > 0) {
+                                $this->Support_model->sendNewTicketToCustomer($ticketId);
+                            }
+
                             $this->session->set_flashdata('admin_success', 'Support ticket has been placed successfully.');
-                            redirect("tickets/index");
+                            redirect("whmazadmin/ticket/index");
                     }else {
                             $this->session->set_flashdata('admin_error', 'Something went wrong. Try again');
                     }
@@ -139,7 +145,10 @@ class Ticket extends WHMAZADMIN_Controller {
                         $tdata['updated_by'] = getAdminId();
                         $tdata['flag'] = 2;
                         $this->Common_model->update('tickets', $tdata, $ticket_id);
-                                
+
+                        // Send reply notification email to customer
+                        $this->Support_model->sendTicketReplyToCustomer($ticket_id, $this->input->post('message'));
+
                         $this->session->set_flashdata('admin_success', 'Ticket reply has been placed successfully.');
                         redirect("whmazadmin/ticket/viewticket/".$ticket_id);
                     } else {

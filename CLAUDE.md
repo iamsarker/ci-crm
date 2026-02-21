@@ -209,6 +209,64 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
 - Method: `Payment_model::sendPaymentConfirmationEmails($transactionId)`
 - Called from: `Payment_model::processSuccessfulPayment()`
 
+**Order Confirmation Emails:**
+- Sent automatically after successful order placement and invoice generation
+- Customer receives: `order_confirmation` template
+- Admin receives: `admin_order_notification` template (if `notify_admin_new_order` is enabled in sys_cnf)
+- Method: `Order_model::sendOrderConfirmationEmails($orderId, $invoiceId)`
+- Called from: `Cart::checkoutSubmit()`
+
+**Ticket Notification Emails:**
+- New ticket by client → Department receives: `ticket_new_to_department` template
+  - Method: `Support_model::sendNewTicketToDepartment($ticketId)`
+  - Called from: `Tickets::newticket()` (client module)
+- New ticket by admin → Customer receives: `ticket_new_to_customer` template
+  - Method: `Support_model::sendNewTicketToCustomer($ticketId)`
+  - Called from: `Ticket::add()` (admin controller)
+- Reply by admin → Customer receives: `ticket_reply_to_customer` template
+  - Method: `Support_model::sendTicketReplyToCustomer($ticketId, $message)`
+  - Called from: `Ticket::replyticket()` (admin controller)
+- Reply by client → Department receives: `ticket_reply_to_department` template
+  - Method: `Support_model::sendTicketReplyToDepartment($ticketId, $message)`
+  - Called from: `Tickets::replyticket()` (client module)
+
+### Provisioning System
+
+**Auto-Provisioning Flow:**
+After successful payment (webhook or admin "Mark as Paid"), the system automatically provisions:
+
+| Order Type | Action | API Called |
+|------------|--------|------------|
+| Domain Registration | Register domain at registrar | ResellerClub/Resell.biz API |
+| Domain Transfer | Initiate transfer with EPP code | ResellerClub/Resell.biz API |
+| Domain Renewal | Renew domain, update expiry | ResellerClub/Resell.biz API |
+| New Hosting | Create cPanel account | WHM API |
+| Hosting Renewal | Unsuspend if suspended, update dates | WHM API (if suspended) |
+
+**Key Files:**
+- `src/models/Provisioning_model.php` - Main provisioning logic
+- `src/helpers/domain_helper.php` - Domain registrar API functions
+- `src/helpers/cpanel_helper.php` - cPanel/WHM API functions
+
+**Provisioning Entry Points:**
+- `Payment_model::processSuccessfulPayment()` → `Invoice_model::provisionPaidServices()`
+- `Invoice_model::updateInvoiceStatus()` (admin mark as paid) → `provisionPaidServices()`
+
+**How It Works:**
+1. Payment confirmed (webhook or admin action)
+2. `provisionPaidServices($invoiceId)` called
+3. Loops through `invoice_items` with `ref_id`
+4. Determines type: domain (`item_type=1`) or service (`item_type=2`)
+5. For domains: checks `order_type` (1=register, 2=transfer, 3=dns_only) and if renewal
+6. For services: checks if new (create account) or renewal (unsuspend if suspended)
+7. Calls appropriate API (registrar or WHM)
+8. Updates order status, logs result to `provisioning_logs`
+
+**Adding New Registrar Support:**
+1. Add functions to `domain_helper.php` (e.g., `enom_register_domain()`)
+2. Update switch statements in `registrar_*` dispatcher functions
+3. Match on `dom_registers.platform` field
+
 ### Database
 - **Database Config**: `src/config/database.php`
 - **SQL Schema**: `crm_db.sql`
@@ -226,6 +284,9 @@ When adding new features that require schema changes:
 |-----------|-------------|
 | `cart_enhancements.sql` | Cart linking (parent_cart_id, domain_action, epp_code) + Order linking (linked_domain_id, linked_service_id) |
 | `sys_cnf_billing_automation.sql` | System config + Payment email templates (Billing, Automation, Features, Notifications, Portal, Support) |
+| `order_confirmation_emails.sql` | Order confirmation email templates (order_confirmation, admin_order_notification) |
+| `ticket_notification_emails.sql` | Ticket notification email templates (ticket_new_to_department, ticket_new_to_customer, ticket_reply_to_customer, ticket_reply_to_department) |
+| `provisioning_system.sql` | Provisioning logs table and status columns for order_services/order_domains |
 
 ### Views
 - **Customer Payment Page**: `src/modules/billing/views/billing_pay.php`

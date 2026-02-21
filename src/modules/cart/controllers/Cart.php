@@ -200,6 +200,9 @@ class Cart extends WHMAZ_Controller
 
 				$this->Cart_model->deleteAllCarts($userId, $sessionId);
 
+				// Send order confirmation emails to customer and admin
+				$this->Order_model->sendOrderConfirmationEmails($orderId, $invoiceId);
+
 				// Return invoice data with UUID for redirect to payment page
 				$responseData = array(
 					'invoice_id' => $invoiceId,

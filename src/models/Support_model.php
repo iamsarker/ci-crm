@@ -423,5 +423,238 @@ class Support_model extends CI_Model{
 		return null;
 	}
 
+	// =========================================
+	// Ticket Notification Emails
+	// =========================================
+
+	/**
+	 * Send new ticket notification to department (when client creates ticket)
+	 *
+	 * @param int $ticketId Ticket ID
+	 * @return bool Success status
+	 */
+	function sendNewTicketToDepartment($ticketId)
+	{
+		// Get ticket details
+		$ticket = $this->db->where('id', $ticketId)->get('tickets')->row_array();
+		if (empty($ticket)) {
+			log_message('error', 'sendNewTicketToDepartment: Ticket not found - ID: ' . $ticketId);
+			return false;
+		}
+
+		// Get department details
+		$department = $this->getTicketDepartmentById($ticket['ticket_dept_id']);
+		if (empty($department) || empty($department['email'])) {
+			log_message('error', 'sendNewTicketToDepartment: Department or email not found - Dept ID: ' . $ticket['ticket_dept_id']);
+			return false;
+		}
+
+		// Get customer/company details
+		$company = $this->db->where('id', $ticket['company_id'])->get('companies')->row_array();
+		if (empty($company)) {
+			log_message('error', 'sendNewTicketToDepartment: Company not found - ID: ' . $ticket['company_id']);
+			return false;
+		}
+
+		// Get app settings
+		$appSettings = getAppSettings();
+
+		// Build placeholders
+		$placeholders = array(
+			'{ticket_id}' => $ticketId,
+			'{ticket_subject}' => $ticket['title'],
+			'{ticket_priority}' => ucfirst($ticket['priority']),
+			'{department_name}' => $department['name'],
+			'{ticket_date}' => date('F j, Y g:i A', strtotime($ticket['inserted_on'])),
+			'{client_name}' => $company['first_name'] . ' ' . $company['last_name'],
+			'{company_name_customer}' => !empty($company['company_name']) ? $company['company_name'] : '-',
+			'{client_email}' => $company['email'],
+			'{ticket_message}' => nl2br(htmlspecialchars($ticket['message'])),
+			'{admin_ticket_url}' => base_url() . 'whmazadmin/ticket/viewticket/' . $ticketId,
+			'{company_name}' => $appSettings->company_name
+		);
+
+		$result = $this->_sendTicketEmail('ticket_new_to_department', $department['email'], $placeholders);
+
+		log_message('info', 'New ticket notification sent to department - Ticket #' . $ticketId .
+			', Department: ' . $department['name'] . ', Email: ' . $department['email'] .
+			', Result: ' . ($result ? 'Success' : 'Failed'));
+
+		return $result;
+	}
+
+	/**
+	 * Send new ticket notification to customer (when admin creates ticket)
+	 *
+	 * @param int $ticketId Ticket ID
+	 * @return bool Success status
+	 */
+	function sendNewTicketToCustomer($ticketId)
+	{
+		// Get ticket details
+		$ticket = $this->db->where('id', $ticketId)->get('tickets')->row_array();
+		if (empty($ticket)) {
+			log_message('error', 'sendNewTicketToCustomer: Ticket not found - ID: ' . $ticketId);
+			return false;
+		}
+
+		// Get department details
+		$department = $this->getTicketDepartmentById($ticket['ticket_dept_id']);
+
+		// Get customer/company details
+		$company = $this->db->where('id', $ticket['company_id'])->get('companies')->row_array();
+		if (empty($company) || empty($company['email'])) {
+			log_message('error', 'sendNewTicketToCustomer: Company or email not found - ID: ' . $ticket['company_id']);
+			return false;
+		}
+
+		// Get app settings
+		$appSettings = getAppSettings();
+
+		// Build placeholders
+		$placeholders = array(
+			'{ticket_id}' => $ticketId,
+			'{ticket_subject}' => $ticket['title'],
+			'{ticket_priority}' => ucfirst($ticket['priority']),
+			'{department_name}' => !empty($department) ? $department['name'] : 'Support',
+			'{ticket_date}' => date('F j, Y g:i A', strtotime($ticket['inserted_on'])),
+			'{client_name}' => $company['first_name'] . ' ' . $company['last_name'],
+			'{ticket_message}' => nl2br(htmlspecialchars($ticket['message'])),
+			'{ticket_url}' => base_url() . 'tickets/viewticket/' . $ticketId,
+			'{company_name}' => $appSettings->company_name
+		);
+
+		$result = $this->_sendTicketEmail('ticket_new_to_customer', $company['email'], $placeholders);
+
+		log_message('info', 'New ticket notification sent to customer - Ticket #' . $ticketId .
+			', Customer: ' . $company['email'] . ', Result: ' . ($result ? 'Success' : 'Failed'));
+
+		return $result;
+	}
+
+	/**
+	 * Send ticket reply notification to customer (when admin replies)
+	 *
+	 * @param int $ticketId Ticket ID
+	 * @param string $replyMessage Reply message content
+	 * @return bool Success status
+	 */
+	function sendTicketReplyToCustomer($ticketId, $replyMessage)
+	{
+		// Get ticket details
+		$ticket = $this->getTicketDetail($ticketId);
+		if (empty($ticket)) {
+			log_message('error', 'sendTicketReplyToCustomer: Ticket not found - ID: ' . $ticketId);
+			return false;
+		}
+
+		// Get customer/company details
+		$company = $this->db->where('id', $ticket['company_id'])->get('companies')->row_array();
+		if (empty($company) || empty($company['email'])) {
+			log_message('error', 'sendTicketReplyToCustomer: Company or email not found - ID: ' . $ticket['company_id']);
+			return false;
+		}
+
+		// Get app settings
+		$appSettings = getAppSettings();
+
+		// Build placeholders
+		$placeholders = array(
+			'{ticket_id}' => $ticketId,
+			'{ticket_subject}' => $ticket['title'],
+			'{department_name}' => !empty($ticket['dept_name']) ? $ticket['dept_name'] : 'Support',
+			'{client_name}' => $company['first_name'] . ' ' . $company['last_name'],
+			'{reply_message}' => nl2br(htmlspecialchars($replyMessage)),
+			'{ticket_url}' => base_url() . 'tickets/viewticket/' . $ticketId,
+			'{company_name}' => $appSettings->company_name
+		);
+
+		$result = $this->_sendTicketEmail('ticket_reply_to_customer', $company['email'], $placeholders);
+
+		log_message('info', 'Ticket reply notification sent to customer - Ticket #' . $ticketId .
+			', Customer: ' . $company['email'] . ', Result: ' . ($result ? 'Success' : 'Failed'));
+
+		return $result;
+	}
+
+	/**
+	 * Send ticket reply notification to department (when customer replies)
+	 *
+	 * @param int $ticketId Ticket ID
+	 * @param string $replyMessage Reply message content
+	 * @return bool Success status
+	 */
+	function sendTicketReplyToDepartment($ticketId, $replyMessage)
+	{
+		// Get ticket details
+		$ticket = $this->getTicketDetail($ticketId);
+		if (empty($ticket)) {
+			log_message('error', 'sendTicketReplyToDepartment: Ticket not found - ID: ' . $ticketId);
+			return false;
+		}
+
+		// Get department details
+		$department = $this->getTicketDepartmentById($ticket['ticket_dept_id']);
+		if (empty($department) || empty($department['email'])) {
+			log_message('error', 'sendTicketReplyToDepartment: Department or email not found - Dept ID: ' . $ticket['ticket_dept_id']);
+			return false;
+		}
+
+		// Get customer/company details
+		$company = $this->db->where('id', $ticket['company_id'])->get('companies')->row_array();
+
+		// Build placeholders
+		$placeholders = array(
+			'{ticket_id}' => $ticketId,
+			'{ticket_subject}' => $ticket['title'],
+			'{ticket_priority}' => !empty($ticket['priority']) ? ucfirst($ticket['priority']) : 'Normal',
+			'{department_name}' => $department['name'],
+			'{client_name}' => !empty($company) ? $company['first_name'] . ' ' . $company['last_name'] : 'Customer',
+			'{client_email}' => !empty($company) ? $company['email'] : '',
+			'{reply_message}' => nl2br(htmlspecialchars($replyMessage)),
+			'{admin_ticket_url}' => base_url() . 'whmazadmin/ticket/viewticket/' . $ticketId
+		);
+
+		$result = $this->_sendTicketEmail('ticket_reply_to_department', $department['email'], $placeholders);
+
+		log_message('info', 'Ticket reply notification sent to department - Ticket #' . $ticketId .
+			', Department: ' . $department['name'] . ', Result: ' . ($result ? 'Success' : 'Failed'));
+
+		return $result;
+	}
+
+	/**
+	 * Send ticket email using template
+	 *
+	 * @param string $templateKey Email template key
+	 * @param string $toEmail Recipient email
+	 * @param array $placeholders Placeholder values
+	 * @return bool Success status
+	 */
+	private function _sendTicketEmail($templateKey, $toEmail, $placeholders)
+	{
+		// Get email template
+		$this->db->where('template_key', $templateKey);
+		$this->db->where('status', 1);
+		$template = $this->db->get('email_templates')->row_array();
+
+		if (empty($template)) {
+			log_message('error', '_sendTicketEmail: Template not found - ' . $templateKey);
+			return false;
+		}
+
+		// Replace placeholders in subject and body
+		$subject = $template['subject'];
+		$body = $template['body'];
+
+		foreach ($placeholders as $key => $value) {
+			$subject = str_replace($key, $value, $subject);
+			$body = str_replace($key, $value, $body);
+		}
+
+		// Send email
+		return sendHtmlEmail($toEmail, $subject, $body);
+	}
+
 }
 ?>

@@ -7,6 +7,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.9.0] - 2026-02-22
+
+### New Feature - Auto-Provisioning System
+
+#### Domain Provisioning
+- **Domain Registration**: Automatically registers domain at registrar after payment
+- **Domain Transfer**: Initiates transfer with EPP code after payment
+- **Domain Renewal**: Renews domain at registrar, updates expiry date
+- Creates customer and contact at registrar if not exists
+- Supports ResellerClub/Resell.biz API (extensible for other registrars)
+
+#### Hosting Provisioning
+- **New Hosting**: Creates cPanel account via WHM API after payment
+- **Hosting Renewal**: Unsuspends account if suspended, updates dates
+- Sends welcome email with cPanel credentials
+
+#### Provisioning Model
+- `Provisioning_model::provisionInvoiceItems($invoiceId)` - Main entry point
+- Handles all provisioning based on invoice items
+- Logs all provisioning attempts to `provisioning_logs` table
+- Supports retry for failed provisioning
+
+#### New Files
+- `src/models/Provisioning_model.php` - Main provisioning logic
+- `src/helpers/domain_helper.php` - Domain registrar API functions
+- `migrations/provisioning_system.sql` - Provisioning logs table
+
+#### Domain Helper Functions
+- `registrar_register_domain()` - Register domain (dispatcher)
+- `registrar_transfer_domain()` - Transfer domain (dispatcher)
+- `registrar_renew_domain()` - Renew domain (dispatcher)
+- `registrar_get_or_create_customer()` - Create customer at registrar
+- `registrar_create_contact()` - Create contact for domain
+- ResellerClub-specific implementations included
+
+#### Modified Files
+- `src/models/Invoice_model.php` - Now uses Provisioning_model
+- `src/config/autoload.php` - Added domain_helper to autoload
+- `CLAUDE.md` - Added provisioning documentation
+
+---
+
+## [1.8.0] - 2026-02-22
+
+### New Feature - Email Notifications System
+
+#### Order Confirmation Emails
+- Automatic email to customer after successful order placement
+- Automatic email to admin when new order is placed (configurable via `notify_admin_new_order` in sys_cnf)
+- Email templates: `order_confirmation`, `admin_order_notification`
+- Includes order details, invoice information, and order items table
+- Payment link for customer to pay invoice
+
+#### Ticket Notification Emails
+- **Client creates ticket** → Email sent to department (uses `ticket_depts.email`)
+- **Admin creates ticket** → Email sent to customer
+- **Admin replies to ticket** → Email sent to customer
+- **Client replies to ticket** → Email sent to department
+- Email templates: `ticket_new_to_department`, `ticket_new_to_customer`, `ticket_reply_to_customer`, `ticket_reply_to_department`
+- Includes ticket details, customer info, and message content
+- Links to view ticket in respective portal
+
+#### Database Changes
+- New email templates in `email_templates` table (6 new templates)
+- Uses existing `ticket_depts.email` field for department notifications
+
+#### New Migration Files
+- `migrations/order_confirmation_emails.sql` - Order email templates
+- `migrations/ticket_notification_emails.sql` - Ticket email templates
+
+#### New Model Methods
+- `Order_model::sendOrderConfirmationEmails($orderId, $invoiceId)`
+- `Support_model::sendNewTicketToDepartment($ticketId)`
+- `Support_model::sendNewTicketToCustomer($ticketId)`
+- `Support_model::sendTicketReplyToCustomer($ticketId, $message)`
+- `Support_model::sendTicketReplyToDepartment($ticketId, $message)`
+
+#### Modified Files
+- `src/models/Order_model.php` - Added email sending methods
+- `src/models/Support_model.php` - Added ticket email methods
+- `src/modules/cart/controllers/Cart.php` - Calls order confirmation emails
+- `src/modules/tickets/controllers/Tickets.php` - Calls ticket emails (client)
+- `src/controllers/whmazadmin/Ticket.php` - Calls ticket emails (admin)
+- `CLAUDE.md` - Updated documentation
+
+---
+
 ## [1.7.0] - 2026-02-13
 
 ### New Feature - Contact Us Page & Client Portal Beautification
@@ -1479,6 +1566,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.5.0
-**Release Date:** February 12, 2026
+**Current Version:** 1.9.0
+**Release Date:** February 22, 2026
 **Status:** Stable Production Release (New Feature)

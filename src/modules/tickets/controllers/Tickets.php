@@ -71,6 +71,12 @@ class Tickets extends WHMAZ_Controller {
 					}
 
                     if($this->Common_model->save('tickets', $form_data)) {
+                            // Get the inserted ticket ID and send notification email to department
+                            $ticketId = $this->db->insert_id();
+                            if ($ticketId > 0) {
+                                $this->Support_model->sendNewTicketToDepartment($ticketId);
+                            }
+
                             $this->session->set_flashdata('alert_success', 'Support ticket has been placed successfully.');
                             redirect("tickets/index");
                     } else {
@@ -210,6 +216,9 @@ class Tickets extends WHMAZ_Controller {
                         $tdata['updated_by'] = getCustomerId();
                         $tdata['flag'] = 3;
                         $this->Common_model->update('tickets', $tdata, $ticket_id);
+
+                        // Send reply notification email to department
+                        $this->Support_model->sendTicketReplyToDepartment($ticket_id, $this->input->post('message'));
 
                         $this->session->set_flashdata('alert_success', 'Ticket reply has been placed successfully.');
                         redirect("tickets/viewticket/".$ticket_id);

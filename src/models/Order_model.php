@@ -280,5 +280,171 @@ class Order_model extends CI_Model{
 		}
 	}
 
+	// =========================================
+	// Order Confirmation Emails
+	// =========================================
+
+	/**
+	 * Send order confirmation emails to customer and admin
+	 *
+	 * @param int $orderId Order ID
+	 * @param int $invoiceId Invoice ID
+	 * @return array Results of email sending
+	 */
+	function sendOrderConfirmationEmails($orderId, $invoiceId)
+	{
+		$result = array('customer' => false, 'admin' => false);
+
+		// Get order details
+		$order = $this->getDetail($orderId);
+		if (empty($order)) {
+			log_message('error', 'sendOrderConfirmationEmails: Order not found - ID: ' . $orderId);
+			return $result;
+		}
+
+		// Get invoice details
+		$invoice = $this->db->where('id', $invoiceId)->get('invoices')->row_array();
+		if (empty($invoice)) {
+			log_message('error', 'sendOrderConfirmationEmails: Invoice not found - ID: ' . $invoiceId);
+			return $result;
+		}
+
+		// Get customer/company details
+		$company = $this->db->where('id', $order['company_id'])->get('companies')->row_array();
+		if (empty($company)) {
+			log_message('error', 'sendOrderConfirmationEmails: Company not found - ID: ' . $order['company_id']);
+			return $result;
+		}
+
+		// Get app settings
+		$appSettings = getAppSettings();
+
+		// Get currency symbol
+		$currency = $this->db->where('id', $order['currency_id'])->get('currencies')->row();
+		$currencySymbol = $currency ? $currency->currency_symbol : '$';
+
+		// Get invoice items for order details
+		$orderItemsHtml = $this->_buildOrderItemsHtml($invoiceId, $currencySymbol);
+
+		// Common placeholders
+		$placeholders = array(
+			'{client_name}' => $company['first_name'] . ' ' . $company['last_name'],
+			'{company_name_customer}' => !empty($company['company_name']) ? $company['company_name'] : '-',
+			'{client_email}' => $company['email'],
+			'{order_no}' => $order['order_no'],
+			'{order_date}' => date('F j, Y', strtotime($order['order_date'])),
+			'{invoice_no}' => $invoice['invoice_no'],
+			'{total_amount}' => number_format($invoice['total'], 2),
+			'{currency_symbol}' => $currencySymbol,
+			'{pay_status}' => $invoice['pay_status'],
+			'{due_date}' => date('F j, Y', strtotime($invoice['due_date'])),
+			'{order_items}' => $orderItemsHtml,
+			'{company_name}' => $appSettings->company_name,
+			'{invoice_url}' => base_url() . 'billing/pay/' . $invoice['invoice_uuid'],
+			'{admin_order_url}' => base_url() . 'whmazadmin/order/view/' . $order['order_uuid'],
+			'{admin_invoice_url}' => base_url() . 'whmazadmin/invoice/view/' . $order['company_id'] . '/' . $invoice['invoice_uuid']
+		);
+
+		// Send customer email
+		$result['customer'] = $this->_sendOrderEmail(
+			'order_confirmation',
+			$company['email'],
+			$placeholders
+		);
+
+		// Send admin email if notifications enabled
+		$this->load->model('Syscnf_model');
+		$notifyAdmin = $this->Syscnf_model->get('notify_admin_new_order', '1', 'bool');
+
+		if ($notifyAdmin) {
+			// Get admin notification email (from sys_cnf or app_settings)
+			$adminEmail = $this->Syscnf_model->getValue('admin_notification_email');
+			if (empty($adminEmail)) {
+				$adminEmail = $appSettings->email;
+			}
+
+			if (!empty($adminEmail)) {
+				$result['admin'] = $this->_sendOrderEmail(
+					'admin_order_notification',
+					$adminEmail,
+					$placeholders
+				);
+			}
+		}
+
+		log_message('info', 'Order confirmation emails sent for order #' . $orderId .
+			' - Customer: ' . ($result['customer'] ? 'Yes' : 'No') .
+			', Admin: ' . ($result['admin'] ? 'Yes' : 'No'));
+
+		return $result;
+	}
+
+	/**
+	 * Build HTML table of order items
+	 *
+	 * @param int $invoiceId Invoice ID
+	 * @param string $currencySymbol Currency symbol
+	 * @return string HTML table of items
+	 */
+	private function _buildOrderItemsHtml($invoiceId, $currencySymbol)
+	{
+		$items = $this->db->where('invoice_id', $invoiceId)->get('invoice_items')->result_array();
+
+		if (empty($items)) {
+			return '<p>No items found.</p>';
+		}
+
+		$html = '<table style="border-collapse: collapse; width: 100%; max-width: 600px;">';
+		$html .= '<tr style="background: #f5f5f5;">';
+		$html .= '<th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Item</th>';
+		$html .= '<th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Amount</th>';
+		$html .= '</tr>';
+
+		foreach ($items as $item) {
+			$itemDesc = !empty($item['item_desc']) ? $item['item_desc'] : $item['item'];
+			$html .= '<tr>';
+			$html .= '<td style="padding: 8px; border: 1px solid #ddd;">' . htmlspecialchars($itemDesc) . '</td>';
+			$html .= '<td style="padding: 8px; border: 1px solid #ddd; text-align: right;">' . $currencySymbol . number_format($item['total'], 2) . '</td>';
+			$html .= '</tr>';
+		}
+
+		$html .= '</table>';
+
+		return $html;
+	}
+
+	/**
+	 * Send order email using template
+	 *
+	 * @param string $templateKey Email template key
+	 * @param string $toEmail Recipient email
+	 * @param array $placeholders Placeholder values
+	 * @return bool Success status
+	 */
+	private function _sendOrderEmail($templateKey, $toEmail, $placeholders)
+	{
+		// Get email template
+		$this->db->where('template_key', $templateKey);
+		$this->db->where('status', 1);
+		$template = $this->db->get('email_templates')->row_array();
+
+		if (empty($template)) {
+			log_message('error', '_sendOrderEmail: Template not found - ' . $templateKey);
+			return false;
+		}
+
+		// Replace placeholders in subject and body
+		$subject = $template['subject'];
+		$body = $template['body'];
+
+		foreach ($placeholders as $key => $value) {
+			$subject = str_replace($key, $value, $subject);
+			$body = str_replace($key, $value, $body);
+		}
+
+		// Send email
+		return sendHtmlEmail($toEmail, $subject, $body);
+	}
+
 }
 ?>

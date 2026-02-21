@@ -2,7 +2,7 @@
 
 > **The Ultimate WHMCS Alternative** - A comprehensive web hosting automation platform and client management system built with CodeIgniter 3.x
 
-[![Version](https://img.shields.io/badge/version-1.2.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.9.0-blue.svg)](CHANGELOG.md)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-8892BF.svg)](https://php.net)
 [![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.1.13-EE4623.svg)](https://codeigniter.com)
 [![License](https://img.shields.io/badge/license-Commercial-green.svg)](LICENSE.txt)
@@ -58,6 +58,10 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 - Product/Service catalog with customizable pricing
 - Shopping cart with multiple billing cycles
 - Domain registration, transfer, and renewal
+- **Auto-provisioning after payment:**
+  - Domain registration/transfer/renewal via registrar API
+  - Hosting account creation via cPanel/WHM API
+  - Automatic unsuspend on renewal payment
 - Automated order processing
 
 ### 💳 **Billing & Invoicing**
@@ -68,6 +72,8 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 - Tax and VAT calculation
 - Payment tracking and reconciliation
 - PDF invoice generation
+- **Order confirmation emails** (customer & admin notification)
+- **Payment confirmation emails** (automatic on successful payment)
 
 ### 👥 **Customer Management (CRM)**
 - Company/Client profiles
@@ -82,7 +88,10 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 - Multi-department ticket management
 - Priority levels (Low, Medium, High, Critical)
 - Ticket status tracking
-- Email notifications
+- **Automatic email notifications:**
+  - New ticket → Department email notification
+  - Admin creates ticket → Customer notification
+  - Ticket replies → Both customer and department notified
 - File attachments
 - Internal notes
 - Customer satisfaction ratings
@@ -688,6 +697,31 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
 ---
 
 ## 📋 Changelog
+
+### Version 1.9.0 (February 2026) - Auto-Provisioning System
+
+**New Features:**
+- Automatic domain provisioning after payment:
+  - Domain registration via registrar API
+  - Domain transfer with EPP code
+  - Domain renewal
+- Automatic hosting provisioning:
+  - cPanel account creation via WHM API
+  - Auto-unsuspend on renewal if suspended
+- Provisioning logs for tracking and retry
+- Extensible registrar support (ResellerClub/Resell.biz included)
+
+### Version 1.8.0 (February 2026) - Email Notifications System
+
+**New Features:**
+- Order confirmation emails to customer and admin after checkout
+- Ticket notification emails:
+  - Client creates ticket → Department receives email
+  - Admin creates ticket → Customer receives email
+  - Admin replies → Customer receives email
+  - Client replies → Department receives email
+- 6 new email templates with customizable placeholders
+- Configurable admin notifications via sys_cnf settings
 
 ### Version 1.0.9 (February 2026) - Client Portal UI Enhancement
 
