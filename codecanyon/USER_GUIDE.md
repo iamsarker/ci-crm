@@ -1682,7 +1682,7 @@ Email Template Management allows you to create, edit, and manage all email templ
 
 ### Default Templates
 
-The system comes with 10 pre-configured email templates:
+The system comes with 12 pre-configured email templates:
 
 | Template Key | Category | Purpose |
 |-------------|----------|---------|
@@ -1692,10 +1692,42 @@ The system comes with 10 pre-configured email templates:
 | `dunning_suspension_notice` | DUNNING | Service suspension notification |
 | `dunning_termination_notice` | DUNNING | Service termination notification |
 | `invoice_generated` | INVOICE | New invoice notification |
-| `invoice_payment_confirmation` | INVOICE | Payment received confirmation |
+| `invoice_payment_confirmation` | INVOICE | Payment received confirmation (sent to customer) |
+| `admin_payment_notification` | INVOICE | Payment received notification (sent to admin) |
 | `order_confirmation` | ORDER | Order placed confirmation |
 | `auth_welcome` | AUTH | Welcome email for new customers |
 | `auth_password_reset` | AUTH | Password reset instructions |
+
+### Automatic Payment Confirmation Emails
+
+When a customer successfully pays an invoice, the system automatically sends confirmation emails:
+
+**Customer Email (`invoice_payment_confirmation`):**
+- Sent to: Customer's email address
+- Contains: Invoice number, amount paid, payment method, transaction ID, payment date
+- Triggered: When invoice status changes to PAID
+
+**Admin Email (`admin_payment_notification`):**
+- Sent to: Admin email from app_settings
+- Contains: Customer details, invoice info, payment details, link to view invoice
+- Triggered: When `notify_admin_payment` is enabled in Settings → Notifications
+- Can be disabled via Settings → Notifications → "Notify on payment received"
+
+**Available Placeholders:**
+| Placeholder | Description |
+|-------------|-------------|
+| `{client_name}` | Customer's full name |
+| `{company_name_customer}` | Customer's company name |
+| `{client_email}` | Customer's email |
+| `{invoice_no}` | Invoice number |
+| `{amount}` | Payment amount |
+| `{currency_symbol}` | Currency symbol (e.g., $, €) |
+| `{payment_method}` | Payment method used |
+| `{gateway_name}` | Payment gateway name |
+| `{transaction_id}` | Transaction/reference ID |
+| `{payment_date}` | Date and time of payment |
+| `{company_name}` | Your company name |
+| `{admin_invoice_url}` | Admin link to view invoice |
 
 **Files:**
 - Controller: `src/controllers/whmazadmin/Email_template.php`
@@ -2659,12 +2691,27 @@ The General Settings page allows you to configure all core application settings 
 
 **Access:** Settings → Automation
 
+**Database Table:** `sys_cnf` (group: AUTOMATION)
+
 **Cron Job Configuration:**
-- Invoice generation (frequency)
-- Payment reminders (days before due)
-- Service suspension (days after due)
+- Invoice generation (days before service expiration)
+- Payment reminders (days before/after due date)
+- Service suspension (days after invoice due)
 - Service cancellation (days after suspension)
 - Domain renewal reminders (days before expiration)
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `cron_enabled` | Enable/disable all cron jobs | 1 (enabled) |
+| `invoice_generation_days_before` | Days before expiry to generate invoice | 7 |
+| `payment_reminder_first` | First reminder (days before due) | 3 |
+| `payment_reminder_second` | Second reminder (days before due) | 1 |
+| `payment_reminder_overdue` | Overdue reminder (days after due) | 3 |
+| `suspension_days_after_due` | Days after due to suspend service | 5 |
+| `cancellation_days_after_suspension` | Days after suspension to cancel | 30 |
+| `domain_reminder_first` | First domain reminder (days before expiry) | 30 |
+| `domain_reminder_second` | Second domain reminder | 15 |
+| `domain_reminder_third` | Third domain reminder | 7 |
 
 **Cron Job Command:**
 ```bash
@@ -2672,6 +2719,102 @@ php /path/to/whmaz/index.php cron/run
 ```
 
 Set to run every hour or as needed.
+
+### Feature Flags
+
+**Access:** Settings → Features
+
+**Database Table:** `sys_cnf` (group: FEATURES)
+
+Enable or disable major features across the application:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `feature_customer_registration` | Allow new customer registration | 1 (enabled) |
+| `feature_domain_registration` | Enable domain registration features | 1 (enabled) |
+| `feature_support_tickets` | Enable support ticket system | 1 (enabled) |
+| `feature_knowledge_base` | Enable knowledge base | 1 (enabled) |
+| `feature_announcements` | Enable announcements system | 1 (enabled) |
+| `feature_affiliate_system` | Enable affiliate/referral system | 0 (disabled) |
+| `feature_two_factor_auth` | Enable two-factor authentication | 0 (disabled) |
+| `feature_social_login` | Enable social login (Google, Facebook) | 0 (disabled) |
+
+### Notification Settings
+
+**Access:** Settings → Notifications
+
+**Database Table:** `sys_cnf` (group: NOTIFICATIONS)
+
+Configure admin notification preferences:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `admin_notification_email` | Email for admin notifications | admin@yourcompany.com |
+| `notify_admin_new_order` | Notify on new order | 1 (enabled) |
+| `notify_admin_new_ticket` | Notify on new support ticket | 1 (enabled) |
+| `notify_admin_new_customer` | Notify on new customer registration | 1 (enabled) |
+| `notify_admin_payment` | Notify on payment received | 1 (enabled) |
+
+### Customer Portal Settings
+
+**Access:** Settings → Customer Portal
+
+**Database Table:** `sys_cnf` (group: PORTAL)
+
+Configure customer-facing portal behavior:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `allow_customer_registration` | Allow self-registration | 1 (enabled) |
+| `email_verification_required` | Require email verification | 1 (enabled) |
+| `default_account_status` | New account status | active |
+| `dashboard_show_services` | Show services widget | 1 (enabled) |
+| `dashboard_show_invoices` | Show invoices widget | 1 (enabled) |
+| `dashboard_show_tickets` | Show tickets widget | 1 (enabled) |
+| `dashboard_show_announcements` | Show announcements widget | 1 (enabled) |
+
+### Support System Settings
+
+**Access:** Settings → Support
+
+**Database Table:** `sys_cnf` (group: SUPPORT)
+
+Configure ticket/support system behavior:
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `default_ticket_department` | Default department for new tickets | General Support |
+| `ticket_departments` | Available departments (comma-separated) | Technical Support,Billing Support,Sales,General Inquiry |
+| `ticket_priorities` | Priority levels (comma-separated) | Low,Medium,High,Urgent |
+| `auto_close_tickets_after` | Auto-close resolved tickets (days) | 7 |
+| `notify_customer_ticket_reply` | Notify customer on staff reply | 1 (enabled) |
+| `ticket_attachments_enabled` | Allow file attachments | 1 (enabled) |
+| `ticket_max_attachment_size` | Max attachment size (KB) | 5120 |
+
+### Configuration Storage Overview
+
+WHMAZ stores configuration in the database for easy management via Admin Portal:
+
+| Configuration Type | Database Table | Admin Location |
+|-------------------|----------------|----------------|
+| Company Information | `app_settings` | Settings → General |
+| Google reCAPTCHA | `app_settings` | Settings → General |
+| Payment Gateways | `payment_gateway` | Settings → Payment Gateways |
+| Email Templates | `email_templates` | Settings → Email Templates |
+| Domain Registrar | `dom_registers` | Settings → Domain Registrar |
+| Billing Settings | `sys_cnf` | Settings → Billing |
+| Automation/Cron | `sys_cnf` | Settings → Automation |
+| Feature Flags | `sys_cnf` | Settings → Features |
+| Notifications | `sys_cnf` | Settings → Notifications |
+| Customer Portal | `sys_cnf` | Settings → Customer Portal |
+| Support System | `sys_cnf` | Settings → Support |
+
+**Environment File (.env):**
+Only contains server-specific settings:
+- Database credentials
+- Encryption key
+- Session configuration
+- Environment mode (development/production)
 
 ---
 
@@ -2817,6 +2960,27 @@ Password: Your SendGrid API Key
 | **SSLCommerz** | ✅ Fully Working | Full integration with automatic session restoration for external redirects |
 | **PayPal** | ⚠️ Ready | Webhook implemented, requires configuration and testing |
 | **Bank Transfer** | ✅ Working | Manual payment recording |
+
+### Payment Notification Emails
+
+When a payment is successfully processed, the system automatically sends email notifications:
+
+| Email | Recipient | Template | Configurable |
+|-------|-----------|----------|--------------|
+| Payment Confirmation | Customer | `invoice_payment_confirmation` | Always sent |
+| Payment Notification | Admin | `admin_payment_notification` | Settings → Notifications |
+
+**What triggers payment emails:**
+- Successful payment via Stripe (webhook: `payment_intent.succeeded`)
+- Successful payment via SSLCommerz (IPN callback)
+- Successful payment via PayPal (order capture)
+- Manual payment recording by admin
+
+**To customize payment emails:**
+1. Go to Admin → Settings → Email Templates
+2. Search for "payment" templates
+3. Edit subject and body as needed
+4. Use placeholders for dynamic content
 
 ### Stripe Configuration
 

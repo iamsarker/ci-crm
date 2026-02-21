@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 18, 2026 at 07:57 AM
+-- Generation Time: Feb 21, 2026 at 12:57 AM
 -- Server version: 10.11.11-MariaDB-cll-lve
 -- PHP Version: 8.3.20
 
@@ -37,7 +37,7 @@ CREATE TABLE `add_to_carts` (
   `note` text DEFAULT NULL,
   `hosting_domain` varchar(200) DEFAULT NULL,
   `hosting_domain_type` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0=DNS,1=REGISTER,2=TRANSFER',
-  `domain_action` enum('register','transfer','dns_update') DEFAULT NULL COMMENT 'Domain action type',
+  `domain_action` enum('register','transfer','dns_update') DEFAULT NULL COMMENT 'Domain action: register, transfer, or dns_update',
   `epp_code` varchar(100) DEFAULT NULL COMMENT 'EPP/Auth code for domain transfers',
   `sub_total` decimal(15,2) NOT NULL DEFAULT 0.00,
   `tax` decimal(15,2) NOT NULL DEFAULT 0.00,
@@ -168,7 +168,8 @@ INSERT INTO `admin_logins` (`id`, `admin_id`, `login_time`, `session_val`, `term
 (89, 1, '2026-02-14 07:48:20', '0', '127.0.0.1', NULL, 1),
 (90, 1, '2026-02-14 13:33:38', '0', '127.0.0.1', NULL, 1),
 (91, 1, '2026-02-18 02:10:37', '0', '::1', NULL, 1),
-(92, 1, '2026-02-18 14:49:17', '0', '::1', NULL, 1);
+(92, 1, '2026-02-18 14:49:17', '0', '::1', NULL, 1),
+(93, 1, '2026-02-21 06:19:09', '0', '::1', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -973,7 +974,8 @@ CREATE TABLE `email_templates` (
   `template_key` varchar(100) NOT NULL,
   `template_name` varchar(200) NOT NULL,
   `subject` varchar(255) NOT NULL,
-  `body` text NOT NULL,
+  `body` longtext DEFAULT NULL,
+  `placeholders` longtext DEFAULT NULL,
   `category` varchar(20) NOT NULL DEFAULT 'GENERAL' COMMENT 'DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, GENERAL',
   `status` tinyint(4) NOT NULL DEFAULT 1,
   `inserted_on` datetime DEFAULT NULL,
@@ -988,17 +990,19 @@ CREATE TABLE `email_templates` (
 -- Dumping data for table `email_templates`
 --
 
-INSERT INTO `email_templates` (`id`, `template_key`, `template_name`, `subject`, `body`, `category`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(1, 'dunning_reminder_1', 'Dunning - First Reminder', 'Invoice #{invoice_no} - Payment Reminder', '<p>Dear {client_name},</p><p>This is a friendly reminder that your invoice <strong>#{invoice_no}</strong> for <strong>{currency} {amount_due}</strong> was due on <strong>{due_date}</strong>.</p><p>Please make payment at your earliest convenience to avoid any service interruption.</p><p><a href=\"{invoice_url}\">Click here to view and pay your invoice</a></p><p>If you have already made this payment, please disregard this notice.</p><p>Thank you,<br>{site_name}</p>', 'DUNNING', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
-(2, 'dunning_reminder_2', 'Dunning - Second Reminder', 'Invoice #{invoice_no} - Payment Overdue ({days_overdue} days)', '<p>Dear {client_name},</p><p>Your invoice <strong>#{invoice_no}</strong> for <strong>{currency} {amount_due}</strong> is now <strong>{days_overdue} days overdue</strong>.</p><p>We kindly request that you settle this payment as soon as possible to prevent any disruption to your services.</p><p><a href=\"{invoice_url}\">Click here to view and pay your invoice</a></p><p>If you are experiencing any difficulties with payment, please contact our support team.</p><p>Regards,<br>{site_name}</p>', 'DUNNING', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
-(3, 'dunning_reminder_3', 'Dunning - Final Warning Before Suspension', 'URGENT: Invoice #{invoice_no} - Service Suspension Warning', '<p>Dear {client_name},</p><p><strong>This is an urgent notice.</strong></p><p>Your invoice <strong>#{invoice_no}</strong> for <strong>{currency} {amount_due}</strong> remains unpaid and is now <strong>{days_overdue} days overdue</strong>.</p><p>If payment is not received promptly, your services will be <strong>suspended</strong>.</p><p><a href=\"{invoice_url}\">Click here to pay now and avoid service interruption</a></p><p>Please contact us immediately if you need assistance.</p><p>Regards,<br>{site_name}</p>', 'DUNNING', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
-(4, 'dunning_suspended', 'Dunning - Service Suspended', 'Invoice #{invoice_no} - Service Suspended Due to Non-Payment', '<p>Dear {client_name},</p><p>Due to non-payment of invoice <strong>#{invoice_no}</strong> ({currency} {amount_due}), your service has been <strong>suspended</strong>.</p><p>Your data is still preserved. To reactivate your service, please make payment immediately:</p><p><a href=\"{invoice_url}\">Click here to pay and reactivate your service</a></p><p>If payment is not received within the next few days, your service may be permanently terminated.</p><p>Regards,<br>{site_name}</p>', 'DUNNING', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
-(5, 'dunning_terminated', 'Dunning - Service Terminated', 'Invoice #{invoice_no} - Service Terminated', '<p>Dear {client_name},</p><p>Due to prolonged non-payment of invoice <strong>#{invoice_no}</strong> ({currency} {amount_due}), your service has been <strong>terminated</strong>.</p><p>If you wish to restore your service, please contact our support team. Data recovery may not be possible depending on how long ago the service was terminated.</p><p>Regards,<br>{site_name}</p>', 'DUNNING', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
-(6, 'invoice_created', 'Invoice Created', 'New Invoice #{invoice_no} - {currency} {amount_due}', '<p>Dear {client_name},</p><p>A new invoice has been generated for your account.</p><p><strong>Invoice No:</strong> #{invoice_no}<br><strong>Amount:</strong> {currency} {amount_due}<br><strong>Due Date:</strong> {due_date}</p><p><a href=\"{invoice_url}\">Click here to view and pay your invoice</a></p><p>Thank you for your business.</p><p>Regards,<br>{site_name}</p>', 'INVOICE', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
-(7, 'invoice_paid', 'Invoice Paid Confirmation', 'Payment Received - Invoice #{invoice_no}', '<p>Dear {client_name},</p><p>Thank you! We have received your payment for invoice <strong>#{invoice_no}</strong>.</p><p><strong>Amount Paid:</strong> {currency} {amount_due}<br><strong>Date:</strong> {invoice_date}</p><p><a href=\"{invoice_url}\">Click here to view your invoice</a></p><p>Thank you for your business.</p><p>Regards,<br>{site_name}</p>', 'INVOICE', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
-(8, 'order_confirmation', 'Order Confirmation', 'Order Confirmed - #{invoice_no}', '<p>Dear {client_name},</p><p>Thank you for your order! Your order has been received and is being processed.</p><p>You will receive further updates once your order has been reviewed.</p><p>Thank you for choosing {site_name}.</p><p>Regards,<br>{site_name}</p>', 'ORDER', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
-(9, 'welcome_email', 'Welcome Email', 'Welcome to {site_name}', '<p>Dear {client_name},</p><p>Welcome to <strong>{site_name}</strong>! Your account has been created successfully.</p><p>You can log in to your client area at: <a href=\"{site_url}\">{site_url}</a></p><p>Thank you for choosing us.</p><p>Regards,<br>{site_name}</p>', 'AUTH', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
-(10, 'password_reset', 'Password Reset', 'Password Reset Request - {site_name}', '<p>Dear {client_name},We received a request to reset your password for your account at {site_name}.Click here to reset your passwordIf you did not request this, please ignore this email.Regards,{site_name}</p><p><br></p><p><br></p><p><br></p><p><br></p><p>Thanks</p>', 'AUTH', 1, '2026-01-27 19:52:54', NULL, '2026-01-29 09:45:21', 1, NULL, NULL);
+INSERT INTO `email_templates` (`id`, `template_key`, `template_name`, `subject`, `body`, `placeholders`, `category`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 'dunning_reminder_1', 'Dunning - First Reminder', 'Invoice #{invoice_no} - Payment Reminder', '<p>Dear {client_name},</p><p>This is a friendly reminder that your invoice <strong>#{invoice_no}</strong> for <strong>{currency} {amount_due}</strong> was due on <strong>{due_date}</strong>.</p><p>Please make payment at your earliest convenience to avoid any service interruption.</p><p><a href=\"{invoice_url}\">Click here to view and pay your invoice</a></p><p>If you have already made this payment, please disregard this notice.</p><p>Thank you,<br>{site_name}</p>', NULL, 'DUNNING', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
+(2, 'dunning_reminder_2', 'Dunning - Second Reminder', 'Invoice #{invoice_no} - Payment Overdue ({days_overdue} days)', '<p>Dear {client_name},</p><p>Your invoice <strong>#{invoice_no}</strong> for <strong>{currency} {amount_due}</strong> is now <strong>{days_overdue} days overdue</strong>.</p><p>We kindly request that you settle this payment as soon as possible to prevent any disruption to your services.</p><p><a href=\"{invoice_url}\">Click here to view and pay your invoice</a></p><p>If you are experiencing any difficulties with payment, please contact our support team.</p><p>Regards,<br>{site_name}</p>', NULL, 'DUNNING', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
+(3, 'dunning_reminder_3', 'Dunning - Final Warning Before Suspension', 'URGENT: Invoice #{invoice_no} - Service Suspension Warning', '<p>Dear {client_name},</p><p><strong>This is an urgent notice.</strong></p><p>Your invoice <strong>#{invoice_no}</strong> for <strong>{currency} {amount_due}</strong> remains unpaid and is now <strong>{days_overdue} days overdue</strong>.</p><p>If payment is not received promptly, your services will be <strong>suspended</strong>.</p><p><a href=\"{invoice_url}\">Click here to pay now and avoid service interruption</a></p><p>Please contact us immediately if you need assistance.</p><p>Regards,<br>{site_name}</p>', NULL, 'DUNNING', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
+(4, 'dunning_suspended', 'Dunning - Service Suspended', 'Invoice #{invoice_no} - Service Suspended Due to Non-Payment', '<p>Dear {client_name},</p><p>Due to non-payment of invoice <strong>#{invoice_no}</strong> ({currency} {amount_due}), your service has been <strong>suspended</strong>.</p><p>Your data is still preserved. To reactivate your service, please make payment immediately:</p><p><a href=\"{invoice_url}\">Click here to pay and reactivate your service</a></p><p>If payment is not received within the next few days, your service may be permanently terminated.</p><p>Regards,<br>{site_name}</p>', NULL, 'DUNNING', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
+(5, 'dunning_terminated', 'Dunning - Service Terminated', 'Invoice #{invoice_no} - Service Terminated', '<p>Dear {client_name},</p><p>Due to prolonged non-payment of invoice <strong>#{invoice_no}</strong> ({currency} {amount_due}), your service has been <strong>terminated</strong>.</p><p>If you wish to restore your service, please contact our support team. Data recovery may not be possible depending on how long ago the service was terminated.</p><p>Regards,<br>{site_name}</p>', NULL, 'DUNNING', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
+(6, 'invoice_created', 'Invoice Created', 'New Invoice #{invoice_no} - {currency} {amount_due}', '<p>Dear {client_name},</p><p>A new invoice has been generated for your account.</p><p><strong>Invoice No:</strong> #{invoice_no}<br><strong>Amount:</strong> {currency} {amount_due}<br><strong>Due Date:</strong> {due_date}</p><p><a href=\"{invoice_url}\">Click here to view and pay your invoice</a></p><p>Thank you for your business.</p><p>Regards,<br>{site_name}</p>', NULL, 'INVOICE', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
+(7, 'invoice_paid', 'Invoice Paid Confirmation', 'Payment Received - Invoice #{invoice_no}', '<p>Dear {client_name},</p><p>Thank you! We have received your payment for invoice <strong>#{invoice_no}</strong>.</p><p><strong>Amount Paid:</strong> {currency} {amount_due}<br><strong>Date:</strong> {invoice_date}</p><p><a href=\"{invoice_url}\">Click here to view your invoice</a></p><p>Thank you for your business.</p><p>Regards,<br>{site_name}</p>', NULL, 'INVOICE', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
+(8, 'order_confirmation', 'Order Confirmation', 'Order Confirmed - #{invoice_no}', '<p>Dear {client_name},</p><p>Thank you for your order! Your order has been received and is being processed.</p><p>You will receive further updates once your order has been reviewed.</p><p>Thank you for choosing {site_name}.</p><p>Regards,<br>{site_name}</p>', NULL, 'ORDER', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
+(9, 'welcome_email', 'Welcome Email', 'Welcome to {site_name}', '<p>Dear {client_name},</p><p>Welcome to <strong>{site_name}</strong>! Your account has been created successfully.</p><p>You can log in to your client area at: <a href=\"{site_url}\">{site_url}</a></p><p>Thank you for choosing us.</p><p>Regards,<br>{site_name}</p>', NULL, 'AUTH', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
+(10, 'password_reset', 'Password Reset', 'Password Reset Request - {site_name}', '<p>Dear {client_name},We received a request to reset your password for your account at {site_name}.Click here to reset your passwordIf you did not request this, please ignore this email.Regards,{site_name}</p><p><br></p><p><br></p><p><br></p><p><br></p><p>Thanks</p>', NULL, 'AUTH', 1, '2026-01-27 19:52:54', NULL, '2026-01-29 09:45:21', 1, NULL, NULL),
+(11, 'invoice_payment_confirmation', 'Payment Confirmation', 'Payment Received - Invoice #{invoice_no}', '<p>Dear {client_name},</p>\r\n<p>Thank you for your payment! We have successfully received your payment for Invoice <strong>#{invoice_no}</strong>.</p>\r\n<h3>Payment Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Invoice Number:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{invoice_no}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Amount Paid:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{currency_symbol}{amount}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Payment Method:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{payment_method}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Transaction ID:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{transaction_id}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Payment Date:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{payment_date}</td></tr>\r\n</table>\r\n<p style=\"margin-top: 20px;\">You can view your invoice and payment history by logging into your account.</p>\r\n<p>If you have any questions about this payment, please don\'t hesitate to contact us.</p>\r\n<p>Thank you for your business!</p>\r\n<p>Best Regards,<br>{company_name}</p>', '{client_name}, {invoice_no}, {amount}, {currency_symbol}, {payment_method}, {transaction_id}, {payment_date}, {company_name}', 'INVOICE', 1, '2026-02-21 00:54:23', NULL, '2026-02-21 06:54:23', NULL, NULL, NULL),
+(12, 'admin_payment_notification', 'Admin Payment Notification', 'New Payment Received - Invoice #{invoice_no} - {currency_symbol}{amount}', '<p>A new payment has been received.</p>\r\n<h3>Payment Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Customer:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_name}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Company:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{company_name_customer}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Email:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_email}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Invoice Number:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{invoice_no}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Amount:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{currency_symbol}{amount}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Payment Method:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{payment_method}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Gateway:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{gateway_name}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Transaction ID:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{transaction_id}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Payment Date:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{payment_date}</td></tr>\r\n</table>\r\n<p style=\"margin-top: 20px;\"><a href=\"{admin_invoice_url}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">View Invoice</a></p>', '{client_name}, {company_name_customer}, {client_email}, {invoice_no}, {amount}, {currency_symbol}, {payment_method}, {gateway_name}, {transaction_id}, {payment_date}, {admin_invoice_url}', 'INVOICE', 1, '2026-02-21 00:54:23', NULL, '2026-02-21 06:54:23', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1103,8 +1107,8 @@ CREATE TABLE `gen_numbers` (
 --
 
 INSERT INTO `gen_numbers` (`id`, `no_type`, `last_no`) VALUES
-(1, 'ORDER', 2027),
-(2, 'INVOICE', 1536);
+(1, 'ORDER', 2029),
+(2, 'INVOICE', 1538);
 
 -- --------------------------------------------------------
 
@@ -1174,7 +1178,9 @@ INSERT INTO `invoices` (`id`, `invoice_uuid`, `company_id`, `order_id`, `currenc
 (550, '91edf252-bca1-40d9-bf3f-71ab2f56d726', 2, 725, 1, 'USD', '1532', 69.50, 0.00, 0.00, 69.50, '2026-12-04', '2025-12-04', NULL, NULL, NULL, 1, 'PAID', 0, '2025-12-04 14:32:13', 1, '2026-01-13 15:04:40', NULL, NULL, NULL),
 (551, 'b26a4187-295c-4a0d-8b6b-c95ed23bbebc', 2, 720, 1, 'USD', '1533', 69.50, 0.00, 0.00, 69.50, '2027-01-16', '2025-01-16', NULL, NULL, NULL, 1, 'PAID', 0, '2026-01-13 16:43:04', 1, '2026-01-23 08:06:39', 1, NULL, NULL),
 (552, '9fcf6d9c-90c3-4317-bc77-75a07bc44ee0', 14, 726, 1, 'USD', '1534', 33.14, 0.00, 0.00, 33.14, '2025-04-21', '2025-04-14', NULL, NULL, NULL, 1, 'PAID', 0, '2025-04-14 10:24:18', 1, '2026-02-12 16:35:27', 1, NULL, NULL),
-(553, 'ac8e5c4f-30ff-4690-ba7d-b77d045736bc', 1, 727, 1, 'USD', '1535', 32.95, 0.00, 0.00, 32.95, '2026-02-13', '2026-02-13', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-13 15:55:37', 1, '2026-02-18 08:30:47', NULL, NULL, NULL);
+(553, 'ac8e5c4f-30ff-4690-ba7d-b77d045736bc', 1, 727, 1, 'USD', '1535', 32.95, 0.00, 0.00, 32.95, '2026-02-13', '2026-02-13', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-13 15:55:37', 1, '2026-02-18 08:30:47', NULL, NULL, NULL),
+(555, '9952158f-fcca-4cf2-a689-e4fb7eceb33e', 1, 729, 1, 'USD', '1537', 33.10, 0.00, 0.00, 33.10, '2026-02-18', '2026-02-18', NULL, NULL, NULL, 1, 'DUE', 0, '2026-02-18 17:15:35', 1, '2026-02-18 16:15:35', NULL, NULL, NULL),
+(556, '50f6f966-7779-4099-9981-87cac81526e7', 1, 730, 1, 'USD', '1538', 25.95, 0.00, 0.00, 25.95, '2026-02-18', '2026-02-18', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-18 17:25:50', 1, '2026-02-21 05:14:18', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1254,7 +1260,11 @@ INSERT INTO `invoice_items` (`id`, `invoice_id`, `item`, `item_desc`, `item_type
 (567, 551, 'Hosting package', 'Yearly renew of uVPS-1 (Parliament)', 2, NULL, 4, NULL, 1, 69.50, 0.00, 69.50, 0.00, 0.00, 69.50, NULL, NULL, '2026-01-13 16:43:04', NULL, '2026-02-12 10:34:11', NULL),
 (568, 552, 'Domain registration', 'emonislam.com - 1 year(s)', 1, 724, 4, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, '2025-04-14', '2026-04-14', '2025-04-14 10:24:21', 1, '2026-02-12 10:32:53', NULL),
 (569, 552, 'Hosting package', 'Yearly 2GB_SHARED for emonislam.com domain', 2, 715, 4, NULL, 1, 20.15, 0.00, 20.15, 0.00, 0.00, 20.15, '2025-04-14', '2026-04-14', '2025-04-14 10:24:22', 1, '2026-02-12 10:31:55', NULL),
-(570, 554, '5GB_SHARED', '5GB_SHARED - narikel.com', 2, 717, 4, NULL, 1, 32.95, 0.00, 32.95, 0.00, 0.00, 32.95, '2026-02-13', '2027-02-13', '2026-02-13 16:05:15', 1, '2026-02-13 16:05:19', NULL);
+(570, 554, '5GB_SHARED', '5GB_SHARED - narikel.com', 2, 717, 4, NULL, 1, 32.95, 0.00, 32.95, 0.00, 0.00, 32.95, '2026-02-13', '2027-02-13', '2026-02-13 16:05:15', 1, '2026-02-13 16:05:19', NULL),
+(571, 555, 'Register: sarkercommerce.xyz', 'Register: sarkercommerce.xyz - sarkercommerce.xyz', 1, 725, 1, NULL, 1, 12.95, 0.00, 12.95, 0.00, 0.00, 12.95, '2026-02-18', '2026-03-20', '2026-02-18 17:15:36', 1, '2026-02-18 16:15:36', NULL),
+(572, 555, '2GB_SHARED', '2GB_SHARED - sarkercommerce.xyz', 2, 718, 4, NULL, 1, 20.15, 0.00, 20.15, 0.00, 0.00, 20.15, '2026-02-18', '2027-02-18', '2026-02-18 17:15:37', 1, '2026-02-18 16:15:38', NULL),
+(573, 556, '3GB_SHARED', '3GB_SHARED - narikel.com', 2, 719, 4, NULL, 1, 25.95, 0.00, 25.95, 0.00, 0.00, 25.95, '2026-02-18', '2027-02-18', '2026-02-18 17:25:51', 1, '2026-02-18 16:25:51', NULL),
+(574, 556, 'Dns_update: narikel.com', 'Dns_update: narikel.com - narikel.com', 1, 726, 1, NULL, 1, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, '2026-02-18', '2026-03-20', '2026-02-18 17:25:52', 1, '2026-02-18 16:25:52', NULL);
 
 -- --------------------------------------------------------
 
@@ -1293,7 +1303,8 @@ INSERT INTO `invoice_txn` (`id`, `invoice_id`, `payment_gateway_id`, `payment_tr
 (4, 553, 6, 2, '260216725092TMO21ejmLUIsKt', '2026-02-16', 32.95, 'USD', 'payment', 1, 'Payment via Sslcommerz', NULL, '2026-02-16 02:25:19', 1, NULL, NULL, NULL, NULL),
 (5, 553, 6, 3, '26021673857wdziPSQ6hIvMmYP', '2026-02-16', 32.95, 'USD', 'payment', 1, 'Payment via Sslcommerz', NULL, '2026-02-16 02:39:08', 1, NULL, NULL, NULL, NULL),
 (6, 553, 6, 4, '26021681321MHMzrbxMiVngUA0', '2026-02-16', 32.95, 'USD', 'payment', 1, 'Payment via Sslcommerz', NULL, '2026-02-16 03:13:31', 1, NULL, NULL, NULL, NULL),
-(7, 553, 2, 6, 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', '2026-02-18', 32.95, 'USD', 'payment', 1, 'Payment via Stripe', NULL, '2026-02-18 02:30:49', 1, NULL, NULL, NULL, NULL);
+(7, 553, 2, 6, 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', '2026-02-18', 32.95, 'USD', 'payment', 1, 'Payment via Stripe', NULL, '2026-02-18 02:30:49', 1, NULL, NULL, NULL, NULL),
+(8, 556, 2, 7, 'pi_3T38WCQ1EoHKEhCU2bvWgPXz', '2026-02-20', 25.95, 'USD', 'payment', 1, 'Payment via Stripe', NULL, '2026-02-20 23:14:28', 1, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1499,7 +1510,9 @@ INSERT INTO `orders` (`id`, `order_uuid`, `order_no`, `company_id`, `currency_id
 (724, 'de8a552d-abcc-4b9c-81d4-595eb0594bb2', 2023, 14, 1, 'USD', '2025-08-12', 91.49, 0.00, 0.00, '', 0.00, 1.00, 90.49, 1, NULL, 1, '', 0, 0, '2025-08-12 03:41:24', 0, '2025-08-12 01:50:35', NULL, NULL, NULL),
 (725, '9aecd9e7-7267-4cca-8729-45d7f60d7c3d', 2024, 2, 1, 'USD', '2025-12-04', 69.50, 0.00, 0.00, '', 0.00, 0.00, 69.50, 1, NULL, 1, '', 0, 0, '2025-12-04 14:32:14', 0, '2025-12-04 13:32:14', NULL, NULL, NULL),
 (726, 'a9d3e28c-1ac5-40e8-b571-25fc4ef08152', 2025, 14, 1, 'USD', '2025-04-14', 33.14, 0.00, 0.00, '', 0.00, 0.00, 33.14, 1, NULL, 1, '', 0, 0, '2025-04-14 10:24:19', 1, '2026-02-12 10:27:17', NULL, NULL, NULL),
-(727, '5926dec2-cdbf-4ce5-b286-1329027c00d1', 2026, 1, 1, 'USD', '2026-02-13', 32.95, 0.00, 0.00, '', 0.00, 0.00, 32.95, 1, '', 1, '', 0, 0, '2026-02-13 15:55:35', 1, '2026-02-13 15:55:37', NULL, NULL, NULL);
+(727, '5926dec2-cdbf-4ce5-b286-1329027c00d1', 2026, 1, 1, 'USD', '2026-02-13', 32.95, 0.00, 0.00, '', 0.00, 0.00, 32.95, 1, '', 1, '', 0, 0, '2026-02-13 15:55:35', 1, '2026-02-13 15:55:37', NULL, NULL, NULL),
+(729, '14f3f3cf-96fc-4fa8-9e7d-6b6b13877f2c', 2028, 1, 1, 'USD', '2026-02-18', 33.10, 0.00, 0.00, '', 0.00, 0.00, 33.10, 1, '', 1, '', 0, 0, '2026-02-18 17:15:34', 1, '2026-02-18 16:15:34', NULL, NULL, NULL),
+(730, '6f430080-7bb8-4cec-b821-58086d2fc141', 2029, 1, 1, 'USD', '2026-02-18', 25.95, 0.00, 0.00, '', 0.00, 0.00, 25.95, 1, '', 1, 'please give me the DNS ASAP', 0, 0, '2026-02-18 17:25:49', 1, '2026-02-18 16:25:49', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1565,24 +1578,26 @@ CREATE TABLE `order_domains` (
 -- Dumping data for table `order_domains`
 --
 
-INSERT INTO `order_domains` (`id`, `order_id`, `company_id`, `dom_register_id`, `dom_pricing_id`, `order_type`, `epp_code`, `domain`, `first_pay_amount`, `recurring_amount`, `reg_date`, `reg_period`, `exp_date`, `due_date`, `next_renewal_date`, `suspension_date`, `suspension_reason`, `termination_date`, `is_synced`, `last_sync_dt`, `domain_cust_id`, `domain_order_id`, `dns_management`, `email_forwarding`, `id_protection`, `auto_renew`, `dns_type`, `ns1`, `ns2`, `ns3`, `ns4`, `contact_name`, `contact_company`, `contact_email`, `contact_phone`, `contact_address1`, `contact_address2`, `contact_city`, `contact_state`, `contact_zip`, `contact_country`, `last_contact_sync`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(702, 702, 1, 2, 1, 1, NULL, 'erpboi.com', 12.99, 12.99, '2023-11-29', 1, '2025-11-29', '2025-11-29', '2025-11-29', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-10 07:56:40', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(705, 705, 1, 1, 1, 1, '', 'finboi.com', 12.99, 12.99, '2024-08-11', 1, '2025-08-11', '2025-08-11', '2025-08-11', NULL, NULL, NULL, 0, NULL, NULL, 107940477, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-11 02:26:38', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(707, 707, 2, 1, 1, 1, '', 'skydigitalbd.com', 12.99, 12.99, '2022-08-22', 1, '2025-08-21', '2025-08-21', '2025-08-21', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', 'ns1.whmaz.com', 'ns2.whmaz.com', NULL, NULL, 'Md Ismail', 'Sky Digital Ltd', 'ismail4g@gmail.com', '8801730704604', 'Banasree', '', 'Dhaka', 'Dhaka', '1219', 'BD', '2026-02-10 17:17:42', 1, '', '2024-08-21 03:32:52', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(710, 710, 8, 0, 0, 3, '', 'ultimateapparelsourcing.com.bd', 0.00, 0.00, '2020-08-10', 1, '2020-08-10', '2020-08-10', '2020-08-10', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-08-22 02:21:52', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(711, 711, 6, 0, 5, 1, '', 'authorservice.org', 13.85, 13.85, '2020-08-19', 1, '2025-08-19', '2025-08-19', '2025-08-19', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-30 05:50:05', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(712, 712, 6, 0, 1, 1, '', 'truefarmersagro.com', 12.99, 12.99, '2024-03-04', 1, '2025-03-04', '2025-03-04', '2025-03-04', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-30 06:28:13', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(713, 713, 5, 0, 0, 1, '', 'authorservice.org', 0.00, 0.00, '2024-08-30', 1, '2024-08-30', '2024-08-30', '2024-08-30', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-08-30 07:11:19', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(714, 714, 9, 1, 1, 1, '', 'snkbd.com', 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(715, 715, 9, 1, 1, 1, '', 'shaikhandkhanservices.com', 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(716, 716, 10, 1, 1, 1, '', 'apparelglowltd.com', 12.99, 12.99, '2022-11-26', 1, '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-21 16:03:43', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(717, 717, 2, 1, 1, 1, '', 'koreshikhi.com', 12.99, 12.99, '2024-11-22', 1, '2025-11-22', '2025-11-22', '2025-11-22', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-22 15:47:27', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(718, 718, 11, 1, 1, 1, '', 'alakabhattacharjee.com', 12.99, 12.99, '2016-03-29', 1, '2024-03-29', '2024-03-29', '2024-03-29', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-22 16:36:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(719, 719, 2, 1, 1, 1, '', 'bcsaaa.com', 12.99, 12.99, '2024-12-25', 1, '2025-12-25', '2025-12-25', '2025-12-25', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-12-25 04:29:58', 1, '2026-02-12 11:12:44', NULL, NULL, NULL),
-(720, 721, 12, 1, 1, 1, '', 'alisoftbd.com', 12.99, 12.99, '2024-05-04', 1, '2026-05-04', '2026-05-04', '2026-05-04', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-05-03 05:59:08', 1, '2026-02-12 11:12:40', NULL, NULL, NULL),
-(722, 723, 13, 0, 0, 1, '', 'dwa.com.bd', 0.00, 0.00, '2025-05-06', 1, '2024-12-03', '2024-12-03', '2024-12-03', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(723, 724, 14, 1, 1, 1, '', 'brandnstitch.com', 12.99, 12.99, '2025-08-12', 1, '2026-08-12', '2026-08-12', '2026-08-12', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-08-12 03:41:24', 1, '2026-02-12 11:12:33', NULL, NULL, NULL),
-(724, 726, 14, 1, 1, 1, '', 'emonislam.com', 12.99, 12.99, '2025-04-14', 1, '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-04-14 10:24:19', 1, '2026-02-12 11:12:37', NULL, NULL, NULL);
+INSERT INTO `order_domains` (`id`, `order_id`, `company_id`, `dom_register_id`, `dom_pricing_id`, `order_type`, `epp_code`, `domain`, `linked_service_id`, `first_pay_amount`, `recurring_amount`, `reg_date`, `reg_period`, `exp_date`, `due_date`, `next_renewal_date`, `suspension_date`, `suspension_reason`, `termination_date`, `is_synced`, `last_sync_dt`, `domain_cust_id`, `domain_order_id`, `dns_management`, `email_forwarding`, `id_protection`, `auto_renew`, `dns_type`, `ns1`, `ns2`, `ns3`, `ns4`, `contact_name`, `contact_company`, `contact_email`, `contact_phone`, `contact_address1`, `contact_address2`, `contact_city`, `contact_state`, `contact_zip`, `contact_country`, `last_contact_sync`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(702, 702, 1, 2, 1, 1, NULL, 'erpboi.com', NULL, 12.99, 12.99, '2023-11-29', 1, '2025-11-29', '2025-11-29', '2025-11-29', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-10 07:56:40', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(705, 705, 1, 1, 1, 1, '', 'finboi.com', NULL, 12.99, 12.99, '2024-08-11', 1, '2025-08-11', '2025-08-11', '2025-08-11', NULL, NULL, NULL, 0, NULL, NULL, 107940477, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-11 02:26:38', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(707, 707, 2, 1, 1, 1, '', 'skydigitalbd.com', NULL, 12.99, 12.99, '2022-08-22', 1, '2025-08-21', '2025-08-21', '2025-08-21', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', 'ns1.whmaz.com', 'ns2.whmaz.com', NULL, NULL, 'Md Ismail', 'Sky Digital Ltd', 'ismail4g@gmail.com', '8801730704604', 'Banasree', '', 'Dhaka', 'Dhaka', '1219', 'BD', '2026-02-10 17:17:42', 1, '', '2024-08-21 03:32:52', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(710, 710, 8, 0, 0, 3, '', 'ultimateapparelsourcing.com.bd', NULL, 0.00, 0.00, '2020-08-10', 1, '2020-08-10', '2020-08-10', '2020-08-10', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-08-22 02:21:52', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(711, 711, 6, 0, 5, 1, '', 'authorservice.org', NULL, 13.85, 13.85, '2020-08-19', 1, '2025-08-19', '2025-08-19', '2025-08-19', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-30 05:50:05', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(712, 712, 6, 0, 1, 1, '', 'truefarmersagro.com', NULL, 12.99, 12.99, '2024-03-04', 1, '2025-03-04', '2025-03-04', '2025-03-04', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2024-08-30 06:28:13', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(713, 713, 5, 0, 0, 1, '', 'authorservice.org', NULL, 0.00, 0.00, '2024-08-30', 1, '2024-08-30', '2024-08-30', '2024-08-30', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-08-30 07:11:19', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(714, 714, 9, 1, 1, 1, '', 'snkbd.com', NULL, 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(715, 715, 9, 1, 1, 1, '', 'shaikhandkhanservices.com', NULL, 12.99, 12.99, '2021-11-26', 1, '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(716, 716, 10, 1, 1, 1, '', 'apparelglowltd.com', NULL, 12.99, 12.99, '2022-11-26', 1, '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-21 16:03:43', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(717, 717, 2, 1, 1, 1, '', 'koreshikhi.com', NULL, 12.99, 12.99, '2024-11-22', 1, '2025-11-22', '2025-11-22', '2025-11-22', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-22 15:47:27', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(718, 718, 11, 1, 1, 1, '', 'alakabhattacharjee.com', NULL, 12.99, 12.99, '2016-03-29', 1, '2024-03-29', '2024-03-29', '2024-03-29', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-11-22 16:36:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(719, 719, 2, 1, 1, 1, '', 'bcsaaa.com', NULL, 12.99, 12.99, '2024-12-25', 1, '2025-12-25', '2025-12-25', '2025-12-25', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2024-12-25 04:29:58', 1, '2026-02-12 11:12:44', NULL, NULL, NULL),
+(720, 721, 12, 1, 1, 1, '', 'alisoftbd.com', NULL, 12.99, 12.99, '2024-05-04', 1, '2026-05-04', '2026-05-04', '2026-05-04', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-05-03 05:59:08', 1, '2026-02-12 11:12:40', NULL, NULL, NULL),
+(722, 723, 13, 0, 0, 1, '', 'dwa.com.bd', NULL, 0.00, 0.00, '2025-05-06', 1, '2024-12-03', '2024-12-03', '2024-12-03', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(723, 724, 14, 1, 1, 1, '', 'brandnstitch.com', NULL, 12.99, 12.99, '2025-08-12', 1, '2026-08-12', '2026-08-12', '2026-08-12', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-08-12 03:41:24', 1, '2026-02-12 11:12:33', NULL, NULL, NULL),
+(724, 726, 14, 1, 1, 1, '', 'emonislam.com', NULL, 12.99, 12.99, '2025-04-14', 1, '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2025-04-14 10:24:19', 1, '2026-02-12 11:12:37', NULL, NULL, NULL),
+(725, 729, 1, 0, 18, 1, NULL, 'sarkercommerce.xyz', 718, 12.95, 12.95, '2026-02-18', 1, '2026-03-20', '2026-02-25', '2026-03-20', NULL, NULL, NULL, 1, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, '', '2026-02-18 17:15:36', 1, '2026-02-18 16:15:38', NULL, NULL, NULL),
+(726, 730, 1, 0, 0, 3, NULL, 'narikel.com', 719, 0.00, 0.00, '2026-02-18', 1, '2026-03-20', '2026-02-25', '2026-03-20', NULL, NULL, NULL, 1, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, '', '2026-02-18 17:25:52', 1, '2026-02-18 16:25:53', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1644,21 +1659,23 @@ CREATE TABLE `order_services` (
 -- Dumping data for table `order_services`
 --
 
-INSERT INTO `order_services` (`id`, `order_id`, `company_id`, `product_service_id`, `product_service_pricing_id`, `product_service_type_key`, `cp_username`, `cp_password`, `cp_disk_used`, `cp_disk_limit`, `cp_bandwidth_used`, `cp_bandwidth_limit`, `cp_email_accounts`, `cp_email_limit`, `cp_databases`, `cp_database_limit`, `cp_addon_domains`, `cp_addon_limit`, `cp_subdomains`, `cp_subdomain_limit`, `cp_last_sync`, `billing_cycle_id`, `description`, `first_pay_amount`, `recurring_amount`, `hosting_domain`, `license_key`, `license_seats`, `auto_renew`, `reg_date`, `exp_date`, `due_date`, `next_renewal_date`, `suspension_date`, `suspension_reason`, `termination_date`, `is_synced`, `last_sync_dt`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(701, 702, 1, 2, 3, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 11.15, 11.15, 'erpboi.com', NULL, NULL, 1, '2024-08-10', '2025-08-10', '2025-08-10', '2025-08-10', NULL, NULL, NULL, 1, NULL, 1, '', '2024-08-10 07:56:40', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(702, 708, 2, 5, 9, 'SHARED_HOSTING', 'skydigit', '0', 3191.00, 5096.00, 274.45, 0.00, 9, 0, 3, 0, 1, 0, 5, 0, '2026-02-11 06:02:43', 4, '', 37.95, 37.95, 'skydigitalbd.com', NULL, NULL, 1, '2024-08-21', '2024-08-21', '2024-08-21', '2024-08-21', NULL, NULL, NULL, 1, NULL, 1, '', '2024-08-21 03:41:24', 1, '2026-02-12 09:44:14', 1, NULL, NULL),
-(704, 710, 8, 5, 9, 'SHARED_HOSTING', 'ultimate', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 57.95, 'ultimateapparelsourcing.com.bd', NULL, NULL, 1, '2020-08-10', '2025-08-10', '2025-08-10', '2025-08-10', NULL, NULL, NULL, 0, NULL, 1, '', '2024-08-22 02:21:52', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(705, 713, 5, 15, 15, 'RESELLER_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 73.00, 73.00, 'authorservice.org', NULL, NULL, 1, '2024-08-30', '2024-08-27', '2024-08-27', '2024-08-27', NULL, NULL, NULL, 0, NULL, 1, '', '2024-08-30 07:11:19', 1, '2026-02-12 11:14:56', NULL, NULL, NULL),
-(706, 714, 9, 5, 9, 'SHARED_HOSTING', 'snkbdcom', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'snkbd.com', NULL, NULL, 1, '2021-11-26', '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(707, 716, 10, 7, 13, 'SHARED_HOSTING', 'apparelglow', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 72.95, 65.00, 'apparelglowltd.com', NULL, NULL, 1, '2022-11-26', '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, 1, '', '2024-11-21 16:03:43', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(708, 718, 11, 3, 5, 'SHARED_HOSTING', 'alakabhattacharj', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 25.95, 25.95, 'alakabhattacharjee.com', NULL, NULL, 1, '2016-03-29', '2024-03-29', '2024-03-29', '2024-03-29', NULL, NULL, NULL, 0, NULL, 1, '', '2024-11-22 16:36:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(709, 720, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-01-16', '2025-01-16', '2025-01-16', '2025-01-16', NULL, NULL, NULL, 0, NULL, 1, '', '2025-01-23 16:43:04', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(710, 721, 12, 19, 25, 'SHARED_HOSTING', 'alisoftbd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 38.00, 38.00, 'alisoftbd.com', NULL, NULL, 1, '2024-05-04', '2026-05-04', '2026-05-04', '2026-05-04', NULL, NULL, NULL, 0, NULL, 1, '', '2025-05-03 05:59:08', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(712, 723, 13, 5, 9, 'SHARED_HOSTING', 'dwacombd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'dwa.com.bd', NULL, NULL, 1, '2024-12-03', '2024-12-03', '2025-12-03', '2024-12-03', NULL, NULL, NULL, 0, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
-(713, 724, 14, 20, 27, 'SHARED_HOSTING', 'brandnstitc', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 65.00, 65.00, 'brandnstitch.com', NULL, NULL, 1, '2025-08-12', '2026-08-12', '2026-08-12', '2026-08-12', NULL, NULL, NULL, 1, NULL, 1, '', '2025-08-12 03:41:24', 1, '2026-02-12 17:23:21', 1, NULL, NULL),
-(714, 725, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, 1, '2025-12-04', '2025-12-04', '2025-12-04', '2025-12-04', NULL, NULL, NULL, 0, NULL, 1, '', '2025-12-04 14:32:15', 1, '2026-02-12 11:14:53', NULL, NULL, NULL),
-(715, 726, 14, 2, 3, 'SHARED_HOSTING', 'emonisla', '0', 545.00, 2024.00, 160.95, 20000.00, 3, 0, 1, 0, 0, 5, 0, 0, '2026-02-16 09:36:27', 4, '', 20.15, 20.15, 'emonislam.com', NULL, NULL, 1, '2025-04-14', '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 1, NULL, 1, '', '2025-04-14 10:24:19', 1, '2026-02-16 15:36:27', 1, NULL, NULL),
-(716, 727, 1, 4, 7, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '5GB_SHARED', 32.95, 32.95, 'narikel.com', NULL, NULL, 1, '2026-02-13', '2027-02-13', '2026-02-20', '2027-02-13', NULL, NULL, NULL, 0, NULL, 0, '', '2026-02-13 15:55:37', 1, '2026-02-13 15:55:40', NULL, NULL, NULL);
+INSERT INTO `order_services` (`id`, `order_id`, `company_id`, `product_service_id`, `product_service_pricing_id`, `product_service_type_key`, `cp_username`, `cp_password`, `cp_disk_used`, `cp_disk_limit`, `cp_bandwidth_used`, `cp_bandwidth_limit`, `cp_email_accounts`, `cp_email_limit`, `cp_databases`, `cp_database_limit`, `cp_addon_domains`, `cp_addon_limit`, `cp_subdomains`, `cp_subdomain_limit`, `cp_last_sync`, `billing_cycle_id`, `description`, `first_pay_amount`, `recurring_amount`, `hosting_domain`, `linked_domain_id`, `license_key`, `license_seats`, `auto_renew`, `reg_date`, `exp_date`, `due_date`, `next_renewal_date`, `suspension_date`, `suspension_reason`, `termination_date`, `is_synced`, `last_sync_dt`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(701, 702, 1, 2, 3, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 11.15, 11.15, 'erpboi.com', NULL, NULL, NULL, 1, '2024-08-10', '2025-08-10', '2025-08-10', '2025-08-10', NULL, NULL, NULL, 1, NULL, 1, '', '2024-08-10 07:56:40', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(702, 708, 2, 5, 9, 'SHARED_HOSTING', 'skydigit', '0', 3191.00, 5096.00, 274.45, 0.00, 9, 0, 3, 0, 1, 0, 5, 0, '2026-02-11 06:02:43', 4, '', 37.95, 37.95, 'skydigitalbd.com', NULL, NULL, NULL, 1, '2024-08-21', '2024-08-21', '2024-08-21', '2024-08-21', NULL, NULL, NULL, 1, NULL, 1, '', '2024-08-21 03:41:24', 1, '2026-02-12 09:44:14', 1, NULL, NULL),
+(704, 710, 8, 5, 9, 'SHARED_HOSTING', 'ultimate', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 57.95, 'ultimateapparelsourcing.com.bd', NULL, NULL, NULL, 1, '2020-08-10', '2025-08-10', '2025-08-10', '2025-08-10', NULL, NULL, NULL, 0, NULL, 1, '', '2024-08-22 02:21:52', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(705, 713, 5, 15, 15, 'RESELLER_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 73.00, 73.00, 'authorservice.org', NULL, NULL, NULL, 1, '2024-08-30', '2024-08-27', '2024-08-27', '2024-08-27', NULL, NULL, NULL, 0, NULL, 1, '', '2024-08-30 07:11:19', 1, '2026-02-12 11:14:56', NULL, NULL, NULL),
+(706, 714, 9, 5, 9, 'SHARED_HOSTING', 'snkbdcom', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'snkbd.com', NULL, NULL, NULL, 1, '2021-11-26', '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, 1, '', '2021-11-26 15:27:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(707, 716, 10, 7, 13, 'SHARED_HOSTING', 'apparelglow', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 72.95, 65.00, 'apparelglowltd.com', NULL, NULL, NULL, 1, '2022-11-26', '2024-11-26', '2024-11-26', '2024-11-26', NULL, NULL, NULL, 0, NULL, 1, '', '2024-11-21 16:03:43', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(708, 718, 11, 3, 5, 'SHARED_HOSTING', 'alakabhattacharj', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 25.95, 25.95, 'alakabhattacharjee.com', NULL, NULL, NULL, 1, '2016-03-29', '2024-03-29', '2024-03-29', '2024-03-29', NULL, NULL, NULL, 0, NULL, 1, '', '2024-11-22 16:36:57', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(709, 720, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, NULL, 1, '2025-01-16', '2025-01-16', '2025-01-16', '2025-01-16', NULL, NULL, NULL, 0, NULL, 1, '', '2025-01-23 16:43:04', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(710, 721, 12, 19, 25, 'SHARED_HOSTING', 'alisoftbd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 38.00, 38.00, 'alisoftbd.com', NULL, NULL, NULL, 1, '2024-05-04', '2026-05-04', '2026-05-04', '2026-05-04', NULL, NULL, NULL, 0, NULL, 1, '', '2025-05-03 05:59:08', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(712, 723, 13, 5, 9, 'SHARED_HOSTING', 'dwacombd', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 37.95, 37.95, 'dwa.com.bd', NULL, NULL, NULL, 1, '2024-12-03', '2024-12-03', '2025-12-03', '2024-12-03', NULL, NULL, NULL, 0, NULL, 1, '', '2025-05-06 02:25:47', 1, '2026-02-12 09:44:14', NULL, NULL, NULL),
+(713, 724, 14, 20, 27, 'SHARED_HOSTING', 'brandnstitc', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 65.00, 65.00, 'brandnstitch.com', NULL, NULL, NULL, 1, '2025-08-12', '2026-08-12', '2026-08-12', '2026-08-12', NULL, NULL, NULL, 1, NULL, 1, '', '2025-08-12 03:41:24', 1, '2026-02-12 17:23:21', 1, NULL, NULL),
+(714, 725, 2, 11, 23, 'SERVER_VPS', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '', 69.50, 69.50, '', NULL, NULL, NULL, 1, '2025-12-04', '2025-12-04', '2025-12-04', '2025-12-04', NULL, NULL, NULL, 0, NULL, 1, '', '2025-12-04 14:32:15', 1, '2026-02-12 11:14:53', NULL, NULL, NULL),
+(715, 726, 14, 2, 3, 'SHARED_HOSTING', 'emonisla', '0', 545.00, 2024.00, 160.95, 20000.00, 3, 0, 1, 0, 0, 5, 0, 0, '2026-02-16 09:36:27', 4, '', 20.15, 20.15, 'emonislam.com', NULL, NULL, NULL, 1, '2025-04-14', '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 1, NULL, 1, '', '2025-04-14 10:24:19', 1, '2026-02-16 15:36:27', 1, NULL, NULL),
+(716, 727, 1, 4, 7, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '5GB_SHARED', 32.95, 32.95, 'narikel.com', NULL, NULL, NULL, 1, '2026-02-13', '2027-02-13', '2026-02-20', '2027-02-13', NULL, NULL, NULL, 0, NULL, 0, '', '2026-02-13 15:55:37', 1, '2026-02-13 15:55:40', NULL, NULL, NULL),
+(718, 729, 1, 2, 3, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '2GB_SHARED', 20.15, 20.15, 'sarkercommerce.xyz', 725, NULL, NULL, 1, '2026-02-18', '2027-02-18', '2026-02-25', '2027-02-18', NULL, NULL, NULL, 0, NULL, 0, '', '2026-02-18 17:15:37', 1, '2026-02-18 16:15:38', NULL, NULL, NULL),
+(719, 730, 1, 3, 5, 'SHARED_HOSTING', 'narike8u', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '3GB_SHARED', 25.95, 25.95, 'narikel.com', 726, NULL, NULL, 1, '2026-02-18', '2027-02-18', '2026-02-25', '2027-02-18', NULL, NULL, NULL, 1, NULL, 1, '', '2026-02-18 17:25:51', 1, '2026-02-21 05:14:28', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1692,9 +1709,9 @@ CREATE TABLE `pages` (
 --
 
 INSERT INTO `pages` (`id`, `page_title`, `page_slug`, `page_content`, `meta_title`, `meta_description`, `meta_keywords`, `is_published`, `is_system`, `sort_order`, `total_view`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`, `status`) VALUES
-(1, 'Terms and Conditions', 'terms-and-conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', '', 1, 1, 1, 4, '2026-02-12 21:24:40', NULL, '2026-02-13 03:35:49', 1, NULL, NULL, 1),
-(2, 'Privacy Policy', 'privacy-policy', '<h2>Privacy Policy</h2><p>Please add your privacy policy here.</p>', 'Privacy Policy', NULL, NULL, 1, 1, 2, 2, '2026-02-12 21:24:40', NULL, NULL, NULL, NULL, NULL, 1),
-(3, 'Refund Policy', 'refund-policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', '', 1, 0, 3, 1, '2026-02-12 21:24:40', NULL, '2026-02-13 03:38:09', 1, NULL, NULL, 1);
+(1, 'Terms and Conditions', 'terms-and-conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', '', 1, 1, 1, 10, '2026-02-12 21:24:40', NULL, '2026-02-13 03:35:49', 1, NULL, NULL, 1),
+(2, 'Privacy Policy', 'privacy-policy', '<h2>Privacy Policy</h2><p>Please add your privacy policy here.</p>', 'Privacy Policy', NULL, NULL, 1, 1, 2, 8, '2026-02-12 21:24:40', NULL, NULL, NULL, NULL, NULL, 1),
+(3, 'Refund Policy', 'refund-policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', '', 1, 0, 3, 8, '2026-02-12 21:24:40', NULL, '2026-02-13 03:38:09', 1, NULL, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1789,8 +1806,8 @@ CREATE TABLE `payment_gateway` (
 --
 
 INSERT INTO `payment_gateway` (`id`, `name`, `gateway_code`, `gateway_type`, `icon_fa_unicode`, `pay_type`, `public_key`, `secret_key`, `webhook_secret`, `is_test_mode`, `test_public_key`, `test_secret_key`, `test_webhook_secret`, `extra_config`, `bank_name`, `account_name`, `account_number`, `routing_number`, `swift_code`, `iban`, `supported_currencies`, `min_amount`, `max_amount`, `fee_type`, `fee_fixed`, `fee_percent`, `fee_bearer`, `logo`, `display_name`, `description`, `sort_order`, `webhook_url`, `merchant_id`, `merchant_pwd`, `instructions`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Offline Payment', 'manual', 'manual', 'f3d1', 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Manual Payment', 'Pay via bank transfer or other offline methods. Your order will be processed after payment confirmation.', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL),
-(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Credit/Debit Card', 'Pay securely with your credit or debit card via Stripe.', 1, 'http://localhost/ci-crm/webhook/stripe', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-02-18 20:49:59', 1),
+(1, 'Offline Payment', 'manual', 'manual', 'f3d1', 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Manual Payment', 'Pay via bank transfer or other offline methods. Your order will be processed after payment confirmation.', 0, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-02-21 12:22:53', NULL),
+(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', 1, 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Credit/Debit Card', 'Pay securely with your credit or debit card via Stripe.', 1, 'http://localhost/ci-crm/webhook/stripe', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-02-18 20:49:59', 1),
 (3, 'PayPal', 'paypal', 'online_wallet', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,JPY,CHF,HKD,SGD,SEK,DKK,PLN,NOK,CZK,ILS,MXN,BRL,PHP,TWD,THB,MYR', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'PayPal', 'Pay securely using your PayPal account or card.', 2, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (4, 'Razorpay', 'razorpay', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'INR', 0.00, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'Razorpay', 'Pay with UPI, Cards, Netbanking, or Wallets via Razorpay.', 3, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (5, 'Paystack', 'paystack', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NGN,GHS,ZAR,KES', 0.00, 0.00, 'both', 100.00, 1.50, 'merchant', NULL, 'Paystack', 'Pay with card or bank transfer via Paystack.', 4, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
@@ -1873,7 +1890,8 @@ CREATE TABLE `payment_transactions` (
 --
 
 INSERT INTO `payment_transactions` (`id`, `transaction_uuid`, `invoice_id`, `payment_gateway_id`, `gateway_code`, `gateway_transaction_id`, `gateway_payment_id`, `gateway_order_id`, `gateway_subscription_id`, `amount`, `fee_amount`, `net_amount`, `currency_code`, `exchange_rate`, `txn_type`, `status`, `failure_reason`, `payment_method`, `card_brand`, `card_last4`, `card_exp_month`, `card_exp_year`, `bank_name`, `wallet_name`, `payer_email`, `payer_name`, `payer_phone`, `gateway_response`, `webhook_payload`, `ip_address`, `user_agent`, `metadata`, `initiated_at`, `completed_at`, `refunded_at`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(6, '4b14991a-5c9b-4ba3-955c-d8b0ee011e6e', 553, 2, 'stripe', 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', NULL, 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', NULL, 32.95, 0.00, 32.95, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"id\":\"pi_3T1zb9Q1EoHKEhCU2kUfne5P\",\"object\":\"payment_intent\",\"amount\":3295,\"amount_capturable\":0,\"amount_details\":{\"tip\":[]},\"amount_received\":3295,\"application\":null,\"application_fee_amount\":null,\"automatic_payment_methods\":{\"allow_redirects\":\"always\",\"enabled\":true},\"canceled_at\":null,\"cancellation_reason\":null,\"capture_method\":\"automatic\",\"client_secret\":\"pi_3T1zb9Q1EoHKEhCU2kUfne5P_secret_DjxY2stXlz92Rn0XYXPdAXzEq\",\"confirmation_method\":\"automatic\",\"created\":1771378239,\"currency\":\"usd\",\"customer\":null,\"customer_account\":null,\"description\":null,\"excluded_payment_method_types\":null,\"invoice\":null,\"last_payment_error\":null,\"latest_charge\":\"ch_3T1zb9Q1EoHKEhCU2QWxuWfD\",\"livemode\":false,\"metadata\":{\"invoice_id\":\"553\",\"invoice_uuid\":\"ac8e5c4f-30ff-4690-ba7d-b77d045736bc\",\"transaction_id\":\"6\"},\"next_action\":null,\"on_behalf_of\":null,\"payment_method\":\"pm_1T1zbBQ1EoHKEhCUrVnQemKI\",\"payment_method_configuration_details\":{\"id\":\"pmc_1T0Z8RQ1EoHKEhCUitfkyb1e\",\"parent\":null},\"payment_method_options\":{\"card\":{\"installments\":null,\"mandate_options\":null,\"network\":null,\"request_three_d_secure\":\"automatic\"},\"link\":{\"persistent_token\":null}},\"payment_method_types\":[\"card\",\"link\"],\"processing\":null,\"receipt_email\":null,\"review\":null,\"setup_future_usage\":null,\"shipping\":null,\"source\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null}', NULL, '::1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '{\"invoice_no\":\"1535\",\"company_id\":\"1\"}', '2026-02-18 02:30:38', '2026-02-18 02:30:46', NULL, '2026-02-18 02:30:38', 1, '2026-02-18 02:30:46', NULL);
+(6, '4b14991a-5c9b-4ba3-955c-d8b0ee011e6e', 553, 2, 'stripe', 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', NULL, 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', NULL, 32.95, 0.00, 32.95, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"id\":\"pi_3T1zb9Q1EoHKEhCU2kUfne5P\",\"object\":\"payment_intent\",\"amount\":3295,\"amount_capturable\":0,\"amount_details\":{\"tip\":[]},\"amount_received\":3295,\"application\":null,\"application_fee_amount\":null,\"automatic_payment_methods\":{\"allow_redirects\":\"always\",\"enabled\":true},\"canceled_at\":null,\"cancellation_reason\":null,\"capture_method\":\"automatic\",\"client_secret\":\"pi_3T1zb9Q1EoHKEhCU2kUfne5P_secret_DjxY2stXlz92Rn0XYXPdAXzEq\",\"confirmation_method\":\"automatic\",\"created\":1771378239,\"currency\":\"usd\",\"customer\":null,\"customer_account\":null,\"description\":null,\"excluded_payment_method_types\":null,\"invoice\":null,\"last_payment_error\":null,\"latest_charge\":\"ch_3T1zb9Q1EoHKEhCU2QWxuWfD\",\"livemode\":false,\"metadata\":{\"invoice_id\":\"553\",\"invoice_uuid\":\"ac8e5c4f-30ff-4690-ba7d-b77d045736bc\",\"transaction_id\":\"6\"},\"next_action\":null,\"on_behalf_of\":null,\"payment_method\":\"pm_1T1zbBQ1EoHKEhCUrVnQemKI\",\"payment_method_configuration_details\":{\"id\":\"pmc_1T0Z8RQ1EoHKEhCUitfkyb1e\",\"parent\":null},\"payment_method_options\":{\"card\":{\"installments\":null,\"mandate_options\":null,\"network\":null,\"request_three_d_secure\":\"automatic\"},\"link\":{\"persistent_token\":null}},\"payment_method_types\":[\"card\",\"link\"],\"processing\":null,\"receipt_email\":null,\"review\":null,\"setup_future_usage\":null,\"shipping\":null,\"source\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null}', NULL, '::1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '{\"invoice_no\":\"1535\",\"company_id\":\"1\"}', '2026-02-18 02:30:38', '2026-02-18 02:30:46', NULL, '2026-02-18 02:30:38', 1, '2026-02-18 02:30:46', NULL),
+(7, 'df06f4b7-05f4-4b98-b50e-a073630c3fb6', 556, 2, 'stripe', 'pi_3T38WCQ1EoHKEhCU2bvWgPXz', NULL, 'pi_3T38WCQ1EoHKEhCU2bvWgPXz', NULL, 25.95, 0.00, 25.95, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, 'visa', '4242', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"id\":\"pi_3T38WCQ1EoHKEhCU2bvWgPXz\",\"object\":\"payment_intent\",\"amount\":2595,\"amount_capturable\":0,\"amount_details\":{\"tip\":[]},\"amount_received\":2595,\"application\":null,\"application_fee_amount\":null,\"automatic_payment_methods\":{\"allow_redirects\":\"always\",\"enabled\":true},\"canceled_at\":null,\"cancellation_reason\":null,\"capture_method\":\"automatic\",\"client_secret\":\"pi_3T38WCQ1EoHKEhCU2bvWgPXz_secret_CZpnVUof16vOKaejSmFP1YvMP\",\"confirmation_method\":\"automatic\",\"created\":1771650856,\"currency\":\"usd\",\"customer\":null,\"customer_account\":null,\"description\":null,\"excluded_payment_method_types\":null,\"invoice\":null,\"last_payment_error\":null,\"latest_charge\":{\"id\":\"ch_3T38WCQ1EoHKEhCU25kWxz2r\",\"object\":\"charge\",\"amount\":2595,\"amount_captured\":2595,\"amount_refunded\":0,\"application\":null,\"application_fee\":null,\"application_fee_amount\":null,\"balance_transaction\":\"txn_3T38WCQ1EoHKEhCU2VG3jqYU\",\"billing_details\":{\"address\":{\"city\":null,\"country\":null,\"line1\":null,\"line2\":null,\"postal_code\":\"90156\",\"state\":null},\"email\":null,\"name\":null,\"phone\":null,\"tax_id\":null},\"calculated_statement_descriptor\":\"Stripe\",\"captured\":true,\"created\":1771650857,\"currency\":\"usd\",\"customer\":null,\"description\":null,\"destination\":null,\"dispute\":null,\"disputed\":false,\"failure_balance_transaction\":null,\"failure_code\":null,\"failure_message\":null,\"fraud_details\":[],\"invoice\":null,\"livemode\":false,\"metadata\":{\"invoice_id\":\"556\",\"invoice_uuid\":\"50f6f966-7779-4099-9981-87cac81526e7\",\"transaction_id\":\"7\"},\"on_behalf_of\":null,\"order\":null,\"outcome\":{\"advice_code\":null,\"network_advice_code\":null,\"network_decline_code\":null,\"network_status\":\"approved_by_network\",\"reason\":null,\"risk_level\":\"normal\",\"risk_score\":49,\"seller_message\":\"Payment complete.\",\"type\":\"authorized\"},\"paid\":true,\"payment_intent\":\"pi_3T38WCQ1EoHKEhCU2bvWgPXz\",\"payment_method\":\"pm_1T38WCQ1EoHKEhCUsV0V0kFs\",\"payment_method_details\":{\"card\":{\"amount_authorized\":2595,\"authorization_code\":\"443270\",\"brand\":\"visa\",\"checks\":{\"address_line1_check\":null,\"address_postal_code_check\":\"pass\",\"cvc_check\":\"pass\"},\"country\":\"US\",\"exp_month\":6,\"exp_year\":2028,\"extended_authorization\":{\"status\":\"disabled\"},\"fingerprint\":\"M0ZBagDykUho10VO\",\"funding\":\"credit\",\"incremental_authorization\":{\"status\":\"unavailable\"},\"installments\":null,\"last4\":\"4242\",\"mandate\":null,\"multicapture\":{\"status\":\"unavailable\"},\"network\":\"visa\",\"network_token\":{\"used\":false},\"network_transaction_id\":\"774890669710368\",\"overcapture\":{\"maximum_amount_capturable\":2595,\"status\":\"unavailable\"},\"regulated_status\":\"unregulated\",\"three_d_secure\":null,\"wallet\":null},\"type\":\"card\"},\"radar_options\":[],\"receipt_email\":null,\"receipt_number\":null,\"receipt_url\":\"https:\\/\\/pay.stripe.com\\/receipts\\/payment\\/CAcaFwoVYWNjdF8xVDBaN3ZRMUVvSEtFaENVKKr-5MwGMgZv97pdImE6LBbMxZ1PP1U6tORszJHr0aOutijHrTwy9MpnenXoQJ_BtUnKueNhO9QjyTmv\",\"refunded\":false,\"review\":null,\"shipping\":null,\"source\":null,\"source_transfer\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null},\"livemode\":false,\"metadata\":{\"invoice_id\":\"556\",\"invoice_uuid\":\"50f6f966-7779-4099-9981-87cac81526e7\",\"transaction_id\":\"7\"},\"next_action\":null,\"on_behalf_of\":null,\"payment_method\":\"pm_1T38WCQ1EoHKEhCUsV0V0kFs\",\"payment_method_configuration_details\":{\"id\":\"pmc_1T0Z8RQ1EoHKEhCUitfkyb1e\",\"parent\":null},\"payment_method_options\":{\"card\":{\"installments\":null,\"mandate_options\":null,\"network\":null,\"request_three_d_secure\":\"automatic\"},\"link\":{\"persistent_token\":null}},\"payment_method_types\":[\"card\",\"link\"],\"processing\":null,\"receipt_email\":null,\"review\":null,\"setup_future_usage\":null,\"shipping\":null,\"source\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null}', NULL, '103.159.72.16', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '{\"invoice_no\":\"1538\",\"company_id\":\"1\"}', '2026-02-20 23:14:15', '2026-02-20 23:14:18', NULL, '2026-02-20 23:14:15', 1, '2026-02-20 23:14:18', NULL);
 
 -- --------------------------------------------------------
 
@@ -2153,7 +2171,57 @@ INSERT INTO `sys_cnf` (`id`, `cnf_key`, `cnf_val`, `cnf_group`, `created_on`, `u
 (2, 'DefaultNameServer2', 'ns2.tongbari.com', 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
 (3, 'DefaultNameServer3', NULL, 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
 (4, 'DefaultNameServer4', NULL, 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
-(5, 'cron_secret_key', 'a7f3b2c9d8e4f1a0b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8', 'SYSTEM', '2026-02-11 23:12:43', '2026-02-11 23:12:43');
+(5, 'cron_secret_key', 'a7f3b2c9d8e4f1a0b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8', 'SYSTEM', '2026-02-11 23:12:43', '2026-02-11 23:12:43'),
+(6, 'invoice_prefix', 'INV-', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(7, 'invoice_starting_number', '1000', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(8, 'invoice_due_days', '7', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(9, 'tax_enabled', '1', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(10, 'tax_name', 'VAT', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(11, 'tax_rate', '10.00', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(12, 'tax_inclusive', '0', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(13, 'late_fee_enabled', '0', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(14, 'late_fee_amount', '5.00', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(15, 'late_fee_percentage', '0', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(16, 'default_currency_code', 'USD', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(17, 'default_currency_symbol', '$', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(18, 'multi_currency_enabled', '0', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(19, 'cron_enabled', '1', 'AUTOMATION', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(20, 'invoice_generation_days_before', '7', 'AUTOMATION', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(21, 'payment_reminder_first', '3', 'AUTOMATION', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(22, 'payment_reminder_second', '1', 'AUTOMATION', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(23, 'payment_reminder_overdue', '3', 'AUTOMATION', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(24, 'suspension_days_after_due', '5', 'AUTOMATION', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(25, 'cancellation_days_after_suspension', '30', 'AUTOMATION', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(26, 'domain_reminder_first', '30', 'AUTOMATION', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(27, 'domain_reminder_second', '15', 'AUTOMATION', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(28, 'domain_reminder_third', '7', 'AUTOMATION', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(29, 'feature_customer_registration', '1', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(30, 'feature_domain_registration', '1', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(31, 'feature_support_tickets', '1', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(32, 'feature_knowledge_base', '1', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(33, 'feature_announcements', '1', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(34, 'feature_affiliate_system', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(35, 'feature_two_factor_auth', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(36, 'feature_social_login', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(37, 'admin_notification_email', 'admin@yourcompany.com', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(38, 'notify_admin_new_order', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(39, 'notify_admin_new_ticket', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(40, 'notify_admin_new_customer', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(41, 'notify_admin_payment', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(42, 'allow_customer_registration', '1', 'PORTAL', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(43, 'email_verification_required', '1', 'PORTAL', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(44, 'default_account_status', 'active', 'PORTAL', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(45, 'dashboard_show_services', '1', 'PORTAL', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(46, 'dashboard_show_invoices', '1', 'PORTAL', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(47, 'dashboard_show_tickets', '1', 'PORTAL', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(48, 'dashboard_show_announcements', '1', 'PORTAL', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(49, 'default_ticket_department', 'General Support', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43'),
+(50, 'ticket_departments', 'Technical Support,Billing Support,Sales,General Inquiry', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43'),
+(51, 'ticket_priorities', 'Low,Medium,High,Urgent', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43'),
+(52, 'auto_close_tickets_after', '7', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43'),
+(53, 'notify_customer_ticket_reply', '1', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43'),
+(54, 'ticket_attachments_enabled', '1', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43'),
+(55, 'ticket_max_attachment_size', '5120', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43');
 
 -- --------------------------------------------------------
 
@@ -2451,7 +2519,9 @@ INSERT INTO `user_logins` (`id`, `user_id`, `login_time`, `session_val`, `termin
 (116, 1, '2026-02-16 02:25:45', '0', '::1', NULL, 1),
 (117, 1, '2026-02-16 03:12:17', '0', '::1', NULL, 1),
 (118, 15, '2026-02-16 07:37:36', '0', '103.59.38.166', NULL, 1),
-(119, 1, '2026-02-18 02:04:07', '0', '::1', NULL, 1);
+(119, 1, '2026-02-18 02:04:07', '0', '::1', NULL, 1),
+(120, 1, '2026-02-18 17:15:05', '0', '::1', NULL, 1),
+(121, 1, '2026-02-20 23:00:35', '0', '103.159.72.16', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -2708,7 +2778,8 @@ ALTER TABLE `orders`
 ALTER TABLE `order_domains`
   ADD PRIMARY KEY (`id`),
   ADD KEY `company_id` (`company_id`),
-  ADD KEY `order_id` (`order_id`);
+  ADD KEY `order_id` (`order_id`),
+  ADD KEY `idx_linked_service` (`linked_service_id`);
 
 --
 -- Indexes for table `order_services`
@@ -2716,7 +2787,8 @@ ALTER TABLE `order_domains`
 ALTER TABLE `order_services`
   ADD PRIMARY KEY (`id`),
   ADD KEY `order_id` (`order_id`),
-  ADD KEY `company_id` (`company_id`);
+  ADD KEY `company_id` (`company_id`),
+  ADD KEY `idx_linked_domain` (`linked_domain_id`);
 
 --
 -- Indexes for table `pages`
@@ -2871,13 +2943,13 @@ ALTER TABLE `webhook_logs`
 -- AUTO_INCREMENT for table `add_to_carts`
 --
 ALTER TABLE `add_to_carts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `admin_logins`
 --
 ALTER TABLE `admin_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=93;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
 
 --
 -- AUTO_INCREMENT for table `admin_roles`
@@ -2979,7 +3051,7 @@ ALTER TABLE `dunning_rules`
 -- AUTO_INCREMENT for table `email_templates`
 --
 ALTER TABLE `email_templates`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `expenses`
@@ -3009,19 +3081,19 @@ ALTER TABLE `gen_numbers`
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=555;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=557;
 
 --
 -- AUTO_INCREMENT for table `invoice_items`
 --
 ALTER TABLE `invoice_items`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=571;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=575;
 
 --
 -- AUTO_INCREMENT for table `invoice_txn`
 --
 ALTER TABLE `invoice_txn`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `kbs`
@@ -3057,19 +3129,19 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=729;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=731;
 
 --
 -- AUTO_INCREMENT for table `order_domains`
 --
 ALTER TABLE `order_domains`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=725;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=727;
 
 --
 -- AUTO_INCREMENT for table `order_services`
 --
 ALTER TABLE `order_services`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=718;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=720;
 
 --
 -- AUTO_INCREMENT for table `pages`
@@ -3099,7 +3171,7 @@ ALTER TABLE `payment_refunds`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `pending_executions`
@@ -3147,7 +3219,7 @@ ALTER TABLE `servers`
 -- AUTO_INCREMENT for table `sys_cnf`
 --
 ALTER TABLE `sys_cnf`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `tickets`
@@ -3177,7 +3249,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_logins`
 --
 ALTER TABLE `user_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
 
 --
 -- AUTO_INCREMENT for table `webhook_logs`

@@ -785,6 +785,31 @@ rm test_domain_api.php
 
 ## ⚙️ Advanced Configuration
 
+### Configuration Storage
+
+WHMAZ stores most configuration in the database for easy management via Admin Portal:
+
+| What's in Database | What's in .env |
+|-------------------|----------------|
+| Company information | Database credentials |
+| Payment gateway keys | Encryption key |
+| Domain registrar API | Session settings |
+| Email templates | Environment mode |
+| Billing settings | |
+| Automation/Cron settings | |
+| Feature flags | |
+| Notification preferences | |
+
+**Running Migrations:**
+
+If you need to add new system configuration settings, run the migration:
+
+```bash
+mysql -u username -p database_name < migrations/sys_cnf_billing_automation.sql
+```
+
+This adds default values for billing, automation, features, notifications, portal, and support settings to the `sys_cnf` table.
+
 ### Custom Domain for Admin Panel
 
 By default, admin is at `/whmazadmin/`

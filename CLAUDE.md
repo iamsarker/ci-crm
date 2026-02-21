@@ -113,6 +113,23 @@ resources/assets/css/
 - Domain registrar credentials (use Admin Portal)
 - Any setting that has an Admin Portal interface
 
+**Accessing sys_cnf values in code:**
+```php
+// Load the model
+$this->load->model('Syscnf_model');
+
+// Get single value
+$invoicePrefix = $this->Syscnf_model->getValue('invoice_prefix');
+
+// Get with type casting and default
+$taxRate = $this->Syscnf_model->get('tax_rate', 0, 'float');
+$taxEnabled = $this->Syscnf_model->get('tax_enabled', false, 'bool');
+
+// Get all values in a group
+$billingConfig = $this->Syscnf_model->getByGroup('BILLING');
+// Returns: ['invoice_prefix' => 'INV-', 'tax_rate' => '10.00', ...]
+```
+
 ### Security
 - **Content Security Policy (CSP)**: `src/config/config.php` (line ~599)
   - Add external script domains here for payment gateways, analytics, etc.
@@ -185,6 +202,13 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
 - All webhooks logged to `webhook_logs` table
 - Duplicate event detection via `Payment_model::isWebhookProcessed()`
 
+**Payment Confirmation Emails:**
+- Sent automatically when invoice is marked as PAID
+- Customer receives: `invoice_payment_confirmation` template
+- Admin receives: `admin_payment_notification` template (if `notify_admin_payment` is enabled in sys_cnf)
+- Method: `Payment_model::sendPaymentConfirmationEmails($transactionId)`
+- Called from: `Payment_model::processSuccessfulPayment()`
+
 ### Database
 - **Database Config**: `src/config/database.php`
 - **SQL Schema**: `crm_db.sql`
@@ -201,7 +225,7 @@ When adding new features that require schema changes:
 | Migration | Description |
 |-----------|-------------|
 | `cart_enhancements.sql` | Cart linking (parent_cart_id, domain_action, epp_code) + Order linking (linked_domain_id, linked_service_id) |
-| `sys_cnf_billing_automation.sql` | System config: Billing, Automation, Features, Notifications, Portal, Support |
+| `sys_cnf_billing_automation.sql` | System config + Payment email templates (Billing, Automation, Features, Notifications, Portal, Support) |
 
 ### Views
 - **Customer Payment Page**: `src/modules/billing/views/billing_pay.php`

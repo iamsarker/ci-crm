@@ -357,6 +357,9 @@ class Payment_model extends CI_Model
             // Trigger service provisioning
             $this->Invoice_model->provisionPaidServices($invoiceId);
 
+            // Send payment confirmation emails to customer and admin
+            $this->sendPaymentConfirmationEmails($transactionId);
+
             log_message('info', 'Invoice #' . $invoiceId . ' marked as PAID. Total: ' . $invoiceTotal . ', Paid: ' . $totalPaid);
             return true;
 
@@ -431,5 +434,125 @@ class Payment_model extends CI_Model
         $query = $this->db->query($sql, $bindings);
         $data = $query->row_array();
         return !empty($data) ? $data['cnt'] : 0;
+    }
+
+    // =========================================
+    // Payment Confirmation Emails
+    // =========================================
+
+    /**
+     * Send payment confirmation emails to customer and admin
+     *
+     * @param int $transactionId Transaction ID
+     * @return array Results of email sending
+     */
+    function sendPaymentConfirmationEmails($transactionId)
+    {
+        $result = array('customer' => false, 'admin' => false);
+
+        $transaction = $this->getTransactionById($transactionId);
+        if (empty($transaction) || $transaction['status'] !== 'completed') {
+            log_message('error', 'sendPaymentConfirmationEmails: Invalid transaction - ID: ' . $transactionId);
+            return $result;
+        }
+
+        // Get invoice details
+        $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
+        if (empty($invoice)) {
+            log_message('error', 'sendPaymentConfirmationEmails: Invoice not found - ID: ' . $transaction['invoice_id']);
+            return $result;
+        }
+
+        // Get customer/company details
+        $company = $this->db->where('id', $invoice['company_id'])->get('companies')->row_array();
+        if (empty($company)) {
+            log_message('error', 'sendPaymentConfirmationEmails: Company not found - ID: ' . $invoice['company_id']);
+            return $result;
+        }
+
+        // Get app settings
+        $appSettings = getAppSettings();
+
+        // Get currency symbol
+        $currency = $this->db->where('id', $invoice['currency_id'])->get('currencies')->row();
+        $currencySymbol = $currency ? $currency->currency_symbol : '$';
+
+        // Get gateway name
+        $gateway = $this->db->where('id', $transaction['payment_gateway_id'])->get('payment_gateway')->row();
+        $gatewayName = $gateway ? $gateway->name : ucfirst($transaction['gateway_code']);
+
+        // Common placeholders
+        $placeholders = array(
+            '{client_name}' => $company['first_name'] . ' ' . $company['last_name'],
+            '{company_name_customer}' => $company['company_name'],
+            '{client_email}' => $company['email'],
+            '{invoice_no}' => $invoice['invoice_no'],
+            '{amount}' => number_format($transaction['amount'], 2),
+            '{currency_symbol}' => $currencySymbol,
+            '{payment_method}' => ucfirst($transaction['payment_method'] ?: 'card'),
+            '{gateway_name}' => $gatewayName,
+            '{transaction_id}' => $transaction['gateway_transaction_id'] ?: $transaction['transaction_uuid'],
+            '{payment_date}' => date('F j, Y g:i A', strtotime($transaction['completed_at'] ?: $transaction['initiated_at'])),
+            '{company_name}' => $appSettings->company_name,
+            '{admin_invoice_url}' => base_url() . 'whmazadmin/invoice/view/' . $invoice['company_id'] . '/' . $invoice['invoice_uuid']
+        );
+
+        // Send customer email
+        $result['customer'] = $this->_sendPaymentEmail(
+            'invoice_payment_confirmation',
+            $company['email'],
+            $placeholders
+        );
+
+        // Send admin email if notifications enabled
+        $this->load->model('Syscnf_model');
+        $notifyAdmin = $this->Syscnf_model->get('notify_admin_payment', '1', 'bool');
+
+        if ($notifyAdmin && !empty($appSettings->email)) {
+            $result['admin'] = $this->_sendPaymentEmail(
+                'admin_payment_notification',
+                $appSettings->email,
+                $placeholders
+            );
+        }
+
+        log_message('info', 'Payment confirmation emails sent for transaction #' . $transactionId .
+            ' - Customer: ' . ($result['customer'] ? 'Yes' : 'No') .
+            ', Admin: ' . ($result['admin'] ? 'Yes' : 'No'));
+
+        return $result;
+    }
+
+    /**
+     * Send payment email using template
+     *
+     * @param string $templateKey Email template key
+     * @param string $toEmail Recipient email
+     * @param array $placeholders Placeholder values
+     * @return bool Success status
+     */
+    private function _sendPaymentEmail($templateKey, $toEmail, $placeholders)
+    {
+        // Get email template
+        $this->db->where('template_key', $templateKey);
+        $this->db->where('status', 1);
+        $template = $this->db->get('email_templates')->row_array();
+
+        if (empty($template)) {
+            log_message('error', '_sendPaymentEmail: Template not found - ' . $templateKey);
+            return false;
+        }
+
+        // Replace placeholders in subject and body
+        $subject = $template['subject'];
+        $body = $template['body'];
+
+        foreach ($placeholders as $key => $value) {
+            $subject = str_replace($key, $value, $subject);
+            $body = str_replace($key, $value, $body);
+        }
+
+        // Send email
+        return sendHtmlEmail($toEmail, $subject, $body);
     }
 }

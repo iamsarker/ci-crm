@@ -98,7 +98,54 @@ INSERT INTO `sys_cnf` (`cnf_key`, `cnf_val`, `cnf_group`, `created_on`, `updated
 ('ticket_max_attachment_size', '5120', 'SUPPORT', NOW(), NOW());
 
 -- =============================================================================
+-- EMAIL TEMPLATES FOR PAYMENT NOTIFICATIONS
+-- =============================================================================
+
+-- Customer Payment Confirmation Email
+INSERT INTO `email_templates` (`template_key`, `template_name`, `category`, `subject`, `body`, `placeholders`, `status`, `created_on`, `updated_on`) VALUES
+('invoice_payment_confirmation', 'Payment Confirmation', 'INVOICE',
+'Payment Received - Invoice #{invoice_no}',
+'<p>Dear {client_name},</p>
+<p>Thank you for your payment! We have successfully received your payment for Invoice <strong>#{invoice_no}</strong>.</p>
+<h3>Payment Details:</h3>
+<table style="border-collapse: collapse; width: 100%; max-width: 500px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Invoice Number:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">#{invoice_no}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Amount Paid:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{currency_symbol}{amount}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Payment Method:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{payment_method}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Transaction ID:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{transaction_id}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Payment Date:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{payment_date}</td></tr>
+</table>
+<p style="margin-top: 20px;">You can view your invoice and payment history by logging into your account.</p>
+<p>If you have any questions about this payment, please don''t hesitate to contact us.</p>
+<p>Thank you for your business!</p>
+<p>Best Regards,<br>{company_name}</p>',
+'{client_name}, {invoice_no}, {amount}, {currency_symbol}, {payment_method}, {transaction_id}, {payment_date}, {company_name}',
+1, NOW(), NOW());
+
+-- Admin Payment Notification Email
+INSERT INTO `email_templates` (`template_key`, `template_name`, `category`, `subject`, `body`, `placeholders`, `status`, `created_on`, `updated_on`) VALUES
+('admin_payment_notification', 'Admin Payment Notification', 'INVOICE',
+'New Payment Received - Invoice #{invoice_no} - {currency_symbol}{amount}',
+'<p>A new payment has been received.</p>
+<h3>Payment Details:</h3>
+<table style="border-collapse: collapse; width: 100%; max-width: 500px;">
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Customer:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{client_name}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Company:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{company_name_customer}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Email:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{client_email}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Invoice Number:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">#{invoice_no}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Amount:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{currency_symbol}{amount}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Payment Method:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{payment_method}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Gateway:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{gateway_name}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Transaction ID:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{transaction_id}</td></tr>
+<tr><td style="padding: 8px; border: 1px solid #ddd; background: #f5f5f5;"><strong>Payment Date:</strong></td><td style="padding: 8px; border: 1px solid #ddd;">{payment_date}</td></tr>
+</table>
+<p style="margin-top: 20px;"><a href="{admin_invoice_url}" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">View Invoice</a></p>',
+'{client_name}, {company_name_customer}, {client_email}, {invoice_no}, {amount}, {currency_symbol}, {payment_method}, {gateway_name}, {transaction_id}, {payment_date}, {admin_invoice_url}',
+1, NOW(), NOW());
+
+-- =============================================================================
 -- VERIFICATION QUERY
 -- =============================================================================
 -- Run this to verify the migration was successful:
 -- SELECT cnf_group, COUNT(*) as count FROM sys_cnf GROUP BY cnf_group;
+-- SELECT template_key, template_name FROM email_templates WHERE template_key IN ('invoice_payment_confirmation', 'admin_payment_notification');

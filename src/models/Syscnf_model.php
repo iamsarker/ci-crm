@@ -119,4 +119,56 @@ class Syscnf_model extends CI_Model
 		return array('success' => $result ? 1 : 0);
 	}
 
+	/**
+	 * Get all configurations by group as key-value pairs
+	 *
+	 * @param string $group Group name (BILLING, AUTOMATION, FEATURES, etc.)
+	 * @return array Key-value pairs of configurations
+	 */
+	function getByGroup($group)
+	{
+		$this->db->select('cnf_key, cnf_val');
+		$this->db->from($this->table);
+		$this->db->where('cnf_group', $group);
+		$data = $this->db->get()->result_array();
+
+		$config = array();
+		foreach ($data as $row) {
+			$config[$row['cnf_key']] = $row['cnf_val'];
+		}
+
+		return $config;
+	}
+
+	/**
+	 * Get configuration value with type casting
+	 *
+	 * @param string $key Config key
+	 * @param mixed $default Default value if not found
+	 * @param string $type Type to cast (string, int, float, bool)
+	 * @return mixed Configuration value
+	 */
+	function get($key, $default = null, $type = 'string')
+	{
+		$value = $this->getValue($key);
+
+		if ($value === null) {
+			return $default;
+		}
+
+		switch ($type) {
+			case 'int':
+			case 'integer':
+				return intval($value);
+			case 'float':
+			case 'double':
+				return floatval($value);
+			case 'bool':
+			case 'boolean':
+				return in_array(strtolower($value), array('1', 'true', 'yes', 'on'));
+			default:
+				return $value;
+		}
+	}
+
 }
