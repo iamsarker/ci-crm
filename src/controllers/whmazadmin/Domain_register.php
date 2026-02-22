@@ -29,11 +29,15 @@ class Domain_register extends WHMAZADMIN_Controller {
 			$sqlQuery = $this->Domainregister_model->buildDataTableQuery($params, $bindings, $where);
 			$data = $this->Domainregister_model->getDataTableRecords($sqlQuery, $bindings);
 
+			// Get registrar stats for dashboard cards
+			$stats = $this->Domainregister_model->getRegistrarStats();
+
 			$response = array(
 				"draw"            => !empty($params['draw']) ? intval($params['draw']) : 0,
 				"recordsTotal"    => intval($this->Domainregister_model->countDataTableTotalRecords()),
 				"recordsFiltered" => intval($this->Domainregister_model->countDataTableFilterRecords($where, $bindings)),
-				"data"            => $data
+				"data"            => $data,
+				"stats"           => $stats
 			);
 
 			header('Content-Type: application/json');

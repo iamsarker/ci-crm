@@ -1,31 +1,53 @@
 <?php $this->load->view('whmazadmin/include/login_header');?>
+<link rel="stylesheet" href="<?=base_url()?>resources/assets/css/admin.custom.css">
 
-<div class="content content-fixed content-profile content-wrapper">
-	<div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
-		<?php if ($this->session->flashdata('alert')) { ?>
-		<?= $this->session->flashdata('alert') ?>
-		<?php } ?>
-		<div class="content-auth mt-4">
-			<div class="media align-items-stretch justify-content-center ht-100p pos-relative">
-				<div class="sign-wrapper mg-lg-l-50 mg-xl-l-60">
-					<div class="wd-400">
-						<form method="post" action="">
-							<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
-							<h3 class="tx-color-01 mg-b-5">Reset your password</h3>
-							<p class="tx-color-03 tx-16 mg-b-40">Enter your email and we'll send you a reset link.</p>
+<div class="admin-auth-wrapper">
+	<div class="admin-auth-container admin-auth-container-single">
+		<!-- Form Panel Only -->
+		<div class="admin-auth-form-panel admin-auth-form-panel-full">
+			<?php if ($this->session->flashdata('alert')) { ?>
+			<div class="auth-alert-container">
+				<?= $this->session->flashdata('alert') ?>
+			</div>
+			<?php } ?>
 
-							<div class="form-group">
-								<input type="text" name="username" class="form-control" placeholder="Enter username/email address">
-							</div>
-							<button class="btn btn-brand-02 btn-block">Reset Password</button>
-							<div class="mg-t-10">
-								<span class="tx-12 tx-color-03">Back to <a href="<?=base_url()?>whmazadmin/authenticate/login">Login page</a></span>
-							</div>
-						</form>
+			<div class="admin-auth-form-wrapper">
+				<div class="auth-icon-header">
+					<div class="auth-icon-circle">
+						<i class="fas fa-key"></i>
 					</div>
-				</div><!-- sign-wrapper -->
-			</div><!-- media -->
-		</div><!-- content -->
+				</div>
+
+				<div class="auth-form-header text-center">
+					<h3>Forgot Password?</h3>
+					<p>No worries! Enter your email and we'll send you a reset link.</p>
+				</div>
+
+				<form method="post" action="" class="admin-auth-form">
+					<input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
+
+					<div class="auth-form-group">
+						<label class="auth-form-label">
+							<i class="fas fa-envelope"></i>
+							Username or Email Address
+						</label>
+						<input type="text" name="username" class="auth-form-control" placeholder="Enter your username or email address" required>
+					</div>
+
+					<button type="submit" class="auth-submit-btn">
+						<i class="fas fa-paper-plane me-2"></i>
+						Send Reset Link
+					</button>
+				</form>
+
+				<div class="auth-form-footer text-center">
+					<a href="<?=base_url()?>whmazadmin/authenticate/login">
+						<i class="fas fa-arrow-left me-1"></i>
+						Back to Login
+					</a>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 

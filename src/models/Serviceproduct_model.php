@@ -122,5 +122,38 @@ class Serviceproduct_model extends CI_Model{
 			return 0;
 		}
 	}
+
+	/**
+	 * Get service product statistics for dashboard cards
+	 *
+	 * @return array Stats including total, active, service groups, and hidden counts
+	 */
+	function getProductStats() {
+		try {
+			$query = $this->db->query("
+				SELECT
+					COUNT(*) as total_products,
+					SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_products,
+					COUNT(DISTINCT CASE WHEN status = 1 THEN product_service_group_id END) as service_groups,
+					SUM(CASE WHEN status = 1 AND is_hidden = 1 THEN 1 ELSE 0 END) as hidden_products
+				FROM product_services
+			");
+			$data = $query->row_array();
+			return array(
+				'total_products' => intval($data['total_products'] ?? 0),
+				'active_products' => intval($data['active_products'] ?? 0),
+				'service_groups' => intval($data['service_groups'] ?? 0),
+				'hidden_products' => intval($data['hidden_products'] ?? 0)
+			);
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('getProductStats', $this->db->last_query(), $e->getMessage());
+			return array(
+				'total_products' => 0,
+				'active_products' => 0,
+				'service_groups' => 0,
+				'hidden_products' => 0
+			);
+		}
+	}
 }
 ?>

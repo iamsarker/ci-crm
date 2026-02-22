@@ -202,6 +202,30 @@ class Order_model extends CI_Model{
 		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
 
+	/**
+	 * Get order statistics for dashboard cards
+	 *
+	 * @return array Stats including total, active, this month counts and total revenue
+	 */
+	function getOrderStats() {
+		$query = $this->db->query("
+			SELECT
+				COUNT(*) as total_orders,
+				SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_orders,
+				SUM(CASE WHEN YEAR(order_date) = YEAR(CURDATE()) AND MONTH(order_date) = MONTH(CURDATE()) THEN 1 ELSE 0 END) as this_month_orders,
+				COALESCE(SUM(total_amount), 0) as total_revenue
+			FROM orders
+			WHERE status = 1
+		");
+		$data = $query->row_array();
+		return array(
+			'total_orders' => intval($data['total_orders'] ?? 0),
+			'active_orders' => intval($data['active_orders'] ?? 0),
+			'this_month_orders' => intval($data['this_month_orders'] ?? 0),
+			'total_revenue' => floatval($data['total_revenue'] ?? 0)
+		);
+	}
+
 	function getDetail($id) {
 		$this->db->select('*');
 		$this->db->from("orders");

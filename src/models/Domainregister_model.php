@@ -57,6 +57,40 @@ class Domainregister_model extends CI_Model{
 		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
 
+	/**
+	 * Get registrar statistics for dashboard cards
+	 *
+	 * @return array Stats including total, active, default, and platforms counts
+	 */
+	function getRegistrarStats() {
+		try {
+			$query = $this->db->query("
+				SELECT
+					COUNT(*) as total_registrars,
+					SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_registrars,
+					SUM(CASE WHEN is_selected = 1 AND status = 1 THEN 1 ELSE 0 END) as default_registrar,
+					COUNT(DISTINCT platform) as platforms
+				FROM {$this->table}
+				WHERE status = 1
+			");
+			$data = $query->row_array();
+			return array(
+				'total_registrars' => intval($data['total_registrars'] ?? 0),
+				'active_registrars' => intval($data['active_registrars'] ?? 0),
+				'default_registrar' => intval($data['default_registrar'] ?? 0),
+				'platforms' => intval($data['platforms'] ?? 0)
+			);
+		} catch (Exception $e) {
+			log_message('error', 'Domainregister_model::getRegistrarStats - ' . $e->getMessage());
+			return array(
+				'total_registrars' => 0,
+				'active_registrars' => 0,
+				'default_registrar' => 0,
+				'platforms' => 0
+			);
+		}
+	}
+
 	function buildDataTableQuery($request, &$bindings, &$where) {
 		// Build the SQL query
 		$limit = ssp_limit($request);

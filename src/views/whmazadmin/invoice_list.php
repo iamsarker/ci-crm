@@ -69,8 +69,8 @@
 					<h4 class="mb-1"><i class="fa fa-file-invoice me-2"></i>Invoices</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
-							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
-							<li class="breadcrumb-item active text-white">Invoices</li>
+							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+							<li class="breadcrumb-item active">Invoices</li>
 						</ol>
 					</nav>
 				</div>
@@ -99,7 +99,15 @@ $(function(){
 		"ajax": {
 			"url": "<?=base_url()?>whmazadmin/invoice/ssp_list_api/",
 			"dataSrc": function(json) {
-				$('#totalInvoices').text(json.recordsTotal || 0);
+				// Update stats cards
+				if (json.stats) {
+					$('#totalInvoices').text(json.stats.total_invoices || 0);
+					$('#paidInvoices').text(json.stats.paid_invoices || 0);
+					$('#dueInvoices').text(json.stats.due_invoices || 0);
+					$('#totalAmount').text(parseFloat(json.stats.total_amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+				} else {
+					$('#totalInvoices').text(json.recordsTotal || 0);
+				}
 				return json.data;
 			}
 		},

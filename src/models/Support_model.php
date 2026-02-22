@@ -49,6 +49,30 @@ class Support_model extends CI_Model{
 		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
 
+	/**
+	 * Get ticket statistics for dashboard cards
+	 *
+	 * @return array Stats including total, open, awaiting reply, and closed counts
+	 */
+	function getTicketStats() {
+		$query = $this->db->query("
+			SELECT
+				COUNT(*) as total_tickets,
+				SUM(CASE WHEN flag = 1 THEN 1 ELSE 0 END) as open_tickets,
+				SUM(CASE WHEN flag = 3 THEN 1 ELSE 0 END) as awaiting_reply,
+				SUM(CASE WHEN flag = 4 THEN 1 ELSE 0 END) as closed_tickets
+			FROM ticket_view
+			WHERE status = 1
+		");
+		$data = $query->row_array();
+		return array(
+			'total_tickets' => intval($data['total_tickets'] ?? 0),
+			'open_tickets' => intval($data['open_tickets'] ?? 0),
+			'awaiting_reply' => intval($data['awaiting_reply'] ?? 0),
+			'closed_tickets' => intval($data['closed_tickets'] ?? 0)
+		);
+	}
+
 	function viewTicket($tId, $companyId) {
 		// SECURITY FIX: Use prepared statement to prevent SQL injection
 		// Validate inputs

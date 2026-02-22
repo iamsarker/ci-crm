@@ -107,6 +107,39 @@ class Company_model extends CI_Model{
 		}
 	}
 
+	/**
+	 * Get company statistics for dashboard cards
+	 *
+	 * @return array Stats including total, active, this month counts and countries count
+	 */
+	function getCompanyStats() {
+		try {
+			$query = $this->db->query("
+				SELECT
+					COUNT(*) as total_companies,
+					SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_companies,
+					SUM(CASE WHEN status = 1 AND YEAR(inserted_on) = YEAR(CURDATE()) AND MONTH(inserted_on) = MONTH(CURDATE()) THEN 1 ELSE 0 END) as this_month_companies,
+					COUNT(DISTINCT CASE WHEN status = 1 AND country IS NOT NULL AND country != '' THEN country END) as countries_count
+				FROM ".$this->table."
+			");
+			$data = $query->row_array();
+			return array(
+				'total_companies' => intval($data['total_companies'] ?? 0),
+				'active_companies' => intval($data['active_companies'] ?? 0),
+				'this_month_companies' => intval($data['this_month_companies'] ?? 0),
+				'countries_count' => intval($data['countries_count'] ?? 0)
+			);
+		} catch (Exception $e) {
+			ErrorHandler::log_database_error('getCompanyStats', $this->db->last_query(), $e->getMessage());
+			return array(
+				'total_companies' => 0,
+				'active_companies' => 0,
+				'this_month_companies' => 0,
+				'countries_count' => 0
+			);
+		}
+	}
+
 	// ============================================
 	// Services DataTable Methods
 	// ============================================

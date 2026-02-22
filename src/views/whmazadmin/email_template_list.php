@@ -69,8 +69,8 @@
 					<h4 class="mb-1"><i class="fa fa-envelope me-2"></i>Email Templates</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
-							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
-							<li class="breadcrumb-item active text-white">Email Templates</li>
+							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+							<li class="breadcrumb-item active">Email Templates</li>
 						</ol>
 					</nav>
 				</div>
@@ -99,7 +99,15 @@ $(function(){
 		"ajax": {
 			"url": "<?=base_url()?>whmazadmin/email_template/ssp_list_api/",
 			"dataSrc": function(json) {
-				$('#totalTemplates').text(json.recordsTotal || 0);
+				// Update stats cards
+				if (json.stats) {
+					$('#totalTemplates').text(json.stats.total_templates || 0);
+					$('#activeTemplates').text(json.stats.active_templates || 0);
+					$('#categories').text(json.stats.categories || 0);
+					$('#inactiveTemplates').text(json.stats.inactive_templates || 0);
+				} else {
+					$('#totalTemplates').text(json.recordsTotal || 0);
+				}
 				return json.data;
 			}
 		},

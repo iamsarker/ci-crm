@@ -384,11 +384,15 @@ class Order extends WHMAZADMIN_Controller
 
 			$data = $this->Order_model->getDataTableRecords($sqlQuery, $bindings);
 
+			// Get order stats for dashboard cards
+			$stats = $this->Order_model->getOrderStats();
+
 			$response = array(
 				"draw"            => !empty( $params['draw'] ) ? intval($params['draw']) : 0,
 				"recordsTotal"    => intval( $this->Order_model->countDataTableTotalRecords() ),
 				"recordsFiltered" => intval( $this->Order_model->countDataTableFilterRecords($where, $bindings) ),
-				"data"            => $data
+				"data"            => $data,
+				"stats"           => $stats
 			);
 
 			echo json_encode($response);

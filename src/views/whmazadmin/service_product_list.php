@@ -69,8 +69,8 @@
 					<h4 class="mb-1"><i class="fa fa-cube me-2"></i>Service Products</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
-							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
-							<li class="breadcrumb-item active text-white">Service Products</li>
+							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+							<li class="breadcrumb-item active">Service Products</li>
 						</ol>
 					</nav>
 				</div>
@@ -99,8 +99,16 @@ $(function(){
 		"ajax": {
 			"url": "<?=base_url()?>whmazadmin/service_product/ssp_list_api/",
 			"dataSrc": function(json) {
-				$('#totalProducts').text(json.recordsTotal || 0);
-				$('#activeProducts').text(json.recordsTotal || 0);
+				// Update stats cards
+				if (json.stats) {
+					$('#totalProducts').text(json.stats.total_products || 0);
+					$('#activeProducts').text(json.stats.active_products || 0);
+					$('#serviceGroups').text(json.stats.service_groups || 0);
+					$('#hiddenProducts').text(json.stats.hidden_products || 0);
+				} else {
+					$('#totalProducts').text(json.recordsTotal || 0);
+					$('#activeProducts').text(json.recordsTotal || 0);
+				}
 				return json.data;
 			}
 		},

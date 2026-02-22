@@ -177,11 +177,15 @@ class Ticket extends WHMAZADMIN_Controller {
 
 			$data = $this->Support_model->getDataTableRecords($sqlQuery, $bindings);
 
+			// Get ticket stats for dashboard cards
+			$stats = $this->Support_model->getTicketStats();
+
 			$response = array(
 				"draw"            => !empty( $params['draw'] ) ? intval($params['draw']) : 0,
 				"recordsTotal"    => intval( $this->Support_model->countDataTableTotalRecords() ),
 				"recordsFiltered" => intval( $this->Support_model->countDataTableFilterRecords($where, $bindings) ),
-				"data"            => $data
+				"data"            => $data,
+				"stats"           => $stats
 			);
 
 			echo json_encode($response);

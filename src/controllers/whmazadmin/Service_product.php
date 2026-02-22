@@ -34,11 +34,15 @@ class Service_product extends WHMAZADMIN_Controller {
 
 			$data = $this->Serviceproduct_model->getDataTableRecords($sqlQuery, $bindings);
 
+			// Get product stats for dashboard cards
+			$stats = $this->Serviceproduct_model->getProductStats();
+
 			$response = array(
 				"draw"            => !empty( $params['draw'] ) ? intval($params['draw']) : 0,
 				"recordsTotal"    => intval( $this->Serviceproduct_model->countDataTableTotalRecords() ),
 				"recordsFiltered" => intval( $this->Serviceproduct_model->countDataTableFilterRecords($where, $bindings) ),
-				"data"            => $data
+				"data"            => $data,
+				"stats"           => $stats
 			);
 
 			echo json_encode($response);

@@ -69,8 +69,8 @@
 					<h4 class="mb-1"><i class="fa fa-layer-group me-2"></i>Service Groups</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
-							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
-							<li class="breadcrumb-item active text-white">Service Groups</li>
+							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+							<li class="breadcrumb-item active">Service Groups</li>
 						</ol>
 					</nav>
 				</div>

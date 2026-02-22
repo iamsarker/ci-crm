@@ -97,11 +97,15 @@ class Invoice extends WHMAZADMIN_Controller
 
 			$data = $this->Invoice_model->getDataTableRecords($sqlQuery, $bindings);
 
+			// Get invoice stats for dashboard cards
+			$stats = $this->Invoice_model->getInvoiceStats();
+
 			$response = array(
 				"draw"            => !empty( $params['draw'] ) ? intval($params['draw']) : 0,
 				"recordsTotal"    => intval( $this->Invoice_model->countDataTableTotalRecords() ),
 				"recordsFiltered" => intval( $this->Invoice_model->countDataTableFilterRecords($where, $bindings) ),
-				"data"            => $data
+				"data"            => $data,
+				"stats"           => $stats
 			);
 
 			echo json_encode($response);

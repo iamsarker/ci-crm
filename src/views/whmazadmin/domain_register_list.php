@@ -69,8 +69,8 @@
 					<h4 class="mb-1"><i class="fa fa-server me-2"></i>Domain Registrars</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
-							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
-							<li class="breadcrumb-item active text-white">Domain Registrars</li>
+							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+							<li class="breadcrumb-item active">Domain Registrars</li>
 						</ol>
 					</nav>
 				</div>
@@ -99,7 +99,15 @@ $(function(){
 		"ajax": {
 			"url": "<?=base_url()?>whmazadmin/domain_register/ssp_list_api/",
 			"dataSrc": function(json) {
-				$('#totalRegistrars').text(json.recordsTotal || 0);
+				// Update stats cards
+				if (json.stats) {
+					$('#totalRegistrars').text(json.stats.total_registrars || 0);
+					$('#activeRegistrars').text(json.stats.active_registrars || 0);
+					$('#defaultRegistrar').text(json.stats.default_registrar || 0);
+					$('#platforms').text(json.stats.platforms || 0);
+				} else {
+					$('#totalRegistrars').text(json.recordsTotal || 0);
+				}
 				return json.data;
 			}
 		},

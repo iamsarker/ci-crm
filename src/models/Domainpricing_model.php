@@ -98,6 +98,40 @@ class Domainpricing_model extends CI_Model{
 		}
 	}
 
+	/**
+	 * Get pricing statistics for dashboard cards
+	 *
+	 * @return array Stats including total, active, extensions, and currencies counts
+	 */
+	function getPricingStats() {
+		try {
+			$query = $this->db->query("
+				SELECT
+					COUNT(*) as total_pricing,
+					SUM(CASE WHEN dp.status = 1 THEN 1 ELSE 0 END) as active_pricing,
+					COUNT(DISTINCT dp.dom_extension_id) as unique_extensions,
+					COUNT(DISTINCT dp.currency_id) as currencies
+				FROM {$this->table} dp
+				WHERE dp.status = 1
+			");
+			$data = $query->row_array();
+			return array(
+				'total_pricing' => intval($data['total_pricing'] ?? 0),
+				'active_pricing' => intval($data['active_pricing'] ?? 0),
+				'unique_extensions' => intval($data['unique_extensions'] ?? 0),
+				'currencies' => intval($data['currencies'] ?? 0)
+			);
+		} catch (Exception $e) {
+			log_message('error', 'Domainpricing_model::getPricingStats - ' . $e->getMessage());
+			return array(
+				'total_pricing' => 0,
+				'active_pricing' => 0,
+				'unique_extensions' => 0,
+				'currencies' => 0
+			);
+		}
+	}
+
 	function buildDataTableQuery($request, &$bindings, &$where) {
 		// Build the SQL query with proper joins
 		$limit = ssp_limit($request);

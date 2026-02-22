@@ -69,8 +69,8 @@
 					<h4 class="mb-1"><i class="fa fa-globe me-2"></i>Domain Pricing</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
-							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
-							<li class="breadcrumb-item active text-white">Domain Pricing</li>
+							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+							<li class="breadcrumb-item active">Domain Pricing</li>
 						</ol>
 					</nav>
 				</div>
@@ -99,7 +99,15 @@ $(function(){
 		"ajax": {
 			"url": "<?=base_url()?>whmazadmin/domain_pricing/ssp_list_api/",
 			"dataSrc": function(json) {
-				$('#totalPricing').text(json.recordsTotal || 0);
+				// Update stats cards
+				if (json.stats) {
+					$('#totalPricing').text(json.stats.total_pricing || 0);
+					$('#activePricing').text(json.stats.active_pricing || 0);
+					$('#uniqueExtensions').text(json.stats.unique_extensions || 0);
+					$('#currencies').text(json.stats.currencies || 0);
+				} else {
+					$('#totalPricing').text(json.recordsTotal || 0);
+				}
 				return json.data;
 			}
 		},

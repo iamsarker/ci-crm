@@ -1,4 +1,9 @@
 /* List Page Specific Styles */
+:root {
+	--md-secondary: linear-gradient(135deg, #546E7A 0%, #455A64 100%);
+	--md-secondary-shadow: rgba(84, 110, 122, 0.3);
+}
+
 .stats-card {
 	border: none;
 	border-radius: 12px;

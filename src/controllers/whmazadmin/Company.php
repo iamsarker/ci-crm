@@ -155,11 +155,15 @@ class Company extends WHMAZADMIN_Controller {
 
 			$data = $this->Company_model->getDataTableRecords($sqlQuery, $bindings);
 
+			// Get company stats for dashboard cards
+			$stats = $this->Company_model->getCompanyStats();
+
 			$response = array(
 				"draw"            => !empty( $params['draw'] ) ? intval($params['draw']) : 0,
 				"recordsTotal"    => intval( $this->Company_model->countDataTableTotalRecords() ),
 				"recordsFiltered" => intval( $this->Company_model->countDataTableFilterRecords($where, $bindings) ),
-				"data"            => $data
+				"data"            => $data,
+				"stats"           => $stats
 			);
 
 			echo json_encode($response);
@@ -581,6 +585,9 @@ class Company extends WHMAZADMIN_Controller {
 		}
 
 		try {
+			// Load cPanel helper
+			$this->load->helper('cpanel');
+
 			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
 
 			if (empty($service) || empty($service['cp_username'])) {
@@ -632,6 +639,9 @@ class Company extends WHMAZADMIN_Controller {
 		}
 
 		try {
+			// Load cPanel helper
+			$this->load->helper('cpanel');
+
 			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
 
 			if (empty($service) || empty($service['cp_username'])) {
@@ -683,6 +693,9 @@ class Company extends WHMAZADMIN_Controller {
 		}
 
 		try {
+			// Load cPanel helper
+			$this->load->helper('cpanel');
+
 			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
 
 			if (empty($service) || empty($service['cp_username'])) {

@@ -23,6 +23,30 @@ class Invoice_model extends CI_Model{
 		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
 
+	/**
+	 * Get invoice statistics for dashboard cards
+	 *
+	 * @return array Stats including total, paid, due counts and total amount
+	 */
+	function getInvoiceStats() {
+		$query = $this->db->query("
+			SELECT
+				COUNT(*) as total_invoices,
+				SUM(CASE WHEN pay_status = 'PAID' THEN 1 ELSE 0 END) as paid_invoices,
+				SUM(CASE WHEN pay_status = 'DUE' THEN 1 ELSE 0 END) as due_invoices,
+				COALESCE(SUM(total), 0) as total_amount
+			FROM invoice_view
+			WHERE status = 1
+		");
+		$data = $query->row_array();
+		return array(
+			'total_invoices' => intval($data['total_invoices'] ?? 0),
+			'paid_invoices' => intval($data['paid_invoices'] ?? 0),
+			'due_invoices' => intval($data['due_invoices'] ?? 0),
+			'total_amount' => floatval($data['total_amount'] ?? 0)
+		);
+	}
+
 	function getInvoiceByUuid($invoice_uuid) {
 		$this->db->select('*');
 		$this->db->from("invoices");

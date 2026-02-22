@@ -153,5 +153,39 @@ class Emailtemplate_model extends CI_Model {
 		$sql = "SELECT DISTINCT category FROM {$this->table} WHERE deleted_on IS NULL ORDER BY category ASC";
 		return $this->db->query($sql)->result_array();
 	}
+
+	/**
+	 * Get email template statistics for dashboard cards
+	 *
+	 * @return array Stats including total, active, categories, and inactive counts
+	 */
+	function getTemplateStats() {
+		try {
+			$query = $this->db->query("
+				SELECT
+					COUNT(*) as total_templates,
+					SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_templates,
+					COUNT(DISTINCT category) as categories,
+					SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as inactive_templates
+				FROM {$this->table}
+				WHERE deleted_on IS NULL
+			");
+			$data = $query->row_array();
+			return array(
+				'total_templates' => intval($data['total_templates'] ?? 0),
+				'active_templates' => intval($data['active_templates'] ?? 0),
+				'categories' => intval($data['categories'] ?? 0),
+				'inactive_templates' => intval($data['inactive_templates'] ?? 0)
+			);
+		} catch (Exception $e) {
+			log_message('error', 'Emailtemplate_model::getTemplateStats - ' . $e->getMessage());
+			return array(
+				'total_templates' => 0,
+				'active_templates' => 0,
+				'categories' => 0,
+				'inactive_templates' => 0
+			);
+		}
+	}
 }
 ?>

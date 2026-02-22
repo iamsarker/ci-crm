@@ -100,11 +100,15 @@ class Email_template extends WHMAZADMIN_Controller {
 
 			$data = $this->Emailtemplate_model->getDataTableRecords($sqlQuery, $bindings);
 
+			// Get template stats for dashboard cards
+			$stats = $this->Emailtemplate_model->getTemplateStats();
+
 			$response = array(
 				"draw"            => !empty($params['draw']) ? intval($params['draw']) : 0,
 				"recordsTotal"    => intval($this->Emailtemplate_model->countDataTableTotalRecords()),
 				"recordsFiltered" => intval($this->Emailtemplate_model->countDataTableFilterRecords($where, $bindings)),
-				"data"            => $data
+				"data"            => $data,
+				"stats"           => $stats
 			);
 
 			echo json_encode($response);

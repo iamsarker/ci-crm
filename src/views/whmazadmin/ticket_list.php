@@ -69,11 +69,14 @@
 					<h4 class="mb-1"><i class="fa fa-ticket-alt me-2"></i>Support Tickets</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
-							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
-							<li class="breadcrumb-item active text-white">Tickets</li>
+							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+							<li class="breadcrumb-item active">Tickets</li>
 						</ol>
 					</nav>
 				</div>
+				<a href="<?=base_url()?>whmazadmin/ticket/add" class="btn btn-light btn-sm">
+					<i class="fa fa-plus-circle me-1"></i> New Ticket
+				</a>
 			</div>
 			<div class="card-body">
 				<table id="ticketListDt" class="table table-hover w-100"></table>
@@ -96,7 +99,15 @@ $(function(){
 		"ajax": {
 			"url": "<?=base_url()?>whmazadmin/ticket/ssp_list_api",
 			"dataSrc": function(json) {
-				$('#totalTickets').text(json.recordsTotal || 0);
+				// Update stats cards
+				if (json.stats) {
+					$('#totalTickets').text(json.stats.total_tickets || 0);
+					$('#openTickets').text(json.stats.open_tickets || 0);
+					$('#awaitingReply').text(json.stats.awaiting_reply || 0);
+					$('#closedTickets').text(json.stats.closed_tickets || 0);
+				} else {
+					$('#totalTickets').text(json.recordsTotal || 0);
+				}
 				return json.data;
 			}
 		},

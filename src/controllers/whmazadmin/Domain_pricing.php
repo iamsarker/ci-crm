@@ -30,11 +30,15 @@ class Domain_pricing extends WHMAZADMIN_Controller {
 			$sqlQuery = $this->Domainpricing_model->buildDataTableQuery($params, $bindings, $where);
 			$data = $this->Domainpricing_model->getDataTableRecords($sqlQuery, $bindings);
 
+			// Get pricing stats for dashboard cards
+			$stats = $this->Domainpricing_model->getPricingStats();
+
 			$response = array(
 				"draw"            => !empty($params['draw']) ? intval($params['draw']) : 0,
 				"recordsTotal"    => intval($this->Domainpricing_model->countDataTableTotalRecords()),
 				"recordsFiltered" => intval($this->Domainpricing_model->countDataTableFilterRecords($where, $bindings)),
-				"data"            => $data
+				"data"            => $data,
+				"stats"           => $stats
 			);
 
 			header('Content-Type: application/json');

@@ -109,8 +109,8 @@
 					<h4 class="mb-1"><i class="fa fa-building me-2"></i>Companies / Customers</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
-							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
-							<li class="breadcrumb-item active text-white">Companies</li>
+							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
+							<li class="breadcrumb-item active">Companies</li>
 						</ol>
 					</nav>
 				</div>
@@ -139,9 +139,16 @@ $(function(){
 		"ajax": {
 			"url": "<?=base_url()?>whmazadmin/company/ssp_list_api/",
 			"dataSrc": function(json) {
-				// Update stats from response
-				$('#totalCompanies').text(json.recordsTotal || 0);
-				$('#activeCompanies').text(json.recordsTotal || 0);
+				// Update stats cards
+				if (json.stats) {
+					$('#totalCompanies').text(json.stats.total_companies || 0);
+					$('#activeCompanies').text(json.stats.active_companies || 0);
+					$('#thisMonthCompanies').text(json.stats.this_month_companies || 0);
+					$('#countriesCount').text(json.stats.countries_count || 0);
+				} else {
+					$('#totalCompanies').text(json.recordsTotal || 0);
+					$('#activeCompanies').text(json.recordsTotal || 0);
+				}
 				return json.data;
 			}
 		},
