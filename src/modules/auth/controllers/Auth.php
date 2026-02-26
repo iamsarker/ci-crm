@@ -147,7 +147,8 @@ class Auth extends WHMAZ_Controller
 				);
 				$this->session->set_flashdata('alert_success', 'Registration has been completed successfully. A confirmation link has been sent to your email.');
 			} else {
-				$this->session->set_flashdata('alert_error', 'Failed to register. Try Again');
+				$errorMsg = !empty($resp['error']) ? $resp['error'] : 'Failed to register. Try Again';
+				$this->session->set_flashdata('alert_error', $errorMsg);
 			}
 
 		}

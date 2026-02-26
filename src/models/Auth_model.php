@@ -164,28 +164,102 @@ class Auth_model extends CI_Model{
 		$return = array();
 
 		try {
-			$data['status'] = "2";
-			$data['inserted_on'] = getDateTime();
-			//$data['terminal'] = getClientIp();
+			// Validate password confirmation
+			if (!isset($data['confirm_password']) || $data['password'] !== $data['confirm_password']) {
+				$return['success'] = 0;
+				$return['error'] = 'Passwords do not match';
+				return $return;
+			}
 
-			$data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+			// Validate required address fields
+			$requiredFields = array(
+				'address' => 'Street Address',
+				'city' => 'City',
+				'zip_code' => 'ZIP / Postal Code',
+				'state' => 'State / Province',
+				'country' => 'Country'
+			);
 
-			$uniqueVarificationCode = uniqid().$data['email'].uniqid().time();
-			$verification_code = hash('sha256', 'TB'.$uniqueVarificationCode);
-			$data['verify_hash'] = $verification_code;
+			foreach ($requiredFields as $field => $label) {
+				if (empty($data[$field])) {
+					$return['success'] = 0;
+					$return['error'] = $label . ' is required';
+					return $return;
+				}
+			}
 
-			if ($this->db->insert('users', $data)) {
+			// Validate zip code is numeric
+			if (!preg_match('/^[0-9]+$/', $data['zip_code'])) {
+				$return['success'] = 0;
+				$return['error'] = 'ZIP / Postal Code must contain only numbers';
+				return $return;
+			}
+
+			// Remove confirm_password as it's not a database column
+			unset($data['confirm_password']);
+
+			// Create company record first (address fields belong to companies table)
+			$companyData = array(
+				'name' => trim($data['first_name'] . ' ' . $data['last_name']),
+				'first_name' => $data['first_name'],
+				'last_name' => $data['last_name'],
+				'email' => $data['email'],
+				'mobile' => $data['mobile'],
+				'phone' => $data['mobile'],
+				'address' => $data['address'],
+				'city' => $data['city'],
+				'state' => $data['state'],
+				'zip_code' => $data['zip_code'],
+				'country' => $data['country'],
+				'kam_id' => 0,
+				'kam_name' => '',
+				'status' => 1,
+				'inserted_on' => getDateTime()
+			);
+
+			if (!$this->db->insert('companies', $companyData)) {
+				$return['success'] = 0;
+				$return['error'] = 'Failed to create company record';
+				return $return;
+			}
+
+			$companyId = $this->db->insert_id();
+
+			// Prepare user data (only fields that exist in users table)
+			$userData = array(
+				'first_name' => $data['first_name'],
+				'last_name' => $data['last_name'],
+				'email' => $data['email'],
+				'mobile' => $data['mobile'],
+				'phone' => $data['mobile'],
+				'password' => password_hash($data['password'], PASSWORD_DEFAULT),
+				'company_id' => $companyId,
+				'designation' => 'Company Owner',
+				'user_type' => 0,
+				'status' => 2,
+				'inserted_on' => getDateTime()
+			);
+
+			$uniqueVarificationCode = uniqid() . $data['email'] . uniqid() . time();
+			$verification_code = hash('sha256', 'TB' . $uniqueVarificationCode);
+			$userData['verify_hash'] = $verification_code;
+
+			if ($this->db->insert('users', $userData)) {
 				$return['success'] = 1;
 				$return['email'] = $data['email'];
 				$return['verification_code'] = $verification_code;
 			} else {
+				// Rollback: delete the company if user creation fails
+				$this->db->delete('companies', array('id' => $companyId));
 				$return['success'] = 0;
-			};
+				$return['error'] = 'Failed to create user record';
+			}
 			return $return;
 		} catch (Exception $e) {
 			// SECURITY: Log database error
 			ErrorHandler::log_database_error('newRegistration', $this->db->last_query(), $e->getMessage());
 			$return['success'] = 0;
+			$return['error'] = 'Registration failed. Please try again.';
 			return $return;
 		}
  	}

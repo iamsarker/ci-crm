@@ -94,33 +94,33 @@
 									</div>
 
 									<div class="form-group">
-										<label class="form-label">Street Address</label>
-										<input type="text" class="form-control" name="reg[address]" placeholder="Enter your street address">
+										<label class="form-label">Street Address <span class="required">*</span></label>
+										<input type="text" class="form-control" name="reg[address]" placeholder="Enter your street address" required>
 									</div>
 
 									<div class="row">
 										<div class="col-md-6">
 											<div class="form-group">
-												<label class="form-label">City</label>
-												<input type="text" class="form-control" name="reg[city]" placeholder="City">
+												<label class="form-label">City <span class="required">*</span></label>
+												<input type="text" class="form-control" name="reg[city]" placeholder="City" required>
 											</div>
 										</div>
 										<div class="col-md-6">
 											<div class="form-group">
-												<label class="form-label">ZIP / Postal Code</label>
-												<input type="text" class="form-control" name="reg[zip_code]" placeholder="ZIP Code">
+												<label class="form-label">ZIP / Postal Code <span class="required">*</span></label>
+												<input type="text" class="form-control" name="reg[zip_code]" placeholder="ZIP Code" pattern="[0-9]+" title="Please enter numbers only" required>
 											</div>
 										</div>
 									</div>
 
 									<div class="form-group">
-										<label class="form-label">State / Province</label>
-										<input type="text" class="form-control" name="reg[state]" placeholder="State or Province">
+										<label class="form-label">State / Province <span class="required">*</span></label>
+										<input type="text" class="form-control" name="reg[state]" placeholder="State or Province" required>
 									</div>
 
 									<div class="form-group">
-										<label class="form-label">Country</label>
-										<select class="form-control form-select" name="reg[country]">
+										<label class="form-label">Country <span class="required">*</span></label>
+										<select class="form-control form-select" name="reg[country]" required>
 											<option value="">-- Select Country --</option>
 											<?php if (!empty($countries)) { foreach ($countries as $country) { ?>
 												<option value="<?= htmlspecialchars($country['country_name'], ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($country['country_name'], ENT_QUOTES, 'UTF-8') ?></option>
