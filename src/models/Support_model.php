@@ -490,8 +490,8 @@ class Support_model extends CI_Model{
 			'{ticket_priority}' => ucfirst($ticket['priority']),
 			'{department_name}' => $department['name'],
 			'{ticket_date}' => date('F j, Y g:i A', strtotime($ticket['inserted_on'])),
-			'{client_name}' => $company['first_name'] . ' ' . $company['last_name'],
-			'{company_name_customer}' => !empty($company['company_name']) ? $company['company_name'] : '-',
+			'{client_name}' => ($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? ''),
+			'{company_name_customer}' => !empty($company['name']) ? $company['name'] : '-',
 			'{client_email}' => $company['email'],
 			'{ticket_message}' => nl2br(htmlspecialchars($ticket['message'])),
 			'{admin_ticket_url}' => base_url() . 'whmazadmin/ticket/viewticket/' . $ticketId,
@@ -542,7 +542,7 @@ class Support_model extends CI_Model{
 			'{ticket_priority}' => ucfirst($ticket['priority']),
 			'{department_name}' => !empty($department) ? $department['name'] : 'Support',
 			'{ticket_date}' => date('F j, Y g:i A', strtotime($ticket['inserted_on'])),
-			'{client_name}' => $company['first_name'] . ' ' . $company['last_name'],
+			'{client_name}' => ($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? ''),
 			'{ticket_message}' => nl2br(htmlspecialchars($ticket['message'])),
 			'{ticket_url}' => base_url() . 'tickets/viewticket/' . $ticketId,
 			'{company_name}' => $appSettings->company_name
@@ -587,7 +587,7 @@ class Support_model extends CI_Model{
 			'{ticket_id}' => $ticketId,
 			'{ticket_subject}' => $ticket['title'],
 			'{department_name}' => !empty($ticket['dept_name']) ? $ticket['dept_name'] : 'Support',
-			'{client_name}' => $company['first_name'] . ' ' . $company['last_name'],
+			'{client_name}' => ($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? ''),
 			'{reply_message}' => nl2br(htmlspecialchars($replyMessage)),
 			'{ticket_url}' => base_url() . 'tickets/viewticket/' . $ticketId,
 			'{company_name}' => $appSettings->company_name
@@ -633,7 +633,7 @@ class Support_model extends CI_Model{
 			'{ticket_subject}' => $ticket['title'],
 			'{ticket_priority}' => !empty($ticket['priority']) ? ucfirst($ticket['priority']) : 'Normal',
 			'{department_name}' => $department['name'],
-			'{client_name}' => !empty($company) ? $company['first_name'] . ' ' . $company['last_name'] : 'Customer',
+			'{client_name}' => !empty($company) ? (($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? '')) : 'Customer',
 			'{client_email}' => !empty($company) ? $company['email'] : '',
 			'{reply_message}' => nl2br(htmlspecialchars($replyMessage)),
 			'{admin_ticket_url}' => base_url() . 'whmazadmin/ticket/viewticket/' . $ticketId
@@ -668,10 +668,12 @@ class Support_model extends CI_Model{
 		}
 
 		// Replace placeholders in subject and body
-		$subject = $template['subject'];
-		$body = $template['body'];
+		$subject = $template['subject'] ?? '';
+		$body = $template['body'] ?? '';
 
 		foreach ($placeholders as $key => $value) {
+			// Ensure value is a string to avoid deprecation warnings
+			$value = $value ?? '';
 			$subject = str_replace($key, $value, $subject);
 			$body = str_replace($key, $value, $body);
 		}

@@ -401,6 +401,9 @@ $(document).ready(function() {
 					url: '<?php echo base_url(); ?>whmazadmin/provisioning/retry_item/' + logId,
 					type: 'POST',
 					dataType: 'json',
+					data: {
+						<?php echo $this->security->get_csrf_token_name(); ?>: '<?php echo $this->security->get_csrf_hash(); ?>'
+					},
 					success: function(response) {
 						if (response.success) {
 							Swal.fire({

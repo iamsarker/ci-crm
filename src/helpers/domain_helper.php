@@ -95,6 +95,46 @@ function domain_api_post($url, $params = array(), $headers = array())
     }
 }
 
+/**
+ * Make a POST request to domain API with raw post data
+ * Used when we need to send array parameters like ns[]
+ */
+function domain_api_post_raw($url, $postData, $headers = array())
+{
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+    // Set Content-Type for form data
+    $defaultHeaders = array('Content-Type: application/x-www-form-urlencoded');
+    $allHeaders = array_merge($defaultHeaders, $headers);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $allHeaders);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if ($error) {
+        log_message('error', 'Domain API POST error: ' . $error . ' - URL: ' . $url);
+        return array('success' => false, 'error' => 'cURL error: ' . $error, 'data' => null);
+    }
+
+    $data = json_decode($response, true);
+
+    if ($httpCode >= 200 && $httpCode < 300) {
+        return array('success' => true, 'data' => $data, 'error' => null, 'http_code' => $httpCode);
+    } else {
+        log_message('error', 'Domain API POST HTTP ' . $httpCode . ': ' . $response);
+        return array('success' => false, 'data' => $data, 'error' => 'HTTP ' . $httpCode, 'http_code' => $httpCode);
+    }
+}
+
 // ============================================
 // RESELLERCLUB / RESELL.BIZ API FUNCTIONS
 // ============================================
@@ -113,17 +153,15 @@ function resellerclub_register_domain($registrar, $domain, $years, $contact, $na
 {
     $apiUrl = rtrim($registrar['api_base_url'], '/') . '/api/domains/register.json';
 
-    // Parse domain into name and TLD
-    $parts = explode('.', $domain, 2);
-    $domainName = $parts[0];
-    $tld = isset($parts[1]) ? $parts[1] : 'com';
+    // Debug: Log the API URL and registrar config
+    log_message('debug', 'DOMAIN_DEBUG - API URL: ' . $apiUrl);
+    log_message('debug', 'DOMAIN_DEBUG - Domain: ' . $domain);
 
-    // Build parameters
+    // Build parameters - ResellerClub expects full domain name (e.g., "example.com")
     $params = array(
         'auth-userid' => $registrar['auth_userid'],
         'api-key' => $registrar['auth_apikey'],
-        'domain-name' => $domainName,
-        'tld' => $tld,
+        'domain-name' => $domain,  // Full domain name including TLD
         'years' => $years,
         'customer-id' => $contact['customer_id'],
         'reg-contact-id' => $contact['reg_contact_id'],
@@ -134,18 +172,32 @@ function resellerclub_register_domain($registrar, $domain, $years, $contact, $na
         'protect-privacy' => 'false'
     );
 
-    // Add nameservers
+    // Add nameservers - ResellerClub expects 'ns' as array
+    $nsArray = array();
     if (!empty($nameservers)) {
-        foreach ($nameservers as $i => $ns) {
-            $params['ns' . ($i + 1)] = $ns;
-        }
+        $nsArray = $nameservers;
     } else {
         // Use default nameservers from registrar
-        if (!empty($registrar['def_ns1'])) $params['ns1'] = $registrar['def_ns1'];
-        if (!empty($registrar['def_ns2'])) $params['ns2'] = $registrar['def_ns2'];
+        if (!empty($registrar['def_ns1'])) $nsArray[] = $registrar['def_ns1'];
+        if (!empty($registrar['def_ns2'])) $nsArray[] = $registrar['def_ns2'];
+        if (!empty($registrar['def_ns3'])) $nsArray[] = $registrar['def_ns3'];
+        if (!empty($registrar['def_ns4'])) $nsArray[] = $registrar['def_ns4'];
     }
 
-    $response = domain_api_post($apiUrl, $params);
+    // Log nameservers for debugging
+    log_message('debug', 'Domain registration nameservers: ' . json_encode($nsArray));
+
+    // Build the POST data with ns[] array format
+    $postData = http_build_query($params);
+    foreach ($nsArray as $ns) {
+        $postData .= '&ns=' . urlencode($ns);
+    }
+
+    // Debug: Log the POST data (mask API key)
+    $debugPostData = preg_replace('/api-key=[^&]+/', 'api-key=***MASKED***', $postData);
+    log_message('error', 'DOMAIN_DEBUG - POST data: ' . $debugPostData);
+
+    $response = domain_api_post_raw($apiUrl, $postData);
 
     if ($response['success'] && !empty($response['data']['entityid'])) {
         return array(
@@ -179,16 +231,11 @@ function resellerclub_transfer_domain($registrar, $domain, $eppCode, $contact, $
 {
     $apiUrl = rtrim($registrar['api_base_url'], '/') . '/api/domains/transfer.json';
 
-    // Parse domain
-    $parts = explode('.', $domain, 2);
-    $domainName = $parts[0];
-    $tld = isset($parts[1]) ? $parts[1] : 'com';
-
+    // ResellerClub expects full domain name (e.g., "example.com")
     $params = array(
         'auth-userid' => $registrar['auth_userid'],
         'api-key' => $registrar['auth_apikey'],
-        'domain-name' => $domainName,
-        'tld' => $tld,
+        'domain-name' => $domain,  // Full domain name including TLD
         'auth-code' => $eppCode,
         'customer-id' => $contact['customer_id'],
         'reg-contact-id' => $contact['reg_contact_id'],
@@ -284,25 +331,69 @@ function resellerclub_renew_domain($registrar, $domain, $years, $currentExpDate,
  */
 function resellerclub_get_or_create_customer($registrar, $customerInfo)
 {
-    // First, try to get existing customer by email
+    // First, try to get existing customer by email using details API
+    $detailsUrl = rtrim($registrar['api_base_url'], '/') . '/api/customers/details.json';
+    $detailsParams = array(
+        'auth-userid' => $registrar['auth_userid'],
+        'api-key' => $registrar['auth_apikey'],
+        'username' => $customerInfo['email']
+    );
+
+    $detailsResponse = domain_api_get($detailsUrl . '?' . http_build_query($detailsParams));
+
+    // Check if customer exists (API returns customer data with customerid)
+    if ($detailsResponse['success'] && !empty($detailsResponse['data'])) {
+        $data = $detailsResponse['data'];
+
+        // Check various possible response formats
+        if (isset($data['customerid'])) {
+            log_message('info', 'Found existing customer: ' . $customerInfo['email'] . ' with ID: ' . $data['customerid']);
+            return array(
+                'success' => true,
+                'customer_id' => $data['customerid'],
+                'existing' => true,
+                'error' => null
+            );
+        }
+    }
+
+    // Also try search API as fallback
     $searchUrl = rtrim($registrar['api_base_url'], '/') . '/api/customers/search.json';
     $searchParams = array(
         'auth-userid' => $registrar['auth_userid'],
         'api-key' => $registrar['auth_apikey'],
         'username' => $customerInfo['email'],
-        'no-of-records' => 1,
+        'no-of-records' => 10,
         'page-no' => 1
     );
 
     $searchResponse = domain_api_get($searchUrl . '?' . http_build_query($searchParams));
+    log_message('debug', 'Customer search response: ' . json_encode($searchResponse));
 
     if ($searchResponse['success'] && !empty($searchResponse['data']) && is_array($searchResponse['data'])) {
-        // Customer exists
+        // Check for recsindb (records count) - if > 0, customer exists
+        if (isset($searchResponse['data']['recsindb']) && $searchResponse['data']['recsindb'] > 0) {
+            // Find the customer ID in the response
+            foreach ($searchResponse['data'] as $key => $value) {
+                if (is_array($value) && isset($value['customer.customerid'])) {
+                    log_message('info', 'Found existing customer via search: ' . $customerInfo['email'] . ' with ID: ' . $value['customer.customerid']);
+                    return array(
+                        'success' => true,
+                        'customer_id' => $value['customer.customerid'],
+                        'existing' => true,
+                        'error' => null
+                    );
+                }
+            }
+        }
+
+        // Old format check
         $firstKey = array_key_first($searchResponse['data']);
         if (isset($searchResponse['data'][$firstKey]['customer.customerid'])) {
             return array(
                 'success' => true,
                 'customer_id' => $searchResponse['data'][$firstKey]['customer.customerid'],
+                'existing' => true,
                 'error' => null
             );
         }
@@ -336,10 +427,20 @@ function resellerclub_get_or_create_customer($registrar, $customerInfo)
             'error' => null
         );
     } else {
+        // Extract error message from various API response formats
         $errorMsg = 'Failed to create customer';
         if (isset($createResponse['data']['message'])) {
             $errorMsg = $createResponse['data']['message'];
+        } elseif (isset($createResponse['data']['error'])) {
+            $errorMsg = $createResponse['data']['error'];
+        } elseif (isset($createResponse['data']['status']) && $createResponse['data']['status'] == 'ERROR') {
+            $errorMsg = $createResponse['data']['message'] ?? $createResponse['data']['error'] ?? 'Unknown error';
+        } elseif (is_string($createResponse['data'])) {
+            $errorMsg = $createResponse['data'];
+        } elseif (isset($createResponse['error'])) {
+            $errorMsg = $createResponse['error'];
         }
+        log_message('error', 'ResellerClub customer creation failed: ' . $errorMsg . ' | Response: ' . json_encode($createResponse));
         return array('success' => false, 'customer_id' => null, 'error' => $errorMsg);
     }
 }
@@ -445,6 +546,7 @@ function registrar_register_domain($registrar, $domain, $years, $contact, $names
         case 'resellerclub':
         case 'resellbiz':
         case 'resell.biz':
+        case 'stargate':
             return resellerclub_register_domain($registrar, $domain, $years, $contact, $nameservers);
 
         // Add more registrars here as needed
@@ -470,6 +572,7 @@ function registrar_transfer_domain($registrar, $domain, $eppCode, $contact, $nam
         case 'resellerclub':
         case 'resellbiz':
         case 'resell.biz':
+        case 'stargate':
             return resellerclub_transfer_domain($registrar, $domain, $eppCode, $contact, $nameservers);
 
         default:
@@ -489,6 +592,7 @@ function registrar_renew_domain($registrar, $domain, $years, $currentExpDate, $o
         case 'resellerclub':
         case 'resellbiz':
         case 'resell.biz':
+        case 'stargate':
             return resellerclub_renew_domain($registrar, $domain, $years, $currentExpDate, $orderId);
 
         default:
@@ -508,6 +612,7 @@ function registrar_get_or_create_customer($registrar, $customerInfo)
         case 'resellerclub':
         case 'resellbiz':
         case 'resell.biz':
+        case 'stargate':
             return resellerclub_get_or_create_customer($registrar, $customerInfo);
 
         default:
@@ -526,6 +631,7 @@ function registrar_create_contact($registrar, $customerId, $contactInfo, $type =
         case 'resellerclub':
         case 'resellbiz':
         case 'resell.biz':
+        case 'stargate':
             return resellerclub_create_contact($registrar, $customerId, $contactInfo, $type);
 
         default:

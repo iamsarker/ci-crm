@@ -82,7 +82,7 @@
 		return $where;
 	}
 
-	function ssp_sql_query ( $request, $table, &$bindings, &$where, $extraWhere = '' )
+	function ssp_sql_query ( $request, $table, &$bindings, &$where, $extraWhere = '', $statusCond = " `status` = 1 " )
 	{
 		// Build the SQL query string from the request
 		$limit = ssp_limit( $request );
@@ -97,9 +97,9 @@
 
 		// Add status filter
 		if( $filterWhere !== '' ) {
-			$where = $filterWhere . " AND `status` = 1";
+			$where = $filterWhere . " AND " . $statusCond;
 		} else {
-			$where = "WHERE `status` = 1";
+			$where = "WHERE " . $statusCond;
 		}
 
 		// Add extra where conditions (e.g., soft delete filter)

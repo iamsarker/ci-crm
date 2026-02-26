@@ -388,6 +388,33 @@ class Common_model extends CI_Model {
         }
     }
 
+    /**
+     * Get domain registrar ID from domain pricing ID
+     *
+     * @param int $pricingId Domain pricing ID
+     * @return int Domain registrar ID or 0 if not found
+     */
+    public function getDomRegisterIdByPricingId($pricingId)
+    {
+        if (empty($pricingId)) {
+            return 0;
+        }
+
+        try {
+            $sql = "SELECT de.dom_register_id
+                    FROM dom_pricing dp
+                    JOIN dom_extensions de ON dp.dom_extension_id = de.id
+                    WHERE dp.id = ? AND dp.status = 1 AND de.status = 1";
+
+            $result = $this->db->query($sql, array(intval($pricingId)))->row();
+
+            return !empty($result) ? intval($result->dom_register_id) : 0;
+        } catch (Exception $e) {
+            ErrorHandler::log_database_error('getDomRegisterIdByPricingId', $this->db->last_query(), $e->getMessage());
+            return 0;
+        }
+    }
+
 }
 
 ?>

@@ -271,9 +271,23 @@ class Cart extends WHMAZ_Controller
 		if ($row['item_type'] == 1) {
 			// Domain item
 			$item['dom_pricing_id'] = $row['dom_pricing_id'];
-			$item['reg_period'] = 1; // 1 year by default
+
+			// Get registration period from dom_pricing (in years)
+			$domPricing = $this->Cart_model->getCartDomainPrice($row['dom_pricing_id']);
+			$regPeriod = !empty($domPricing['reg_period']) ? intval($domPricing['reg_period']) : 1;
+			$item['reg_period'] = $regPeriod;
+
+			// Calculate domain expiry based on registration period (years)
+			$domainDays = $regPeriod * 365;
+			$item['exp_date'] = getDateAddDay($domainDays);
+			$item['next_renewal_date'] = getDateAddDay($domainDays);
+
 			$item['domain'] = $row['hosting_domain'];
 			$item['epp_code'] = !empty($row['epp_code']) ? $row['epp_code'] : null;
+
+			// Get dom_register_id from dom_extensions via dom_pricing
+			$domRegId = $this->Common_model->getDomRegisterIdByPricingId($row['dom_pricing_id']);
+			$item['dom_register_id'] = $domRegId;
 
 			// Set order_type based on domain_action
 			// 1=register, 2=transfer, 3=dns_update (nothing to register)
@@ -599,6 +613,18 @@ class Cart extends WHMAZ_Controller
 		$this->processRestCall();
 		$postData = $this->input->post();
 
+		// Get and validate domain name if provided
+		$hostingDomain = !empty($postData['hosting_domain']) ? strtolower(trim($postData['hosting_domain'])) : '';
+
+		// Validate domain format for domain items (type == 1)
+		if ($type == 1 && !empty($hostingDomain)) {
+			$domainValidation = $this->_validateDomainFormat($hostingDomain);
+			if (!$domainValidation['valid']) {
+				echo $this->AppResponse(0, $domainValidation['error']);
+				return;
+			}
+		}
+
 		$cartArr = array();
 		$cartArr['customer_session_id'] = getCustomerSessionId();
 		$cartArr['user_id'] = getCustomerId();
@@ -627,7 +653,7 @@ class Cart extends WHMAZ_Controller
 
 		$cartArr['note'] = $postData['item'];
 		$cartArr['hosting_domain_type'] = !empty($postData['hosting_domain_type']) ? $postData['hosting_domain_type'] : 0;
-		$cartArr['hosting_domain'] = !empty($postData['hosting_domain']) ? $postData['hosting_domain'] : '';
+		$cartArr['hosting_domain'] = $hostingDomain;
 		$cartArr['sub_total'] = !empty($itemPrice['item_price']) ? $itemPrice['item_price'] * $quantity : 0;
 		$cartArr['currency_id'] = !empty($itemPrice['currency_id']) ? $itemPrice['currency_id'] : getCurrencyId();
 		$cartArr['currency_code'] = getCurrencyCode();
@@ -717,6 +743,47 @@ class Cart extends WHMAZ_Controller
 	}
 
 	/**
+	 * Validate domain format has a valid TLD
+	 *
+	 * @param string $domainName Full domain name (e.g., "example.com")
+	 * @return array Result with 'valid', 'error'
+	 */
+	private function _validateDomainFormat($domainName)
+	{
+		if (empty($domainName)) {
+			return array('valid' => false, 'error' => 'Domain name is required');
+		}
+
+		// Check if domain contains at least one dot
+		if (strpos($domainName, '.') === false) {
+			return array('valid' => false, 'error' => 'Domain must include extension (e.g., example.com)');
+		}
+
+		// Parse domain
+		$parts = explode('.', $domainName, 2);
+		$name = $parts[0];
+		$tld = isset($parts[1]) ? $parts[1] : '';
+
+		if (empty($name)) {
+			return array('valid' => false, 'error' => 'Invalid domain name format');
+		}
+
+		if (empty($tld)) {
+			return array('valid' => false, 'error' => 'Domain extension (TLD) is required');
+		}
+
+		// Basic TLD validation - should be alphabetic and reasonable length
+		$tldParts = explode('.', $tld);
+		foreach ($tldParts as $part) {
+			if (!preg_match('/^[a-zA-Z]{2,}$/', $part)) {
+				return array('valid' => false, 'error' => 'Invalid domain extension: .' . $tld);
+			}
+		}
+
+		return array('valid' => true, 'error' => null);
+	}
+
+	/**
 	 * Flow-1 Part 2: Link Domain to Hosting Cart Item
 	 *
 	 * POST params:
@@ -733,7 +800,7 @@ class Cart extends WHMAZ_Controller
 
 		$parentCartId = !empty($postData['parent_cart_id']) ? intval($postData['parent_cart_id']) : 0;
 		$domainAction = !empty($postData['domain_action']) ? $postData['domain_action'] : '';
-		$domainName = !empty($postData['domain_name']) ? trim($postData['domain_name']) : '';
+		$domainName = !empty($postData['domain_name']) ? strtolower(trim($postData['domain_name'])) : '';
 		$eppCode = !empty($postData['epp_code']) ? trim($postData['epp_code']) : null;
 		$domPricingId = !empty($postData['dom_pricing_id']) ? intval($postData['dom_pricing_id']) : 0;
 
@@ -743,8 +810,10 @@ class Cart extends WHMAZ_Controller
 			return;
 		}
 
-		if (empty($domainName)) {
-			echo json_encode(buildFailedResponse("Domain name is required"));
+		// Validate domain format
+		$domainValidation = $this->_validateDomainFormat($domainName);
+		if (!$domainValidation['valid']) {
+			echo json_encode(buildFailedResponse($domainValidation['error']));
 			return;
 		}
 
@@ -856,13 +925,14 @@ class Cart extends WHMAZ_Controller
 		$postData = $this->input->post();
 
 		$domainAction = !empty($postData['domain_action']) ? $postData['domain_action'] : '';
-		$domainName = !empty($postData['domain_name']) ? trim($postData['domain_name']) : '';
+		$domainName = !empty($postData['domain_name']) ? strtolower(trim($postData['domain_name'])) : '';
 		$domPricingId = !empty($postData['dom_pricing_id']) ? intval($postData['dom_pricing_id']) : 0;
 		$eppCode = !empty($postData['epp_code']) ? trim($postData['epp_code']) : null;
 
-		// Validate inputs
-		if (empty($domainName)) {
-			echo json_encode(buildFailedResponse("Domain name is required"));
+		// Validate domain format
+		$domainValidation = $this->_validateDomainFormat($domainName);
+		if (!$domainValidation['valid']) {
+			echo json_encode(buildFailedResponse($domainValidation['error']));
 			return;
 		}
 

@@ -210,8 +210,9 @@ class Company extends WHMAZADMIN_Controller {
 
 			$bindings = array();
 			$where = '';
+			$statusCond = " `status` IN (0,1,2,3,4) ";
 
-			$sqlQuery = ssp_sql_query($params, "order_services", $bindings, $where);
+			$sqlQuery = ssp_sql_query($params, "order_services", $bindings, $where, '', $statusCond);
 
 			$data = $this->Company_model->getServicesDataTableRecords($sqlQuery, $bindings);
 
@@ -264,8 +265,9 @@ class Company extends WHMAZADMIN_Controller {
 
 			$bindings = array();
 			$where = '';
+			$statusCond = " `status` IN (0,1,2,3,4,5,6) ";
 
-			$sqlQuery = ssp_sql_query($params, "order_domains", $bindings, $where);
+			$sqlQuery = ssp_sql_query($params, "order_domains", $bindings, $where, '', $statusCond);
 
 			$data = $this->Company_model->getDomainsDataTableRecords($sqlQuery, $bindings);
 

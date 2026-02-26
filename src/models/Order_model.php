@@ -343,17 +343,20 @@ class Order_model extends CI_Model{
 		// Get app settings
 		$appSettings = getAppSettings();
 
-		// Get currency symbol
-		$currency = $this->db->where('id', $order['currency_id'])->get('currencies')->row();
-		$currencySymbol = $currency ? $currency->currency_symbol : '$';
+		// Get currency symbol from session or database
+		$currencySymbol = "";
+		if (empty($currencySymbol)) {
+			$currency = $this->db->where('id', $order['currency_id'])->get('currencies')->row();
+			$currencySymbol = $currency ? $currency->symbol : '$';
+		}
 
 		// Get invoice items for order details
 		$orderItemsHtml = $this->_buildOrderItemsHtml($invoiceId, $currencySymbol);
 
 		// Common placeholders
 		$placeholders = array(
-			'{client_name}' => $company['first_name'] . ' ' . $company['last_name'],
-			'{company_name_customer}' => !empty($company['company_name']) ? $company['company_name'] : '-',
+			'{client_name}' => ($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? ''),
+			'{company_name_customer}' => !empty($company['name']) ? $company['name'] : '-',
 			'{client_email}' => $company['email'],
 			'{order_no}' => $order['order_no'],
 			'{order_date}' => date('F j, Y', strtotime($order['order_date'])),
@@ -458,10 +461,12 @@ class Order_model extends CI_Model{
 		}
 
 		// Replace placeholders in subject and body
-		$subject = $template['subject'];
-		$body = $template['body'];
+		$subject = $template['subject'] ?? '';
+		$body = $template['body'] ?? '';
 
 		foreach ($placeholders as $key => $value) {
+			// Ensure value is a string to avoid deprecation warnings
+			$value = $value ?? '';
 			$subject = str_replace($key, $value, $subject);
 			$body = str_replace($key, $value, $body);
 		}

@@ -483,8 +483,8 @@ class Payment_model extends CI_Model
 
         // Common placeholders
         $placeholders = array(
-            '{client_name}' => $company['first_name'] . ' ' . $company['last_name'],
-            '{company_name_customer}' => $company['company_name'],
+            '{client_name}' => ($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? ''),
+            '{company_name_customer}' => $company['name'] ?? '-',
             '{client_email}' => $company['email'],
             '{invoice_no}' => $invoice['invoice_no'],
             '{amount}' => number_format($transaction['amount'], 2),
@@ -544,10 +544,12 @@ class Payment_model extends CI_Model
         }
 
         // Replace placeholders in subject and body
-        $subject = $template['subject'];
-        $body = $template['body'];
+        $subject = $template['subject'] ?? '';
+        $body = $template['body'] ?? '';
 
         foreach ($placeholders as $key => $value) {
+            // Ensure value is a string to avoid deprecation warnings
+            $value = $value ?? '';
             $subject = str_replace($key, $value, $subject);
             $body = str_replace($key, $value, $body);
         }

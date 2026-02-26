@@ -129,8 +129,9 @@ class Provisioning_model extends CI_Model
             return array('success' => false, 'action' => 'none', 'error' => 'Domain order not found: ' . $item['ref_id']);
         }
 
-        // Check if this is a renewal (has billing_period_start/end)
-        $isRenewal = !empty($item['billing_period_start']) && !empty($item['billing_period_end']);
+        // Check if this is a renewal - domain must have been registered at registrar (has domain_order_id)
+        // New orders also have billing_period dates, so we check domain_order_id instead
+        $isRenewal = !empty($domain['domain_order_id']);
 
         // Get registrar config
         $registrar = $this->getRegistrarConfig($domain['dom_register_id']);
@@ -164,33 +165,120 @@ class Provisioning_model extends CI_Model
     }
 
     /**
+     * Validate domain format has a valid TLD
+     *
+     * @param string $domainName Full domain name (e.g., "example.com")
+     * @return array Result with 'valid', 'domain_name', 'tld', 'error'
+     */
+    private function validateDomainFormat($domainName)
+    {
+        if (empty($domainName)) {
+            return array('valid' => false, 'error' => 'Domain name is empty');
+        }
+
+        // Check if domain contains at least one dot
+        if (strpos($domainName, '.') === false) {
+            return array('valid' => false, 'error' => 'Domain must include TLD (e.g., .com, .net). Got: ' . $domainName);
+        }
+
+        // Parse domain
+        $parts = explode('.', $domainName, 2);
+        $name = $parts[0];
+        $tld = isset($parts[1]) ? $parts[1] : '';
+
+        if (empty($tld)) {
+            return array('valid' => false, 'error' => 'TLD is empty after parsing domain: ' . $domainName);
+        }
+
+        // Basic TLD validation - should be alphabetic and reasonable length
+        // Common TLDs: com, net, org, io, co, co.uk, etc.
+        $tldParts = explode('.', $tld);
+        foreach ($tldParts as $part) {
+            if (!preg_match('/^[a-zA-Z]{2,}$/', $part)) {
+                return array(
+                    'valid' => false,
+                    'error' => 'Invalid TLD format: ' . $tld . '. TLD parts must be 2+ alphabetic characters. Domain: ' . $domainName
+                );
+            }
+        }
+
+        return array(
+            'valid' => true,
+            'domain_name' => $name,
+            'tld' => $tld,
+            'error' => null
+        );
+    }
+
+    /**
      * Register a new domain
      */
     private function registerDomain($domain, $registrar, $company)
     {
         log_message('info', 'Provisioning: Registering domain ' . $domain['domain']);
 
+        // Validate domain format before attempting registration
+        $validation = $this->validateDomainFormat($domain['domain']);
+        if (!$validation['valid']) {
+            log_message('error', 'Domain validation failed: ' . $validation['error']);
+            return array('success' => false, 'action' => 'register', 'error' => $validation['error']);
+        }
+
+        // Get country info (ISO code and dial code) from countries table
+        $countryName = $company['country'] ?? '';
+        $countryData = $this->getCountryByName($countryName);
+        $countryCode = $countryData['country_code'] ?? 'US';
+        $dialCode = $countryData['dial_code'] ?? '1';
+
+        // Clean phone number - remove all non-digit characters
+        $rawPhone = $company['phone'] ?? $company['mobile'] ?? '';
+        $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+
+        // If phone starts with dial code, remove it
+        $dialCodeClean = preg_replace('/[^0-9]/', '', $dialCode);
+        if (!empty($dialCodeClean) && strpos($cleanPhone, $dialCodeClean) === 0) {
+            $cleanPhone = substr($cleanPhone, strlen($dialCodeClean));
+        }
+
+        // Ensure phone has at least some digits
+        if (empty($cleanPhone)) {
+            $cleanPhone = '0000000000';
+        }
+
         // Prepare customer info
         $customerInfo = array(
             'email' => $company['email'],
-            'name' => trim($company['first_name'] . ' ' . $company['last_name']),
-            'company' => $company['company_name'],
-            'address1' => $company['address'],
-            'city' => $company['city'],
-            'state' => $company['state'],
-            'country' => $company['country_code'] ?? 'US',
-            'zipcode' => $company['postcode'],
-            'phone_cc' => $company['phone_code'] ?? '1',
-            'phone' => $company['phone']
+            'name' => trim(($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? '')),
+            'company' => $company['name'] ?? '',
+            'address1' => $company['address'] ?? '',
+            'city' => $company['city'] ?? '',
+            'state' => $company['state'] ?? '',
+            'country' => $countryCode,
+            'zipcode' => $company['zip_code'] ?? '00000',
+            'phone_cc' => $dialCodeClean ?: '1',
+            'phone' => $cleanPhone
         );
 
-        // Get or create customer at registrar
-        $customerResult = registrar_get_or_create_customer($registrar, $customerInfo);
-        if (!$customerResult['success']) {
-            return array('success' => false, 'action' => 'register', 'error' => 'Failed to create customer: ' . $customerResult['error']);
-        }
+        // Check if company already has a registrar customer ID
+        $customerId = !empty($company['registrar_customer_id']) ? $company['registrar_customer_id'] : null;
 
-        $customerId = $customerResult['customer_id'];
+        if (empty($customerId)) {
+            // Get or create customer at registrar
+            $customerResult = registrar_get_or_create_customer($registrar, $customerInfo);
+            if (!$customerResult['success']) {
+                return array('success' => false, 'action' => 'register', 'error' => 'Failed to create customer: ' . $customerResult['error']);
+            }
+
+            $customerId = $customerResult['customer_id'];
+
+            // Save customer ID to companies table for future use
+            $this->db->where('id', $company['id'])->update('companies', array(
+                'registrar_customer_id' => $customerId
+            ));
+            log_message('info', 'Saved registrar customer ID ' . $customerId . ' for company #' . $company['id']);
+        } else {
+            log_message('info', 'Using existing registrar customer ID ' . $customerId . ' for company #' . $company['id']);
+        }
 
         // Create contact
         $contactResult = registrar_create_contact($registrar, $customerId, $customerInfo);
@@ -209,10 +297,29 @@ class Provisioning_model extends CI_Model
             'billing_contact_id' => $contactId
         );
 
-        // Prepare nameservers
+        // Prepare nameservers - use domain's NS if set, otherwise use registrar defaults
         $nameservers = array();
-        if (!empty($domain['ns1'])) $nameservers[] = $domain['ns1'];
-        if (!empty($domain['ns2'])) $nameservers[] = $domain['ns2'];
+        if (!empty($domain['ns1'])) {
+            $nameservers[] = $domain['ns1'];
+        } elseif (!empty($registrar['def_ns1'])) {
+            $nameservers[] = $registrar['def_ns1'];
+        }
+        if (!empty($domain['ns2'])) {
+            $nameservers[] = $domain['ns2'];
+        } elseif (!empty($registrar['def_ns2'])) {
+            $nameservers[] = $registrar['def_ns2'];
+        }
+        // Add ns3 and ns4 if available
+        if (!empty($domain['ns3'])) {
+            $nameservers[] = $domain['ns3'];
+        } elseif (!empty($registrar['def_ns3'])) {
+            $nameservers[] = $registrar['def_ns3'];
+        }
+        if (!empty($domain['ns4'])) {
+            $nameservers[] = $domain['ns4'];
+        } elseif (!empty($registrar['def_ns4'])) {
+            $nameservers[] = $registrar['def_ns4'];
+        }
 
         // Register domain
         $result = registrar_register_domain($registrar, $domain['domain'], $domain['reg_period'], $contact, $nameservers);
@@ -246,22 +353,50 @@ class Provisioning_model extends CI_Model
     {
         log_message('info', 'Provisioning: Transferring domain ' . $domain['domain']);
 
+        // Validate domain format before attempting transfer
+        $validation = $this->validateDomainFormat($domain['domain']);
+        if (!$validation['valid']) {
+            log_message('error', 'Domain validation failed: ' . $validation['error']);
+            return array('success' => false, 'action' => 'transfer', 'error' => $validation['error']);
+        }
+
         if (empty($domain['epp_code'])) {
             return array('success' => false, 'action' => 'transfer', 'error' => 'EPP code is required for transfer');
+        }
+
+        // Get country info (ISO code and dial code) from countries table
+        $countryName = $company['country'] ?? '';
+        $countryData = $this->getCountryByName($countryName);
+        $countryCode = $countryData['country_code'] ?? 'US';
+        $dialCode = $countryData['dial_code'] ?? '1';
+
+        // Clean phone number - remove all non-digit characters
+        $rawPhone = $company['phone'] ?? $company['mobile'] ?? '';
+        $cleanPhone = preg_replace('/[^0-9]/', '', $rawPhone);
+
+        // If phone starts with dial code, remove it
+        $dialCodeClean = preg_replace('/[^0-9]/', '', $dialCode);
+        if (!empty($dialCodeClean) && strpos($cleanPhone, $dialCodeClean) === 0) {
+            $cleanPhone = substr($cleanPhone, strlen($dialCodeClean));
+        }
+
+        // Ensure phone has at least some digits
+        if (empty($cleanPhone)) {
+            $cleanPhone = '0000000000';
         }
 
         // Prepare customer info
         $customerInfo = array(
             'email' => $company['email'],
-            'name' => trim($company['first_name'] . ' ' . $company['last_name']),
-            'company' => $company['company_name'],
-            'address1' => $company['address'],
-            'city' => $company['city'],
-            'state' => $company['state'],
-            'country' => $company['country_code'] ?? 'US',
-            'zipcode' => $company['postcode'],
-            'phone_cc' => $company['phone_code'] ?? '1',
-            'phone' => $company['phone']
+            'name' => trim(($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? '')),
+            'company' => $company['name'] ?? '',
+            'address1' => $company['address'] ?? '',
+            'city' => $company['city'] ?? '',
+            'state' => $company['state'] ?? '',
+            'country' => $countryCode,
+            'zipcode' => $company['zip_code'] ?? '00000',
+            'phone_cc' => $dialCodeClean ?: '1',
+            'phone' => $cleanPhone
         );
 
         // Get or create customer
@@ -318,6 +453,13 @@ class Provisioning_model extends CI_Model
     private function renewDomain($domain, $registrar, $company, $item)
     {
         log_message('info', 'Provisioning: Renewing domain ' . $domain['domain']);
+
+        // Validate domain format
+        $validation = $this->validateDomainFormat($domain['domain']);
+        if (!$validation['valid']) {
+            log_message('error', 'Domain validation failed: ' . $validation['error']);
+            return array('success' => false, 'action' => 'renew', 'error' => $validation['error']);
+        }
 
         if (empty($domain['domain_order_id'])) {
             return array('success' => false, 'action' => 'renew', 'error' => 'Domain order ID not found - cannot renew unregistered domain');
@@ -610,7 +752,7 @@ class Provisioning_model extends CI_Model
         if ($pendingServices == 0 && $pendingDomains == 0) {
             // All items provisioned, update order to Active
             $this->db->where('id', $orderId)->update('orders', array(
-                'order_status' => 'ACTIVE',
+                'status' => 1,  // 1 = Active
                 'updated_on' => date('Y-m-d H:i:s')
             ));
             log_message('info', 'Order #' . $orderId . ' status updated to ACTIVE');
@@ -663,5 +805,36 @@ class Provisioning_model extends CI_Model
     function retryProvisioning($invoiceId)
     {
         return $this->provisionInvoiceItems($invoiceId);
+    }
+
+    /**
+     * Get country data by country name
+     *
+     * @param string $countryName Country name (e.g., "Bangladesh")
+     * @return array Country data with country_code and dial_code
+     */
+    private function getCountryByName($countryName)
+    {
+        if (empty($countryName)) {
+            return array('country_code' => 'US', 'dial_code' => '1');
+        }
+
+        $result = $this->db->select('country_code, dial_code')
+            ->where('country_name', $countryName)
+            ->or_where('country_code', strtoupper($countryName))
+            ->get('countries')
+            ->row_array();
+
+        if (!empty($result)) {
+            return $result;
+        }
+
+        // Try partial match
+        $result = $this->db->select('country_code, dial_code')
+            ->like('country_name', $countryName, 'both')
+            ->get('countries')
+            ->row_array();
+
+        return !empty($result) ? $result : array('country_code' => 'US', 'dial_code' => '1');
     }
 }
