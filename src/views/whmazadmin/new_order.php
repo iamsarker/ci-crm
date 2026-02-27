@@ -31,7 +31,7 @@
 		<div class="row mt-4">
 			<div class="col-12">
 				<div class="manage-form-card">
-					<form method="post" name="entityManageForm" id="entityManageForm" class="company-form" action="<?=base_url()?>whmazadmin/order/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
+					<form method="post" name="entityManageForm" id="entityManageForm" class="company-form" action="<?=base_url()?>whmazadmin/order/new_order/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">
 						<?=csrf_field()?>
 						<input name="id" type="hidden" id="id" value="<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>" />
 

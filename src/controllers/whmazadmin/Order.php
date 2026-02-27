@@ -29,7 +29,7 @@ class Order extends WHMAZADMIN_Controller
 		$this->load->view('whmazadmin/order_list', $data);
 	}
 
-	public function manage($id_val = null)
+	public function new_order($id_val = null)
 	{
 		if( $this->input->post() ){
 			$this->form_validation->set_rules('company_id', 'Company/customer', 'required|trim');
@@ -128,7 +128,7 @@ class Order extends WHMAZADMIN_Controller
 
 		$data['dom_registers'] = $this->Common_model->generate_dropdown('dom_registers', 'id', "name");
 
-		$this->load->view('whmazadmin/order_manage', $data);
+		$this->load->view('whmazadmin/new_order', $data);
 	}
 
 	public function saveOrderTable($form_data){

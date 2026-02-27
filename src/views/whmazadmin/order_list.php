@@ -74,7 +74,7 @@
 						</ol>
 					</nav>
 				</div>
-				<a href="<?=base_url()?>whmazadmin/order/manage" class="btn btn-light btn-sm">
+				<a href="<?=base_url()?>whmazadmin/order/new_order" class="btn btn-light btn-sm">
 					<i class="fa fa-plus-circle me-1"></i> New Order
 				</a>
 			</div>
@@ -231,7 +231,7 @@ function openManage(id) {
 		showConfirmButton: false,
 		didOpen: () => { Swal.showLoading(); }
 	});
-	window.location = "<?=base_url()?>whmazadmin/order/manage/" + id;
+	window.location = "<?=base_url()?>whmazadmin/order/new_order/" + id;
 }
 
 function deleteRow(id, title) {
