@@ -523,7 +523,7 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 ### Current Advantages:
 1. **Open Source** - No licensing fees (WHMCS requires monthly license)
-2. **Modern UI** - Bootstrap 5 + DashForge theme (WHMCS has older UI)
+2. **Modern UI** - Bootstrap 5 + AdminLTE 4 theme (WHMCS has older UI)
 3. **AngularJS Integration** - Dynamic dashboard (WHMCS is mostly traditional PHP)
 4. **HMVC Architecture** - Better code organization
 5. **Customizable** - Full source code access

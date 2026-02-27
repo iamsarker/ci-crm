@@ -18,7 +18,7 @@
 
 ### Technology Stack
 - **Backend:** CodeIgniter 3.x with HMVC (Wiredesignz Modular Extensions)
-- **Frontend:** Bootstrap 5 + DashForge Theme
+- **Frontend:** Bootstrap 5 + AdminLTE 4 Theme
 - **JavaScript Framework:** AngularJS 1.x
 - **Data Tables:** DataTables with server-side processing
 - **Icons:** Feather Icons, FontAwesome, Ionicons

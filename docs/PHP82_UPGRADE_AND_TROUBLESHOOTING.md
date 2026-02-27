@@ -351,7 +351,7 @@ File: `src/views/templates/customer/header.php`
 
 ```php
 <!-- CSS Resources -->
-<link href="<?=base_url()?>resources/assets/css/dashforge.css" rel="stylesheet">
+<link href="<?=base_url()?>resources/assets/css/adminlte-compat.css" rel="stylesheet">
 <link href="<?=base_url()?>resources/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
 <!-- Note: base_url() must return URL with trailing slash -->

@@ -225,7 +225,7 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ### Frontend
 - **CSS Framework:** Bootstrap 5
-- **Theme:** DashForge
+- **Theme:** AdminLTE 4
 - **JavaScript:** jQuery 3.x, AngularJS 1.x
 - **Icons:** Feather Icons, FontAwesome
 - **Data Tables:** DataTables

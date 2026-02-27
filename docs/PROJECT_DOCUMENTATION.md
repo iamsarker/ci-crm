@@ -182,6 +182,34 @@ $system_path = 'whmaz';           // Instead of 'system'
 $application_folder = 'src';       // Instead of 'application'
 ```
 
+### CSS Styling
+
+**Custom CSS Files:**
+```
+resources/assets/css/
+├── admin.custom.css            # Admin general customizations
+├── admin.list_page.css         # Admin list/table page styles
+├── admin.manage_view.css       # Admin management/detail view styles
+└── custom.css                  # Client area customizations
+```
+
+**Admin Portal Colors (admin.manage_view.css):**
+- **Card Header**: Blue-gray gradient `linear-gradient(135deg, #546E7A 0%, #455A64 100%)`
+- **Form Section Title**: Context-specific colors:
+  - Order pages: `#1976D2` (blue)
+  - Company pages: `#00897B` (teal)
+  - KB pages: `#5E35B1` (purple)
+  - Ticket Dept pages: `#E65100` (orange)
+
+**Client Portal Colors (custom.css):**
+- **Page Header Card**: `linear-gradient(135deg, #0168fa 0%, #6f42c1 100%)` (blue-purple gradient)
+- **Card Header**: Background `#f8f9fc`, icons `#0168fa` (blue)
+- **Auth Pages** (login, register, forgot password):
+  - Header: Blue-purple gradient
+  - Buttons: Same gradient
+  - Form focus/links: `#0168fa` (blue)
+- **Checkout Card Header**: `linear-gradient(135deg, #667eea 0%, #764ba2 100%)` (purple gradient)
+
 ---
 
 ## Client Portal Features
@@ -602,6 +630,28 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 - `/whmazadmin/email_template/delete_records/{encoded_id}` - Soft delete
 - `/whmazadmin/email_template/ssp_list_api` - Server-side DataTables API
 
+#### 4.7 Automated Email Notifications
+
+**Payment Confirmation Emails:**
+- Sent automatically when invoice is marked as PAID
+- Customer receives: `invoice_payment_confirmation` template
+- Admin receives: `admin_payment_notification` template (if `notify_admin_payment` is enabled in sys_cnf)
+- Method: `Payment_model::sendPaymentConfirmationEmails($transactionId)`
+
+**Order Confirmation Emails:**
+- Sent automatically after successful order placement and invoice generation
+- Customer receives: `order_confirmation` template
+- Admin receives: `admin_order_notification` template (if `notify_admin_new_order` is enabled in sys_cnf)
+- Method: `Order_model::sendOrderConfirmationEmails($orderId, $invoiceId)`
+
+**Ticket Notification Emails:**
+| Event | Recipient | Template |
+|-------|-----------|----------|
+| New ticket by client | Department | `ticket_new_to_department` |
+| New ticket by admin | Customer | `ticket_new_to_customer` |
+| Reply by admin | Customer | `ticket_reply_to_customer` |
+| Reply by client | Department | `ticket_reply_to_department` |
+
 ---
 
 ### 5. Domain Management
@@ -701,11 +751,78 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 #### 7.1 Payment Gateway Configuration
 **Database Table:** `payment_gateway`
 
+**Implementation Status:**
+| Gateway | Status | Webhook | Notes |
+|---------|--------|---------|-------|
+| Stripe | ✅ Working | ✅ Implemented | Full integration with PaymentIntent API |
+| SSLCommerz | ✅ Working | ✅ Implemented | Session restoration for external redirects |
+| PayPal | ⚠️ Partial | ✅ Implemented | Webhook ready, needs testing |
+
+**Payment Libraries:** `src/libraries/`
+- `Stripe.php` - Stripe payment integration
+- `Paypal.php` - PayPal payment integration
+- `Sslcommerz.php` - SSLCommerz payment integration
+
+**Payment Controllers:**
+- `src/modules/billing/controllers/Pay.php` - Customer payment processing
+- `src/modules/webhook/controllers/Webhook.php` - Payment webhook handlers
+- `src/controllers/whmazadmin/Paymentgateway.php` - Admin gateway management
+
+**Webhook URLs:**
+| Gateway | Webhook URL |
+|---------|-------------|
+| Stripe | `https://yourdomain.com/webhook/stripe` |
+| PayPal | `https://yourdomain.com/webhook/paypal` |
+| SSLCommerz | `https://yourdomain.com/webhook/sslcommerz` |
+
+**Database Fields (payment_gateway table):**
+| Field | Description |
+|-------|-------------|
+| `public_key` | Live publishable/public key |
+| `secret_key` | Live secret key |
+| `webhook_secret` | Live webhook signing secret |
+| `test_public_key` | Test/Sandbox public key |
+| `test_secret_key` | Test/Sandbox secret key |
+| `test_webhook_secret` | Test/Sandbox webhook signing secret |
+| `is_test_mode` | 1 = Test mode, 0 = Live mode |
+
 **Features:**
 - Multiple gateway support framework
 - Gateway configuration storage
 - Payment processing hooks
 - Transaction logging
+- Toggle gateway status (enable/disable)
+- Test connection button for Stripe/PayPal
+- View transaction history with DataTables
+- View webhook logs with filtering
+
+#### 7.2 Provisioning System
+
+**Auto-Provisioning Flow:**
+After successful payment (webhook or admin "Mark as Paid"), the system automatically provisions:
+
+| Order Type | Action | API Called |
+|------------|--------|------------|
+| Domain Registration | Register domain at registrar | ResellerClub/Resell.biz API |
+| Domain Transfer | Initiate transfer with EPP code | ResellerClub/Resell.biz API |
+| Domain Renewal | Renew domain, update expiry | ResellerClub/Resell.biz API |
+| New Hosting | Create cPanel account | WHM API |
+| Hosting Renewal | Unsuspend if suspended, update dates | WHM API (if suspended) |
+
+**Key Files:**
+- `src/models/Provisioning_model.php` - Main provisioning logic
+- `src/helpers/domain_helper.php` - Domain registrar API functions
+- `src/helpers/cpanel_helper.php` - cPanel/WHM API functions
+
+**Admin Provisioning Logs:**
+- **URL**: `whmazadmin/provisioning/index`
+- **Menu**: Orders → Provisioning Logs
+- **Controller**: `src/controllers/whmazadmin/Provisioning.php`
+- **View**: `src/views/whmazadmin/provisioning_logs.php`
+
+**Provisioning Entry Points:**
+- `Payment_model::processSuccessfulPayment()` → `Invoice_model::provisionPaidServices()`
+- `Invoice_model::updateInvoiceStatus()` (admin mark as paid) → `provisionPaidServices()`
 
 ---
 
@@ -1079,9 +1196,9 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 
 ### Frontend Technology Stack
 
-**CSS Framework:** Bootstrap 5 with DashForge Theme
+**CSS Framework:** Bootstrap 5 with AdminLTE 4 Theme
 **JavaScript Framework:** AngularJS 1.x for dynamic content
-**Icons:** Feather Icons, FontAwesome, Ionicons, Typicons, Remixicon
+**Icons:** FontAwesome 6, Bootstrap Icons
 **Data Tables:** DataTables with responsive extension
 **Dialogs:** SweetAlert2
 **Enhanced Selects:** Select2
@@ -1178,28 +1295,34 @@ src/modules/*/views/
     └── support_announcement_list.php
 ```
 
-### Common UI Patterns
+### Common UI Patterns (AdminLTE 4)
 
 #### Page Title with Action Button
 ```php
-<h3 class="d-flex justify-content-between">
-    <span>Page Title</span>
-    <a href="<?=base_url()?>whmazadmin/entity/action" class="btn btn-sm btn-secondary">
-        <i class="fa fa-plus-square"></i>&nbsp;Add New
-    </a>
-</h3>
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">Page Title</h1>
+            </div>
+            <div class="col-sm-6">
+                <a href="<?=base_url()?>whmazadmin/entity/action" class="btn btn-primary float-end">
+                    <i class="fas fa-plus-square"></i> Add New
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 ```
 
 #### Breadcrumb Navigation
 ```php
 <nav aria-label="breadcrumb">
-    <ol class="breadcrumb breadcrumb-style1 mg-b-0">
+    <ol class="breadcrumb float-sm-end">
         <li class="breadcrumb-item">
-            <a href="<?=base_url()?>whmazadmin/dashboard/index">Portal home</a>
+            <a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a>
         </li>
-        <li class="breadcrumb-item active">
-            <a href="#">Current Page</a>
-        </li>
+        <li class="breadcrumb-item active" aria-current="page">Current Page</li>
     </ol>
 </nav>
 ```
@@ -1211,45 +1334,75 @@ src/modules/*/views/
 <?php } ?>
 ```
 
+#### AdminLTE 4 Card Component
+```php
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Card Title</h3>
+    </div>
+    <div class="card-body">
+        <!-- Card content -->
+    </div>
+    <div class="card-footer">
+        <!-- Card footer -->
+    </div>
+</div>
+```
+
 #### Tabbed Interface
 ```php
-<ul class="nav nav-tabs" id="pageTab" role="pageTablist">
+<ul class="nav nav-tabs" id="pageTab" role="tablist">
     <li class="nav-item">
-        <a class="nav-link active" id="info-tab" data-bs-toggle="tab" href="#general-info">
-            <i class="fa fa-info-circle"></i>&nbsp;General info
-        </a>
+        <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#general-info" type="button">
+            <i class="fas fa-info-circle"></i> General info
+        </button>
     </li>
 </ul>
-<div class="tab-content bd bd-gray-300 bd-t-0 pd-20">
-    <div class="tab-pane fade show active" id="general-info">
+<div class="tab-content border border-top-0 p-3">
+    <div class="tab-pane fade show active" id="general-info" role="tabpanel">
         <!-- Tab content -->
     </div>
 </div>
 ```
 
+#### Small Box (Stats Widget)
+```php
+<div class="small-box text-bg-primary">
+    <div class="inner">
+        <h3>150</h3>
+        <p>New Orders</p>
+    </div>
+    <div class="icon">
+        <i class="fas fa-shopping-cart"></i>
+    </div>
+    <a href="#" class="small-box-footer">
+        More info <i class="fas fa-arrow-circle-right"></i>
+    </a>
+</div>
+```
+
 ### Bootstrap 5 Utility Classes Used
 
-**Spacing:**
-- `mg-*` - Margin (custom DashForge classes)
-- `pd-*` - Padding (custom DashForge classes)
-- `mt-*`, `mb-*`, `ml-*`, `mr-*` - Bootstrap margins
-- `pt-*`, `pb-*`, `pl-*`, `pr-*` - Bootstrap paddings
+**Spacing (Bootstrap 5 standard):**
+- `m-*`, `mt-*`, `mb-*`, `ms-*`, `me-*`, `mx-*`, `my-*` - Margins
+- `p-*`, `pt-*`, `pb-*`, `ps-*`, `pe-*`, `px-*`, `py-*` - Paddings
 
 **Text:**
-- `tx-*` - Text utilities (custom DashForge classes)
-- `tx-color-01`, `tx-color-02`, `tx-color-03` - Text colors
-- `tx-uppercase`, `tx-semibold`, `tx-normal` - Text styles
+- `text-*` - Text alignment (start, center, end)
+- `text-primary`, `text-secondary`, `text-muted` - Text colors
+- `text-uppercase`, `fw-bold`, `fw-semibold` - Text styles
+- `fs-*` - Font sizes
 
 **Width/Height:**
-- `wd-*` - Width utilities (e.g., `wd-20p` = 20%)
-- `ht-*` - Height utilities
+- `w-*` - Width utilities (w-25, w-50, w-75, w-100)
+- `h-*` - Height utilities
 
 **Borders:**
-- `bd-*` - Border utilities (custom DashForge classes)
+- `border`, `border-*` - Border utilities (Bootstrap 5 standard)
 
 **Backgrounds:**
 - `bg-primary`, `bg-success`, `bg-danger`, `bg-warning`, `bg-info`
-- `bg-*-light` - Light background variants
+- `bg-light`, `bg-dark`, `bg-body-secondary` - Background variants
 
 ### DataTable UI Patterns
 
@@ -1300,18 +1453,21 @@ src/modules/*/views/
 
 ### Icon Usage
 
-**Feather Icons (Primary):**
+**FontAwesome 6 (Primary):**
 ```html
-<i data-feather="home"></i>
-<i data-feather="users"></i>
-<i data-feather="settings"></i>
+<i class="fas fa-home"></i>
+<i class="fas fa-users"></i>
+<i class="fas fa-cog"></i>
+<i class="fas fa-plus-square"></i>
+<i class="fas fa-check-circle"></i>
+<i class="fas fa-trash"></i>
 ```
 
-**FontAwesome (Secondary):**
+**Bootstrap Icons (Alternative):**
 ```html
-<i class="fa fa-plus-square"></i>
-<i class="fa fa-check-circle"></i>
-<i class="fa fa-trash"></i>
+<i class="bi bi-house"></i>
+<i class="bi bi-people"></i>
+<i class="bi bi-gear"></i>
 ```
 
 ### Color Scheme
@@ -1348,14 +1504,20 @@ src/modules/*/views/
 
 ### Theme Customization
 
-**DashForge Theme Modes:**
+**AdminLTE 4 Theme Features:**
 - Light mode (default)
 - Dark mode
-- Navigation styles (Side, Top, Fixed)
-- Sidebar modes (Minimized, Expanded)
+- Sidebar collapsed/expanded modes
+- Fixed navbar option
+- Card styles and variants
 
-**Customizer Location:**
-Available in footer for both admin and client portals
+**AdminLTE 4 Components:**
+- Cards with header, body, footer
+- Small boxes for statistics
+- Info boxes for metrics
+- Callouts for alerts
+- Direct chat widget
+- Timeline component
 
 ---
 
@@ -1671,6 +1833,54 @@ $result = whm_get_account_stats($serverInfo, $cpanelUsername);
 
 ## Configuration Guide
 
+### Configuration Storage (Database vs .env)
+
+**Stored in Database (Admin Portal managed):**
+| Setting | Table | Admin Location |
+|---------|-------|----------------|
+| Company Info | `app_settings` | Settings → General |
+| Google reCAPTCHA | `app_settings` | Settings → General |
+| Payment Gateways | `payment_gateway` | Settings → Payment Gateways |
+| Email Templates | `email_templates` | Settings → Email Templates |
+| Domain Registrar | `dom_registers` | Settings → Domain Registrar |
+| Billing Configuration | `sys_cnf` | Settings → Billing |
+| Automation / Cron Jobs | `sys_cnf` | Settings → Automation |
+| Feature Flags | `sys_cnf` | Settings → Features |
+| Notifications | `sys_cnf` | Settings → Notifications |
+| Customer Portal | `sys_cnf` | Settings → Customer Portal |
+| Support System | `sys_cnf` | Settings → Support |
+
+**Stored in .env file (environment-specific):**
+- Database credentials (DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD)
+- Encryption key
+- Session configuration
+- CSRF settings
+- Environment mode (development/production)
+
+**DO NOT put in .env:**
+- Payment gateway API keys (use Admin Portal)
+- Company information (use Admin Portal)
+- Google reCAPTCHA keys (use Admin Portal)
+- Domain registrar credentials (use Admin Portal)
+- Any setting that has an Admin Portal interface
+
+**Accessing sys_cnf values in code:**
+```php
+// Load the model
+$this->load->model('Syscnf_model');
+
+// Get single value
+$invoicePrefix = $this->Syscnf_model->getValue('invoice_prefix');
+
+// Get with type casting and default
+$taxRate = $this->Syscnf_model->get('tax_rate', 0, 'float');
+$taxEnabled = $this->Syscnf_model->get('tax_enabled', false, 'bool');
+
+// Get all values in a group
+$billingConfig = $this->Syscnf_model->getByGroup('BILLING');
+// Returns: ['invoice_prefix' => 'INV-', 'tax_rate' => '10.00', ...]
+```
+
 ### Base Configuration
 
 **File:** `src/config/config.php`
@@ -1907,6 +2117,6 @@ For HMVC documentation: https://github.com/jenssegers/codeigniter-hmvc
 
 ---
 
-**Documentation Version:** 1.7
-**Last Updated:** 2026-02-12
+**Documentation Version:** 1.8
+**Last Updated:** 2026-02-27
 **Project Status:** Active Development
