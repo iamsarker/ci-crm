@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" width="600" height="200">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&amp;display=swap');
+    </style>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0e1117"/>
+      <stop offset="100%" style="stop-color:#161b22"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="100%" style="stop-color:#06b6d4"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="iconGlow">
+      <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="#22d3ee" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="600" height="200" rx="16" fill="url(#bgGrad)"/>
+
+  <!-- Icon Box -->
+  <g transform="translate(120, 62)" filter="url(#iconGlow)">
+    <rect x="0" y="0" width="76" height="76" rx="18" fill="none" stroke="#22d3ee" stroke-width="3" opacity="0.9"/>
+    <rect x="0" y="0" width="76" height="76" rx="18" fill="rgba(34,211,238,0.06)"/>
+    
+    <!-- Server Top -->
+    <rect x="16" y="14" width="44" height="18" rx="4" fill="none" stroke="#22d3ee" stroke-width="2.2"/>
+    <circle cx="25" cy="23" r="2.5" fill="#22d3ee"/>
+    <line x1="32" y1="23" x2="50" y2="23" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+
+    <!-- Server Bottom -->
+    <rect x="16" y="42" width="44" height="18" rx="4" fill="none" stroke="#22d3ee" stroke-width="2.2"/>
+    <circle cx="25" cy="51" r="2.5" fill="#22d3ee"/>
+    <line x1="32" y1="51" x2="50" y2="51" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+  </g>
+
+  <!-- WHM Text -->
+  <text x="218" y="116" font-family="Orbitron, sans-serif" font-weight="800" font-size="48" fill="#ffffff" letter-spacing="4">WHM</text>
+
+  <!-- A-Z Text in Cyan -->
+  <text x="385" y="116" font-family="Orbitron, sans-serif" font-weight="800" font-size="48" fill="url(#cyanGrad)" letter-spacing="4" filter="url(#glow)">A-Z</text>
+
+  <!-- Subtle bottom accent line -->
+  <rect x="120" y="152" width="360" height="2" rx="1" fill="url(#cyanGrad)" opacity="0.3"/>
+</svg>
