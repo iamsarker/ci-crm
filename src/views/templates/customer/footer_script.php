@@ -1,42 +1,45 @@
 <script src="<?=base_url()?>resources/lib/jquery/jquery.min.js"></script>
 <script src="<?=base_url()?>resources/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="<?=base_url()?>resources/lib/feather-icons/feather.min.js"></script>
-<script src="<?=base_url()?>resources/lib/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 <script src="<?=base_url()?>resources/lib/prismjs/prism.js"></script>
 <script src="<?=base_url()?>resources/lib/quill/quill.min.js"></script>
 
-<script src="<?=base_url()?>resources/assets/js/dashforge.js"></script>
+<!-- AdminLTE 4 JS -->
+<script src="<?=base_url()?>resources/adminlte4/dist/js/adminlte.min.js"></script>
 
-<!-- append theme customizer -->
+<!-- Theme Settings (cookies for dark/light mode) -->
 <script src="<?=base_url()?>resources/lib/js-cookie/js.cookie.js"></script>
-<script src="<?=base_url()?>resources/assets/js/dashforge.settings.js"></script>
 
+<!-- DataTables -->
 <script src="<?=base_url()?>resources/lib/datatables.net/js/jquery.dataTables.min.js"></script>
 <script src="<?=base_url()?>resources/lib/datatables.net-dt/js/dataTables.dataTables.min.js"></script>
 <script src="<?=base_url()?>resources/lib/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
 <script src="<?=base_url()?>resources/lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
+
+<!-- Other Libraries -->
 <script src="<?=base_url()?>resources/lib/select2/js/select2.min.js"></script>
 <script src="<?=base_url()?>resources/lib/sweetalert2/sweetalert2.all.min.js"></script>
 
+<!-- AngularJS -->
 <script src="<?=base_url()?>resources/angular/angular.min.js?v=1.0.0"></script>
-
 <script src="<?=base_url()?>resources/angular/angular-ui-router.min.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/angular-animate.min.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/angular-aria.min.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/angular-messages.min.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/angular-sanitize.min.js?v=1.0.0"></script>
-
 <script src="<?=base_url()?>resources/angular/angular-material.min.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/ngDialog.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/ngToast.js?v=1.0.0"></script>
+
+<!-- Toast Notifications -->
 <script src="<?=base_url()?>resources/assets/js/jquery.toast.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/assets/js/toastcode.js?v=1.0.0"></script>
 
 <script>
 	$(function(){
-		'use script'
+		'use strict'
 
-		$('[data-toggle="tooltip"]').tooltip()
+		// Initialize Bootstrap tooltips
+		$('[data-toggle="tooltip"], [data-bs-toggle="tooltip"]').tooltip()
 
 		// Setup CSRF token for jQuery AJAX requests
 		var csrfName = $('meta[name="csrf-token-name"]').attr('content');
@@ -46,11 +49,18 @@
 			beforeSend: function(xhr, settings) {
 				// Add CSRF token to POST requests
 				if (settings.type === 'POST' && csrfName && csrfHash) {
-					settings.data = settings.data || {};
-					if (typeof settings.data === 'string') {
-						settings.data += '&' + csrfName + '=' + csrfHash;
-					} else if (typeof settings.data === 'object') {
-						settings.data[csrfName] = csrfHash;
+					// Always send CSRF token in header for JSON requests
+					xhr.setRequestHeader('X-CSRF-TOKEN', csrfHash);
+
+					// For non-JSON requests, also add to data
+					var contentType = settings.contentType || '';
+					if (contentType.indexOf('application/json') === -1) {
+						settings.data = settings.data || {};
+						if (typeof settings.data === 'string') {
+							settings.data += '&' + csrfName + '=' + csrfHash;
+						} else if (typeof settings.data === 'object') {
+							settings.data[csrfName] = csrfHash;
+						}
 					}
 				}
 			},
@@ -68,26 +78,30 @@
 			}
 		});
 
+		// Dark/Light Mode Toggle (using Bootstrap 5.3 color modes)
 		window.darkMode = function(){
+			document.documentElement.setAttribute('data-bs-theme', 'dark');
+			Cookies.set('theme', 'dark', { expires: 365 });
 			$('.btn-white').addClass('btn-dark').removeClass('btn-white');
-			$('.bg-white').addClass('bg-gray-900').removeClass('bg-white');
-			$('.bg-gray-50').addClass('bg-dark').removeClass('bg-gray-50');
+			$('.bg-white').addClass('bg-dark').removeClass('bg-white');
 		}
 
 		window.lightMode = function() {
+			document.documentElement.setAttribute('data-bs-theme', 'light');
+			Cookies.set('theme', 'light', { expires: 365 });
 			$('.btn-dark').addClass('btn-white').removeClass('btn-dark');
-			$('.bg-gray-900').addClass('bg-white').removeClass('bg-gray-900');
-			$('.bg-dark').addClass('bg-gray-50').removeClass('bg-dark');
+			$('.bg-dark').addClass('bg-white').removeClass('bg-dark');
 		}
 
-		var hasMode = Cookies.get('df-mode');
-		if(hasMode === 'dark') {
+		// Apply saved theme on page load
+		var savedTheme = Cookies.get('theme');
+		if(savedTheme === 'dark') {
 			darkMode();
 		} else {
 			lightMode();
 		}
 
-
+		// Currency change handler
 		$(document).on("change", "select.currency", function(e){
 			var vals = $(this).val();
 			var arr = vals.split("-");

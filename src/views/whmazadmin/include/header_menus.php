@@ -1,124 +1,165 @@
-<header class="navbar navbar-header navbar-header-fixed">
-	<a href="" id="mainMenuOpen" class="burger-menu"><i data-feather="menu"></i></a>
-	<div class="navbar-brand">
-		<a href="<?=base_url()?>clientarea" class="df-logo">WHM<span>A-Z</span></a>
-	</div><!-- navbar-brand -->
-	<div id="navbarMenu" class="navbar-menu-wrapper">
-		<div class="navbar-menu-header">
-			<a href="<?=base_url()?>clientarea" class="df-logo">WHM<span>A-Z</span></a>
-			<a id="mainMenuClose" href=""><i data-feather="x"></i></a>
-		</div><!-- navbar-menu-header -->
-		<ul class="nav navbar-menu">
-			<li class="nav-label pd-l-20 pd-lg-l-25 d-lg-none">Main Navigation</li>
+<!-- Top Navigation Bar -->
+<nav class="app-header navbar navbar-expand-lg admin-navbar">
+    <div class="container-fluid">
+        <!-- Brand -->
+        <a href="<?=base_url()?>whmazadmin" class="navbar-brand">
+            <span class="brand-text">WHM<span>A-Z</span> Admin</span>
+        </a>
 
-			<?php if( isAdminLoggedIn() ){?>
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#adminNavbar" aria-controls="adminNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fas fa-bars text-white"></i>
+        </button>
 
-				<li class="nav-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="nav-link"><i data-feather="home"></i> Home</a></li>
+        <!-- Navigation Menu -->
+        <div class="collapse navbar-collapse" id="adminNavbar">
+            <?php if( isAdminLoggedIn() ){?>
+            <ul class="navbar-nav me-auto">
+                <!-- Home -->
+                <li class="nav-item">
+                    <a href="<?=base_url()?>whmazadmin/dashboard/index" class="nav-link">
+                        <i class="fas fa-home me-1"></i> Home
+                    </a>
+                </li>
 
-				<li class="nav-item with-sub">
-					<a href="" class="nav-link"><i data-feather="users"></i> Customers</a>
-					<ul class="navbar-menu-sub">
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/company/index" class="nav-sub-link"><i data-feather="users"></i>Companies</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/company/manage" class="nav-sub-link"><i data-feather="user-plus"></i>New company</a></li>
-					</ul>
-				</li>
+                <!-- Customers Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-users me-1"></i> Customers
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/company/index"><i class="fas fa-building me-2"></i>Companies</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/company/manage"><i class="fas fa-user-plus me-2"></i>New Company</a></li>
+                    </ul>
+                </li>
 
-				<li class="nav-item with-sub">
-					<a href="" class="nav-link"><i data-feather="pie-chart"></i> Orders</a>
-					<ul class="navbar-menu-sub">
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/order/index" class="nav-sub-link"><i data-feather="shopping-cart"></i>Orders</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/order/new_order" class="nav-sub-link"><i data-feather="plus-square"></i>New order</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/provisioning/index" class="nav-sub-link"><i data-feather="settings"></i>Provisioning Logs</a></li>
-					</ul>
-				</li>
+                <!-- Orders Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-shopping-cart me-1"></i> Orders
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/order/index"><i class="fas fa-list me-2"></i>Orders</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/order/new_order"><i class="fas fa-plus-square me-2"></i>New Order</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/provisioning/index"><i class="fas fa-cogs me-2"></i>Provisioning Logs</a></li>
+                    </ul>
+                </li>
 
-				<li class="nav-item with-sub">
-					<a href="" class="nav-link"><i data-feather="pie-chart"></i> Billing</a>
-					<ul class="navbar-menu-sub">
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/invoice/index" class="nav-sub-link"><i data-feather="file-text"></i>View invoices</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/paymentgateway/index" class="nav-sub-link"><i data-feather="credit-card"></i>Payment Gateways</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/paymentgateway/transactions" class="nav-sub-link"><i data-feather="activity"></i>Transactions</a></li>
-					</ul>
-				</li>
+                <!-- Billing Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-file-invoice-dollar me-1"></i> Billing
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/invoice/index"><i class="fas fa-file-alt me-2"></i>View Invoices</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/paymentgateway/index"><i class="fas fa-credit-card me-2"></i>Payment Gateways</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/paymentgateway/transactions"><i class="fas fa-exchange-alt me-2"></i>Transactions</a></li>
+                    </ul>
+                </li>
 
-				<li class="nav-item with-sub">
-					<a href="" class="nav-link"><i data-feather="tag"></i> Supports</a>
-					<ul class="navbar-menu-sub">
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/kb_category/index" class="nav-sub-link"><i data-feather="layers"></i> KB Categories</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/ticket_department/index" class="nav-sub-link"><i data-feather="grid"></i> Departments</a></li>
-						<li class="nav-sub-item">&nbsp;</li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/ticket/index" class="nav-sub-link"><i data-feather="tag"></i>Tickets</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/kb/index" class="nav-sub-link"><i data-feather="sun"></i>Knowledge Bases</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/announcement/index" class="nav-sub-link"><i data-feather="mic"></i>Announcements</a></li>
-					</ul>
-				</li>
+                <!-- Supports Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-headset me-1"></i> Supports
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/kb_category/index"><i class="fas fa-layer-group me-2"></i>KB Categories</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/ticket_department/index"><i class="fas fa-sitemap me-2"></i>Departments</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/ticket/index"><i class="fas fa-ticket-alt me-2"></i>Tickets</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/kb/index"><i class="fas fa-book me-2"></i>Knowledge Bases</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/announcement/index"><i class="fas fa-bullhorn me-2"></i>Announcements</a></li>
+                    </ul>
+                </li>
 
-				<li class="nav-item with-sub">
-					<a href="" class="nav-link"><i data-feather="credit-card"></i> Expenses</a>
-					<ul class="navbar-menu-sub">
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/expense_category/index" class="nav-sub-link"><i data-feather="layers"></i> Expense Categories</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/expense_vendor/index" class="nav-sub-link"><i data-feather="archive"></i> Expense Vendors</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/expense/index" class="nav-sub-link"><i data-feather="credit-card"></i> Expenses</a></li>
-					</ul>
-				</li>
+                <!-- Expenses Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-wallet me-1"></i> Expenses
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/expense_category/index"><i class="fas fa-tags me-2"></i>Expense Categories</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/expense_vendor/index"><i class="fas fa-store me-2"></i>Expense Vendors</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/expense/index"><i class="fas fa-receipt me-2"></i>Expenses</a></li>
+                    </ul>
+                </li>
 
-				<li class="nav-item with-sub">
-					<a href="" class="nav-link"><i data-feather="settings"></i> Settings</a>
-					<ul class="navbar-menu-sub">
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/general_setting/manage" class="nav-sub-link"><i data-feather="settings"></i>General Settings</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/server/index" class="nav-sub-link"><i data-feather="server"></i>Servers</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/currency/index" class="nav-sub-link"><i data-feather="dollar-sign"></i>Currencies</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/service_category/index" class="nav-sub-link"><i data-feather="layers"></i>Service Categories</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/service_group/index" class="nav-sub-link"><i data-feather="aperture"></i>Service Groups</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/service_module/index" class="nav-sub-link"><i data-feather="aperture"></i>Service Modules</a></li>
-						<li class="nav-sub-item">&nbsp;</li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/service_product/index" class="nav-sub-link"><i data-feather="hard-drive"></i>Hosting Management</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/package/index" class="nav-sub-link"><i data-feather="sliders"></i>Hosting Pricing</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/domain_register/index" class="nav-sub-link"><i data-feather="globe"></i>Domain Register</a></li>
-						<li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/domain_pricing/index" class="nav-sub-link"><i data-feather="sliders"></i>Domain Pricing</a></li>
-						<li class="nav-sub-item">&nbsp;</li>
+                <!-- Settings Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-cog me-1"></i> Settings
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/general_setting/manage"><i class="fas fa-sliders-h me-2"></i>General Settings</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/server/index"><i class="fas fa-server me-2"></i>Servers</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/currency/index"><i class="fas fa-dollar-sign me-2"></i>Currencies</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_category/index"><i class="fas fa-folder me-2"></i>Service Categories</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_group/index"><i class="fas fa-object-group me-2"></i>Service Groups</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_module/index"><i class="fas fa-puzzle-piece me-2"></i>Service Modules</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_product/index"><i class="fas fa-hdd me-2"></i>Hosting Management</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/package/index"><i class="fas fa-tag me-2"></i>Hosting Pricing</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/domain_register/index"><i class="fas fa-globe me-2"></i>Domain Register</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/domain_pricing/index"><i class="fas fa-tags me-2"></i>Domain Pricing</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/email_template/index"><i class="fas fa-envelope me-2"></i>Email Template</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/page/index"><i class="fas fa-file-code me-2"></i>Dynamic Pages</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <?php } else { ?>
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a href="<?=base_url()?>whmazadmin/dashboard/index" class="nav-link">
+                        <i class="fas fa-home me-1"></i> Home
+                    </a>
+                </li>
+            </ul>
+            <?php } ?>
+        </div>
 
-						 <li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/email_template/index" class="nav-sub-link"><i data-feather="mail"></i> Email Template</a></li>
-						 <li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/page/index" class="nav-sub-link"><i data-feather="file-text"></i> Dynamic Pages</a></li>
-						<!-- <li class="nav-sub-item"><a href="<?=base_url()?>whmazadmin/contactus" class="nav-sub-link"><i data-feather="map-pin"></i> Contact us</a></li> -->
-					</ul>
-				</li>
-
-			<?php } else{ $menus = getMenuItems();?>
-				<li class="nav-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="nav-link"><i data-feather="home"></i> Home</a></li>
-			<?php }?>
-
-		</ul>
-	</div><!-- navbar-menu-wrapper -->
-	<div class="navbar-right">
-
-		<?php if( isAdminLoggedIn() ){ $admin = getAdminData();?>
-			<div class="dropdown dropdown-profile">
-				<a href="" class="dropdown-link" data-bs-toggle="dropdown" data-display="static">
-					<div class="avatar avatar-sm"><img src="<?=base_url()?>/resources/assets/img/default.jpg" class="rounded-circle" alt=""></div>
-				</a><!-- dropdown-link -->
-				<div class="dropdown-menu dropdown-menu-end tx-16">
-					<div class="avatar avatar-lg mg-b-15"><img src="<?=base_url()?>/resources/assets/img/default.jpg" class="rounded-circle" alt=""></div>
-					<h6 class="tx-semibold mg-b-5"><?=$admin['first_name'].' '.$admin['last_name']?></h6>
-					<div class="dropdown-divider"></div>
-					<a href="<?=base_url()?>whmazadmin/dashboard/changePassword" class="dropdown-item"><i data-feather="key"></i>Change Password</a>
-					<a href="<?=base_url()?>whmazadmin/authenticate/logout" class="dropdown-item"><i data-feather="log-out"></i>Sign Out</a>
-				</div><!-- dropdown-menu -->
-			</div><!-- dropdown -->
-		<?php } else {?>
-			<div class="dropdown dropdown-profile">
-				<a href="" class="dropdown-link" data-bs-toggle="dropdown" data-display="static">
-					<div class="avatar avatar-sm"><img src="<?=base_url()?>/resources/assets/img/default.jpg" class="rounded-circle" alt=""></div>
-				</a><!-- dropdown-link -->
-				<div class="dropdown-menu dropdown-menu-end tx-16">
-					<div class="avatar avatar-lg mg-b-15"><img src="<?=base_url()?>/resources/assets/img/default.jpg" class="rounded-circle" alt=""></div>
-					<h6 class="tx-semibold mg-b-5">WHMAZ</h6>
-					<div class="dropdown-divider"></div>
-					<a href="<?=base_url()?>whmazadmin/authenticate/login" class="dropdown-item"><i data-feather="log-in"></i>Sign In</a>
-				</div><!-- dropdown-menu -->
-			</div><!-- dropdown -->
-		<?php }?>
-
-	</div><!-- navbar-right -->
-
-</header><!-- navbar -->
+        <!-- Right Side - User Profile -->
+        <ul class="navbar-nav ms-auto">
+            <?php if( isAdminLoggedIn() ){ $admin = getAdminData();?>
+            <li class="nav-item dropdown dropdown-profile">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="avatar avatar-sm me-2">
+                        <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" style="width:32px;height:32px;object-fit:cover;">
+                    </div>
+                    <span class="d-none d-lg-inline text-white"><?=htmlspecialchars($admin['first_name'])?></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li class="px-3 py-2 text-center border-bottom">
+                        <div class="avatar avatar-lg mx-auto mb-2">
+                            <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" style="width:64px;height:64px;object-fit:cover;">
+                        </div>
+                        <h6 class="mb-0"><?=htmlspecialchars($admin['first_name'].' '.$admin['last_name'])?></h6>
+                    </li>
+                    <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/dashboard/changePassword"><i class="fas fa-key me-2"></i>Change Password</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item text-danger" href="<?=base_url()?>whmazadmin/authenticate/logout"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</a></li>
+                </ul>
+            </li>
+            <?php } else { ?>
+            <li class="nav-item dropdown dropdown-profile">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                    <div class="avatar avatar-sm">
+                        <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" style="width:32px;height:32px;object-fit:cover;">
+                    </div>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li class="px-3 py-2 text-center border-bottom">
+                        <div class="avatar avatar-lg mx-auto mb-2">
+                            <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" style="width:64px;height:64px;object-fit:cover;">
+                        </div>
+                        <h6 class="mb-0">WHMAZ</h6>
+                    </li>
+                    <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/authenticate/login"><i class="fas fa-sign-in-alt me-2"></i>Sign In</a></li>
+                </ul>
+            </li>
+            <?php } ?>
+        </ul>
+    </div>
+</nav>

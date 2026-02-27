@@ -2,18 +2,18 @@
   <div class="card-header">
     <h6 class="card-title mg-b-0"><i class="fa fa-plus"></i> &nbsp;Action</h6>
     <nav class="nav">
-      
+
     </nav>
   </div><!-- card-header -->
   <ul class="list-group list-group-flush">
     <li class="list-group-item <?=($type == 'register')?'selected-li':'';?>">
-      <a href="<?=base_url()?>cart/domain/register" class="nav-sub-link"><i data-feather="globe"></i>&nbsp;Register domain</a>
+      <a href="<?=base_url()?>cart/domain/register" class="nav-sub-link"><i class="fas fa-globe"></i>&nbsp;Register domain</a>
     </li>
     <li class="list-group-item <?=($type == 'transfer')?'selected-li':'';?>">
-      <a href="<?=base_url()?>cart/domain/transfer" class="nav-sub-link"><i data-feather="repeat"></i>&nbsp;Transfer in a domain</a>
+      <a href="<?=base_url()?>cart/domain/transfer" class="nav-sub-link"><i class="fas fa-exchange-alt"></i>&nbsp;Transfer in a domain</a>
     </li>
     <li class="list-group-item <?=($type == 'view')?'selected-li':'';?>">
-      <a href="<?=base_url()?>cart/view" class="nav-sub-link"><i data-feather="shopping-cart"></i>&nbsp;View cart</a>
+      <a href="<?=base_url()?>cart/view" class="nav-sub-link"><i class="fas fa-shopping-cart"></i>&nbsp;View cart</a>
     </li>
   </ul>
 </div>

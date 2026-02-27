@@ -10,10 +10,10 @@
 			</div>
 			<div class="d-none d-md-flex gap-2 mt-3 mt-sm-0">
 				<a href="<?=base_url()?>whmazadmin/company/manage" class="btn btn-sm pd-x-15 btn-white btn-uppercase">
-					<i data-feather="user-plus" class="wd-10 mg-r-5"></i> New Customer
+					<i class="fas fa-user-plus me-1"></i> New Customer
 				</a>
 				<a href="<?=base_url()?>whmazadmin/order/new_order" class="btn btn-sm pd-x-15 btn-light-primary btn-uppercase">
-					<i data-feather="plus-square" class="wd-10 mg-r-5"></i> New Order
+					<i class="fas fa-plus-square me-1"></i> New Order
 				</a>
 			</div>
 		</div>

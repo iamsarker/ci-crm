@@ -332,6 +332,23 @@ footer.footer {
 }
 
 /* Dashboard List Items */
+.dashboard-card .list-group {
+	padding: 0;
+	margin: 0;
+}
+
+.dashboard-card .list-group-item {
+	padding: 14px 20px;
+	border-left: none;
+	border-right: none;
+	border-top: none;
+	border-bottom: 1px solid #f1f4f9;
+}
+
+.dashboard-card .list-group-item:last-child {
+	border-bottom: none;
+}
+
 .dashboard-list-item {
 	padding: 14px 20px !important;
 	border-bottom: 1px solid #f1f4f9 !important;
@@ -370,6 +387,14 @@ footer.footer {
 .dashboard-list-item .item-avatar.avatar-invoice {
 	background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
 	color: #fff;
+}
+
+.dashboard-list-item > div {
+	margin-left: 15px;
+}
+
+.dashboard-list-item > div:first-child {
+	margin-left: 0;
 }
 
 .dashboard-list-item .item-title {

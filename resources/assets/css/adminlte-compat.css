@@ -1,0 +1,326 @@
+
+/* Padding X-axis */
+.pd-x-0 { padding-left: 0 !important; padding-right: 0 !important; }
+.pd-x-10 { padding-left: 10px !important; padding-right: 10px !important; }
+.pd-x-15 { padding-left: 15px !important; padding-right: 15px !important; }
+.pd-x-20 { padding-left: 20px !important; padding-right: 20px !important; }
+.pd-x-25 { padding-left: 25px !important; padding-right: 25px !important; }
+.pd-x-30 { padding-left: 30px !important; padding-right: 30px !important; }
+
+/* Responsive padding - lg breakpoint */
+@media (min-width: 992px) {
+    .pd-lg-x-0 { padding-left: 0 !important; padding-right: 0 !important; }
+    .pd-lg-x-10 { padding-left: 10px !important; padding-right: 10px !important; }
+    .pd-lg-x-12 { padding-left: 12px !important; padding-right: 12px !important; }
+    .pd-lg-x-25 { padding-left: 25px !important; padding-right: 25px !important; }
+    .pd-lg-x-30 { padding-left: 30px !important; padding-right: 30px !important; }
+}
+
+/* Responsive padding - xl breakpoint */
+@media (min-width: 1200px) {
+    .pd-xl-x-0 { padding-left: 0 !important; padding-right: 0 !important; }
+    .pd-xl-x-40 { padding-left: 40px !important; padding-right: 40px !important; }
+}
+
+/* Padding left/right */
+.pd-l-10 { padding-left: 10px !important; }
+.pd-l-15 { padding-left: 15px !important; }
+.pd-l-20 { padding-left: 20px !important; }
+.pd-l-25 { padding-left: 25px !important; }
+.pd-r-10 { padding-right: 10px !important; }
+.pd-r-15 { padding-right: 15px !important; }
+.pd-r-20 { padding-right: 20px !important; }
+
+@media (min-width: 992px) {
+    .pd-lg-l-25 { padding-left: 25px !important; }
+}
+
+.mg-b-0 { margin-bottom: 0 !important; }
+.mg-b-5 { margin-bottom: 5px !important; }
+.mg-b-10 { margin-bottom: 10px !important; }
+.mg-b-15 { margin-bottom: 15px !important; }
+.mg-b-20 { margin-bottom: 20px !important; }
+
+.mg-r-5 { margin-right: 5px !important; }
+.mg-r-10 { margin-right: 10px !important; }
+.mg-l-5 { margin-left: 5px !important; }
+.mg-l-10 { margin-left: 10px !important; }
+.mg-l-auto { margin-left: auto !important; }
+
+.mg-t-10 { margin-top: 10px !important; }
+.mg-t-20 { margin-top: 20px !important; }
+
+/* ============================================
+   CONTENT WRAPPER COMPATIBILITY
+   ============================================ */
+
+/* Make content wrapper work with AdminLTE */
+.content-wrapper {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+}
+
+.content.content-fluid,
+.content.content-fixed {
+    padding: 1.5rem;
+    flex: 1;
+}
+
+/* ============================================
+   TYPOGRAPHY UTILITIES
+   ============================================ */
+
+.tx-semibold { font-weight: 600 !important; }
+.tx-bold { font-weight: 700 !important; }
+.tx-medium { font-weight: 500 !important; }
+.tx-normal { font-weight: 400 !important; }
+.tx-light { font-weight: 300 !important; }
+
+.tx-10 { font-size: 10px !important; }
+.tx-11 { font-size: 11px !important; }
+.tx-12 { font-size: 12px !important; }
+.tx-13 { font-size: 13px !important; }
+.tx-14 { font-size: 14px !important; }
+.tx-15 { font-size: 15px !important; }
+.tx-16 { font-size: 16px !important; }
+.tx-18 { font-size: 18px !important; }
+.tx-20 { font-size: 20px !important; }
+
+.tx-uppercase { text-transform: uppercase !important; }
+.tx-lowercase { text-transform: lowercase !important; }
+.tx-capitalize { text-transform: capitalize !important; }
+
+.tx-center { text-align: center !important; }
+.tx-right { text-align: right !important; }
+.tx-left { text-align: left !important; }
+
+/* ============================================
+   COLOR UTILITIES
+   ============================================ */
+
+.tx-color-01 { color: #1b2e4b !important; }
+.tx-color-02 { color: #506690 !important; }
+.tx-color-03 { color: #8392a5 !important; }
+.tx-color-04 { color: #c0ccda !important; }
+
+.tx-primary { color: #0168fa !important; }
+.tx-success { color: #10b759 !important; }
+.tx-warning { color: #ffc107 !important; }
+.tx-danger { color: #dc3545 !important; }
+.tx-info { color: #00b8d4 !important; }
+
+/* ============================================
+   AVATAR COMPONENT
+   ============================================ */
+
+.avatar {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 38px;
+    line-height: 38px;
+    text-align: center;
+    border-radius: 100%;
+    background-color: #e9ecef;
+    color: #596882;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-sm {
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+}
+
+.avatar-md {
+    width: 48px;
+    height: 48px;
+    line-height: 48px;
+}
+
+.avatar-lg {
+    width: 64px;
+    height: 64px;
+    line-height: 64px;
+}
+
+.avatar-xl {
+    width: 80px;
+    height: 80px;
+    line-height: 80px;
+}
+
+/* ============================================
+   NAVBAR CUSTOM STYLING
+   ============================================ */
+
+/* Admin navbar dark theme */
+.admin-navbar {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%) !important;
+}
+
+.admin-navbar .navbar-brand {
+    color: #fff !important;
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.admin-navbar .navbar-brand span {
+    color: #63b3ed;
+}
+
+.admin-navbar .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: 500;
+    padding: 0.5rem 1rem !important;
+    transition: all 0.2s ease;
+}
+
+.admin-navbar .nav-link:hover,
+.admin-navbar .nav-link:focus {
+    color: #fff !important;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.admin-navbar .nav-link i {
+    margin-right: 5px;
+}
+
+.admin-navbar .dropdown-menu {
+    border: none;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    padding: 0.5rem 0;
+}
+
+.admin-navbar .dropdown-item {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
+.admin-navbar .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.admin-navbar .dropdown-item i {
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+}
+
+/* User dropdown profile styling */
+.dropdown-profile .dropdown-menu {
+    min-width: 200px;
+    padding: 1rem;
+    text-align: center;
+}
+
+.dropdown-profile .avatar {
+    margin: 0 auto;
+}
+
+/* ============================================
+   FOOTER STYLING
+   ============================================ */
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.footer a {
+    color: #0168fa;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+.footer .nav {
+    gap: 1rem;
+}
+
+.footer .nav-link {
+    color: #6c757d;
+    padding: 0;
+    font-size: 0.875rem;
+}
+
+.footer .nav-link:hover {
+    color: #0168fa;
+}
+
+/* ============================================
+   BREADCRUMB STYLING
+   ============================================ */
+
+.breadcrumb-style1 {
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    font-size: 0.8125rem;
+}
+
+.breadcrumb-style1 .breadcrumb-item + .breadcrumb-item::before {
+    content: "›";
+    color: #8392a5;
+}
+
+.breadcrumb-style1 .breadcrumb-item a {
+    color: #8392a5;
+    text-decoration: none;
+}
+
+.breadcrumb-style1 .breadcrumb-item.active {
+    color: #596882;
+}
+
+/* ============================================
+   APP WRAPPER OVERRIDES FOR TOP NAV LAYOUT
+   ============================================ */
+
+body.layout-top-nav .app-wrapper {
+    margin-left: 0;
+}
+
+body.layout-top-nav .app-main {
+    padding-top: 0;
+}
+
+body.layout-top-nav .app-content {
+    padding: 1.5rem;
+}
+
+/* ============================================
+   DF-LOGO COMPATIBILITY
+   ============================================ */
+
+.df-logo {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #fff;
+    text-decoration: none;
+}
+
+.df-logo span {
+    color: #63b3ed;
+}
+
+.df-logo:hover {
+    color: #fff;
+    text-decoration: none;
+}

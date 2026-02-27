@@ -1,3 +1,18 @@
+/* Nav sub-link styling */
+.nav-sub-link {
+	text-decoration: none;
+	color: inherit;
+}
+
+.nav-sub-link:hover {
+	text-decoration: none;
+	color: #0168fa;
+}
+
+.nav-sub-link i {
+	margin-right: 5px;
+}
+
 .list-group{
 	display: block;
 	position: relative;
@@ -5,6 +20,16 @@
 
 .list-group > li.list-group-item{
 	padding: 10px;
+}
+
+.list-group li a {
+	text-decoration: none;
+	color: inherit;
+}
+
+.list-group li a:hover {
+	text-decoration: none;
+	color: #0168fa;
 }
 
 .float-right{
@@ -1414,8 +1439,10 @@ footer.footer {
     align-items: center;
 }
 
-.form-section-title i {
+.form-section-title i,
+h6 i {
     color: #0168fa;
+    margin-right: 5px;
 }
 
 /* Form Labels */
@@ -1740,7 +1767,7 @@ footer.footer {
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(0,0,0,0.08);
     overflow: hidden;
-    height: 100%;
+    height: auto;
 }
 
 .service-detail-header {

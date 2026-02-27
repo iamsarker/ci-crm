@@ -118,14 +118,23 @@ all copies or substantial portions of the Software.
 
 ## CSS Frameworks & UI Components
 
-### Feather Icons
-- **Version:** 4.29.x
+### AdminLTE
+- **Version:** 4.0.0-rc4
 - **License:** MIT License
-- **Copyright:** Copyright (c) 2013-2023 Cole Bemis
-- **Website:** https://feathericons.com/
-- **Repository:** https://github.com/feathericons/feather
-- **Usage:** Simply beautiful open source icons
-- **License Text:** https://github.com/feathericons/feather/blob/master/LICENSE
+- **Copyright:** Copyright (c) 2014-2024 ColorlibHQ
+- **Website:** https://adminlte.io/
+- **Repository:** https://github.com/ColorlibHQ/AdminLTE
+- **Usage:** Admin dashboard template and UI framework
+- **License Text:** https://github.com/ColorlibHQ/AdminLTE/blob/master/LICENSE
+
+### Bootstrap Icons
+- **Version:** 1.13.1
+- **License:** MIT License
+- **Copyright:** Copyright (c) 2019-2024 The Bootstrap Authors
+- **Website:** https://icons.getbootstrap.com/
+- **Repository:** https://github.com/twbs/icons
+- **Usage:** Official open source icon library for Bootstrap
+- **License Text:** https://github.com/twbs/icons/blob/main/LICENSE
 
 ### Font Awesome
 - **Version:** 6.x (Free)
@@ -646,8 +655,8 @@ This credits file will be updated whenever:
 - Licenses change or are clarified
 - Attribution requirements change
 
-**Last Updated:** January 25, 2026
-**Document Version:** 1.0.0
+**Last Updated:** February 27, 2026
+**Document Version:** 1.1.0
 
 ---
 
