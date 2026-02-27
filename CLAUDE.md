@@ -289,6 +289,103 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 2. Update switch statements in `registrar_*` dispatcher functions
 3. Match on `dom_registers.platform` field
 
+### Admin Order Management
+
+**Order Management Page:**
+- **URL**: `whmazadmin/order/manage/{encoded_id}`
+- **Menu**: Orders → [click Manage button on any order]
+- **Controller**: `src/controllers/whmazadmin/Order.php`
+- **View**: `src/views/whmazadmin/order_manage.php`
+
+**Features:**
+| Feature | Description |
+|---------|-------------|
+| Order Overview | Order number, date, amounts, status, customer info |
+| Domain Items | List of domains with registrar, dates, status |
+| Service Items | List of hosting services with package, server, dates |
+| Change Registrar | Switch domain to different registrar (triggers transfer if active) |
+| Change Package | Change hosting package with optional cPanel upgrade |
+| Change Server | Move to different server with optional migration |
+| Cancel Domain | Immediate or end-of-period cancellation |
+| Cancel Service | Immediate or end-of-period with optional cPanel deletion |
+| Cancel Order | Cancel entire order + unpaid invoices |
+
+**Order Status Values:**
+```
+orders.status: 0=inactive/cancelled, 1=active
+
+order_domains.status:
+  0 = Pending Registration
+  1 = Active
+  2 = Expired
+  3 = Grace Period
+  4 = Cancelled
+  5 = Pending Transfer
+
+order_services.status:
+  0 = Pending
+  1 = Active
+  2 = Expired
+  3 = Suspended
+  4 = Terminated
+
+invoices.pay_status:
+  DUE = Unpaid
+  PARTIAL = Partially paid
+  PAID = Fully paid
+  CANCELLED = Cancelled (order cancelled)
+```
+
+**Order Management Model Methods:**
+```php
+// Get order with all items
+$order = $this->Order_model->getOrderWithItems($orderId);
+// Returns: order data + $order['domains'] + $order['services']
+
+// Get single domain/service
+$domain = $this->Order_model->getDomainItem($domainId);
+$service = $this->Order_model->getServiceItem($serviceId);
+
+// Cancel items
+$this->Order_model->cancelDomain($domainId, 'immediate', 'Reason');
+$this->Order_model->cancelService($serviceId, 'end_of_period', 'Reason');
+$this->Order_model->cancelOrder($orderId, 'immediate', 'Reason');
+// cancelOrder also calls cancelUnpaidInvoices()
+
+// Update items
+$this->Order_model->updateDomainRegistrar($domainId, $newRegistrarId);
+$this->Order_model->updateServicePackage($serviceId, [
+    'product_service_id' => $packageId,
+    'product_service_pricing_id' => $pricingId
+]);
+
+// Get dropdown data
+$registrars = $this->Order_model->getActiveRegistrars();
+$servers = $this->Order_model->getActiveServers();
+$packages = $this->Order_model->getPackagesByServer($serverId);
+```
+
+**Order Management API Endpoints:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `order/manage/{id}` | GET | Order management page |
+| `order/get_order_details_api/{id}` | GET | AJAX get order details |
+| `order/update_domain_api` | POST | Update domain registrar |
+| `order/update_service_api` | POST | Update service package/server |
+| `order/cancel_domain_api` | POST | Cancel domain item |
+| `order/cancel_service_api` | POST | Cancel service item |
+| `order/cancel_order_api` | POST | Cancel entire order |
+| `order/get_packages_api` | GET | Get packages by server |
+| `order/get_pricing_api` | GET | Get package pricing |
+
+**Invoice Cancellation on Order Cancel:**
+When admin cancels an entire order:
+1. All domain items are cancelled
+2. All service items are cancelled
+3. All invoices with `pay_status` = 'DUE' or 'PARTIAL' are cancelled
+4. Invoice gets: `pay_status='CANCELLED'`, `status=0`, `cancel_date=today`
+5. Cancellation reason stored in `remarks` field
+
 ### Database
 - **Database Config**: `src/config/database.php`
 - **SQL Schema**: `crm_db.sql`
@@ -309,6 +406,7 @@ When adding new features that require schema changes:
 | `order_confirmation_emails.sql` | Order confirmation email templates (order_confirmation, admin_order_notification) |
 | `ticket_notification_emails.sql` | Ticket notification email templates (ticket_new_to_department, ticket_new_to_customer, ticket_reply_to_customer, ticket_reply_to_department) |
 | `provisioning_system.sql` | Provisioning logs table and status columns for order_services/order_domains |
+| `invoice_pay_status_length.sql` | Increase invoices.pay_status to VARCHAR(10) for 'CANCELLED' status |
 
 ### Views
 - **Customer Payment Page**: `src/modules/billing/views/billing_pay.php`

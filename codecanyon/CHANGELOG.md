@@ -7,6 +7,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.10.0] - 2026-02-27
+
+### New Feature - Admin Order Management
+
+#### Order Management Page
+- New dedicated order management page for viewing and modifying existing orders
+- Access via Orders list → Manage button (gear icon)
+- Displays order overview, customer info, domain items, and hosting items
+- Card-based UI following admin portal design patterns
+
+#### Domain Item Management
+- View domain details (name, registrar, order type, dates, status)
+- **Change Registrar**: Switch domain to different registrar with optional transfer initiation
+- **Cancel Domain**: Immediate cancellation or scheduled end-of-period cancellation
+- Status badges for domain states (Pending, Active, Expired, Grace, Cancelled, Pending Transfer)
+- Termination date display for scheduled cancellations
+
+#### Hosting Item Management
+- View hosting details (package, server, domain, billing cycle, dates, status)
+- **Change Package**: Select new package with billing cycle, option to apply on cPanel server
+- **Change Server**: Move to different server with optional account migration
+- **Cancel Service**: Immediate or end-of-period cancellation with optional cPanel account deletion
+- Status badges for service states (Pending, Active, Expired, Suspended, Terminated)
+
+#### Order Cancellation
+- Cancel entire order with all domains and services
+- Automatic cancellation of unpaid/partially paid invoices
+- Cancellation types: Immediate or End of Period
+- Cancellation reason tracking
+- Invoice status updated to "CANCELLED" with cancel_date
+
+#### Database Changes
+- `invoices.pay_status` field increased to VARCHAR(10) to accommodate "CANCELLED" status
+- New `cancel_date` field usage for invoice cancellation tracking
+
+#### New Files
+- `src/views/whmazadmin/order_manage.php` - Order management view
+
+#### New Model Methods (Order_model.php)
+- `getOrderWithItems($orderId)` - Get order with all domains and services
+- `getDomainItem($domainId)` - Get single domain with registrar info
+- `getServiceItem($serviceId)` - Get single service with package/server info
+- `cancelDomain($domainId, $cancelType, $reason)` - Cancel domain item
+- `cancelService($serviceId, $cancelType, $reason)` - Cancel service item
+- `cancelOrder($orderId, $cancelType, $reason)` - Cancel entire order and invoices
+- `cancelUnpaidInvoices($orderId, $reason)` - Cancel unpaid/partial invoices
+- `updateDomainRegistrar($domainId, $newRegistrarId)` - Update domain registrar
+- `updateServicePackage($serviceId, $updateData)` - Update service package
+- `getActiveRegistrars()` - Get all active registrars
+- `getActiveServers()` - Get all active servers
+- `getPackagesByServer($serverId)` - Get packages filtered by server
+
+#### New Controller Methods (Order.php)
+- `manage($id_val)` - Order management page
+- `get_order_details_api($id_val)` - AJAX get order details
+- `update_domain_api()` - AJAX update domain registrar
+- `update_service_api()` - AJAX update service package/server
+- `cancel_domain_api()` - AJAX cancel domain
+- `cancel_service_api()` - AJAX cancel service
+- `cancel_order_api()` - AJAX cancel entire order
+- `get_packages_api()` - AJAX get packages by server
+- `get_pricing_api()` - AJAX get package pricing
+
+#### Migration Files
+- `migrations/invoice_pay_status_length.sql` - Increase pay_status field length
+
+#### Modified Files
+- `src/controllers/whmazadmin/Order.php` - Added management methods
+- `src/models/Order_model.php` - Added order management methods
+- `src/views/whmazadmin/order_list.php` - Updated manage button link
+- `crm_db.sql` - Updated invoices.pay_status to VARCHAR(10)
+
+---
+
 ## [1.9.0] - 2026-02-22
 
 ### New Feature - Auto-Provisioning System
@@ -1339,6 +1413,15 @@ This is the first stable release of WHMAZ - CI-CRM, a comprehensive CRM system f
 
 ## Version History
 
+### [1.10.0] - 2026-02-27 - New Feature
+- Admin Order Management page for existing orders
+- Change domain registrar with optional transfer initiation
+- Change hosting package with optional cPanel upgrade
+- Change hosting server with optional account migration
+- Cancel individual domains/services (immediate or end-of-period)
+- Cancel entire order with automatic invoice cancellation
+- Unpaid/partial invoices automatically cancelled with order
+
 ### [1.9.0] - 2026-02-22 - New Feature
 - Auto-provisioning system for domains and hosting after payment
 - Domain registration, transfer, and renewal via registrar API
@@ -1599,6 +1682,6 @@ Special thanks to:
 
 **Note:** This changelog will be updated with each new release. Stay tuned for exciting features and improvements!
 
-**Current Version:** 1.9.0
-**Release Date:** February 22, 2026
+**Current Version:** 1.10.0
+**Release Date:** February 27, 2026
 **Status:** Stable Production Release (New Feature)

@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 21, 2026 at 05:02 PM
--- Server version: 10.11.11-MariaDB-cll-lve
--- PHP Version: 8.3.20
+-- Generation Time: Feb 27, 2026 at 04:48 AM
+-- Server version: 10.11.15-MariaDB-cll-lve
+-- PHP Version: 8.3.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -169,7 +169,12 @@ INSERT INTO `admin_logins` (`id`, `admin_id`, `login_time`, `session_val`, `term
 (90, 1, '2026-02-14 13:33:38', '0', '127.0.0.1', NULL, 1),
 (91, 1, '2026-02-18 02:10:37', '0', '::1', NULL, 1),
 (92, 1, '2026-02-18 14:49:17', '0', '::1', NULL, 1),
-(93, 1, '2026-02-21 06:19:09', '0', '::1', NULL, 1);
+(93, 1, '2026-02-21 06:19:09', '0', '::1', NULL, 1),
+(94, 1, '2026-02-22 00:11:09', '0', '::1', NULL, 1),
+(95, 1, '2026-02-22 13:37:46', '0', '::1', NULL, 1),
+(96, 1, '2026-02-22 13:47:56', '0', '::1', NULL, 1),
+(97, 1, '2026-02-26 14:25:27', '0', '::1', NULL, 1),
+(98, 1, '2026-02-27 10:39:52', '0', '::1', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -388,6 +393,7 @@ CREATE TABLE `companies` (
   `first_name` varchar(150) DEFAULT NULL,
   `last_name` varchar(150) DEFAULT NULL,
   `country` varchar(100) DEFAULT NULL,
+  `registrar_customer_id` varchar(50) DEFAULT NULL,
   `kam_id` bigint(20) NOT NULL,
   `kam_name` varchar(200) NOT NULL,
   `lead_id` bigint(20) DEFAULT NULL,
@@ -406,21 +412,22 @@ CREATE TABLE `companies` (
 -- Dumping data for table `companies`
 --
 
-INSERT INTO `companies` (`id`, `name`, `mobile`, `phone`, `email`, `address`, `city`, `state`, `zip_code`, `first_name`, `last_name`, `country`, `kam_id`, `kam_name`, `lead_id`, `opportunity_id`, `quotation_id`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(1, 'Tong Bari', '+8801824880161', '+8801824880161', 'info.errorpoint@gmail.com', 'Rampura Banasree', 'Dhaka North', 'Dhaka', '1219', 'Md. Shahadat', 'Sarker', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2014-02-21 15:11:42', 1, '2024-08-10 05:02:15', 1, NULL, NULL),
-(2, 'Sky Digital Ltd', '+8801730704604', '+8801730704604', 'ismail4g@gmail.com', 'Banasree, Rampura', 'Dhaka North', 'Dhaka', '1219', 'Md', 'Ismail', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:17:03', 1, '2024-08-10 06:05:51', 1, NULL, NULL),
-(3, 'Techlog', '+8801636020790', '+8801636020790', 'techlogbd@gmail.com', '176/3, Jomidar goli, Opposite Bornomala School, East Ulon, Rampura', 'Dhaka North', 'Dhaka', '1219', 'Md. Shafiqul', 'Islam', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:22:23', 1, '2024-08-10 06:05:54', 1, NULL, NULL),
-(4, 'Best Brand Apparels', '+261.345002256', '+261.345002256', 'shumanmahbub@gmail.com', 'Lot 129 O Ambohitrinimanga 103 Antananarivo-Avaradrano', 'Antananarivo', 'Avaradrano', '103', 'Mahbub Hasan', 'Shuman', 'Madagascar', 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:25:01', 1, '2024-08-10 06:05:45', 1, NULL, NULL),
-(5, 'Rhine Sourcing', '+8801713257212', '+8801713257212', 'shahid.swapon@gmail.com', 'Uttara', 'Dhaka North', 'Dhaka', '1215', 'Shahid', 'Swapon', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:27:07', 1, '2024-08-10 06:05:49', 1, NULL, NULL),
-(6, 'Ajier Bazar', '+8801610215271', '+8801610215271', 'abm.ataullah@gmail.com', 'Charia, Hathazari', 'Chittagong', 'Chittagong', '1212', 'ABM', 'Ataullah', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:28:56', 1, '2024-08-10 06:05:41', 1, NULL, NULL),
-(7, 'Technician Services 24', '+8801674196502', '+8801674196502', 'aashrafuzzaman@yahoo.com', 'Rampura', 'Dhaka North', 'Dhaka', '1219', 'A.K.M', 'Ashrafuzzaman', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:57:10', 1, NULL, NULL, NULL, NULL),
-(8, 'Ultimate Apparel Sourcing', '8801716057226', '8801716057226', 'jameshabib02@gmail.com', 'IECL Naim Vai', 'Gazipur', 'Dhaka', '1730', 'James', 'Habib', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2024-08-22 02:19:05', 1, NULL, NULL, NULL, NULL),
-(9, 'Shaikh and Khan Services', '+8801716382979', '+8801716382979', 'arkhan.office@gmail.com', 'House#6, Rafiq Housing Shekhertek-10, Mohammadpur', 'Dhaka', 'Dhaka', '1207', 'Arifur Rahman', 'Khan', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2024-11-05 15:21:16', 1, NULL, NULL, NULL, NULL),
-(10, 'Apparel Glow Ltd', '+8801715309710', '+8801715309710', 'apparelglowltd@gmail.com', 'H-32, R - 7, Sector - 14, Uttara', 'Dhaka North', 'Dhaka', '1230', 'Masud', 'Rana', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2024-11-21 15:59:49', 1, '2024-11-21 16:00:13', 1, NULL, NULL),
-(11, 'Alaka Bhattacharjee', '+8801731795993', '+8801731795993', 'aporajita2001@gmail.com', 'Kumarpara', 'Sylhet', 'Sylhet', '3100', 'Alaka', 'Bhattacharjee', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2024-11-22 16:22:00', 1, '2024-11-22 16:22:43', 1, NULL, NULL),
-(12, 'Ali Soft BD', '8801515293030', '8801515293030', 'alisoftbdinfo@gmail.com', '477, Dokhina Abashon, South Paikpara, Mirpur', 'Dhaka North', 'Dhaka', '1216', 'Zuel', 'Ali', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2025-05-03 05:43:20', 1, NULL, NULL, NULL, NULL),
-(13, 'Zakaria Imtiaz', '8801980484968', '', 'imtiaz71985@gmail.com', 'Mirpur', 'Dhaka', 'Dhaka', '1207', 'Zakaria', 'Imtiaz', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2025-05-06 02:19:58', 1, NULL, NULL, NULL, NULL),
-(14, 'Dhaka Trading', '+8801536194103', '+8801536194103', 'emon072033@gmail.com', 'House 1, Lane 3, Block C, Mirpur, 10', 'Dhaka', 'Dhaka', '1216', 'Md. Saidul Islam', 'Emon', 'Bangladesh', 0, '', NULL, NULL, NULL, 1, '2025-08-12 03:37:38', 1, NULL, NULL, NULL, NULL);
+INSERT INTO `companies` (`id`, `name`, `mobile`, `phone`, `email`, `address`, `city`, `state`, `zip_code`, `first_name`, `last_name`, `country`, `registrar_customer_id`, `kam_id`, `kam_name`, `lead_id`, `opportunity_id`, `quotation_id`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 'Tong Bari', '+8801824880161', '+8801824880161', 'info.errorpoint@gmail.com', 'Rampura Banasree', 'Dhaka North', 'Dhaka', '1219', 'Md. Shahadat', 'Sarker', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2014-02-21 15:11:42', 1, '2024-08-10 05:02:15', 1, NULL, NULL),
+(2, 'Sky Digital Ltd', '+8801730704604', '+8801730704604', 'ismail4g@gmail.com', 'Banasree, Rampura', 'Dhaka North', 'Dhaka', '1219', 'Md', 'Ismail', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:17:03', 1, '2024-08-10 06:05:51', 1, NULL, NULL),
+(3, 'Techlog', '+8801636020790', '+8801636020790', 'techlogbd@gmail.com', '176/3, Jomidar goli, Opposite Bornomala School, East Ulon, Rampura', 'Dhaka North', 'Dhaka', '1219', 'Md. Shafiqul', 'Islam', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:22:23', 1, '2024-08-10 06:05:54', 1, NULL, NULL),
+(4, 'Best Brand Apparels', '+261.345002256', '+261.345002256', 'shumanmahbub@gmail.com', 'Lot 129 O Ambohitrinimanga 103 Antananarivo-Avaradrano', 'Antananarivo', 'Avaradrano', '103', 'Mahbub Hasan', 'Shuman', 'Madagascar', NULL, 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:25:01', 1, '2024-08-10 06:05:45', 1, NULL, NULL),
+(5, 'Rhine Sourcing', '+8801713257212', '+8801713257212', 'shahid.swapon@gmail.com', 'Uttara', 'Dhaka North', 'Dhaka', '1215', 'Shahid', 'Swapon', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:27:07', 1, '2024-08-10 06:05:49', 1, NULL, NULL),
+(6, 'Ajier Bazar', '+8801610215271', '+8801610215271', 'abm.ataullah@gmail.com', 'Charia, Hathazari', 'Chittagong', 'Chittagong', '1212', 'ABM', 'Ataullah', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:28:56', 1, '2024-08-10 06:05:41', 1, NULL, NULL),
+(7, 'Technician Services 24', '+8801674196502', '+8801674196502', 'aashrafuzzaman@yahoo.com', 'Rampura', 'Dhaka North', 'Dhaka', '1219', 'A.K.M', 'Ashrafuzzaman', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2024-08-10 04:57:10', 1, NULL, NULL, NULL, NULL),
+(8, 'Ultimate Apparel Sourcing', '8801716057226', '8801716057226', 'jameshabib02@gmail.com', 'IECL Naim Vai', 'Gazipur', 'Dhaka', '1730', 'James', 'Habib', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2024-08-22 02:19:05', 1, NULL, NULL, NULL, NULL),
+(9, 'Shaikh and Khan Services', '+8801716382979', '+8801716382979', 'arkhan.office@gmail.com', 'House#6, Rafiq Housing Shekhertek-10, Mohammadpur', 'Dhaka', 'Dhaka', '1207', 'Arifur Rahman', 'Khan', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2024-11-05 15:21:16', 1, NULL, NULL, NULL, NULL),
+(10, 'Apparel Glow Ltd', '+8801715309710', '+8801715309710', 'apparelglowltd@gmail.com', 'H-32, R - 7, Sector - 14, Uttara', 'Dhaka North', 'Dhaka', '1230', 'Masud', 'Rana', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2024-11-21 15:59:49', 1, '2024-11-21 16:00:13', 1, NULL, NULL),
+(11, 'Alaka Bhattacharjee', '+8801731795993', '+8801731795993', 'aporajita2001@gmail.com', 'Kumarpara', 'Sylhet', 'Sylhet', '3100', 'Alaka', 'Bhattacharjee', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2024-11-22 16:22:00', 1, '2024-11-22 16:22:43', 1, NULL, NULL),
+(12, 'Ali Soft BD', '8801515293030', '8801515293030', 'alisoftbdinfo@gmail.com', '477, Dokhina Abashon, South Paikpara, Mirpur', 'Dhaka North', 'Dhaka', '1216', 'Zuel', 'Ali', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2025-05-03 05:43:20', 1, NULL, NULL, NULL, NULL),
+(13, 'Zakaria Imtiaz', '8801980484968', '', 'imtiaz71985@gmail.com', 'Mirpur', 'Dhaka', 'Dhaka', '1207', 'Zakaria', 'Imtiaz', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2025-05-06 02:19:58', 1, NULL, NULL, NULL, NULL),
+(14, 'Dhaka Trading', '+8801536194103', '+8801536194103', 'emon072033@gmail.com', 'House 1, Lane 3, Block C, Mirpur, 10', 'Dhaka', 'Dhaka', '1216', 'Md. Saidul Islam', 'Emon', 'Bangladesh', NULL, 0, '', NULL, NULL, NULL, 1, '2025-08-12 03:37:38', 1, NULL, NULL, NULL, NULL),
+(15, 'Barakah 360', '+8801927106090', '+8801927106090', 'emon07203@gmail.com', 'Floor-5, House-01, Lane-03, Block-C, Mirpur-10', 'Dhaka North', 'Dhaka', '1216', 'Md Saidul Islam', 'Emon', 'Bangladesh', '33040993', 0, '', NULL, NULL, NULL, 1, '2026-02-26 13:48:11', 1, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -925,7 +932,7 @@ CREATE TABLE `dom_registers` (
 --
 
 INSERT INTO `dom_registers` (`id`, `name`, `platform`, `api_base_url`, `domain_check_api`, `suggestion_api`, `domain_reg_api`, `ns_update_api`, `contact_details_api`, `contact_update_api`, `price_list_api`, `auth_userid`, `auth_apikey`, `is_selected`, `def_ns1`, `def_ns2`, `def_ns3`, `def_ns4`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Resell.Biz', 'STARGATE', 'https://httpapi.com/api/domains', 'https://httpapi.com/api/domains/available.json?', 'https://httpapi.com/api/domains/v5/suggest-names.json?', 'https://httpapi.com/api/domains/register.xml?', 'https://httpapi.com/api/domains/modify-ns.json', 'https://httpapi.com/api/domains/details-by-name.json', 'https://httpapi.com/api/domains/modify-contact.json', 'test', '572394', 'IPE8mDT7ZoyQc6FmIzRp5b3lxfvabPOA', 1, 'ns1.whmaz.com', 'ns2.whmaz.com', '', '', 1, NULL, NULL, '2026-02-10 16:48:26', 1),
+(1, 'Resell.Biz', 'STARGATE', 'https://httpapi.com', 'https://httpapi.com/api/domains/available.json?', 'https://httpapi.com/api/domains/v5/suggest-names.json?', 'https://httpapi.com/api/domains/register.xml?', 'https://httpapi.com/api/domains/modify-ns.json', 'https://httpapi.com/api/domains/details-by-name.json', 'https://httpapi.com/api/domains/modify-contact.json', 'test', '572394', 'IPE8mDT7ZoyQc6FmIzRp5b3lxfvabPOA', 1, 'ns1.whmaz.com', 'ns2.whmaz.com', '', '', 1, NULL, NULL, '2026-02-26 22:04:04', 1),
 (2, 'Namecheap', 'NAMECHEAP', 'https://api.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', '', 'tongbaritest', '993d950d882041ed90eea8158abec1d3', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2026-02-10 16:49:03', NULL);
 
 -- --------------------------------------------------------
@@ -1112,8 +1119,8 @@ CREATE TABLE `gen_numbers` (
 --
 
 INSERT INTO `gen_numbers` (`id`, `no_type`, `last_no`) VALUES
-(1, 'ORDER', 2029),
-(2, 'INVOICE', 1538);
+(1, 'ORDER', 2033),
+(2, 'INVOICE', 1542);
 
 -- --------------------------------------------------------
 
@@ -1139,7 +1146,7 @@ CREATE TABLE `invoices` (
   `refund_date` date DEFAULT NULL,
   `remarks` text DEFAULT NULL,
   `status` tinyint(4) NOT NULL DEFAULT 1,
-  `pay_status` varchar(8) NOT NULL DEFAULT 'DUE' COMMENT 'DUE,PAID,PARTIAL',
+  `pay_status` varchar(10) NOT NULL DEFAULT 'DUE' COMMENT 'DUE,PAID,PARTIAL,CANCELLED',
   `need_api_call` tinyint(4) NOT NULL DEFAULT 0,
   `inserted_on` datetime DEFAULT NULL,
   `inserted_by` int(11) DEFAULT NULL,
@@ -1185,7 +1192,11 @@ INSERT INTO `invoices` (`id`, `invoice_uuid`, `company_id`, `order_id`, `currenc
 (552, '9fcf6d9c-90c3-4317-bc77-75a07bc44ee0', 14, 726, 1, 'USD', '1534', 33.14, 0.00, 0.00, 33.14, '2025-04-21', '2025-04-14', NULL, NULL, NULL, 1, 'PAID', 0, '2025-04-14 10:24:18', 1, '2026-02-12 16:35:27', 1, NULL, NULL),
 (553, 'ac8e5c4f-30ff-4690-ba7d-b77d045736bc', 1, 727, 1, 'USD', '1535', 32.95, 0.00, 0.00, 32.95, '2026-02-13', '2026-02-13', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-13 15:55:37', 1, '2026-02-18 08:30:47', NULL, NULL, NULL),
 (555, '9952158f-fcca-4cf2-a689-e4fb7eceb33e', 1, 729, 1, 'USD', '1537', 33.10, 0.00, 0.00, 33.10, '2026-02-18', '2026-02-18', NULL, NULL, NULL, 1, 'DUE', 0, '2026-02-18 17:15:35', 1, '2026-02-18 16:15:35', NULL, NULL, NULL),
-(556, '50f6f966-7779-4099-9981-87cac81526e7', 1, 730, 1, 'USD', '1538', 25.95, 0.00, 0.00, 25.95, '2026-02-18', '2026-02-18', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-18 17:25:50', 1, '2026-02-21 05:14:18', NULL, NULL, NULL);
+(556, '50f6f966-7779-4099-9981-87cac81526e7', 1, 730, 1, 'USD', '1538', 25.95, 0.00, 0.00, 25.95, '2026-02-18', '2026-02-18', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-18 17:25:50', 1, '2026-02-22 20:21:41', NULL, NULL, NULL),
+(557, 'f3b48137-0bb2-4c6c-8dd4-f0e7392a9c05', 15, 731, 1, 'USD', '1539', 12.99, 0.00, 0.00, 12.99, '2026-02-26', '2026-02-26', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-26 14:23:49', 16, '2026-02-26 20:53:46', 1, NULL, NULL),
+(558, 'f9cafcef-f333-4310-a117-9f2bef8390ba', 15, 732, 1, 'USD', '1540', 13.25, 0.00, 0.00, 13.25, '2026-02-26', '2026-02-26', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-26 16:09:21', 16, '2026-02-26 23:29:48', 1, NULL, NULL),
+(559, 'a9887079-d338-4e67-ae11-655a86828994', 15, 733, 1, 'USD', '1541', 13.85, 0.00, 0.00, 13.85, '2026-02-26', '2026-02-26', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-26 16:57:58', 16, '2026-02-26 23:31:10', 1, NULL, NULL),
+(560, 'c91f2997-345f-4cf3-a0b8-2f3df028a6d0', 15, 734, 1, 'USD', '1542', 20.15, 0.00, 0.00, 20.15, '2026-02-26', '2026-02-26', NULL, NULL, NULL, 1, 'PAID', 0, '2026-02-26 17:11:07', 16, '2026-02-26 16:34:51', 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1269,7 +1280,11 @@ INSERT INTO `invoice_items` (`id`, `invoice_id`, `item`, `item_desc`, `item_type
 (571, 555, 'Register: sarkercommerce.xyz', 'Register: sarkercommerce.xyz - sarkercommerce.xyz', 1, 725, 1, NULL, 1, 12.95, 0.00, 12.95, 0.00, 0.00, 12.95, '2026-02-18', '2026-03-20', '2026-02-18 17:15:36', 1, '2026-02-18 16:15:36', NULL),
 (572, 555, '2GB_SHARED', '2GB_SHARED - sarkercommerce.xyz', 2, 718, 4, NULL, 1, 20.15, 0.00, 20.15, 0.00, 0.00, 20.15, '2026-02-18', '2027-02-18', '2026-02-18 17:15:37', 1, '2026-02-18 16:15:38', NULL),
 (573, 556, '3GB_SHARED', '3GB_SHARED - narikel.com', 2, 719, 4, NULL, 1, 25.95, 0.00, 25.95, 0.00, 0.00, 25.95, '2026-02-18', '2027-02-18', '2026-02-18 17:25:51', 1, '2026-02-18 16:25:51', NULL),
-(574, 556, 'Dns_update: narikel.com', 'Dns_update: narikel.com - narikel.com', 1, 726, 1, NULL, 1, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, '2026-02-18', '2026-03-20', '2026-02-18 17:25:52', 1, '2026-02-18 16:25:52', NULL);
+(574, 556, 'Dns_update: narikel.com', 'Dns_update: narikel.com - narikel.com', 1, 726, 1, NULL, 1, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, '2026-02-18', '2026-03-20', '2026-02-18 17:25:52', 1, '2026-02-18 16:25:52', NULL),
+(575, 557, 'Register: barakah360.com', 'Register: barakah360.com - barakah360.com', 1, 727, 1, NULL, 1, 12.99, 0.00, 12.99, 0.00, 0.00, 12.99, '2026-02-26', '2026-03-28', '2026-02-26 14:23:50', 16, '2026-02-26 13:23:50', NULL),
+(576, 558, 'Register: barakah360.net', 'Register: barakah360.net - barakah360.net', 1, 728, 1, NULL, 1, 13.25, 0.00, 13.25, 0.00, 0.00, 13.25, '2026-02-26', '2026-03-28', '2026-02-26 16:09:22', 16, '2026-02-26 15:09:23', NULL),
+(577, 559, 'Register: barakah360.org', 'Register: barakah360.org - barakah360.org', 1, 729, 1, NULL, 1, 13.85, 0.00, 13.85, 0.00, 0.00, 13.85, '2026-02-26', '2026-03-28', '2026-02-26 16:57:58', 16, '2026-02-26 15:57:59', NULL),
+(578, 560, 'Register: barakah360.info', 'Register: barakah360.info - barakah360.info', 1, 730, 1, NULL, 1, 20.15, 0.00, 20.15, 0.00, 0.00, 20.15, '2026-02-26', '2026-03-28', '2026-02-26 17:11:07', 16, '2026-02-26 16:11:08', NULL);
 
 -- --------------------------------------------------------
 
@@ -1309,7 +1324,8 @@ INSERT INTO `invoice_txn` (`id`, `invoice_id`, `payment_gateway_id`, `payment_tr
 (5, 553, 6, 3, '26021673857wdziPSQ6hIvMmYP', '2026-02-16', 32.95, 'USD', 'payment', 1, 'Payment via Sslcommerz', NULL, '2026-02-16 02:39:08', 1, NULL, NULL, NULL, NULL),
 (6, 553, 6, 4, '26021681321MHMzrbxMiVngUA0', '2026-02-16', 32.95, 'USD', 'payment', 1, 'Payment via Sslcommerz', NULL, '2026-02-16 03:13:31', 1, NULL, NULL, NULL, NULL),
 (7, 553, 2, 6, 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', '2026-02-18', 32.95, 'USD', 'payment', 1, 'Payment via Stripe', NULL, '2026-02-18 02:30:49', 1, NULL, NULL, NULL, NULL),
-(8, 556, 2, 7, 'pi_3T38WCQ1EoHKEhCU2bvWgPXz', '2026-02-20', 25.95, 'USD', 'payment', 1, 'Payment via Stripe', NULL, '2026-02-20 23:14:28', 1, NULL, NULL, NULL, NULL);
+(8, 556, 2, 7, 'pi_3T38WCQ1EoHKEhCU2bvWgPXz', '2026-02-20', 25.95, 'USD', 'payment', 1, 'Payment via Stripe', NULL, '2026-02-20 23:14:28', 1, NULL, NULL, NULL, NULL),
+(9, 556, 6, 8, '260222192131ISM8XXQe1kfUoDs', '2026-02-22', 25.95, 'USD', 'payment', 1, 'Payment via Sslcommerz', NULL, '2026-02-22 14:22:08', 1, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1436,6 +1452,15 @@ CREATE TABLE `login_attempts` (
   `attempt_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `login_attempts`
+--
+
+INSERT INTO `login_attempts` (`id`, `identifier`, `identifier_type`, `ip_address`, `user_agent`, `is_successful`, `attempt_time`) VALUES
+(28, 'emon07203@gmail.com', 'email', '202.134.10.131', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 0, '2026-02-26 10:48:20'),
+(30, 'emon07203@gmail.com', 'email', '202.134.10.131', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 0, '2026-02-26 10:48:56'),
+(32, 'emon07203@gmail.com', 'email', '::1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 0, '2026-02-26 17:50:46');
+
 -- --------------------------------------------------------
 
 --
@@ -1517,7 +1542,11 @@ INSERT INTO `orders` (`id`, `order_uuid`, `order_no`, `company_id`, `currency_id
 (726, 'a9d3e28c-1ac5-40e8-b571-25fc4ef08152', 2025, 14, 1, 'USD', '2025-04-14', 33.14, 0.00, 0.00, '', 0.00, 0.00, 33.14, 1, NULL, 1, '', 0, 0, '2025-04-14 10:24:19', 1, '2026-02-12 10:27:17', NULL, NULL, NULL),
 (727, '5926dec2-cdbf-4ce5-b286-1329027c00d1', 2026, 1, 1, 'USD', '2026-02-13', 32.95, 0.00, 0.00, '', 0.00, 0.00, 32.95, 1, '', 1, '', 0, 0, '2026-02-13 15:55:35', 1, '2026-02-13 15:55:37', NULL, NULL, NULL),
 (729, '14f3f3cf-96fc-4fa8-9e7d-6b6b13877f2c', 2028, 1, 1, 'USD', '2026-02-18', 33.10, 0.00, 0.00, '', 0.00, 0.00, 33.10, 1, '', 1, '', 0, 0, '2026-02-18 17:15:34', 1, '2026-02-18 16:15:34', NULL, NULL, NULL),
-(730, '6f430080-7bb8-4cec-b821-58086d2fc141', 2029, 1, 1, 'USD', '2026-02-18', 25.95, 0.00, 0.00, '', 0.00, 0.00, 25.95, 1, '', 1, 'please give me the DNS ASAP', 0, 0, '2026-02-18 17:25:49', 1, '2026-02-18 16:25:49', NULL, NULL, NULL);
+(730, '6f430080-7bb8-4cec-b821-58086d2fc141', 2029, 1, 1, 'USD', '2026-02-18', 25.95, 0.00, 0.00, '', 0.00, 0.00, 25.95, 1, '', 1, 'please give me the DNS ASAP', 0, 0, '2026-02-18 17:25:49', 1, '2026-02-18 16:25:49', NULL, NULL, NULL),
+(731, '483e702d-681c-4a7e-b2d7-72052df06440', 2030, 15, 1, 'USD', '2026-02-26', 12.99, 0.00, 0.00, '', 0.00, 0.00, 12.99, 7, '', 1, '', 0, 0, '2026-02-26 14:23:48', 16, '2026-02-26 13:23:47', NULL, NULL, NULL),
+(732, '45438178-b171-4a6d-857f-9937205063c2', 2031, 15, 1, 'USD', '2026-02-26', 13.25, 0.00, 0.00, '', 0.00, 0.00, 13.25, 7, '', 1, '', 0, 0, '2026-02-26 16:09:20', 16, '2026-02-26 23:29:56', NULL, NULL, NULL),
+(733, '71da0f3a-476d-4fba-a57a-27f0b6bc54c4', 2032, 15, 1, 'USD', '2026-02-26', 13.85, 0.00, 0.00, '', 0.00, 0.00, 13.85, 7, '', 1, 'please urgent', 0, 0, '2026-02-26 16:57:56', 16, '2026-02-26 23:31:18', NULL, NULL, NULL),
+(734, '238cc2b8-5102-4d2a-8cfc-55ebb5080677', 2033, 15, 1, 'USD', '2026-02-26', 20.15, 0.00, 0.00, '', 0.00, 0.00, 20.15, 7, '', 1, 'please urgent', 0, 0, '2026-02-26 17:11:05', 16, '2026-02-26 23:35:08', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1603,7 +1632,11 @@ INSERT INTO `order_domains` (`id`, `order_id`, `company_id`, `dom_register_id`, 
 (723, 724, 14, 1, 1, 1, '', 'brandnstitch.com', NULL, 12.99, 12.99, '2025-08-12', 1, '2026-08-12', '2026-08-12', '2026-08-12', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'pending', '', '2025-08-12 03:41:24', 1, '2026-02-12 11:12:33', NULL, NULL, NULL),
 (724, 726, 14, 1, 1, 1, '', 'emonislam.com', NULL, 12.99, 12.99, '2025-04-14', 1, '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 0, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'pending', '', '2025-04-14 10:24:19', 1, '2026-02-12 11:12:37', NULL, NULL, NULL),
 (725, 729, 1, 0, 18, 1, NULL, 'sarkercommerce.xyz', 718, 12.95, 12.95, '2026-02-18', 1, '2026-03-20', '2026-02-25', '2026-03-20', NULL, NULL, NULL, 1, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 'pending', '', '2026-02-18 17:15:36', 1, '2026-02-18 16:15:38', NULL, NULL, NULL),
-(726, 730, 1, 0, 0, 3, NULL, 'narikel.com', 719, 0.00, 0.00, '2026-02-18', 1, '2026-03-20', '2026-02-25', '2026-03-20', NULL, NULL, NULL, 1, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'pending', '', '2026-02-18 17:25:52', 1, '2026-02-18 16:25:53', NULL, NULL, NULL);
+(726, 730, 1, 0, 0, 3, NULL, 'narikel.com', 719, 0.00, 0.00, '2026-02-18', 1, '2026-03-20', '2026-02-25', '2026-03-20', NULL, NULL, NULL, 1, NULL, NULL, NULL, 0, 0, 0, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1, 'pending', '', '2026-02-18 17:25:52', 1, '2026-02-18 16:25:53', NULL, NULL, NULL),
+(727, 731, 15, 1, 1, 1, NULL, 'barakah360.com', NULL, 12.99, 12.99, '2026-02-26', 1, '2027-02-28', '2026-03-05', '2027-02-28', NULL, NULL, NULL, 1, '2026-02-26 17:25:06', 33040993, 124639897, 0, 0, 0, 1, 'default_ns', 'ns1.whmaz.com', 'ns2.whmaz.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-02-26 17:40:10', 1, 'pending', '', '2026-02-26 14:23:50', 16, '2026-02-26 23:40:10', NULL, NULL, NULL),
+(728, 732, 15, 1, 3, 1, NULL, 'barakah360.net', NULL, 13.25, 13.25, '2026-02-26', 1, '2027-02-28', '2026-03-05', '2027-02-28', NULL, NULL, NULL, 1, '2026-02-26 17:29:55', 33040993, 124639932, 0, 0, 0, 1, 'default_ns', 'ns1.whmaz.com', 'ns2.whmaz.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-02-26 17:39:37', 1, 'pending', '', '2026-02-26 16:09:22', 16, '2026-02-26 23:39:37', NULL, NULL, NULL),
+(729, 733, 15, 1, 5, 1, NULL, 'barakah360.org', NULL, 13.85, 13.85, '2026-02-26', 1, '2027-02-26', '2026-03-05', '2027-02-26', NULL, NULL, NULL, 1, '2026-02-26 17:31:17', 33040993, 124639938, 0, 0, 0, 1, 'default_ns', 'ns1.whmaz.com', 'ns2.whmaz.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-02-26 17:39:14', 1, 'pending', '', '2026-02-26 16:57:58', 16, '2026-02-26 23:39:14', NULL, NULL, NULL),
+(730, 734, 15, 1, 7, 1, NULL, 'barakah360.info', NULL, 20.15, 20.15, '2026-02-26', 1, '2027-02-26', '2026-03-05', '2027-02-26', NULL, NULL, NULL, 1, '2026-02-26 17:35:07', 33040993, 124639955, 0, 0, 0, 1, 'default_ns', 'ns1.whmaz.com', 'ns2.whmaz.com', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2026-02-26 17:38:25', 1, 'pending', '', '2026-02-26 17:11:07', 16, '2026-02-26 23:38:25', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1682,7 +1715,7 @@ INSERT INTO `order_services` (`id`, `order_id`, `company_id`, `product_service_i
 (715, 726, 14, 2, 3, 'SHARED_HOSTING', 'emonisla', '0', 545.00, 2024.00, 160.95, 20000.00, 3, 0, 1, 0, 0, 5, 0, 0, '2026-02-16 09:36:27', 4, '', 20.15, 20.15, 'emonislam.com', NULL, NULL, NULL, 1, '2025-04-14', '2026-04-14', '2025-04-21', '2026-04-14', NULL, NULL, NULL, 1, NULL, 1, 'pending', '', '2025-04-14 10:24:19', 1, '2026-02-16 15:36:27', 1, NULL, NULL),
 (716, 727, 1, 4, 7, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '5GB_SHARED', 32.95, 32.95, 'narikel.com', NULL, NULL, NULL, 1, '2026-02-13', '2027-02-13', '2026-02-20', '2027-02-13', NULL, NULL, NULL, 0, NULL, 0, 'pending', '', '2026-02-13 15:55:37', 1, '2026-02-13 15:55:40', NULL, NULL, NULL),
 (718, 729, 1, 2, 3, 'SHARED_HOSTING', NULL, '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '2GB_SHARED', 20.15, 20.15, 'sarkercommerce.xyz', 725, NULL, NULL, 1, '2026-02-18', '2027-02-18', '2026-02-25', '2027-02-18', NULL, NULL, NULL, 0, NULL, 0, 'pending', '', '2026-02-18 17:15:37', 1, '2026-02-18 16:15:38', NULL, NULL, NULL),
-(719, 730, 1, 3, 5, 'SHARED_HOSTING', 'narike8u', '0', 0.00, 0.00, 0.00, 0.00, 0, 0, 0, 0, 0, 0, 0, 0, NULL, 4, '3GB_SHARED', 25.95, 25.95, 'narikel.com', 726, NULL, NULL, 1, '2026-02-18', '2027-02-18', '2026-02-25', '2027-02-18', NULL, NULL, NULL, 1, NULL, 1, 'pending', '', '2026-02-18 17:25:51', 1, '2026-02-21 05:14:28', NULL, NULL, NULL);
+(719, 730, 1, 3, 5, 'SHARED_HOSTING', NULL, '0', 0.00, 3096.00, 0.00, 0.00, 1, 0, 0, 0, 0, 0, 0, 0, '2026-02-22 14:24:54', 4, '3GB_SHARED', 25.95, 25.95, 'narikel.com', 726, NULL, NULL, 1, '2026-02-18', '2027-02-18', '2026-02-25', '2027-02-18', NULL, NULL, NULL, 0, NULL, 0, 'pending', '', '2026-02-18 17:25:51', 1, '2026-02-22 20:45:36', 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1716,9 +1749,9 @@ CREATE TABLE `pages` (
 --
 
 INSERT INTO `pages` (`id`, `page_title`, `page_slug`, `page_content`, `meta_title`, `meta_description`, `meta_keywords`, `is_published`, `is_system`, `sort_order`, `total_view`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`, `status`) VALUES
-(1, 'Terms and Conditions', 'terms-and-conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', '', 1, 1, 1, 11, '2026-02-12 21:24:40', NULL, '2026-02-13 03:35:49', 1, NULL, NULL, 1),
-(2, 'Privacy Policy', 'privacy-policy', '<h2>Privacy Policy</h2><p>Please add your privacy policy here.</p>', 'Privacy Policy', NULL, NULL, 1, 1, 2, 9, '2026-02-12 21:24:40', NULL, NULL, NULL, NULL, NULL, 1),
-(3, 'Refund Policy', 'refund-policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', '', 1, 0, 3, 8, '2026-02-12 21:24:40', NULL, '2026-02-13 03:38:09', 1, NULL, NULL, 1);
+(1, 'Terms and Conditions', 'terms-and-conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', '', 1, 1, 1, 13, '2026-02-12 21:24:40', NULL, '2026-02-13 03:35:49', 1, NULL, NULL, 1),
+(2, 'Privacy Policy', 'privacy-policy', '<h2>Privacy Policy</h2><p>Please add your privacy policy here.</p>', 'Privacy Policy', NULL, NULL, 1, 1, 2, 11, '2026-02-12 21:24:40', NULL, NULL, NULL, NULL, NULL, 1),
+(3, 'Refund Policy', 'refund-policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', '', 1, 0, 3, 11, '2026-02-12 21:24:40', NULL, '2026-02-13 03:38:09', 1, NULL, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1814,11 +1847,11 @@ CREATE TABLE `payment_gateway` (
 
 INSERT INTO `payment_gateway` (`id`, `name`, `gateway_code`, `gateway_type`, `icon_fa_unicode`, `pay_type`, `public_key`, `secret_key`, `webhook_secret`, `is_test_mode`, `test_public_key`, `test_secret_key`, `test_webhook_secret`, `extra_config`, `bank_name`, `account_name`, `account_number`, `routing_number`, `swift_code`, `iban`, `supported_currencies`, `min_amount`, `max_amount`, `fee_type`, `fee_fixed`, `fee_percent`, `fee_bearer`, `logo`, `display_name`, `description`, `sort_order`, `webhook_url`, `merchant_id`, `merchant_pwd`, `instructions`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
 (1, 'Offline Payment', 'manual', 'manual', 'f3d1', 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Manual Payment', 'Pay via bank transfer or other offline methods. Your order will be processed after payment confirmation.', 0, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-02-21 12:22:53', NULL),
-(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', 1, 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Credit/Debit Card', 'Pay securely with your credit or debit card via Stripe.', 1, 'http://localhost/ci-crm/webhook/stripe', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-02-18 20:49:59', 1),
+(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', 1, 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Credit/Debit Card', 'Pay securely with your credit or debit card via Stripe.', 1, 'http://localhost/ci-crm/webhook/stripe', '', NULL, '', 0, '2026-02-13 10:28:21', NULL, '2026-02-26 23:37:38', 1),
 (3, 'PayPal', 'paypal', 'online_wallet', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,JPY,CHF,HKD,SGD,SEK,DKK,PLN,NOK,CZK,ILS,MXN,BRL,PHP,TWD,THB,MYR', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'PayPal', 'Pay securely using your PayPal account or card.', 2, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (4, 'Razorpay', 'razorpay', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'INR', 0.00, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'Razorpay', 'Pay with UPI, Cards, Netbanking, or Wallets via Razorpay.', 3, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (5, 'Paystack', 'paystack', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NGN,GHS,ZAR,KES', 0.00, 0.00, 'both', 100.00, 1.50, 'merchant', NULL, 'Paystack', 'Pay with card or bank transfer via Paystack.', 4, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
-(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', 'http://localhost/webhook/sslcommerz', 1, 'titum5d71b6d6edd13', 'titum5d71b6d6edd13@ssl', NULL, '{\r\n    \"store_id\": \"titum5d71b6d6edd13\",\r\n    \"store_password\": \"titum5d71b6d6edd13@ssl\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD,BDT', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, 'http://localhost/webhook/sslcommerz', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-02-14 12:58:37', 1),
+(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', 'http://localhost/webhook/sslcommerz', 1, 'titum5d71b6d6edd13', 'titum5d71b6d6edd13@ssl', NULL, '{\r\n    \"store_id\": \"titum5d71b6d6edd13\",\r\n    \"store_password\": \"titum5d71b6d6edd13@ssl\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD,BDT', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, 'http://localhost/webhook/sslcommerz', '', NULL, '', 0, '2026-02-13 10:28:21', NULL, '2026-02-26 23:37:58', 1),
 (7, 'Bank Transfer', 'bank_transfer', 'bank_transfer', NULL, 'OFFLINE', '', '', '', 0, '', '', NULL, NULL, 'TEST Bank PLC', 'WHMAZ', '1234567890123', '1234567', '12345678', '1234567', 'USD,EUR,GBP,BDT,INR', 0.10, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Bank Transfer', 'Transfer funds directly to our bank account. Order will be processed after payment confirmation.', 10, 'http://localhost/webhook/bank_transfer', '', NULL, 'Please share the TXN number after payment', 1, '2026-02-13 10:28:21', NULL, '2026-02-14 08:56:29', 1);
 
 -- --------------------------------------------------------
@@ -1897,8 +1930,7 @@ CREATE TABLE `payment_transactions` (
 --
 
 INSERT INTO `payment_transactions` (`id`, `transaction_uuid`, `invoice_id`, `payment_gateway_id`, `gateway_code`, `gateway_transaction_id`, `gateway_payment_id`, `gateway_order_id`, `gateway_subscription_id`, `amount`, `fee_amount`, `net_amount`, `currency_code`, `exchange_rate`, `txn_type`, `status`, `failure_reason`, `payment_method`, `card_brand`, `card_last4`, `card_exp_month`, `card_exp_year`, `bank_name`, `wallet_name`, `payer_email`, `payer_name`, `payer_phone`, `gateway_response`, `webhook_payload`, `ip_address`, `user_agent`, `metadata`, `initiated_at`, `completed_at`, `refunded_at`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(6, '4b14991a-5c9b-4ba3-955c-d8b0ee011e6e', 553, 2, 'stripe', 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', NULL, 'pi_3T1zb9Q1EoHKEhCU2kUfne5P', NULL, 32.95, 0.00, 32.95, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"id\":\"pi_3T1zb9Q1EoHKEhCU2kUfne5P\",\"object\":\"payment_intent\",\"amount\":3295,\"amount_capturable\":0,\"amount_details\":{\"tip\":[]},\"amount_received\":3295,\"application\":null,\"application_fee_amount\":null,\"automatic_payment_methods\":{\"allow_redirects\":\"always\",\"enabled\":true},\"canceled_at\":null,\"cancellation_reason\":null,\"capture_method\":\"automatic\",\"client_secret\":\"pi_3T1zb9Q1EoHKEhCU2kUfne5P_secret_DjxY2stXlz92Rn0XYXPdAXzEq\",\"confirmation_method\":\"automatic\",\"created\":1771378239,\"currency\":\"usd\",\"customer\":null,\"customer_account\":null,\"description\":null,\"excluded_payment_method_types\":null,\"invoice\":null,\"last_payment_error\":null,\"latest_charge\":\"ch_3T1zb9Q1EoHKEhCU2QWxuWfD\",\"livemode\":false,\"metadata\":{\"invoice_id\":\"553\",\"invoice_uuid\":\"ac8e5c4f-30ff-4690-ba7d-b77d045736bc\",\"transaction_id\":\"6\"},\"next_action\":null,\"on_behalf_of\":null,\"payment_method\":\"pm_1T1zbBQ1EoHKEhCUrVnQemKI\",\"payment_method_configuration_details\":{\"id\":\"pmc_1T0Z8RQ1EoHKEhCUitfkyb1e\",\"parent\":null},\"payment_method_options\":{\"card\":{\"installments\":null,\"mandate_options\":null,\"network\":null,\"request_three_d_secure\":\"automatic\"},\"link\":{\"persistent_token\":null}},\"payment_method_types\":[\"card\",\"link\"],\"processing\":null,\"receipt_email\":null,\"review\":null,\"setup_future_usage\":null,\"shipping\":null,\"source\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null}', NULL, '::1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '{\"invoice_no\":\"1535\",\"company_id\":\"1\"}', '2026-02-18 02:30:38', '2026-02-18 02:30:46', NULL, '2026-02-18 02:30:38', 1, '2026-02-18 02:30:46', NULL),
-(7, 'df06f4b7-05f4-4b98-b50e-a073630c3fb6', 556, 2, 'stripe', 'pi_3T38WCQ1EoHKEhCU2bvWgPXz', NULL, 'pi_3T38WCQ1EoHKEhCU2bvWgPXz', NULL, 25.95, 0.00, 25.95, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, 'visa', '4242', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"id\":\"pi_3T38WCQ1EoHKEhCU2bvWgPXz\",\"object\":\"payment_intent\",\"amount\":2595,\"amount_capturable\":0,\"amount_details\":{\"tip\":[]},\"amount_received\":2595,\"application\":null,\"application_fee_amount\":null,\"automatic_payment_methods\":{\"allow_redirects\":\"always\",\"enabled\":true},\"canceled_at\":null,\"cancellation_reason\":null,\"capture_method\":\"automatic\",\"client_secret\":\"pi_3T38WCQ1EoHKEhCU2bvWgPXz_secret_CZpnVUof16vOKaejSmFP1YvMP\",\"confirmation_method\":\"automatic\",\"created\":1771650856,\"currency\":\"usd\",\"customer\":null,\"customer_account\":null,\"description\":null,\"excluded_payment_method_types\":null,\"invoice\":null,\"last_payment_error\":null,\"latest_charge\":{\"id\":\"ch_3T38WCQ1EoHKEhCU25kWxz2r\",\"object\":\"charge\",\"amount\":2595,\"amount_captured\":2595,\"amount_refunded\":0,\"application\":null,\"application_fee\":null,\"application_fee_amount\":null,\"balance_transaction\":\"txn_3T38WCQ1EoHKEhCU2VG3jqYU\",\"billing_details\":{\"address\":{\"city\":null,\"country\":null,\"line1\":null,\"line2\":null,\"postal_code\":\"90156\",\"state\":null},\"email\":null,\"name\":null,\"phone\":null,\"tax_id\":null},\"calculated_statement_descriptor\":\"Stripe\",\"captured\":true,\"created\":1771650857,\"currency\":\"usd\",\"customer\":null,\"description\":null,\"destination\":null,\"dispute\":null,\"disputed\":false,\"failure_balance_transaction\":null,\"failure_code\":null,\"failure_message\":null,\"fraud_details\":[],\"invoice\":null,\"livemode\":false,\"metadata\":{\"invoice_id\":\"556\",\"invoice_uuid\":\"50f6f966-7779-4099-9981-87cac81526e7\",\"transaction_id\":\"7\"},\"on_behalf_of\":null,\"order\":null,\"outcome\":{\"advice_code\":null,\"network_advice_code\":null,\"network_decline_code\":null,\"network_status\":\"approved_by_network\",\"reason\":null,\"risk_level\":\"normal\",\"risk_score\":49,\"seller_message\":\"Payment complete.\",\"type\":\"authorized\"},\"paid\":true,\"payment_intent\":\"pi_3T38WCQ1EoHKEhCU2bvWgPXz\",\"payment_method\":\"pm_1T38WCQ1EoHKEhCUsV0V0kFs\",\"payment_method_details\":{\"card\":{\"amount_authorized\":2595,\"authorization_code\":\"443270\",\"brand\":\"visa\",\"checks\":{\"address_line1_check\":null,\"address_postal_code_check\":\"pass\",\"cvc_check\":\"pass\"},\"country\":\"US\",\"exp_month\":6,\"exp_year\":2028,\"extended_authorization\":{\"status\":\"disabled\"},\"fingerprint\":\"M0ZBagDykUho10VO\",\"funding\":\"credit\",\"incremental_authorization\":{\"status\":\"unavailable\"},\"installments\":null,\"last4\":\"4242\",\"mandate\":null,\"multicapture\":{\"status\":\"unavailable\"},\"network\":\"visa\",\"network_token\":{\"used\":false},\"network_transaction_id\":\"774890669710368\",\"overcapture\":{\"maximum_amount_capturable\":2595,\"status\":\"unavailable\"},\"regulated_status\":\"unregulated\",\"three_d_secure\":null,\"wallet\":null},\"type\":\"card\"},\"radar_options\":[],\"receipt_email\":null,\"receipt_number\":null,\"receipt_url\":\"https:\\/\\/pay.stripe.com\\/receipts\\/payment\\/CAcaFwoVYWNjdF8xVDBaN3ZRMUVvSEtFaENVKKr-5MwGMgZv97pdImE6LBbMxZ1PP1U6tORszJHr0aOutijHrTwy9MpnenXoQJ_BtUnKueNhO9QjyTmv\",\"refunded\":false,\"review\":null,\"shipping\":null,\"source\":null,\"source_transfer\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null},\"livemode\":false,\"metadata\":{\"invoice_id\":\"556\",\"invoice_uuid\":\"50f6f966-7779-4099-9981-87cac81526e7\",\"transaction_id\":\"7\"},\"next_action\":null,\"on_behalf_of\":null,\"payment_method\":\"pm_1T38WCQ1EoHKEhCUsV0V0kFs\",\"payment_method_configuration_details\":{\"id\":\"pmc_1T0Z8RQ1EoHKEhCUitfkyb1e\",\"parent\":null},\"payment_method_options\":{\"card\":{\"installments\":null,\"mandate_options\":null,\"network\":null,\"request_three_d_secure\":\"automatic\"},\"link\":{\"persistent_token\":null}},\"payment_method_types\":[\"card\",\"link\"],\"processing\":null,\"receipt_email\":null,\"review\":null,\"setup_future_usage\":null,\"shipping\":null,\"source\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null}', NULL, '103.159.72.16', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '{\"invoice_no\":\"1538\",\"company_id\":\"1\"}', '2026-02-20 23:14:15', '2026-02-20 23:14:18', NULL, '2026-02-20 23:14:15', 1, '2026-02-20 23:14:18', NULL);
+(8, 'd371c83e-4e07-4c45-ab55-d7e397ab6a0b', 556, 6, 'sslcommerz', '260222192131ISM8XXQe1kfUoDs', NULL, 'B370CDF8B5CFDC4DC98CC7F5985F52BB', NULL, 25.95, 0.00, 25.95, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"status\":\"VALID\",\"tran_date\":\"2026-02-22 19:20:36\",\"tran_id\":\"d371c83e-4e07-4c45-ab55-d7e397ab6a0b\",\"val_id\":\"260222192131oZNFmkcCkLIpXLW\",\"amount\":\"2158.65\",\"store_amount\":\"2104.68\",\"currency\":\"BDT\",\"bank_tran_id\":\"260222192131ISM8XXQe1kfUoDs\",\"card_type\":\"BKASH-BKash\",\"card_no\":\"\",\"card_issuer\":\"BKash Mobile Banking\",\"card_brand\":\"MOBILEBANKING\",\"card_category\":\"MOBILE\",\"card_sub_brand\":\"\",\"card_issuer_country\":\"Bangladesh\",\"card_issuer_country_code\":\"BD\",\"currency_type\":\"USD\",\"currency_amount\":\"25.95\",\"currency_rate\":\"83.1850\",\"base_fair\":\"0.00\",\"value_a\":\"d371c83e-4e07-4c45-ab55-d7e397ab6a0b\",\"value_b\":\"50f6f966-7779-4099-9981-87cac81526e7\",\"value_c\":\"32f41e9e6264f2d698669e495a03e6acb188c2cea7cc106174923b23d1b8899b\",\"value_d\":\"\",\"emi_instalment\":\"0\",\"emi_amount\":\"0.00\",\"emi_description\":\"\",\"emi_issuer\":\"BKash Mobile Banking\",\"account_details\":\"\",\"risk_title\":\"Safe\",\"risk_level\":\"0\",\"discount_percentage\":\"0\",\"discount_amount\":\"0.00\",\"discount_remarks\":\"\",\"APIConnect\":\"DONE\",\"validated_on\":\"2026-02-22 19:21:38\",\"gw_version\":\"\",\"offer_avail\":1,\"card_ref_id\":\"dc1da4f52669828139e81ef5eb0f48a5a99ea054a131e00a562887d455417dd919\",\"isTokeizeSuccess\":0,\"campaign_code\":\"\"}', NULL, '::1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '{\"invoice_no\":\"1538\",\"company_id\":\"1\",\"user_id\":\"1\",\"payment_token\":\"32f41e9e6264f2d698669e495a03e6acb188c2cea7cc106174923b23d1b8899b\"}', '2026-02-22 14:20:34', '2026-02-22 14:21:39', NULL, '2026-02-22 14:20:34', 1, '2026-02-22 14:21:39', NULL);
 
 -- --------------------------------------------------------
 
@@ -2125,9 +2157,22 @@ CREATE TABLE `provisioning_logs` (
   `error_message` text DEFAULT NULL,
   `response_data` text DEFAULT NULL COMMENT 'JSON response from API',
   `retry_count` int(11) NOT NULL DEFAULT 0,
-  `created_on` datetime NOT NULL,
+  `inserted_on` datetime NOT NULL,
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `provisioning_logs`
+--
+
+INSERT INTO `provisioning_logs` (`id`, `invoice_id`, `invoice_item_id`, `item_type`, `ref_id`, `action`, `success`, `error_message`, `response_data`, `retry_count`, `inserted_on`, `updated_on`) VALUES
+(1, 556, 573, 2, 719, 'renew', 1, NULL, '{\"success\":true,\"action\":\"renew\",\"actions\":[],\"error\":null}', 0, '2026-02-22 14:21:43', '2026-02-22 13:21:42'),
+(2, 556, 574, 1, 726, 'none', 0, 'Registrar not configured', '{\"success\":false,\"action\":\"none\",\"error\":\"Registrar not configured\"}', 0, '2026-02-22 14:21:45', '2026-02-22 13:21:44'),
+(3, 557, 575, 1, 727, 'register', 0, 'Registrar not configured', '{\"success\":false,\"action\":\"none\",\"error\":\"Registrar not configured\"}', 16, '2026-02-26 14:53:48', '2026-02-26 16:18:38'),
+(4, 558, 576, 1, 728, 'register', 1, NULL, '{\"success\":true,\"action\":\"register\",\"order_id\":\"124639932\",\"error\":null}', 0, '2026-02-26 17:29:57', '2026-02-26 16:29:56'),
+(5, 559, 577, 1, 729, 'register', 1, NULL, '{\"success\":true,\"action\":\"register\",\"order_id\":\"124639938\",\"error\":null}', 0, '2026-02-26 17:31:19', '2026-02-26 16:31:18'),
+(6, 560, 578, 1, 730, 'register', 0, 'Reseller has not signedup for this Product. So , we can\'t complete your request', '{\"success\":false,\"action\":\"register\",\"error\":\"Reseller has not signedup for this Product. So , we can\'t complete your request\"}', 1, '2026-02-26 17:31:44', '2026-02-26 16:35:08'),
+(7, 560, 578, 1, 730, 'register', 1, NULL, '{\"success\":true,\"action\":\"register\",\"order_id\":\"124639955\",\"error\":null}', 0, '2026-02-26 17:35:09', '2026-02-26 16:35:09');
 
 -- --------------------------------------------------------
 
@@ -2231,7 +2276,7 @@ INSERT INTO `sys_cnf` (`id`, `cnf_key`, `cnf_val`, `cnf_group`, `created_on`, `u
 (34, 'feature_affiliate_system', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (35, 'feature_two_factor_auth', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (36, 'feature_social_login', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
-(37, 'admin_notification_email', 'admin@yourcompany.com', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
+(37, 'admin_notification_email', 'techno.valley.21@gmail.com', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-22 13:50:17'),
 (38, 'notify_admin_new_order', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (39, 'notify_admin_new_ticket', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (40, 'notify_admin_new_customer', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
@@ -2406,7 +2451,8 @@ INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `mobile`, `phone`
 (12, 'Alaka', 'Bhattacharjee', 'aporajita2001@gmail.com', '+8801731795993', '+8801731795993', 'Company Owner', '$2y$10$pkXufw0rR/unfSzmuhVJx.9f8.FR5Z8veHayJaM50xqbM95iQ.SWy', NULL, NULL, NULL, 11, 0, 0, 1, NULL, '2024-11-22 16:22:00', 1, '2024-11-22 15:22:00', NULL, NULL, NULL, NULL, NULL),
 (13, 'Zuel', 'Ali', 'alisoftbdinfo@gmail.com', '8801515293030', '8801515293030', 'Company Owner', '$2y$10$SDeaZqAM0VJ2sgOIqkI3Vupbw7sjvc8Eq4g3nYmo65jD2kgAjdRZ2', NULL, NULL, NULL, 12, 0, 0, 1, NULL, '2025-05-03 05:43:20', 1, '2025-05-03 03:43:20', NULL, NULL, NULL, NULL, NULL),
 (14, 'Zakaria', 'Imtiaz', 'imtiaz71985@gmail.com', '8801980484968', '', 'Company Owner', '$2y$10$eKUBYUhPdKQPqyXJPox2g.vd7AQPxCQY5mAgOJ.Sb0YhtpAp/H87.', NULL, NULL, NULL, 13, 0, 0, 1, NULL, '2025-05-06 02:19:59', 1, '2025-05-06 00:19:58', NULL, NULL, NULL, NULL, NULL),
-(15, 'Md. Saidul Islam', 'Emon', 'emon072033@gmail.com', '+8801536194103', '+8801536194103', 'Company Owner', '$2y$10$4s99C6tURzo8goJk6cCsEu.v3V9ckd3jFm27KQ5NQIk.81hWIxgIe', NULL, NULL, NULL, 14, 0, 0, 1, NULL, '2025-08-12 03:37:39', 1, '2026-02-10 04:15:52', NULL, NULL, NULL, NULL, NULL);
+(15, 'Md. Saidul Islam', 'Emon', 'emon072033@gmail.com', '+8801536194103', '+8801536194103', 'Company Owner', '$2y$10$4s99C6tURzo8goJk6cCsEu.v3V9ckd3jFm27KQ5NQIk.81hWIxgIe', NULL, NULL, NULL, 14, 0, 0, 1, NULL, '2025-08-12 03:37:39', 1, '2026-02-10 04:15:52', NULL, NULL, NULL, NULL, NULL),
+(16, 'Md Saidul Islam', 'Emon', 'emon07203@gmail.com', '+8801927106090', '+8801927106090', 'Company Owner', '$2y$10$e2JvbZPP1.yL5mOA4aPv4.5UxlhPvDCGn2qOXSMhbLaGSjCSOSHY.', NULL, NULL, NULL, 15, 0, 0, 1, NULL, '2026-02-26 13:48:11', NULL, '2026-02-26 14:04:38', NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2549,7 +2595,17 @@ INSERT INTO `user_logins` (`id`, `user_id`, `login_time`, `session_val`, `termin
 (118, 15, '2026-02-16 07:37:36', '0', '103.59.38.166', NULL, 1),
 (119, 1, '2026-02-18 02:04:07', '0', '::1', NULL, 1),
 (120, 1, '2026-02-18 17:15:05', '0', '::1', NULL, 1),
-(121, 1, '2026-02-20 23:00:35', '0', '103.159.72.16', NULL, 1);
+(121, 1, '2026-02-20 23:00:35', '0', '103.159.72.16', NULL, 1),
+(122, 1, '2026-02-22 13:56:30', '0', '::1', NULL, 1),
+(123, 15, '2026-02-26 01:12:37', '0', '103.59.38.166', NULL, 1),
+(124, 15, '2026-02-26 01:54:36', '0', '103.59.38.166', NULL, 1),
+(125, 15, '2026-02-26 04:18:02', '0', '103.59.38.166', NULL, 1),
+(126, 16, '2026-02-26 14:23:23', '0', '::1', NULL, 1),
+(127, 15, '2026-02-26 08:02:56', '0', '103.59.38.166', NULL, 1),
+(128, 16, '2026-02-26 08:04:46', '0', '103.59.38.166', NULL, 1),
+(129, 16, '2026-02-26 10:13:59', '0', '103.59.38.166', NULL, 1),
+(130, 1, '2026-02-26 10:48:29', '0', '202.134.10.131', NULL, 1),
+(131, 1, '2026-02-26 10:49:08', '0', '202.134.10.131', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -2917,7 +2973,7 @@ ALTER TABLE `provisioning_logs`
   ADD KEY `idx_invoice_id` (`invoice_id`),
   ADD KEY `idx_item_type_ref` (`item_type`,`ref_id`),
   ADD KEY `idx_success` (`success`),
-  ADD KEY `idx_created_on` (`created_on`);
+  ADD KEY `idx_created_on` (`inserted_on`);
 
 --
 -- Indexes for table `servers`
@@ -2981,13 +3037,13 @@ ALTER TABLE `webhook_logs`
 -- AUTO_INCREMENT for table `add_to_carts`
 --
 ALTER TABLE `add_to_carts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `admin_logins`
 --
 ALTER TABLE `admin_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=99;
 
 --
 -- AUTO_INCREMENT for table `admin_roles`
@@ -3029,7 +3085,7 @@ ALTER TABLE `billing_cycle`
 -- AUTO_INCREMENT for table `companies`
 --
 ALTER TABLE `companies`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `countries`
@@ -3119,19 +3175,19 @@ ALTER TABLE `gen_numbers`
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=557;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=561;
 
 --
 -- AUTO_INCREMENT for table `invoice_items`
 --
 ALTER TABLE `invoice_items`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=575;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=579;
 
 --
 -- AUTO_INCREMENT for table `invoice_txn`
 --
 ALTER TABLE `invoice_txn`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `kbs`
@@ -3155,7 +3211,7 @@ ALTER TABLE `kb_cat_mapping`
 -- AUTO_INCREMENT for table `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -3167,13 +3223,13 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=731;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=735;
 
 --
 -- AUTO_INCREMENT for table `order_domains`
 --
 ALTER TABLE `order_domains`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=727;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=731;
 
 --
 -- AUTO_INCREMENT for table `order_services`
@@ -3185,7 +3241,7 @@ ALTER TABLE `order_services`
 -- AUTO_INCREMENT for table `pages`
 --
 ALTER TABLE `pages`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `page_history`
@@ -3209,7 +3265,7 @@ ALTER TABLE `payment_refunds`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `pending_executions`
@@ -3251,7 +3307,7 @@ ALTER TABLE `product_service_types`
 -- AUTO_INCREMENT for table `provisioning_logs`
 --
 ALTER TABLE `provisioning_logs`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `servers`
@@ -3287,13 +3343,13 @@ ALTER TABLE `ticket_replies`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `user_logins`
 --
 ALTER TABLE `user_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=122;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=132;
 
 --
 -- AUTO_INCREMENT for table `webhook_logs`

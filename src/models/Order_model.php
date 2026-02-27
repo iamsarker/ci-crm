@@ -475,5 +475,389 @@ class Order_model extends CI_Model{
 		return sendHtmlEmail($toEmail, $subject, $body);
 	}
 
+	// =========================================
+	// Order Management Methods
+	// =========================================
+
+	/**
+	 * Get order with all domain and service items
+	 * @param int $orderId Order ID
+	 * @return array Order data with items
+	 */
+	function getOrderWithItems($orderId)
+	{
+		if (!is_numeric($orderId) || $orderId <= 0) {
+			return array();
+		}
+
+		// Get order details with company info
+		$sql = "SELECT o.*, c.name as company_name, c.first_name, c.last_name, c.email as company_email
+				FROM orders o
+				LEFT JOIN companies c ON o.company_id = c.id
+				WHERE o.id = ? AND o.status IN (0,1,2,3,4,5,6)";
+		$order = $this->db->query($sql, array(intval($orderId)))->row_array();
+
+		if (empty($order)) {
+			return array();
+		}
+
+		// Get domain items with registrar info
+		$sqlDomains = "SELECT od.*, dr.name as registrar_name, dr.platform as registrar_platform
+					   FROM order_domains od
+					   LEFT JOIN dom_registers dr ON od.dom_register_id = dr.id
+					   WHERE od.order_id = ?
+					   ORDER BY od.id ASC";
+		$order['domains'] = $this->db->query($sqlDomains, array(intval($orderId)))->result_array();
+
+		// Get service items with package and server info
+		$sqlServices = "SELECT os.*, ps.product_name, ps.server_id, ps.cp_package,
+						       psg.group_name, s.name as server_name, s.hostname as server_hostname,
+						       bc.cycle_name
+						FROM order_services os
+						LEFT JOIN product_services ps ON os.product_service_id = ps.id
+						LEFT JOIN product_service_groups psg ON ps.product_service_group_id = psg.id
+						LEFT JOIN servers s ON ps.server_id = s.id
+						LEFT JOIN billing_cycle bc ON os.billing_cycle_id = bc.id
+						WHERE os.order_id = ?
+						ORDER BY os.id ASC";
+		$order['services'] = $this->db->query($sqlServices, array(intval($orderId)))->result_array();
+
+		return $order;
+	}
+
+	/**
+	 * Get single domain item with registrar info
+	 * @param int $domainId Order domain ID
+	 * @return array Domain item data
+	 */
+	function getDomainItem($domainId)
+	{
+		if (!is_numeric($domainId) || $domainId <= 0) {
+			return array();
+		}
+
+		$sql = "SELECT od.*, dr.name as registrar_name, dr.platform as registrar_platform,
+				       o.company_id, o.currency_code
+				FROM order_domains od
+				LEFT JOIN dom_registers dr ON od.dom_register_id = dr.id
+				LEFT JOIN orders o ON od.order_id = o.id
+				WHERE od.id = ?";
+		return $this->db->query($sql, array(intval($domainId)))->row_array();
+	}
+
+	/**
+	 * Get single service item with package/server info
+	 * @param int $serviceId Order service ID
+	 * @return array Service item data
+	 */
+	function getServiceItem($serviceId)
+	{
+		if (!is_numeric($serviceId) || $serviceId <= 0) {
+			return array();
+		}
+
+		$sql = "SELECT os.*, ps.product_name, ps.server_id, ps.cp_package,
+				       psg.group_name, s.name as server_name, s.hostname as server_hostname,
+				       bc.cycle_name, o.company_id, o.currency_code
+				FROM order_services os
+				LEFT JOIN product_services ps ON os.product_service_id = ps.id
+				LEFT JOIN product_service_groups psg ON ps.product_service_group_id = psg.id
+				LEFT JOIN servers s ON ps.server_id = s.id
+				LEFT JOIN billing_cycle bc ON os.billing_cycle_id = bc.id
+				LEFT JOIN orders o ON os.order_id = o.id
+				WHERE os.id = ?";
+		return $this->db->query($sql, array(intval($serviceId)))->row_array();
+	}
+
+	/**
+	 * Cancel domain item
+	 * @param int $domainId Order domain ID
+	 * @param string $cancelType 'immediate' or 'end_of_period'
+	 * @param string $reason Cancellation reason
+	 * @return bool Success status
+	 */
+	function cancelDomain($domainId, $cancelType = 'immediate', $reason = '')
+	{
+		if (!is_numeric($domainId) || $domainId <= 0) {
+			return false;
+		}
+
+		$domain = $this->getDomainItem($domainId);
+		if (empty($domain)) {
+			return false;
+		}
+
+		$data = array(
+			'updated_on' => date('Y-m-d H:i:s'),
+			'updated_by' => getAdminId()
+		);
+
+		if ($cancelType === 'immediate') {
+			$data['status'] = 4; // cancelled
+			$data['termination_date'] = date('Y-m-d');
+			$data['suspension_reason'] = !empty($reason) ? $reason : 'Cancelled by admin';
+		} else {
+			// End of period - set termination_date to exp_date
+			$data['termination_date'] = $domain['exp_date'];
+			$data['suspension_reason'] = !empty($reason) ? $reason : 'Pending cancellation at end of period';
+		}
+
+		$this->db->where('id', intval($domainId));
+		return $this->db->update('order_domains', $data);
+	}
+
+	/**
+	 * Cancel service item
+	 * @param int $serviceId Order service ID
+	 * @param string $cancelType 'immediate' or 'end_of_period'
+	 * @param string $reason Cancellation reason
+	 * @return bool Success status
+	 */
+	function cancelService($serviceId, $cancelType = 'immediate', $reason = '')
+	{
+		if (!is_numeric($serviceId) || $serviceId <= 0) {
+			return false;
+		}
+
+		$service = $this->getServiceItem($serviceId);
+		if (empty($service)) {
+			return false;
+		}
+
+		$data = array(
+			'updated_on' => date('Y-m-d H:i:s'),
+			'updated_by' => getAdminId()
+		);
+
+		if ($cancelType === 'immediate') {
+			$data['status'] = 4; // terminated
+			$data['termination_date'] = date('Y-m-d');
+			$data['suspension_reason'] = !empty($reason) ? $reason : 'Cancelled by admin';
+		} else {
+			// End of period - set termination_date to exp_date
+			$data['termination_date'] = $service['exp_date'];
+			$data['suspension_reason'] = !empty($reason) ? $reason : 'Pending cancellation at end of period';
+		}
+
+		$this->db->where('id', intval($serviceId));
+		return $this->db->update('order_services', $data);
+	}
+
+	/**
+	 * Cancel entire order and all its items
+	 * @param int $orderId Order ID
+	 * @param string $cancelType 'immediate' or 'end_of_period'
+	 * @param string $reason Cancellation reason
+	 * @return bool Success status
+	 */
+	function cancelOrder($orderId, $cancelType = 'immediate', $reason = '')
+	{
+		if (!is_numeric($orderId) || $orderId <= 0) {
+			return false;
+		}
+
+		$order = $this->getOrderWithItems($orderId);
+		if (empty($order)) {
+			return false;
+		}
+
+		// Cancel all domains
+		foreach ($order['domains'] as $domain) {
+			$this->cancelDomain($domain['id'], $cancelType, $reason);
+		}
+
+		// Cancel all services
+		foreach ($order['services'] as $service) {
+			$this->cancelService($service['id'], $cancelType, $reason);
+		}
+
+		// Cancel unpaid or partially paid invoices for this order
+		$this->cancelUnpaidInvoices($orderId, $reason);
+
+		// Update order status
+		$orderData = array(
+			'status' => $cancelType === 'immediate' ? 0 : 1, // 0 = cancelled/inactive
+			'remarks' => ($order['remarks'] ? $order['remarks'] . "\n" : '') . 'Cancelled: ' . ($reason ?: 'By admin'),
+			'updated_on' => date('Y-m-d H:i:s'),
+			'updated_by' => getAdminId()
+		);
+
+		$this->db->where('id', intval($orderId));
+		return $this->db->update('orders', $orderData);
+	}
+
+	/**
+	 * Cancel unpaid or partially paid invoices for an order
+	 * @param int $orderId Order ID
+	 * @param string $reason Cancellation reason
+	 * @return int Number of invoices cancelled
+	 */
+	function cancelUnpaidInvoices($orderId, $reason = '')
+	{
+		if (!is_numeric($orderId) || $orderId <= 0) {
+			return 0;
+		}
+
+		// Find all unpaid or partially paid invoices for this order
+		$invoices = $this->db->select('id, invoice_no, pay_status')
+							 ->from('invoices')
+							 ->where('order_id', intval($orderId))
+							 ->where_in('pay_status', array('DUE', 'PARTIAL'))
+							 ->where('status', 1)
+							 ->get()
+							 ->result_array();
+
+		if (empty($invoices)) {
+			return 0;
+		}
+
+		$cancelledCount = 0;
+		$cancellationNote = 'Invoice cancelled due to order cancellation' . ($reason ? ': ' . $reason : '');
+
+		foreach ($invoices as $invoice) {
+			$invoiceData = array(
+				'pay_status' => 'CANCELLED',
+				'status' => 0, // Inactive
+				'cancel_date' => date('Y-m-d'),
+				'remarks' => $cancellationNote,
+				'updated_on' => date('Y-m-d H:i:s'),
+				'updated_by' => getAdminId()
+			);
+
+			$this->db->where('id', $invoice['id']);
+			if ($this->db->update('invoices', $invoiceData)) {
+				$cancelledCount++;
+				log_message('info', 'Invoice #' . $invoice['invoice_no'] . ' cancelled due to order cancellation');
+			}
+		}
+
+		return $cancelledCount;
+	}
+
+	/**
+	 * Update domain registrar
+	 * @param int $domainId Order domain ID
+	 * @param int $newRegistrarId New registrar ID
+	 * @return array Result with status and message
+	 */
+	function updateDomainRegistrar($domainId, $newRegistrarId)
+	{
+		if (!is_numeric($domainId) || $domainId <= 0 || !is_numeric($newRegistrarId) || $newRegistrarId <= 0) {
+			return array('success' => false, 'message' => 'Invalid parameters');
+		}
+
+		$domain = $this->getDomainItem($domainId);
+		if (empty($domain)) {
+			return array('success' => false, 'message' => 'Domain not found');
+		}
+
+		$data = array(
+			'dom_register_id' => intval($newRegistrarId),
+			'updated_on' => date('Y-m-d H:i:s'),
+			'updated_by' => getAdminId()
+		);
+
+		// If domain is active, set status to pending transfer
+		if ($domain['status'] == 1) {
+			$data['status'] = 5; // pending transfer
+		}
+
+		$this->db->where('id', intval($domainId));
+		$result = $this->db->update('order_domains', $data);
+
+		return array(
+			'success' => $result,
+			'message' => $result ? 'Registrar updated successfully' : 'Failed to update registrar',
+			'needs_transfer' => ($domain['status'] == 1)
+		);
+	}
+
+	/**
+	 * Update service package/server
+	 * @param int $serviceId Order service ID
+	 * @param array $updateData Array with product_service_id, product_service_pricing_id, etc.
+	 * @return array Result with status and message
+	 */
+	function updateServicePackage($serviceId, $updateData)
+	{
+		if (!is_numeric($serviceId) || $serviceId <= 0) {
+			return array('success' => false, 'message' => 'Invalid service ID');
+		}
+
+		$service = $this->getServiceItem($serviceId);
+		if (empty($service)) {
+			return array('success' => false, 'message' => 'Service not found');
+		}
+
+		$data = array(
+			'updated_on' => date('Y-m-d H:i:s'),
+			'updated_by' => getAdminId()
+		);
+
+		if (!empty($updateData['product_service_id'])) {
+			$data['product_service_id'] = intval($updateData['product_service_id']);
+		}
+		if (!empty($updateData['product_service_pricing_id'])) {
+			$data['product_service_pricing_id'] = intval($updateData['product_service_pricing_id']);
+		}
+
+		$this->db->where('id', intval($serviceId));
+		$result = $this->db->update('order_services', $data);
+
+		return array(
+			'success' => $result,
+			'message' => $result ? 'Service updated successfully' : 'Failed to update service',
+			'old_service' => $service
+		);
+	}
+
+	/**
+	 * Get all active registrars
+	 * @return array List of registrars
+	 */
+	function getActiveRegistrars()
+	{
+		return $this->db->where('status', 1)
+						->order_by('name', 'ASC')
+						->get('dom_registers')
+						->result_array();
+	}
+
+	/**
+	 * Get all active servers
+	 * @return array List of servers
+	 */
+	function getActiveServers()
+	{
+		return $this->db->where('status', 1)
+						->where('deleted_on IS NULL', null, false)
+						->order_by('name', 'ASC')
+						->get('servers')
+						->result_array();
+	}
+
+	/**
+	 * Get packages by server
+	 * @param int $serverId Server ID (optional)
+	 * @return array List of packages
+	 */
+	function getPackagesByServer($serverId = null)
+	{
+		$this->db->select('ps.*, psg.group_name');
+		$this->db->from('product_services ps');
+		$this->db->join('product_service_groups psg', 'ps.product_service_group_id = psg.id', 'left');
+		$this->db->where('ps.status', 1);
+		$this->db->where('ps.deleted_on IS NULL', null, false);
+
+		if ($serverId) {
+			$this->db->where('ps.server_id', intval($serverId));
+		}
+
+		$this->db->order_by('psg.group_name', 'ASC');
+		$this->db->order_by('ps.product_name', 'ASC');
+
+		return $this->db->get()->result_array();
+	}
+
 }
 ?>

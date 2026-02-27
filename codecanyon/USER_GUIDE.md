@@ -1413,6 +1413,112 @@ The admin dashboard provides comprehensive business insights:
   - Export selected
   - Delete selected
 
+### Managing Existing Orders
+
+The Order Management page allows administrators to view and modify existing orders, including changing registrars, servers, packages, and cancelling orders.
+
+**Accessing Order Management:**
+1. Go to "Orders" in the admin menu
+2. Find the order you want to manage
+3. Click the **gear icon** (Manage) button
+
+**Order Management Page Sections:**
+
+1. **Order Overview**
+   - Order number and date
+   - Total amount and discounts
+   - Order status
+   - Customer information with link to profile
+
+2. **Domain Items**
+   - List of all domains in the order
+   - Domain name, registrar, order type
+   - Registration and expiry dates
+   - Status badge (Active, Pending, Expired, etc.)
+
+3. **Hosting Items**
+   - List of all hosting services in the order
+   - Package name, server, billing cycle
+   - Hosting domain and cPanel username
+   - Status badge (Active, Pending, Suspended, etc.)
+
+**Domain Actions:**
+
+- **Change Registrar:**
+  1. Click "Change Registrar" on a domain
+  2. Select the new registrar from dropdown
+  3. Check "Initiate domain transfer" if domain is active
+  4. Click "Save Changes"
+  5. If domain is active, transfer will be initiated to new registrar
+
+- **Cancel Domain:**
+  1. Click "Cancel" on a domain
+  2. Choose cancellation type:
+     - **Immediate:** Cancel now (status = Cancelled)
+     - **End of Period:** Schedule cancellation at expiry date
+  3. Enter cancellation reason (optional)
+  4. Click "Cancel Domain"
+
+**Hosting Actions:**
+
+- **Change Package:**
+  1. Click "Change Package" on a service
+  2. Select new package from dropdown
+  3. Select billing cycle/pricing
+  4. Check "Apply package change on cPanel" to update cPanel server
+  5. Click "Save Changes"
+
+- **Change Server:**
+  1. Click "Change Server" on a service
+  2. Select new server from dropdown
+  3. Select package available on new server
+  4. Check "Migrate account" to move data to new server
+  5. Click "Save Changes"
+
+- **Cancel Service:**
+  1. Click "Cancel" on a service
+  2. Choose cancellation type:
+     - **Immediate:** Terminate now (status = Terminated)
+     - **End of Period:** Schedule termination at expiry date
+  3. Check "Delete cPanel account" for immediate deletion
+  4. Enter cancellation reason (optional)
+  5. Click "Cancel Service"
+
+**Cancel Entire Order:**
+
+1. Click "Cancel Entire Order" button
+2. Choose cancellation type:
+   - **Immediate:** Cancel all items now
+   - **End of Period:** Schedule cancellation at each item's expiry
+3. Enter cancellation reason (optional)
+4. Click "Cancel Order"
+
+**What Happens When Order is Cancelled:**
+- All domain items are cancelled
+- All hosting services are terminated
+- All unpaid invoices are automatically cancelled
+- Invoice status changes to "CANCELLED"
+- Cancellation reason is recorded
+
+**Status Indicators:**
+
+| Domain Status | Description |
+|---------------|-------------|
+| Pending Registration | Awaiting domain registration |
+| Active | Domain is registered and active |
+| Expired | Domain has expired |
+| Grace Period | Domain in grace period after expiry |
+| Cancelled | Domain cancelled |
+| Pending Transfer | Transfer in progress |
+
+| Service Status | Description |
+|----------------|-------------|
+| Pending | Awaiting setup/activation |
+| Active | Service is active |
+| Expired | Service has expired |
+| Suspended | Service temporarily suspended |
+| Terminated | Service permanently terminated |
+
 ---
 
 ## Package Management

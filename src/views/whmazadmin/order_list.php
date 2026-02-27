@@ -231,7 +231,7 @@ function openManage(id) {
 		showConfirmButton: false,
 		didOpen: () => { Swal.showLoading(); }
 	});
-	window.location = "<?=base_url()?>whmazadmin/order/new_order/" + id;
+	window.location = "<?=base_url()?>whmazadmin/order/manage/" + id;
 }
 
 function deleteRow(id, title) {

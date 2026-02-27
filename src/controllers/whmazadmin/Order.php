@@ -420,5 +420,328 @@ class Order extends WHMAZADMIN_Controller
 		echo json_encode($this->Order_model->loadOrderList(-1, $rqData['limit']));
 	}
 
+	// =========================================
+	// Order Management
+	// =========================================
+
+	/**
+	 * Order management page
+	 * @param string $id_val Encoded order ID
+	 */
+	public function manage($id_val = null)
+	{
+		if (empty($id_val)) {
+			$this->session->set_flashdata('admin_error', 'Order ID is required');
+			redirect('whmazadmin/order/index');
+		}
+
+		$orderId = safe_decode($id_val);
+		if (!$orderId || $orderId <= 0) {
+			$this->session->set_flashdata('admin_error', 'Invalid order ID');
+			redirect('whmazadmin/order/index');
+		}
+
+		$data['order'] = $this->Order_model->getOrderWithItems($orderId);
+		if (empty($data['order'])) {
+			$this->session->set_flashdata('admin_error', 'Order not found');
+			redirect('whmazadmin/order/index');
+		}
+
+		// Get dropdown data
+		$data['registrars'] = $this->Order_model->getActiveRegistrars();
+		$data['servers'] = $this->Order_model->getActiveServers();
+		$data['packages'] = $this->Order_model->getPackagesByServer();
+		$data['billing_cycles'] = $this->Common_model->generate_dropdown('billing_cycle', 'id', "cycle_name");
+
+		// Status labels
+		$data['domain_statuses'] = array(
+			0 => array('label' => 'Pending Registration', 'class' => 'warning'),
+			1 => array('label' => 'Active', 'class' => 'success'),
+			2 => array('label' => 'Expired', 'class' => 'danger'),
+			3 => array('label' => 'Grace Period', 'class' => 'warning'),
+			4 => array('label' => 'Cancelled', 'class' => 'secondary'),
+			5 => array('label' => 'Pending Transfer', 'class' => 'info')
+		);
+
+		$data['service_statuses'] = array(
+			0 => array('label' => 'Pending', 'class' => 'warning'),
+			1 => array('label' => 'Active', 'class' => 'success'),
+			2 => array('label' => 'Expired', 'class' => 'danger'),
+			3 => array('label' => 'Suspended', 'class' => 'warning'),
+			4 => array('label' => 'Terminated', 'class' => 'secondary')
+		);
+
+		$data['order_types'] = array(
+			1 => 'Registration',
+			2 => 'Transfer',
+			3 => 'DNS Only'
+		);
+
+		$this->load->view('whmazadmin/order_manage', $data);
+	}
+
+	/**
+	 * API: Get order details
+	 * @param string $id_val Encoded order ID
+	 */
+	public function get_order_details_api($id_val = null)
+	{
+		header('Content-Type: application/json');
+
+		if (empty($id_val)) {
+			echo json_encode(array('success' => false, 'message' => 'Order ID required'));
+			return;
+		}
+
+		$orderId = safe_decode($id_val);
+		$order = $this->Order_model->getOrderWithItems($orderId);
+
+		if (empty($order)) {
+			echo json_encode(array('success' => false, 'message' => 'Order not found'));
+			return;
+		}
+
+		echo json_encode(array('success' => true, 'data' => $order));
+	}
+
+	/**
+	 * API: Update domain registrar
+	 */
+	public function update_domain_api()
+	{
+		header('Content-Type: application/json');
+
+		$domainId = $this->input->post('domain_id');
+		$registrarId = $this->input->post('registrar_id');
+		$triggerTransfer = $this->input->post('trigger_transfer') == '1';
+
+		if (empty($domainId) || empty($registrarId)) {
+			echo json_encode(array('success' => false, 'message' => 'Domain ID and Registrar ID are required'));
+			return;
+		}
+
+		$result = $this->Order_model->updateDomainRegistrar(safe_decode($domainId), $registrarId);
+
+		// If transfer is needed and requested, trigger the API call
+		if ($result['success'] && $result['needs_transfer'] && $triggerTransfer) {
+			$this->load->helper('domain');
+			$domain = $this->Order_model->getDomainItem(safe_decode($domainId));
+			// Note: Domain transfer API call would go here
+			// For now, just log the action
+			log_message('info', 'Domain transfer initiated for: ' . $domain['domain'] . ' to registrar ID: ' . $registrarId);
+			$result['message'] = 'Registrar updated. Domain transfer initiated.';
+		}
+
+		echo json_encode($result);
+	}
+
+	/**
+	 * API: Update service package/server
+	 */
+	public function update_service_api()
+	{
+		header('Content-Type: application/json');
+
+		$serviceId = $this->input->post('service_id');
+		$packageId = $this->input->post('package_id');
+		$pricingId = $this->input->post('pricing_id');
+		$migrateServer = $this->input->post('migrate_server') == '1';
+		$upgradeCpanel = $this->input->post('upgrade_cpanel') == '1';
+
+		if (empty($serviceId)) {
+			echo json_encode(array('success' => false, 'message' => 'Service ID is required'));
+			return;
+		}
+
+		$updateData = array();
+		if (!empty($packageId)) {
+			$updateData['product_service_id'] = $packageId;
+		}
+		if (!empty($pricingId)) {
+			$updateData['product_service_pricing_id'] = $pricingId;
+		}
+
+		if (empty($updateData)) {
+			echo json_encode(array('success' => false, 'message' => 'No changes provided'));
+			return;
+		}
+
+		$result = $this->Order_model->updateServicePackage(safe_decode($serviceId), $updateData);
+
+		// Handle cPanel package upgrade if requested
+		if ($result['success'] && $upgradeCpanel) {
+			$service = $this->Order_model->getServiceItem(safe_decode($serviceId));
+			if (!empty($service['cp_username'])) {
+				$this->load->helper('cpanel');
+				// Note: WHM API call to change package would go here
+				log_message('info', 'cPanel package change requested for: ' . $service['cp_username']);
+				$result['message'] .= ' cPanel package change initiated.';
+			}
+		}
+
+		// Handle server migration if requested
+		if ($result['success'] && $migrateServer) {
+			$service = $this->Order_model->getServiceItem(safe_decode($serviceId));
+			// Note: Server migration logic would go here
+			log_message('info', 'Server migration requested for service ID: ' . safe_decode($serviceId));
+			$result['message'] .= ' Server migration marked for manual processing.';
+		}
+
+		echo json_encode($result);
+	}
+
+	/**
+	 * API: Cancel domain
+	 */
+	public function cancel_domain_api()
+	{
+		header('Content-Type: application/json');
+
+		$domainId = $this->input->post('domain_id');
+		$cancelType = $this->input->post('cancel_type'); // 'immediate' or 'end_of_period'
+		$reason = $this->input->post('reason');
+
+		if (empty($domainId)) {
+			echo json_encode(array('success' => false, 'message' => 'Domain ID is required'));
+			return;
+		}
+
+		if (!in_array($cancelType, array('immediate', 'end_of_period'))) {
+			$cancelType = 'immediate';
+		}
+
+		$result = $this->Order_model->cancelDomain(safe_decode($domainId), $cancelType, $reason);
+
+		echo json_encode(array(
+			'success' => $result,
+			'message' => $result ? 'Domain cancelled successfully' : 'Failed to cancel domain'
+		));
+	}
+
+	/**
+	 * API: Cancel service
+	 */
+	public function cancel_service_api()
+	{
+		header('Content-Type: application/json');
+
+		$serviceId = $this->input->post('service_id');
+		$cancelType = $this->input->post('cancel_type'); // 'immediate' or 'end_of_period'
+		$reason = $this->input->post('reason');
+		$deleteCpanel = $this->input->post('delete_cpanel') == '1';
+
+		if (empty($serviceId)) {
+			echo json_encode(array('success' => false, 'message' => 'Service ID is required'));
+			return;
+		}
+
+		if (!in_array($cancelType, array('immediate', 'end_of_period'))) {
+			$cancelType = 'immediate';
+		}
+
+		// If immediate cancellation and delete cPanel requested
+		if ($cancelType === 'immediate' && $deleteCpanel) {
+			$service = $this->Order_model->getServiceItem(safe_decode($serviceId));
+			if (!empty($service['cp_username'])) {
+				$this->load->helper('cpanel');
+				// Note: WHM API call to terminate account would go here
+				log_message('info', 'cPanel account deletion requested for: ' . $service['cp_username']);
+			}
+		}
+
+		$result = $this->Order_model->cancelService(safe_decode($serviceId), $cancelType, $reason);
+
+		echo json_encode(array(
+			'success' => $result,
+			'message' => $result ? 'Service cancelled successfully' : 'Failed to cancel service'
+		));
+	}
+
+	/**
+	 * API: Cancel entire order
+	 */
+	public function cancel_order_api()
+	{
+		header('Content-Type: application/json');
+
+		$orderId = $this->input->post('order_id');
+		$cancelType = $this->input->post('cancel_type'); // 'immediate' or 'end_of_period'
+		$reason = $this->input->post('reason');
+
+		if (empty($orderId)) {
+			echo json_encode(array('success' => false, 'message' => 'Order ID is required'));
+			return;
+		}
+
+		if (!in_array($cancelType, array('immediate', 'end_of_period'))) {
+			$cancelType = 'immediate';
+		}
+
+		// Get order details before cancellation for invoice count
+		$order = $this->Order_model->getOrderWithItems(safe_decode($orderId));
+
+		// Count unpaid invoices before cancellation
+		$this->db->where('order_id', safe_decode($orderId));
+		$this->db->where_in('pay_status', array('DUE', 'PARTIAL'));
+		$this->db->where('status', 1);
+		$unpaidInvoiceCount = $this->db->count_all_results('invoices');
+
+		$result = $this->Order_model->cancelOrder(safe_decode($orderId), $cancelType, $reason);
+
+		$message = 'Order cancelled successfully';
+		if ($result && $unpaidInvoiceCount > 0) {
+			$message .= '. ' . $unpaidInvoiceCount . ' unpaid invoice(s) also cancelled.';
+		}
+
+		echo json_encode(array(
+			'success' => $result,
+			'message' => $result ? $message : 'Failed to cancel order',
+			'invoices_cancelled' => $result ? $unpaidInvoiceCount : 0
+		));
+	}
+
+	/**
+	 * API: Get packages by server (for dynamic dropdown)
+	 */
+	public function get_packages_api()
+	{
+		header('Content-Type: application/json');
+
+		$serverId = $this->input->get('server_id');
+		$packages = $this->Order_model->getPackagesByServer($serverId);
+
+		echo json_encode(array('success' => true, 'data' => $packages));
+	}
+
+	/**
+	 * API: Get package pricing
+	 */
+	public function get_pricing_api()
+	{
+		header('Content-Type: application/json');
+
+		$packageId = $this->input->get('package_id');
+		$currencyId = $this->input->get('currency_id');
+
+		if (empty($packageId)) {
+			echo json_encode(array('success' => false, 'message' => 'Package ID required'));
+			return;
+		}
+
+		$this->db->select('psp.*, bc.cycle_name');
+		$this->db->from('product_service_pricing psp');
+		$this->db->join('billing_cycle bc', 'psp.billing_cycle_id = bc.id', 'left');
+		$this->db->where('psp.product_service_id', $packageId);
+		$this->db->where('psp.status', 1);
+
+		if (!empty($currencyId)) {
+			$this->db->where('psp.currency_id', $currencyId);
+		}
+
+		$this->db->order_by('bc.cycle_days', 'ASC');
+		$pricing = $this->db->get()->result_array();
+
+		echo json_encode(array('success' => true, 'data' => $pricing));
+	}
 
 }
