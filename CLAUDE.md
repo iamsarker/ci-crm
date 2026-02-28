@@ -136,16 +136,15 @@ $billingConfig = $this->Syscnf_model->getByGroup('BILLING');
 
 ### Payment Gateways
 
-**Implementation Status:**
+**Enabled Gateways:**
 | Gateway | Status | Webhook | Notes |
 |---------|--------|---------|-------|
 | Stripe | ✅ Working | ✅ Implemented | Full integration with PaymentIntent API |
 | SSLCommerz | ✅ Working | ✅ Implemented | Session restoration for external redirects |
-| PayPal | ⚠️ Partial | ✅ Implemented | Webhook ready, needs testing |
+| Bank Transfer | ✅ Working | N/A | Manual payment recording |
 
 - **Payment Libraries**: `src/libraries/`
   - `Stripe.php` - Stripe payment integration
-  - `Paypal.php` - PayPal payment integration
   - `Sslcommerz.php` - SSLCommerz payment integration
 
 - **Payment Controllers**:
@@ -165,7 +164,7 @@ $billingConfig = $this->Syscnf_model->getByGroup('BILLING');
 
 - **Admin Gateway Features**:
   - Toggle gateway status (enable/disable) with SweetAlert2 confirmation
-  - Test connection button for Stripe/PayPal
+  - Test connection button for Stripe
   - View transaction history with DataTables
   - View webhook logs with filtering
 
@@ -176,7 +175,6 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
 | Gateway | Webhook URL |
 |---------|-------------|
 | Stripe | `https://yourdomain.com/webhook/stripe` |
-| PayPal | `https://yourdomain.com/webhook/paypal` |
 | SSLCommerz | `https://yourdomain.com/webhook/sslcommerz` |
 
 **Database Fields (payment_gateway table):**
@@ -198,7 +196,7 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
 
 **Webhook Security:**
 - Stripe: Signature verification via `Stripe::verifyWebhook()`
-- PayPal: Signature verification via `Paypal::verifyWebhook()`
+- SSLCommerz: IPN validation
 - All webhooks logged to `webhook_logs` table
 - Duplicate event detection via `Payment_model::isWebhookProcessed()`
 
@@ -388,25 +386,8 @@ When admin cancels an entire order:
 
 ### Database
 - **Database Config**: `src/config/database.php`
-- **SQL Schema**: `crm_db.sql`
-- **DB Views**: `crm_db_views.sql`
-- **Migrations**: `migrations/` directory
-
-### Database Migrations
-When adding new features that require schema changes:
-1. Create migration file in `migrations/` directory
-2. Update main `crm_db.sql` schema for fresh installs
-3. Document migration in this file
-
-**Available Migrations:**
-| Migration | Description |
-|-----------|-------------|
-| `cart_enhancements.sql` | Cart linking (parent_cart_id, domain_action, epp_code) + Order linking (linked_domain_id, linked_service_id) |
-| `sys_cnf_billing_automation.sql` | System config + Payment email templates (Billing, Automation, Features, Notifications, Portal, Support) |
-| `order_confirmation_emails.sql` | Order confirmation email templates (order_confirmation, admin_order_notification) |
-| `ticket_notification_emails.sql` | Ticket notification email templates (ticket_new_to_department, ticket_new_to_customer, ticket_reply_to_customer, ticket_reply_to_department) |
-| `provisioning_system.sql` | Provisioning logs table and status columns for order_services/order_domains |
-| `invoice_pay_status_length.sql` | Increase invoices.pay_status to VARCHAR(10) for 'CANCELLED' status |
+- **SQL Schema**: `crm_db.sql` (contains all tables and data)
+- **DB Views**: `crm_db_views.sql` (contains all database views)
 
 ### Views
 - **Customer Payment Page**: `src/modules/billing/views/billing_pay.php`
@@ -426,9 +407,8 @@ When payment gateways redirect back to the app via **external POST**, browsers b
 | Gateway | Flow Type | Session Issue? |
 |---------|-----------|----------------|
 | Stripe | AJAX + client-side JS → same-origin redirect | No |
-| PayPal | AJAX + popup → AJAX capture → same-origin redirect | No |
-| Razorpay | AJAX + popup → same-origin redirect | No |
 | SSLCommerz | AJAX → **external redirect** → **external POST back** | **Yes** |
+| Bank Transfer | Manual process | No |
 
 **Solution for external-redirect gateways (SSLCommerz, etc.):**
 1. Generate secure token on init: `$paymentToken = bin2hex(random_bytes(32));`
@@ -442,7 +422,7 @@ When payment gateways redirect back to the app via **external POST**, browsers b
 - `_restoreSessionFromTransaction()` - verifies token, restores session
 
 **When adding new payment gateways:**
-- If gateway uses popup/modal (Razorpay, PayPal style): No special handling needed
+- If gateway uses popup/modal or AJAX: No special handling needed
 - If gateway does full browser redirect + POST callback: Implement token-based session restoration
 
 ## Cart & Checkout Implementation
@@ -544,7 +524,6 @@ Libraries follow CodeIgniter standard naming:
 
 Examples:
 - `Stripe.php` → class `Stripe` → `$this->stripe`
-- `Paypal.php` → class `Paypal` → `$this->paypal`
 - `Sslcommerz.php` → class `Sslcommerz` → `$this->sslcommerz`
 
 ## Admin Manage Page Template

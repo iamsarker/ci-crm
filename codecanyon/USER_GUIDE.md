@@ -1,9 +1,9 @@
-# WHMAZ - CI-CRM User Guide
+# WHMAZ User Guide
 ## Complete Manual for Administrators and Customers
 
 **Version:** 1.7.1
 **Last Updated:** February 18, 2026
-**Product:** WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
+**Product:** WHMAZ - Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System
 
 ---
 
@@ -65,7 +65,7 @@
 
 ## Introduction
 
-Welcome to **WHMAZ - CI-CRM**, a comprehensive Customer Relationship Management system designed specifically for hosting and service providers. This guide will help you understand and utilize all features of the system effectively.
+Welcome to **WHMAZ**, a lightweight domain hosting management system designed specifically for hosting and service providers. This guide will help you understand and utilize all features of the system effectively.
 
 ### What is WHMAZ?
 
@@ -752,8 +752,8 @@ There are two ways to transfer a domain:
 ### Payment Methods
 
 Available payment methods (configured by administrator):
-- **Credit/Debit Card** (Stripe, PayPal, etc.)
-- **PayPal**
+- **Credit/Debit Card** (via Stripe)
+- **SSLCommerz** (Bangladesh payments)
 - **Bank Transfer/Wire Transfer**
 - **Credit Balance** (if you have account credit)
 
@@ -768,8 +768,8 @@ Available payment methods (configured by administrator):
    - Click "Pay Now"
 
 3. **Complete Payment**
-   - For cards: Enter card details
-   - For PayPal: Login to PayPal account
+   - For Stripe: Enter card details
+   - For SSLCommerz: Complete payment on SSLCommerz page
    - For bank transfer: View payment instructions
    - Confirm payment
 
@@ -2342,7 +2342,7 @@ The Dunning tab includes a visual workflow preview card that shows all active ru
 
 **Gateway List Page Features:**
 - **Toggle Status:** Enable/disable gateways with confirmation dialog
-- **Test Connection:** Test API connectivity for Stripe and PayPal
+- **Test Connection:** Test API connectivity for Stripe
 - **Configure:** Set up API keys, webhook secrets, and gateway settings
 - **Mode Indicator:** Shows Test/Live mode status
 - **Supported Currencies:** View configured currencies per gateway
@@ -2354,12 +2354,11 @@ The Dunning tab includes a visual workflow preview card that shows all active ru
 | Configure Button | Open gateway settings page |
 | Test Button | Verify API credentials work correctly |
 
-**Supported Gateways:**
+**Enabled Gateways:**
 | Gateway | Status | Features |
 |---------|--------|----------|
 | Stripe | ✅ Fully Working | Cards, webhooks, refunds |
 | SSLCommerz | ✅ Fully Working | Bangladesh payments, IPN |
-| PayPal | ⚠️ Ready | Orders, capture, webhooks |
 | Bank Transfer | ✅ Working | Manual payment recording |
 
 **Additional Admin Pages:**
@@ -3064,7 +3063,6 @@ Password: Your SendGrid API Key
 |---------|--------|-------------|
 | **Stripe** | ✅ Fully Working | Complete integration with PaymentIntent API and webhook support |
 | **SSLCommerz** | ✅ Fully Working | Full integration with automatic session restoration for external redirects |
-| **PayPal** | ⚠️ Ready | Webhook implemented, requires configuration and testing |
 | **Bank Transfer** | ✅ Working | Manual payment recording |
 
 ### Payment Notification Emails
@@ -3079,7 +3077,6 @@ When a payment is successfully processed, the system automatically sends email n
 **What triggers payment emails:**
 - Successful payment via Stripe (webhook: `payment_intent.succeeded`)
 - Successful payment via SSLCommerz (IPN callback)
-- Successful payment via PayPal (order capture)
 - Manual payment recording by admin
 
 **To customize payment emails:**
@@ -3139,50 +3136,6 @@ When a payment is successfully processed, the system automatically sends email n
 | 4242 4242 4242 4242 | Successful payment |
 | 4000 0000 0000 0002 | Card declined |
 | 4000 0000 0000 9995 | Insufficient funds |
-
-### PayPal Configuration
-
-1. **PayPal Business Account**
-   - Sign up for PayPal Business account at paypal.com
-   - Complete business verification
-
-2. **Get API Credentials**
-   - Go to Developer Dashboard: developer.paypal.com
-   - Navigate to Apps & Credentials
-   - Create a new app or use default
-   - Copy Client ID and Client Secret
-
-3. **Configure Webhook (Required)**
-   - In PayPal Developer Dashboard → Your App → Webhooks
-   - Click "Add Webhook"
-   - Enter Webhook URL: `https://yourdomain.com/webhook/paypal`
-   - Select events:
-     - `CHECKOUT.ORDER.APPROVED`
-     - `PAYMENT.CAPTURE.COMPLETED`
-     - `PAYMENT.CAPTURE.DENIED`
-     - `PAYMENT.CAPTURE.REFUNDED`
-   - Save and copy the Webhook ID
-
-4. **Configure in WHMAZ**
-   - Go to Admin → Settings → Payment Gateways
-   - Click "Configure" on PayPal
-   - **Test Mode:** Toggle ON for Sandbox, OFF for Live
-   - **Sandbox Credentials** (when Test Mode is ON):
-     - Sandbox Client ID
-     - Sandbox Client Secret
-     - Sandbox Webhook ID
-   - **Live Credentials** (when Test Mode is OFF):
-     - Client ID
-     - Client Secret
-     - Webhook ID
-   - Enable and Save
-
-5. **Test Payment**
-   - Enable Test Mode
-   - Create test invoice
-   - Use PayPal Sandbox buyer account
-   - Complete payment flow
-   - Verify payment and webhook received
 
 ### SSLCommerz Configuration (Bangladesh)
 
@@ -3786,7 +3739,7 @@ These services available separately at additional cost.
 
 ## Conclusion
 
-Thank you for using **WHMAZ - CI-CRM**!
+Thank you for using **WHMAZ**!
 
 This guide covered:
 - ✅ Customer portal usage
@@ -3817,5 +3770,5 @@ This guide covered:
 **Document Information:**
 - Version: 1.7.0
 - Last Updated: February 13, 2026
-- Product: WHMAZ - CI-CRM
+- Product: WHMAZ - Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System
 - Copyright © 2026 WHMAZ. All Rights Reserved.

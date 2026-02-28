@@ -666,10 +666,9 @@ crontab -l
 Navigate to **Admin → Settings → Payment Gateways**
 
 Configure your preferred payment methods:
-- **Stripe** - Credit card processing
-- **PayPal** - PayPal payments
+- **Stripe** - Credit/Debit card processing
+- **SSLCommerz** - Bangladesh payment gateway
 - **Bank Transfer** - Manual bank transfer
-- **Cash** - Cash on delivery
 
 ### 5. Configure Domain Registrar
 
@@ -799,16 +798,6 @@ WHMAZ stores most configuration in the database for easy management via Admin Po
 | Automation/Cron settings | |
 | Feature flags | |
 | Notification preferences | |
-
-**Running Migrations:**
-
-If you need to add new system configuration settings, run the migration:
-
-```bash
-mysql -u username -p database_name < migrations/sys_cnf_billing_automation.sql
-```
-
-This adds default values for billing, automation, features, notifications, portal, and support settings to the `sys_cnf` table.
 
 ### Custom Domain for Admin Panel
 

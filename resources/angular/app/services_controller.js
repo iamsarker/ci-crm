@@ -501,6 +501,204 @@ app.controller('ServiceDomainCtrl', function ($scope, $http, $timeout, $rootScop
 
 
 
+// Domain Transfer Controller
+app.controller('ServiceDomainTransferCtrl', function ($scope, $http, $timeout, $rootScope, $sce, $mdDialog, $interval, ClientService, DialogBox, Communication) {
+	$scope.baseurl = BASE_URL;
+
+	// Transfer form state
+	$scope.transfer_domain = "";
+	$scope.epp_code = "";
+	$scope.domain_price_info = null;
+	$scope.error_message = "";
+	$scope.loading = false;
+
+	// Flow-2: Hosting selection after domain transfer
+	$scope.added_domain_cart_id = null;
+	$scope.hosting_packages = [];
+	$scope.selected_hosting = {};
+	$scope.loading_packages = false;
+
+	// On domain change - reset price info
+	$scope.onDomainChange = function() {
+		$scope.domain_price_info = null;
+		$scope.error_message = "";
+	};
+
+	// Lookup domain transfer price based on extension
+	$scope.lookupDomainPrice = function() {
+		if (!$scope.transfer_domain || $scope.transfer_domain.trim() === '') {
+			$scope.domain_price_info = null;
+			return;
+		}
+
+		// Clean up domain name
+		let domain = $scope.transfer_domain.toLowerCase().trim();
+		domain = domain.replace(/^(https?:\/\/)?(www\.)?/i, '');
+
+		// Extract extension
+		let parts = domain.split('.');
+		if (parts.length < 2) {
+			$scope.error_message = "Please enter a valid domain name (e.g., example.com)";
+			$scope.domain_price_info = null;
+			return;
+		}
+
+		$scope.transfer_domain = domain;
+		$scope.error_message = "";
+
+		// Get transfer price from server
+		let req = Communication.request("GET", BASE_URL + 'cart/getDomainTransferPrice?domain=' + encodeURIComponent(domain), {});
+		req.then(function (resp) {
+			if (resp.code == 200 && resp.data) {
+				$scope.domain_price_info = resp.data;
+			} else {
+				$scope.error_message = resp.msg || "This domain extension is not supported for transfer.";
+				$scope.domain_price_info = null;
+			}
+		}, function (err) {
+			$scope.error_message = "Failed to get transfer pricing. Please try again.";
+			$scope.domain_price_info = null;
+		});
+	};
+
+	// Add transfer domain to cart
+	$scope.addTransferToCart = function() {
+		if (!$scope.transfer_domain || $scope.transfer_domain.trim() === '') {
+			toastWarning("Please enter a domain name");
+			return;
+		}
+
+		if (!$scope.epp_code || $scope.epp_code.trim() === '') {
+			toastWarning("Please enter the EPP/Authorization code");
+			return;
+		}
+
+		if (!$scope.domain_price_info) {
+			toastWarning("Please wait for price lookup to complete");
+			return;
+		}
+
+		$scope.loading = true;
+		$scope.error_message = "";
+
+		let req = Communication.request("POST", BASE_URL + 'cart/addDomainToCart', {
+			"dom_pricing_id": $scope.domain_price_info.dom_pricing_id,
+			"domain_name": $scope.transfer_domain,
+			"domain_action": "transfer",
+			"epp_code": $scope.epp_code,
+			"quantity": 1
+		});
+
+		req.then(function (resp) {
+			$scope.loading = false;
+
+			if (resp.code == 200 && resp.data && resp.data.cart_id) {
+				toastSuccess(resp.msg || "Domain transfer added to cart!");
+
+				// Store domain info for hosting selection
+				$scope.added_domain_cart_id = resp.data.cart_id;
+
+				// Load hosting packages and show modal
+				$scope.loadHostingPackages();
+
+			} else {
+				$scope.error_message = resp.msg || "Failed to add domain transfer to cart";
+				toastError($scope.error_message);
+			}
+
+		}, function (err) {
+			$scope.loading = false;
+			$scope.error_message = "Failed to add to cart. Please try again.";
+			toastError($scope.error_message);
+		});
+	};
+
+	// Load available hosting packages
+	$scope.loadHostingPackages = function() {
+		$scope.hosting_packages = [];
+		$scope.selected_hosting = {};
+		$scope.loading_packages = true;
+
+		// Show modal first
+		var modalEl = document.getElementById('hostingSelectionModal');
+		var modal = bootstrap.Modal.getOrCreateInstance(modalEl, {backdrop: 'static', keyboard: false});
+		modal.show();
+
+		// Get hosting packages
+		let req = Communication.request("GET", BASE_URL + 'cart/getHostingPackages', {});
+		req.then(function (resp) {
+			$scope.loading_packages = false;
+			if (resp.code == 200 && resp.data) {
+				$scope.hosting_packages = resp.data;
+				// Set default selected pricing for each package
+				angular.forEach($scope.hosting_packages, function(pkg) {
+					if (pkg.billing && pkg.billing.length > 0) {
+						pkg.selected_pricing = pkg.billing[0].service_pricing_id;
+					}
+				});
+			}
+		}, function (err) {
+			$scope.loading_packages = false;
+		});
+	};
+
+	// Select a hosting package
+	$scope.selectHostingPackage = function(pkg) {
+		$scope.selected_hosting = pkg;
+	};
+
+	// Add hosting to the domain (Flow-2 completion)
+	$scope.addHostingToDomain = function() {
+		if (!$scope.selected_hosting.id || !$scope.added_domain_cart_id) {
+			toastWarning("Please select a hosting package");
+			return;
+		}
+
+		DialogBox.showProgress();
+
+		let pricingId = $scope.selected_hosting.selected_pricing;
+
+		let req = Communication.request("POST", BASE_URL + 'cart/linkHostingToDomain', {
+			"parent_cart_id": $scope.added_domain_cart_id,
+			"product_service_pricing_id": pricingId
+		});
+
+		req.then(function (resp) {
+			DialogBox.hideProgress();
+
+			if (resp.code == 200) {
+				toastSuccess("Hosting added to cart with domain!");
+
+				// Close modal and redirect
+				var modalEl = document.getElementById('hostingSelectionModal');
+				var modal = bootstrap.Modal.getInstance(modalEl);
+				if (modal) modal.hide();
+
+				window.location.href = BASE_URL + 'cart/view';
+
+			} else {
+				toastError(resp.msg || "Failed to add hosting");
+			}
+
+		}, function (err) {
+			DialogBox.hideProgress();
+			toastError("Failed to add hosting to cart");
+		});
+	};
+
+	// Skip hosting, just continue with domain only
+	$scope.skipHosting = function() {
+		var modalEl = document.getElementById('hostingSelectionModal');
+		var modal = bootstrap.Modal.getInstance(modalEl);
+		if (modal) modal.hide();
+
+		// Redirect to cart view
+		window.location.href = BASE_URL + 'cart/view';
+	};
+
+});
+
+
 app.controller('ServiceCheckoutCtrl', function ($scope, $http, $timeout, $rootScope, $sce, $mdDialog, $interval, ClientService, DialogBox, Communication) {
 	$scope.baseurl = BASE_URL;
 	$scope.payment_gateway = "0";

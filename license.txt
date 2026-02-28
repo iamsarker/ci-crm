@@ -1,11 +1,11 @@
 END USER LICENSE AGREEMENT (EULA)
-WHMAZ - CI-CRM (Hosting & Service Provider CRM System)
+WHMAZ - Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System
 
 ================================================================================
 
 Last Updated: January 25, 2026
 Version: 1.0.0
-Product: WHMAZ - CI-CRM
+Product: WHMAZ - Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System
 Vendor: WHMAZ
 Website: https://whmaz.com
 
@@ -429,7 +429,7 @@ IF YOU DO NOT AGREE TO THE TERMS OF THIS EULA, DO NOT INSTALL OR USE THE SOFTWAR
 
 END OF LICENSE AGREEMENT
 
-Product: WHMAZ - CI-CRM v1.0.0
+Product: WHMAZ - Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System v1.0.0
 License Version: 1.0
 Effective Date: January 25, 2026
 Copyright © 2026 WHMAZ. All Rights Reserved.

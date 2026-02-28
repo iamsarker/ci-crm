@@ -360,9 +360,8 @@ class Cart extends WHMAZ_Controller
 	}
 
 
-	public function domain() // type = register, transfer
+	public function domain($type = 'register') // type = register, transfer
 	{
-		$type       = $this->input->get('type');
 		$domkeyword = $this->input->get('domkeyword');
 
 		// Get app settings for reCAPTCHA keys
@@ -374,7 +373,13 @@ class Cart extends WHMAZ_Controller
 		$data['currency'] = $this->Cart_model->getCurrencies();
 		$data['domkeyword'] = $domkeyword;
 		$data['type'] = $type;
-		$this->load->view('cart_regnewdomain', $data);
+
+		// Load appropriate view based on type
+		if ($type == 'transfer') {
+			$this->load->view('cart_transferdomain', $data);
+		} else {
+			$this->load->view('cart_regnewdomain', $data);
+		}
 	}
 
 	public function domain_search() // type = register, transfer

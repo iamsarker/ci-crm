@@ -1,6 +1,6 @@
-# 🚀 WHMAZ - Complete Hosting & Service Provider CRM
+# 🚀 WHMAZ - Web Host Manager A to Z solutions
 
-> **The Ultimate WHMCS Alternative** - A comprehensive web hosting automation platform and client management system built with CodeIgniter 3.x
+> **Lightweight Domain Hosting Management System** - A comprehensive web hosting automation platform and client management system built with CodeIgniter 3.x
 
 [![Version](https://img.shields.io/badge/version-1.9.0-blue.svg)](CHANGELOG.md)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-8892BF.svg)](https://php.net)
@@ -32,7 +32,7 @@
 
 ## 🎯 Overview
 
-**WHMAZ** is a powerful, feature-rich CRM system specifically designed for web hosting companies and service providers. It provides everything you need to automate your business operations, manage customers, process orders, handle billing, and deliver exceptional support - all from a single, unified platform.
+**WHMAZ** is a lightweight domain hosting management system specifically designed for web hosting companies and service providers. It provides everything you need to automate your business operations, manage customers, process orders, handle billing, and deliver exceptional support - all from a single, unified platform.
 
 Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offers a modern, responsive interface and enterprise-grade security features that make it the perfect alternative to expensive solutions like WHMCS.
 
@@ -383,10 +383,9 @@ Configure payment gateways in:
 - Admin Panel → **Settings → Payment Gateways**
 
 Supported payment methods:
-- Stripe
-- PayPal
-- Bank Transfer
-- Cash on Delivery
+- Stripe (Credit/Debit Cards)
+- SSLCommerz (Bangladesh Payments)
+- Bank Transfer (Manual)
 
 #### 4. Domain Registrar Setup
 
@@ -660,7 +659,7 @@ A: Yes! All templates are editable. Bootstrap-based design for easy customizatio
 A: Yes! Add unlimited currencies with custom exchange rates.
 
 **Q: Can customers pay online?**
-A: Yes! Integrate with Stripe, PayPal, and other payment gateways.
+A: Yes! Integrated with Stripe, SSLCommerz, and Bank Transfer payment methods.
 
 **Q: Is it multi-language?**
 A: Currently English only. Multi-language support planned for future versions.
@@ -790,7 +789,7 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
 ### Version 1.0.0 (January 2026) - Initial Release
 
 **Features:**
-- Complete CRM system for hosting providers
+- Complete domain hosting management system for hosting providers
 - Dual portal architecture (Client + Admin)
 - Order management system
 - Billing and invoicing
