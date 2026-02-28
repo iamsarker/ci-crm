@@ -85,7 +85,7 @@
 							<h6 class="mg-b-0">Pending Orders</h6>
 						</div>
 						<button class="refresh-btn" ng-click="getPendingOrders()">
-							<i class="icon ion-md-refresh"></i>
+							<i class="fas fa-sync-alt"></i>
 						</button>
 					</div>
 					<ul class="list-group list-group-flush">
@@ -108,7 +108,7 @@
 						</li>
 					</ul>
 					<div class="card-footer text-center">
-						<a href="<?=base_url()?>whmazadmin/order/index">View All Orders <i class="icon ion-md-arrow-forward mg-l-5"></i></a>
+						<a href="<?=base_url()?>whmazadmin/order/index">View All Orders <i class="fas fa-arrow-right ms-1"></i></a>
 					</div>
 				</div>
 			</div>
@@ -124,7 +124,7 @@
 							<h6 class="mg-b-0">Support Tickets</h6>
 						</div>
 						<button class="refresh-btn" ng-click="getSupportTickets()">
-							<i class="icon ion-md-refresh"></i>
+							<i class="fas fa-sync-alt"></i>
 						</button>
 					</div>
 					<ul class="list-group list-group-flush">
@@ -151,7 +151,7 @@
 						</li>
 					</ul>
 					<div class="card-footer text-center">
-						<a href="<?=base_url()?>whmazadmin/ticket/index">View All Tickets <i class="icon ion-md-arrow-forward mg-l-5"></i></a>
+						<a href="<?=base_url()?>whmazadmin/ticket/index">View All Tickets <i class="fas fa-arrow-right ms-1"></i></a>
 					</div>
 				</div>
 			</div>
@@ -167,7 +167,7 @@
 							<h6 class="mg-b-0">Recent Invoices</h6>
 						</div>
 						<button class="refresh-btn" ng-click="getRecentInvoices()">
-							<i class="icon ion-md-refresh"></i>
+							<i class="fas fa-sync-alt"></i>
 						</button>
 					</div>
 					<ul class="list-group list-group-flush">
@@ -190,7 +190,7 @@
 						</li>
 					</ul>
 					<div class="card-footer text-center">
-						<a href="<?=base_url()?>whmazadmin/invoice/index">View All Invoices <i class="icon ion-md-arrow-forward mg-l-5"></i></a>
+						<a href="<?=base_url()?>whmazadmin/invoice/index">View All Invoices <i class="fas fa-arrow-right ms-1"></i></a>
 					</div>
 				</div>
 			</div>
@@ -214,7 +214,7 @@
 								Total: {{expensesData.total | number:2}}
 							</span>
 							<button class="refresh-btn" ng-click="getExpensesChart()">
-								<i class="icon ion-md-refresh"></i>
+								<i class="fas fa-sync-alt"></i>
 							</button>
 						</div>
 					</div>
@@ -224,13 +224,13 @@
 							<p class="loading-state-text">Loading chart...</p>
 						</div>
 						<div ng-if="!loadingExpenses && expensesData && expensesData.total == 0" class="empty-state">
-							<div class="empty-state-icon"><i class="icon ion-md-analytics"></i></div>
+							<div class="empty-state-icon"><i class="fas fa-chart-bar"></i></div>
 							<p class="empty-state-text">No expense data available</p>
 						</div>
 						<canvas id="expensesChart" ng-show="!loadingExpenses && expensesData && expensesData.total > 0" style="width: 100%; height: 280px;"></canvas>
 					</div>
 					<div class="card-footer text-center">
-						<a href="<?=base_url()?>whmazadmin/expense/index">View All Expenses <i class="icon ion-md-arrow-forward mg-l-5"></i></a>
+						<a href="<?=base_url()?>whmazadmin/expense/index">View All Expenses <i class="fas fa-arrow-right ms-1"></i></a>
 					</div>
 				</div>
 			</div>
@@ -246,7 +246,7 @@
 							<h6 class="mg-b-0">Domain Pricing</h6>
 						</div>
 						<button class="refresh-btn" ng-click="getDomainPrices()">
-							<i class="icon ion-md-refresh"></i>
+							<i class="fas fa-sync-alt"></i>
 						</button>
 					</div>
 					<div class="card-body pd-0" style="max-height: 340px; overflow-y: auto;">
@@ -254,7 +254,7 @@
 							<img src="<?=base_url()?>resources/assets/img/working.gif" />
 						</div>
 						<div ng-if="!loadingDomainPrices && domainPrices.length == 0" class="empty-state">
-							<div class="empty-state-icon"><i class="icon ion-md-globe"></i></div>
+							<div class="empty-state-icon"><i class="fas fa-globe"></i></div>
 							<p class="empty-state-text">No domain prices configured</p>
 						</div>
 						<table class="table domain-pricing-table" ng-if="!loadingDomainPrices && domainPrices.length > 0">
@@ -277,7 +277,7 @@
 						</table>
 					</div>
 					<div class="card-footer text-center">
-						<a href="<?=base_url()?>whmazadmin/domain_pricing/index">Manage Domain Pricing <i class="icon ion-md-arrow-forward mg-l-5"></i></a>
+						<a href="<?=base_url()?>whmazadmin/domain_pricing/index">Manage Domain Pricing <i class="fas fa-arrow-right ms-1"></i></a>
 					</div>
 				</div>
 			</div>

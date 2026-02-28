@@ -128,7 +128,7 @@ class Order extends WHMAZADMIN_Controller
 
 		$data['dom_registers'] = $this->Common_model->generate_dropdown('dom_registers', 'id', "name");
 
-		$this->load->view('whmazadmin/new_order', $data);
+		$this->load->view('whmazadmin/order_new', $data);
 	}
 
 	public function saveOrderTable($form_data){

@@ -97,7 +97,14 @@
 									}
 
 									if( !empty($obj['attachment']) ){
-										echo '&nbsp;&nbsp;<a target="_blank" href="'.base_url().'whmazadmin/ticket/vtattachments/'.$tid.'/'.$obj["attachment"].'" class="btn btn-sm btn-outline-primary"><i class="fa fa-paperclip"></i> View Attachment</a>';
+										$attachments = explode(',', $obj['attachment']);
+										foreach($attachments as $index => $attachment) {
+											$attachment = trim($attachment);
+											if(!empty($attachment)) {
+												$attachNum = count($attachments) > 1 ? ' ' . ($index + 1) : '';
+												echo '&nbsp;&nbsp;<a target="_blank" href="'.base_url().'whmazadmin/ticket/vtattachments/'.$tid.'/'.$attachment.'" class="btn btn-sm btn-outline-primary"><i class="fa fa-paperclip"></i> Attachment'.$attachNum.'</a>';
+											}
+										}
 									}
 								?>
 							</div>
@@ -120,7 +127,14 @@
 						<div class="ticket-actions">
 							<?php
 								if( !empty($ticket['attachment']) ){
-									echo '<a target="_blank" href="'.base_url().'supports/vtattachments/'.$tid.'/'.$ticket["attachment"].'" class="btn btn-sm btn-outline-primary"><i class="fa fa-paperclip"></i> View Attachment</a>';
+									$attachments = explode(',', $ticket['attachment']);
+									foreach($attachments as $index => $attachment) {
+										$attachment = trim($attachment);
+										if(!empty($attachment)) {
+											$attachNum = count($attachments) > 1 ? ' ' . ($index + 1) : '';
+											echo '<a target="_blank" href="'.base_url().'whmazadmin/ticket/vtattachments/'.$tid.'/'.$attachment.'" class="btn btn-sm btn-outline-primary me-1"><i class="fa fa-paperclip"></i> Attachment'.$attachNum.'</a>';
+										}
+									}
 								}
 							?>
 						</div>

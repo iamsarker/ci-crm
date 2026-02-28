@@ -71,8 +71,9 @@ class Ticket extends WHMAZADMIN_Controller {
             }
 
             $data['results'] = $this->Common_model->generate_dropdown('ticket_depts','id','name');
-            $data['subview'] = 'fileupload/index';
-            $this->load->view('whmazadmin/newticket', $data);
+            $this->load->model('Company_model');
+            $data['customers'] = $this->Company_model->loadAllData();
+            $this->load->view('whmazadmin/ticket_new', $data);
 	}
 
 	public function get_ticket_attachment_row($sub_registry_form_inc,$registryNo){
@@ -91,9 +92,63 @@ class Ticket extends WHMAZADMIN_Controller {
 	}
         
         
-	public function vtattachments($tid, $filename)
+	public function vtattachments($tid, $filename = null)
 	{
-            
+		// Get filename from URL segment or query parameter
+		if (empty($filename)) {
+			$filename = $this->input->get('file');
+		}
+
+		if (empty($filename)) {
+			$this->session->set_flashdata('admin_error', 'No file specified.');
+			redirect("whmazadmin/ticket/viewticket/" . $tid);
+			return;
+		}
+
+		// Validate ticket exists
+		$ticket = $this->Support_model->getTicketDetail($tid);
+		if (empty($ticket)) {
+			$this->session->set_flashdata('admin_error', 'Invalid ticket.');
+			redirect("whmazadmin/ticket/index");
+			return;
+		}
+
+		// Sanitize filename to prevent directory traversal
+		$filename = basename($filename);
+		$file_path = $this->img_path . DIRECTORY_SEPARATOR . $filename;
+
+		if (!file_exists($file_path) || !is_readable($file_path)) {
+			$this->session->set_flashdata('admin_error', 'Attachment not found.');
+			redirect("whmazadmin/ticket/viewticket/" . $tid);
+			return;
+		}
+
+		// Get MIME type
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		$mime_type = finfo_file($finfo, $file_path);
+		finfo_close($finfo);
+
+		// Allowed MIME types
+		$allowed_mimes = array(
+			'image/gif', 'image/jpeg', 'image/png', 'image/jpg',
+			'application/pdf', 'text/plain'
+		);
+
+		if (!in_array($mime_type, $allowed_mimes)) {
+			$this->session->set_flashdata('admin_error', 'File type not allowed.');
+			redirect("whmazadmin/ticket/viewticket/" . $tid);
+			return;
+		}
+
+		// Serve the file
+		header('Content-Type: ' . $mime_type);
+		header('Content-Disposition: inline; filename="' . $filename . '"');
+		header('Content-Length: ' . filesize($file_path));
+		header('Cache-Control: private, max-age=0, must-revalidate');
+		header('Pragma: public');
+
+		readfile($file_path);
+		exit;
 	}
         
 	public function likereplies($tid, $trid, $val)

@@ -55,6 +55,15 @@
 	color: #fff;
 	padding: 1rem 1.25rem;
 	border: none;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+}
+
+.table-card .card-header > div:last-child,
+.table-card .card-header > a:last-child,
+.table-card .card-header > button:last-child {
+	margin-left: auto !important;
 }
 .table-card .card-header h4,
 .table-card .card-header h5 {

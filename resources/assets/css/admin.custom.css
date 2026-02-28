@@ -272,6 +272,9 @@ footer.footer {
 	background: #fff;
 	border-bottom: 1px solid #edf2f9;
 	padding: 16px 20px;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
 }
 
 .dashboard-card .card-header h6 {
@@ -323,6 +326,7 @@ footer.footer {
 	transition: all 0.3s ease;
 	border: none;
 	cursor: pointer;
+	margin-left: auto !important;
 }
 
 .dashboard-card .refresh-btn:hover {
@@ -401,15 +405,21 @@ footer.footer {
 	font-weight: 600;
 	color: #1b2e4b;
 	margin-bottom: 2px;
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .dashboard-list-item .item-title a {
 	color: inherit;
 	transition: color 0.2s ease;
+	text-decoration: none;
 }
 
 .dashboard-list-item .item-title a:hover {
 	color: #667eea;
+	text-decoration: none;
 }
 
 .dashboard-list-item .item-subtitle {
@@ -525,6 +535,13 @@ footer.footer {
 	border-bottom: 1px solid #edf2f9;
 	padding: 16px 20px;
 	border-radius: 12px 12px 0 0;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: space-between !important;
+}
+
+.chart-card .card-header > div:last-child {
+	margin-left: auto !important;
 }
 
 .chart-card .card-body {
