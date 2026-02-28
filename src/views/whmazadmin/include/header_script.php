@@ -23,7 +23,7 @@
 
 <!-- Meta -->
 <meta name="description" content="WHMAZ Admin - Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System.">
-<meta name="author" content="Tong Bari">
+<meta name="author" content="WHMAZ">
 
 <!-- CSRF Token for AJAX requests -->
 <?=csrf_meta()?>

@@ -602,6 +602,58 @@ class Cart extends WHMAZ_Controller
 		return array();
 	}
 
+	/**
+	 * Get domain transfer price for a given domain
+	 * GET params: domain - the full domain name (e.g., example.com)
+	 */
+	public function getDomainTransferPrice()
+	{
+		$domain = $this->input->get('domain');
+
+		if (empty($domain)) {
+			echo json_encode(buildFailedResponse("Domain name is required"));
+			return;
+		}
+
+		// Clean up domain name
+		$domain = strtolower(trim($domain));
+		$domain = preg_replace('/^(https?:\/\/)?(www\.)?/i', '', $domain);
+
+		// Extract extension
+		$parts = explode('.', $domain);
+		if (count($parts) < 2) {
+			echo json_encode(buildFailedResponse("Invalid domain format"));
+			return;
+		}
+
+		$extension = '.' . end($parts);
+
+		// Get domain pricing
+		$priceList = $this->Cart_model->getDomPricing();
+		$domPrice = $this->getDomainPrice($priceList, $extension);
+
+		if (empty($domPrice)) {
+			echo json_encode(buildFailedResponse("This domain extension ({$extension}) is not available for transfer"));
+			return;
+		}
+
+		$transferPrice = !empty($domPrice['transfer']) ? floatval($domPrice['transfer']) : 0;
+
+		if ($transferPrice <= 0) {
+			echo json_encode(buildFailedResponse("Transfer is not available for this extension"));
+			return;
+		}
+
+		echo json_encode(buildSuccessResponse(array(
+			'domain' => $domain,
+			'extension' => $extension,
+			'transfer_price' => $transferPrice,
+			'renewal_price' => !empty($domPrice['renewal']) ? floatval($domPrice['renewal']) : 0,
+			'dom_pricing_id' => !empty($domPrice['id']) ? intval($domPrice['id']) : 0,
+			'currency' => getCurrencyCode()
+		), "Transfer price found"));
+	}
+
 	public function services($type = 0, $title = NULL)
 	{
 
