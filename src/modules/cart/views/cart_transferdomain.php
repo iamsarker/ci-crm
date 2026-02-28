@@ -44,7 +44,7 @@
 				</div>
 
 				<!-- Domain Transfer Card -->
-				<div class="domain-search-card mg-b-25">
+				<div class="domain-search-card mg-b-25 mt-4">
 					<div class="domain-search-header">
 						<i class="fa fa-exchange-alt"></i>
 						<h5>Domain Transfer</h5>
@@ -119,7 +119,7 @@
 				</div>
 
 				<!-- Domain Extensions & Prices -->
-				<div class="domain-pricing-card mg-b-25">
+				<div class="domain-pricing-card mg-b-25 mt-4">
 					<div class="domain-pricing-header">
 						<i class="fa fa-tags"></i>
 						<h5>Transfer Pricing</h5>
@@ -149,7 +149,7 @@
 				</div>
 
 				<!-- Transfer Info -->
-				<div class="card mg-b-25">
+				<div class="card mg-b-25 mt-4">
 					<div class="card-header bg-light">
 						<h6 class="mg-b-0"><i class="fa fa-info-circle mg-r-10"></i>How Domain Transfer Works</h6>
 					</div>
@@ -248,92 +248,9 @@
 <script type="text/javascript">
 	var app = angular.module('ServicesApp', ['ngDialog', 'ngToast', 'ngMaterial', 'ngMessages', 'ngSanitize', 'ngAnimate']);
 </script>
-<script src="<?=base_url()?>resources/angular/app/app.directives.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/app/app.services.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/app/services_controller.js?v=1.0.0"></script>
+<script src="<?=base_url()?>resources/angular/app/app.directives.js?v=1.0.1"></script>
+<script src="<?=base_url()?>resources/angular/app/app.services.js?v=1.0.1"></script>
+<script src="<?=base_url()?>resources/angular/app/services_controller.js?v=1.0.1"></script>
 
-<style>
-/* Transfer Step Styling */
-.transfer-step {
-	display: flex;
-	align-items: flex-start;
-	gap: 15px;
-}
-
-.step-number {
-	width: 32px;
-	height: 32px;
-	background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
-	color: #fff;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-weight: 600;
-	font-size: 14px;
-	flex-shrink: 0;
-}
-
-.step-content {
-	flex: 1;
-}
-
-.transfer-price-box {
-	background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-	border-radius: 10px;
-	padding: 20px;
-	border: 1px solid #a5d6a7;
-}
-
-.transfer-price-box .price-info {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 10px;
-}
-
-.transfer-price-box .price-label {
-	font-size: 15px;
-	color: #2e7d32;
-}
-
-.transfer-price-box .price-value {
-	font-size: 24px;
-	font-weight: 700;
-	color: #1b5e20;
-}
-
-.transfer-price-box .price-note {
-	margin-top: 10px;
-	margin-bottom: 0;
-	font-size: 13px;
-	color: #388e3c;
-}
-
-.transfer-checklist {
-	list-style: none;
-	padding-left: 0;
-	margin-bottom: 0;
-}
-
-.transfer-checklist li {
-	padding: 8px 0;
-	border-bottom: 1px solid #eee;
-	font-size: 14px;
-}
-
-.transfer-checklist li:last-child {
-	border-bottom: none;
-}
-
-.transfer-checklist li::before {
-	content: "\f00c";
-	font-family: "Font Awesome 5 Free";
-	font-weight: 900;
-	color: #28a745;
-	margin-right: 10px;
-}
-</style>
 
 <?php $this->load->view('templates/customer/footer');?>
