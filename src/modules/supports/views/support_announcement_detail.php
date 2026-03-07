@@ -13,7 +13,6 @@
             <li class="breadcrumb-item active" aria-current="page"><?=htmlspecialchars($details['title'] ?? 'Announcement')?></li>
           </ol>
         </nav>
-        <h4 class="mg-b-0 tx-spacing--1"><?=htmlspecialchars($details['title'] ?? 'Announcement')?></h4>
       </div>
       <div class="mg-t-15 mg-sm-t-0">
         <a href="<?=base_url()?>supports/announcements" class="btn btn-sm btn-outline-secondary">
@@ -30,12 +29,9 @@
         <div class="card">
           <div class="card-body pd-25">
             <!-- Announcement Meta -->
-            <div class="d-flex align-items-center mg-b-20 pd-b-15 bd-b">
-              <div class="wd-50 ht-50 bg-primary tx-white d-flex align-items-center justify-content-center rounded mg-r-15">
-                <i class="fa fa-bullhorn fa-lg"></i>
-              </div>
+            <div class="d-flex justify-content-between align-items-center mg-b-20 pd-b-15 bd-b">
               <div class="flex-1">
-                <h5 class="mg-b-3"><?=htmlspecialchars($details['title'])?></h5>
+                <h5 class="mg-b-3"><i class="fa fa-bullhorn fa-lg"></i>&nbsp;<?=htmlspecialchars($details['title'])?></h5>
                 <div class="tx-12 tx-color-03">
                   <?php if(!empty($details['tags'])) { ?>
                   <span class="mg-r-15"><i class="fa fa-tags"></i> <?=htmlspecialchars($details['tags'])?></span>

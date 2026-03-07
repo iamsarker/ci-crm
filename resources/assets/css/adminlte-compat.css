@@ -324,3 +324,124 @@ body.layout-top-nav .app-content {
     color: #fff;
     text-decoration: none;
 }
+
+/* ============================================
+   ADDITIONAL UTILITIES FOR KB/SUPPORT PAGES
+   ============================================ */
+
+/* Row with smaller gutters */
+.row-xs {
+    margin-left: -5px;
+    margin-right: -5px;
+}
+.row-xs > [class*="col-"] {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+/* Width utilities */
+.wd-40 { width: 40px !important; }
+.wd-45 { width: 45px !important; }
+.wd-50 { width: 50px !important; }
+
+/* Height utilities */
+.ht-40 { height: 40px !important; }
+.ht-45 { height: 45px !important; }
+.ht-50 { height: 50px !important; }
+
+/* Additional margin utilities */
+.mg-b-3 { margin-bottom: 3px !important; }
+.mg-b-25 { margin-bottom: 25px !important; }
+.mg-b-30 { margin-bottom: 30px !important; }
+.mg-l-15 { margin-left: 15px !important; }
+.mg-r-15 { margin-right: 15px !important; }
+.mg-t-15 { margin-top: 15px !important; }
+.mg-t-25 { margin-top: 25px !important; }
+.mg-t-30 { margin-top: 30px !important; }
+
+@media (min-width: 576px) {
+    .mg-sm-t-0 { margin-top: 0 !important; }
+}
+
+@media (min-width: 992px) {
+    .mg-lg-t-0 { margin-top: 0 !important; }
+}
+
+/* Letter spacing */
+.tx-spacing-1 { letter-spacing: 0.5px !important; }
+.tx-spacing--1 { letter-spacing: -0.5px !important; }
+
+/* Border utilities */
+.bd-b { border-bottom: 1px solid #e9ecef !important; }
+.bd-hover-primary:hover { border-color: #0168fa !important; }
+
+/* Padding utilities */
+.pd-15 { padding: 15px !important; }
+.pd-20 { padding: 20px !important; }
+.pd-25 { padding: 25px !important; }
+.pd-30 { padding: 30px !important; }
+.pd-40 { padding: 40px !important; }
+.pd-y-15 { padding-top: 15px !important; padding-bottom: 15px !important; }
+.pd-y-20 { padding-top: 20px !important; padding-bottom: 20px !important; }
+.pd-y-25 { padding-top: 25px !important; padding-bottom: 25px !important; }
+.pd-b-15 { padding-bottom: 15px !important; }
+.pd-t-20 { padding-top: 20px !important; }
+
+/* Text colors */
+.tx-dark { color: #1c273c !important; }
+.tx-white { color: #fff !important; }
+.tx-warning { color: #f5a623 !important; }
+
+/* Flex utilities */
+.flex-1 { flex: 1 !important; }
+
+/* Card widget styles (backward compatibility) */
+.card-widget {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.card-widget .card-header {
+    background: #f8f9fc;
+    border-bottom: 2px solid #e9ecef;
+    padding: 15px;
+}
+
+.card-widget .card-header .card-title {
+    font-weight: 600;
+    color: #1c273c;
+    font-size: 14px;
+    margin: 0;
+}
+
+.card-widget .card-header .card-title i {
+    color: #0168fa;
+    margin-right: 5px;
+}
+
+.card-contacts .list-group-item {
+    padding: 12px 15px;
+    border-left: 0;
+    border-right: 0;
+}
+
+.card-contacts .list-group-item a {
+    color: #596882;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.card-contacts .list-group-item a:hover {
+    color: #0168fa;
+}
+
+.card-contacts .list-group-item.active {
+    background-color: #0168fa;
+    border-color: #0168fa;
+}
+
+.card-contacts .list-group-item.active a {
+    color: #fff;
+}

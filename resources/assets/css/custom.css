@@ -891,6 +891,160 @@ footer.footer {
 }
 
 /* ==========================================================================
+   Client Area - Knowledge Base Page Styles
+   ========================================================================== */
+
+/* KB Page Header */
+.page-header-kb {
+    background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
+}
+
+/* KB Category Cards */
+.kb-category-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.kb-category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(1, 104, 250, 0.15);
+    border-color: #0168fa;
+}
+
+.kb-category-card .card-body {
+    padding: 20px;
+}
+
+.kb-cat-icon {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #0168fa 0%, #6f42c1 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    font-size: 18px;
+}
+
+.kb-cat-title {
+    font-weight: 600;
+    color: #1c273c;
+    font-size: 14px;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.kb-cat-count {
+    font-size: 12px;
+    color: #7987a1;
+}
+
+/* KB Article List Items */
+.kb-article-item {
+    padding: 15px !important;
+    transition: background-color 0.15s ease;
+}
+
+.kb-article-item:hover {
+    background-color: #f8fafc;
+}
+
+.kb-article-icon {
+    width: 40px;
+    height: 40px;
+    background: #f1f5f9;
+    color: #0168fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.kb-article-link {
+    color: #1c273c;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.kb-article-link:hover {
+    color: #0168fa;
+}
+
+.kb-article-tags {
+    font-size: 12px;
+    color: #7987a1;
+}
+
+.kb-article-tags i {
+    margin-right: 4px;
+}
+
+.kb-article-views {
+    font-size: 12px;
+    color: #7987a1;
+    white-space: nowrap;
+}
+
+.kb-article-views i {
+    margin-right: 4px;
+}
+
+/* KB Detail Page */
+.kb-article-content {
+    line-height: 1.8;
+    color: #3d4f6f;
+}
+
+.kb-article-content h1,
+.kb-article-content h2,
+.kb-article-content h3,
+.kb-article-content h4,
+.kb-article-content h5,
+.kb-article-content h6 {
+    color: #1c273c;
+    margin-top: 1.5em;
+    margin-bottom: 0.75em;
+}
+
+.kb-article-content p {
+    margin-bottom: 1em;
+}
+
+.kb-article-content ul,
+.kb-article-content ol {
+    margin-bottom: 1em;
+    padding-left: 1.5em;
+}
+
+.kb-article-content code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 90%;
+}
+
+.kb-article-content pre {
+    background: #f8fafc;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    overflow-x: auto;
+}
+
+.kb-article-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+/* ==========================================================================
    Client Area - Dashboard Styles
    ========================================================================== */
 
