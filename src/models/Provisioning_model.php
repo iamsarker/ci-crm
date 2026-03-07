@@ -294,7 +294,8 @@ class Provisioning_model extends CI_Model
             'reg_contact_id' => $contactId,
             'admin_contact_id' => $contactId,
             'tech_contact_id' => $contactId,
-            'billing_contact_id' => $contactId
+            'billing_contact_id' => $contactId,
+            'contact_info' => $customerInfo  // Include contact info for Namecheap
         );
 
         // Prepare nameservers - use domain's NS if set, otherwise use registrar defaults
@@ -420,7 +421,8 @@ class Provisioning_model extends CI_Model
             'reg_contact_id' => $contactId,
             'admin_contact_id' => $contactId,
             'tech_contact_id' => $contactId,
-            'billing_contact_id' => $contactId
+            'billing_contact_id' => $contactId,
+            'contact_info' => $customerInfo  // Include contact info for Namecheap
         );
 
         // Transfer domain

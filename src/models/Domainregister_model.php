@@ -23,6 +23,17 @@ class Domainregister_model extends CI_Model{
 
 	function saveData($data) {
 		$return = array();
+
+		// If this registrar is being set as default, unset all others first
+		if (!empty($data['is_selected']) && $data['is_selected'] == 1) {
+			$this->db->where('is_selected', 1);
+			// Exclude current record if updating
+			if (!empty($data['id'])) {
+				$this->db->where('id !=', $data['id']);
+			}
+			$this->db->update('dom_registers', array('is_selected' => 0));
+		}
+
 		if ($this->db->replace('dom_registers', $data)) {
 			$return['success'] = 1;
 		} else {

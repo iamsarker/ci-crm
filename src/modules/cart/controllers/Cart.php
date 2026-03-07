@@ -445,57 +445,90 @@ class Cart extends WHMAZ_Controller
 				$regVendor = $this->Cart_model->getDomRegister("." . $extension);
 
 				// Validate registrar configuration
-				if (empty($regVendor) || empty($regVendor['domain_check_api'])) {
+				if (empty($regVendor)) {
 					$resp_data['error'] = 'Domain registrar not configured';
 					echo json_encode($resp_data);
 					return;
 				}
 
 				$priceList = $this->Cart_model->getDomPricing();
-
-				$url = $regVendor['domain_check_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
-				$checkUrl = $url . '&domain-name=' . $keywrd . '&tlds=' . $extension;
-
-				$resp = $this->curlGetRequest($checkUrl);
-
 				$tmp = array();
+				$platform = strtolower($regVendor['platform'] ?? 'resellerclub');
 
-				// BUGFIX: Don't return early, continue to echo JSON
-				if( is_null($resp) || empty($resp) ){
-					$curlError = $this->getLastCurlError();
-					$resp_data['error'] = 'No response from domain registrar API' . ($curlError ? ': ' . $curlError : '');
-					// Log full details for debugging (mask API key)
-					$maskedUrl = preg_replace('/api-key=[^&]+/', 'api-key=***MASKED***', $checkUrl);
-					log_message('error', 'Domain search failed - ' . $curlError . ' | URL: ' . $maskedUrl . ' | UserID: ' . $regVendor['auth_userid']);
-					echo json_encode($resp_data);
-					return;
-				}
+				// Route to appropriate registrar API
+				if ($platform === 'namecheap') {
+					// Namecheap domain check
+					$this->load->helper('domain_helper');
+					$fullDomain = $keywrd . '.' . $extension;
+					$checkResult = namecheap_check_domain($regVendor, $fullDomain);
 
-				// Process API response
-				// Response format: {"domain.com": {"classkey": "domcno", "status": "available"}}
-				foreach( $resp as $domainName => $domainInfo ){
-					// Check if domain is available
-					if( isset($domainInfo['status']) && $domainInfo['status'] == "available" ){
-						// Extract extension from domain name (e.g., "example.com" -> "com")
-						$extArr = explode(".", $domainName);
-						$cnt = count($extArr);
-						$ext = $extArr[$cnt - 1];
+					if (!$checkResult['success']) {
+						$resp_data['error'] = 'Domain check failed: ' . $checkResult['error'];
+						log_message('error', 'Namecheap domain search failed: ' . $checkResult['error']);
+						echo json_encode($resp_data);
+						return;
+					}
 
-						// Get price for this extension from database
-						$domPriceObject = $this->getDomainPrice($priceList, ".".$ext);
-
-						// Only add if we have pricing for this extension
-						if( !empty($domPriceObject) ){
+					if ($checkResult['available']) {
+						$domPriceObject = $this->getDomainPrice($priceList, "." . $extension);
+						if (!empty($domPriceObject)) {
 							$tmp[] = array(
-								"name" => $domainName,
+								"name" => $fullDomain,
 								"price" => !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0,
 								"domPriceId" => !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0
 							);
 						}
 					}
+				} else {
+					// ResellerClub / Resell.biz domain check
+					if (empty($regVendor['domain_check_api'])) {
+						$resp_data['error'] = 'Domain check API not configured';
+						echo json_encode($resp_data);
+						return;
+					}
+
+					$url = $regVendor['domain_check_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
+					$checkUrl = $url . '&domain-name=' . $keywrd . '&tlds=' . $extension;
+
+					$resp = $this->curlGetRequest($checkUrl);
+
+					// BUGFIX: Don't return early, continue to echo JSON
+					if (is_null($resp) || empty($resp)) {
+						$curlError = $this->getLastCurlError();
+						$resp_data['error'] = 'No response from domain registrar API' . ($curlError ? ': ' . $curlError : '');
+						// Log full details for debugging (mask API key)
+						$maskedUrl = preg_replace('/api-key=[^&]+/', 'api-key=***MASKED***', $checkUrl);
+						log_message('error', 'Domain search failed - ' . $curlError . ' | URL: ' . $maskedUrl . ' | UserID: ' . $regVendor['auth_userid']);
+						echo json_encode($resp_data);
+						return;
+					}
+
+					// Process API response
+					// Response format: {"domain.com": {"classkey": "domcno", "status": "available"}}
+					foreach ($resp as $domainName => $domainInfo) {
+						// Check if domain is available
+						if (isset($domainInfo['status']) && $domainInfo['status'] == "available") {
+							// Extract extension from domain name (e.g., "example.com" -> "com")
+							$extArr = explode(".", $domainName);
+							$cnt = count($extArr);
+							$ext = $extArr[$cnt - 1];
+
+							// Get price for this extension from database
+							$domPriceObject = $this->getDomainPrice($priceList, "." . $ext);
+
+							// Only add if we have pricing for this extension
+							if (!empty($domPriceObject)) {
+								$tmp[] = array(
+									"name" => $domainName,
+									"price" => !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0,
+									"domPriceId" => !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0
+								);
+							}
+						}
+					}
 				}
 
-				if( !empty($tmp) ) {
+				if (!empty($tmp)) {
 					$resp_data['status'] = 1;
 				}
 				$resp_data['info'] = $tmp;
@@ -534,17 +567,48 @@ class Cart extends WHMAZ_Controller
 				$regVendor = $this->Cart_model->getDomRegister("." . $extension);
 
 				// Validate registrar configuration
-				if (empty($regVendor) || empty($regVendor['suggestion_api'])) {
+				if (empty($regVendor)) {
 					return array();
 				}
 
 				$priceList = $this->Cart_model->getDomPricing();
+				$tmp = array();
+				$platform = strtolower($regVendor['platform'] ?? 'resellerclub');
+
+				// Namecheap doesn't have a domain suggestions API
+				if ($platform === 'namecheap') {
+					// For Namecheap, check availability of common TLD variations
+					$this->load->helper('domain_helper');
+					$commonTlds = array('com', 'net', 'org', 'io', 'co');
+					$idx = 0;
+
+					foreach ($commonTlds as $tld) {
+						$fullDomain = $keywrd . '.' . $tld;
+						$checkResult = namecheap_check_domain($regVendor, $fullDomain);
+
+						if ($checkResult['success'] && $checkResult['available']) {
+							$domPriceObject = $this->getDomainPrice($priceList, "." . $tld);
+							if (!empty($domPriceObject)) {
+								$tmp[$idx]["name"] = $fullDomain;
+								$tmp[$idx]["transfer"] = !empty($domPriceObject["transfer"]) ? $domPriceObject["transfer"] : 0.0;
+								$tmp[$idx]["renewal"] = !empty($domPriceObject["renewal"]) ? $domPriceObject["renewal"] : 0.0;
+								$tmp[$idx]["price"] = !empty($domPriceObject["price"]) ? $domPriceObject["price"] : 0.0;
+								$tmp[$idx]["domPriceId"] = !empty($domPriceObject["id"]) ? $domPriceObject["id"] : 0;
+								$idx++;
+							}
+						}
+					}
+					return $tmp;
+				}
+
+				// ResellerClub / Resell.biz suggestions
+				if (empty($regVendor['suggestion_api'])) {
+					return array();
+				}
 
 				$url = $regVendor['suggestion_api'] . 'auth-userid=' . $regVendor['auth_userid'] . '&api-key=' . $regVendor['auth_apikey'];
 				$suggsurl = $url . '&keyword=' . $keywrd. '&tld-only='.$extension;
 
-				// BUGFIX: Initialize as empty array instead of array(array())
-				$tmp = array();
 				$list = $this->curlGetRequest($suggsurl);
 
 				// Log API response for debugging

@@ -549,11 +549,8 @@ function registrar_register_domain($registrar, $domain, $years, $contact, $names
         case 'stargate':
             return resellerclub_register_domain($registrar, $domain, $years, $contact, $nameservers);
 
-        // Add more registrars here as needed
-        // case 'enom':
-        //     return enom_register_domain($registrar, $domain, $years, $contact, $nameservers);
-        // case 'namecheap':
-        //     return namecheap_register_domain($registrar, $domain, $years, $contact, $nameservers);
+        case 'namecheap':
+            return namecheap_register_domain($registrar, $domain, $years, $contact, $nameservers);
 
         default:
             log_message('error', 'Unsupported registrar platform: ' . $platform);
@@ -575,6 +572,9 @@ function registrar_transfer_domain($registrar, $domain, $eppCode, $contact, $nam
         case 'stargate':
             return resellerclub_transfer_domain($registrar, $domain, $eppCode, $contact, $nameservers);
 
+        case 'namecheap':
+            return namecheap_transfer_domain($registrar, $domain, $eppCode, $contact, $nameservers);
+
         default:
             log_message('error', 'Unsupported registrar platform: ' . $platform);
             return array('success' => false, 'error' => 'Unsupported registrar platform: ' . $platform);
@@ -594,6 +594,9 @@ function registrar_renew_domain($registrar, $domain, $years, $currentExpDate, $o
         case 'resell.biz':
         case 'stargate':
             return resellerclub_renew_domain($registrar, $domain, $years, $currentExpDate, $orderId);
+
+        case 'namecheap':
+            return namecheap_renew_domain($registrar, $domain, $years, $currentExpDate, $orderId);
 
         default:
             log_message('error', 'Unsupported registrar platform: ' . $platform);
@@ -615,6 +618,9 @@ function registrar_get_or_create_customer($registrar, $customerInfo)
         case 'stargate':
             return resellerclub_get_or_create_customer($registrar, $customerInfo);
 
+        case 'namecheap':
+            return namecheap_get_or_create_customer($registrar, $customerInfo);
+
         default:
             return array('success' => false, 'error' => 'Unsupported registrar platform: ' . $platform);
     }
@@ -634,7 +640,491 @@ function registrar_create_contact($registrar, $customerId, $contactInfo, $type =
         case 'stargate':
             return resellerclub_create_contact($registrar, $customerId, $contactInfo, $type);
 
+        case 'namecheap':
+            // Namecheap doesn't use separate contact IDs - contacts are passed with each request
+            return namecheap_create_contact($registrar, $customerId, $contactInfo);
+
         default:
             return array('success' => false, 'error' => 'Unsupported registrar platform: ' . $platform);
     }
+}
+
+// ============================================
+// NAMECHEAP API FUNCTIONS
+// ============================================
+
+/**
+ * Get client IP for Namecheap API (required parameter)
+ *
+ * @return string Client IP address
+ */
+function namecheap_get_client_ip()
+{
+    // Try to get server's outgoing IP
+    $ip = @file_get_contents('https://api.ipify.org');
+    if ($ip && filter_var($ip, FILTER_VALIDATE_IP)) {
+        return $ip;
+    }
+
+    // Fallback to server IP
+    if (!empty($_SERVER['SERVER_ADDR'])) {
+        return $_SERVER['SERVER_ADDR'];
+    }
+
+    return '127.0.0.1';
+}
+
+/**
+ * Make a request to Namecheap API
+ *
+ * @param array $registrar Registrar config
+ * @param string $command API command (e.g., 'namecheap.domains.check')
+ * @param array $params Additional parameters
+ * @return array Response with 'success', 'data', 'error'
+ */
+function namecheap_api_request($registrar, $command, $params = array())
+{
+    $apiUrl = rtrim($registrar['api_base_url'], '/');
+
+    // Build base parameters
+    $baseParams = array(
+        'ApiUser' => $registrar['auth_userid'],
+        'ApiKey' => $registrar['auth_apikey'],
+        'UserName' => $registrar['auth_userid'],
+        'ClientIp' => namecheap_get_client_ip(),
+        'Command' => $command
+    );
+
+    // Merge with additional params
+    $allParams = array_merge($baseParams, $params);
+
+    // Build URL with query string
+    $url = $apiUrl . '?' . http_build_query($allParams);
+
+    // Make GET request
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+
+    if ($error) {
+        log_message('error', 'Namecheap API error: ' . $error);
+        return array('success' => false, 'error' => 'cURL error: ' . $error, 'data' => null);
+    }
+
+    // Parse XML response
+    $data = namecheap_parse_xml($response);
+
+    if ($data === false) {
+        log_message('error', 'Namecheap API: Failed to parse XML response');
+        return array('success' => false, 'error' => 'Failed to parse XML response', 'data' => null);
+    }
+
+    // Check API status
+    if (isset($data['@attributes']['Status']) && $data['@attributes']['Status'] === 'OK') {
+        return array('success' => true, 'data' => $data, 'error' => null);
+    } else {
+        $errorMsg = 'API request failed';
+        if (isset($data['Errors']['Error'])) {
+            $errorData = $data['Errors']['Error'];
+            if (is_array($errorData) && isset($errorData['@value'])) {
+                $errorMsg = $errorData['@value'];
+            } elseif (is_string($errorData)) {
+                $errorMsg = $errorData;
+            } elseif (is_array($errorData) && isset($errorData[0]['@value'])) {
+                $errorMsg = $errorData[0]['@value'];
+            }
+        }
+        log_message('error', 'Namecheap API error: ' . $errorMsg . ' | Response: ' . $response);
+        return array('success' => false, 'error' => $errorMsg, 'data' => $data);
+    }
+}
+
+/**
+ * Parse Namecheap XML response to array
+ *
+ * @param string $xmlString XML response string
+ * @return array|false Parsed data or false on failure
+ */
+function namecheap_parse_xml($xmlString)
+{
+    try {
+        $xml = simplexml_load_string($xmlString, 'SimpleXMLElement', LIBXML_NOCDATA);
+        if ($xml === false) {
+            return false;
+        }
+        return namecheap_xml_to_array($xml);
+    } catch (Exception $e) {
+        log_message('error', 'Namecheap XML parse error: ' . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Convert SimpleXMLElement to array
+ *
+ * @param SimpleXMLElement $xml
+ * @return array
+ */
+function namecheap_xml_to_array($xml)
+{
+    $result = array();
+
+    // Get attributes
+    foreach ($xml->attributes() as $key => $value) {
+        $result['@attributes'][$key] = (string)$value;
+    }
+
+    // Get child elements
+    foreach ($xml->children() as $key => $value) {
+        $childArray = namecheap_xml_to_array($value);
+
+        // Handle multiple elements with same name
+        if (isset($result[$key])) {
+            if (!isset($result[$key][0])) {
+                $result[$key] = array($result[$key]);
+            }
+            $result[$key][] = $childArray;
+        } else {
+            $result[$key] = $childArray;
+        }
+    }
+
+    // Get text content
+    $text = trim((string)$xml);
+    if (!empty($text) && empty($result)) {
+        return $text;
+    } elseif (!empty($text)) {
+        $result['@value'] = $text;
+    }
+
+    return $result;
+}
+
+/**
+ * Check domain availability via Namecheap API
+ *
+ * @param array $registrar Registrar config
+ * @param string $domain Full domain name (e.g., example.com)
+ * @return array Result with 'success', 'available', 'premium', 'error'
+ */
+function namecheap_check_domain($registrar, $domain)
+{
+    $response = namecheap_api_request($registrar, 'namecheap.domains.check', array(
+        'DomainList' => $domain
+    ));
+
+    if (!$response['success']) {
+        return array('success' => false, 'available' => false, 'error' => $response['error']);
+    }
+
+    $data = $response['data'];
+
+    // Parse domain check result
+    if (isset($data['CommandResponse']['DomainCheckResult'])) {
+        $checkResult = $data['CommandResponse']['DomainCheckResult'];
+        $attrs = $checkResult['@attributes'] ?? array();
+
+        $available = isset($attrs['Available']) && strtolower($attrs['Available']) === 'true';
+        $premium = isset($attrs['IsPremiumName']) && strtolower($attrs['IsPremiumName']) === 'true';
+
+        return array(
+            'success' => true,
+            'available' => $available,
+            'premium' => $premium,
+            'domain' => $attrs['Domain'] ?? $domain,
+            'error' => null
+        );
+    }
+
+    return array('success' => false, 'available' => false, 'error' => 'Invalid response format');
+}
+
+/**
+ * Register a domain via Namecheap API
+ *
+ * @param array $registrar Registrar config
+ * @param string $domain Full domain name
+ * @param int $years Registration period
+ * @param array $contact Contact details
+ * @param array $nameservers Nameservers
+ * @return array Result with 'success', 'order_id', 'error'
+ */
+function namecheap_register_domain($registrar, $domain, $years, $contact, $nameservers = array())
+{
+    // Split domain into SLD and TLD
+    $parts = explode('.', $domain, 2);
+    if (count($parts) < 2) {
+        return array('success' => false, 'order_id' => null, 'error' => 'Invalid domain format');
+    }
+
+    $sld = $parts[0];
+    $tld = $parts[1];
+
+    // Get contact info (stored in contact array from provisioning)
+    $contactInfo = $contact['contact_info'] ?? array();
+
+    // Build registration parameters
+    $params = array(
+        'DomainName' => $domain,
+        'Years' => $years,
+        // Registrant contact
+        'RegistrantFirstName' => namecheap_get_first_name($contactInfo['name'] ?? ''),
+        'RegistrantLastName' => namecheap_get_last_name($contactInfo['name'] ?? ''),
+        'RegistrantAddress1' => $contactInfo['address1'] ?? 'N/A',
+        'RegistrantCity' => $contactInfo['city'] ?? 'N/A',
+        'RegistrantStateProvince' => $contactInfo['state'] ?? 'N/A',
+        'RegistrantPostalCode' => $contactInfo['zipcode'] ?? '00000',
+        'RegistrantCountry' => $contactInfo['country'] ?? 'US',
+        'RegistrantPhone' => namecheap_format_phone($contactInfo['phone_cc'] ?? '1', $contactInfo['phone'] ?? '0000000000'),
+        'RegistrantEmailAddress' => $contactInfo['email'] ?? '',
+        // Tech contact (same as registrant)
+        'TechFirstName' => namecheap_get_first_name($contactInfo['name'] ?? ''),
+        'TechLastName' => namecheap_get_last_name($contactInfo['name'] ?? ''),
+        'TechAddress1' => $contactInfo['address1'] ?? 'N/A',
+        'TechCity' => $contactInfo['city'] ?? 'N/A',
+        'TechStateProvince' => $contactInfo['state'] ?? 'N/A',
+        'TechPostalCode' => $contactInfo['zipcode'] ?? '00000',
+        'TechCountry' => $contactInfo['country'] ?? 'US',
+        'TechPhone' => namecheap_format_phone($contactInfo['phone_cc'] ?? '1', $contactInfo['phone'] ?? '0000000000'),
+        'TechEmailAddress' => $contactInfo['email'] ?? '',
+        // Admin contact (same as registrant)
+        'AdminFirstName' => namecheap_get_first_name($contactInfo['name'] ?? ''),
+        'AdminLastName' => namecheap_get_last_name($contactInfo['name'] ?? ''),
+        'AdminAddress1' => $contactInfo['address1'] ?? 'N/A',
+        'AdminCity' => $contactInfo['city'] ?? 'N/A',
+        'AdminStateProvince' => $contactInfo['state'] ?? 'N/A',
+        'AdminPostalCode' => $contactInfo['zipcode'] ?? '00000',
+        'AdminCountry' => $contactInfo['country'] ?? 'US',
+        'AdminPhone' => namecheap_format_phone($contactInfo['phone_cc'] ?? '1', $contactInfo['phone'] ?? '0000000000'),
+        'AdminEmailAddress' => $contactInfo['email'] ?? '',
+        // Billing contact (same as registrant)
+        'AuxBillingFirstName' => namecheap_get_first_name($contactInfo['name'] ?? ''),
+        'AuxBillingLastName' => namecheap_get_last_name($contactInfo['name'] ?? ''),
+        'AuxBillingAddress1' => $contactInfo['address1'] ?? 'N/A',
+        'AuxBillingCity' => $contactInfo['city'] ?? 'N/A',
+        'AuxBillingStateProvince' => $contactInfo['state'] ?? 'N/A',
+        'AuxBillingPostalCode' => $contactInfo['zipcode'] ?? '00000',
+        'AuxBillingCountry' => $contactInfo['country'] ?? 'US',
+        'AuxBillingPhone' => namecheap_format_phone($contactInfo['phone_cc'] ?? '1', $contactInfo['phone'] ?? '0000000000'),
+        'AuxBillingEmailAddress' => $contactInfo['email'] ?? ''
+    );
+
+    // Add nameservers
+    if (!empty($nameservers)) {
+        $params['Nameservers'] = implode(',', $nameservers);
+    } elseif (!empty($registrar['def_ns1'])) {
+        $ns = array();
+        if (!empty($registrar['def_ns1'])) $ns[] = $registrar['def_ns1'];
+        if (!empty($registrar['def_ns2'])) $ns[] = $registrar['def_ns2'];
+        if (!empty($registrar['def_ns3'])) $ns[] = $registrar['def_ns3'];
+        if (!empty($registrar['def_ns4'])) $ns[] = $registrar['def_ns4'];
+        if (!empty($ns)) {
+            $params['Nameservers'] = implode(',', $ns);
+        }
+    }
+
+    $response = namecheap_api_request($registrar, 'namecheap.domains.create', $params);
+
+    if ($response['success']) {
+        $data = $response['data'];
+        if (isset($data['CommandResponse']['DomainCreateResult'])) {
+            $result = $data['CommandResponse']['DomainCreateResult'];
+            $attrs = $result['@attributes'] ?? array();
+
+            if (isset($attrs['Registered']) && strtolower($attrs['Registered']) === 'true') {
+                return array(
+                    'success' => true,
+                    'order_id' => $attrs['DomainID'] ?? $attrs['OrderID'] ?? time(),
+                    'domain' => $attrs['Domain'] ?? $domain,
+                    'error' => null
+                );
+            }
+        }
+        return array('success' => false, 'order_id' => null, 'error' => 'Registration failed - check response');
+    }
+
+    return array('success' => false, 'order_id' => null, 'error' => $response['error']);
+}
+
+/**
+ * Transfer a domain via Namecheap API
+ *
+ * @param array $registrar Registrar config
+ * @param string $domain Full domain name
+ * @param string $eppCode EPP/Auth code
+ * @param array $contact Contact details
+ * @param array $nameservers Nameservers (optional)
+ * @return array Result with 'success', 'order_id', 'error'
+ */
+function namecheap_transfer_domain($registrar, $domain, $eppCode, $contact, $nameservers = array())
+{
+    // Get contact info
+    $contactInfo = $contact['contact_info'] ?? array();
+
+    $params = array(
+        'DomainName' => $domain,
+        'Years' => 1,
+        'EPPCode' => $eppCode
+    );
+
+    $response = namecheap_api_request($registrar, 'namecheap.domains.transfer.create', $params);
+
+    if ($response['success']) {
+        $data = $response['data'];
+        if (isset($data['CommandResponse']['DomainTransferCreateResult'])) {
+            $result = $data['CommandResponse']['DomainTransferCreateResult'];
+            $attrs = $result['@attributes'] ?? array();
+
+            if (isset($attrs['Transfer']) && strtolower($attrs['Transfer']) === 'true') {
+                return array(
+                    'success' => true,
+                    'order_id' => $attrs['TransferID'] ?? $attrs['OrderID'] ?? time(),
+                    'status' => $attrs['StatusID'] ?? 'Submitted',
+                    'error' => null
+                );
+            }
+
+            // Transfer submitted but may need confirmation
+            if (isset($attrs['TransferID'])) {
+                return array(
+                    'success' => true,
+                    'order_id' => $attrs['TransferID'],
+                    'status' => 'Pending',
+                    'error' => null
+                );
+            }
+        }
+        return array('success' => false, 'order_id' => null, 'error' => 'Transfer request failed - check response');
+    }
+
+    return array('success' => false, 'order_id' => null, 'error' => $response['error']);
+}
+
+/**
+ * Renew a domain via Namecheap API
+ *
+ * @param array $registrar Registrar config
+ * @param string $domain Full domain name
+ * @param int $years Renewal period
+ * @param string $currentExpDate Current expiration date
+ * @param int $orderId Registrar order ID (not used by Namecheap)
+ * @return array Result with 'success', 'new_expiry', 'error'
+ */
+function namecheap_renew_domain($registrar, $domain, $years, $currentExpDate, $orderId)
+{
+    $params = array(
+        'DomainName' => $domain,
+        'Years' => $years
+    );
+
+    $response = namecheap_api_request($registrar, 'namecheap.domains.renew', $params);
+
+    if ($response['success']) {
+        $data = $response['data'];
+        if (isset($data['CommandResponse']['DomainRenewResult'])) {
+            $result = $data['CommandResponse']['DomainRenewResult'];
+            $attrs = $result['@attributes'] ?? array();
+
+            if (isset($attrs['Renew']) && strtolower($attrs['Renew']) === 'true') {
+                // Calculate new expiry
+                if (!is_numeric($currentExpDate)) {
+                    $currentExpDate = strtotime($currentExpDate);
+                }
+                $newExpiry = date('Y-m-d', strtotime("+{$years} years", $currentExpDate));
+
+                return array(
+                    'success' => true,
+                    'order_id' => $attrs['OrderID'] ?? $orderId,
+                    'new_expiry' => $newExpiry,
+                    'error' => null
+                );
+            }
+        }
+        return array('success' => false, 'new_expiry' => null, 'error' => 'Renewal failed - check response');
+    }
+
+    return array('success' => false, 'new_expiry' => null, 'error' => $response['error']);
+}
+
+/**
+ * Get or create customer at Namecheap
+ * Note: Namecheap doesn't use customer IDs like ResellerClub
+ * We store contact info for use during registration
+ *
+ * @param array $registrar Registrar config
+ * @param array $customerInfo Customer details
+ * @return array Result with 'success', 'customer_id', 'error'
+ */
+function namecheap_get_or_create_customer($registrar, $customerInfo)
+{
+    // Namecheap doesn't have a customer/contact ID system
+    // Return a pseudo customer ID and store contact info
+    return array(
+        'success' => true,
+        'customer_id' => 'NC_' . md5($customerInfo['email']),
+        'contact_info' => $customerInfo,
+        'error' => null
+    );
+}
+
+/**
+ * Create contact at Namecheap
+ * Note: Namecheap doesn't use separate contact IDs
+ *
+ * @param array $registrar Registrar config
+ * @param string $customerId Customer ID (not used)
+ * @param array $contactInfo Contact details
+ * @return array Result with 'success', 'contact_id', 'contact_info', 'error'
+ */
+function namecheap_create_contact($registrar, $customerId, $contactInfo)
+{
+    // Namecheap doesn't use contact IDs - contacts are passed with each request
+    // Store the contact info for use during domain operations
+    return array(
+        'success' => true,
+        'contact_id' => 'NC_CONTACT_' . md5($contactInfo['email'] . time()),
+        'contact_info' => $contactInfo,
+        'error' => null
+    );
+}
+
+/**
+ * Helper: Get first name from full name
+ */
+function namecheap_get_first_name($fullName)
+{
+    $parts = explode(' ', trim($fullName), 2);
+    return !empty($parts[0]) ? $parts[0] : 'N/A';
+}
+
+/**
+ * Helper: Get last name from full name
+ */
+function namecheap_get_last_name($fullName)
+{
+    $parts = explode(' ', trim($fullName), 2);
+    return isset($parts[1]) && !empty($parts[1]) ? $parts[1] : 'N/A';
+}
+
+/**
+ * Helper: Format phone number for Namecheap API
+ * Format: +1.1234567890
+ */
+function namecheap_format_phone($countryCode, $phone)
+{
+    $cc = preg_replace('/[^0-9]/', '', $countryCode);
+    $ph = preg_replace('/[^0-9]/', '', $phone);
+
+    if (empty($cc)) $cc = '1';
+    if (empty($ph)) $ph = '0000000000';
+
+    return '+' . $cc . '.' . $ph;
 }
