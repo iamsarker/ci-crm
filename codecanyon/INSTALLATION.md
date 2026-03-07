@@ -702,6 +702,22 @@ Email: customer@demo.com
 Password: Demo@123
 ```
 
+### Live Demo Site
+
+Try WHMAZ before installing:
+
+**Admin Portal:** `https://demo.whmaz.com/whmazadmin/authenticate/login`
+```
+Email: admin@whmaz.com
+Password: Abcd.1234
+```
+
+**Client Portal:** `https://demo.whmaz.com/auth/login`
+```
+Email: client@whmaz.com
+Password: Abcd.1234
+```
+
 ### Critical Security Steps (DO IMMEDIATELY!)
 
 #### 1. Change Admin Password

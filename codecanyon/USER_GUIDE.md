@@ -67,6 +67,15 @@
 
 Welcome to **WHMAZ**, a lightweight domain hosting management system designed specifically for hosting and service providers. This guide will help you understand and utilize all features of the system effectively.
 
+### 🎮 Live Demo
+
+Try WHMAZ before installing:
+
+| Portal | URL | Email | Password |
+|--------|-----|-------|----------|
+| **Admin** | [demo.whmaz.com/whmazadmin](https://demo.whmaz.com/whmazadmin/authenticate/login) | admin@whmaz.com | Abcd.1234 |
+| **Client** | [demo.whmaz.com](https://demo.whmaz.com/auth/login) | client@whmaz.com | Abcd.1234 |
+
 ### What is WHMAZ?
 
 WHMAZ is a complete business management solution that provides:

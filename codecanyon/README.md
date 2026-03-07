@@ -191,20 +191,20 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 ## 🎮 Live Demo
 
 ### Client Portal Demo
-**URL:** `http://your-demo-site.com/`
+**URL:** `https://demo.whmaz.com/auth/login`
 
 **Demo Customer Credentials:**
-- **Email:** customer@demo.com
-- **Password:** Demo@123
+- **Email:** client@whmaz.com
+- **Password:** Abcd.1234
 
 ### Admin Portal Demo
-**URL:** `http://your-demo-site.com/whmazadmin/authenticate/login`
+**URL:** `https://demo.whmaz.com/whmazadmin/authenticate/login`
 
 **Demo Admin Credentials:**
-- **Username:** admin@demo.com
-- **Password:** Admin@123
+- **Email:** admin@whmaz.com
+- **Password:** Abcd.1234
 
-> ⚠️ **Note:** Demo site is reset every 24 hours. Please don't change the demo credentials.
+> ⚠️ **Note:** Demo site is reset periodically. Please don't change the demo credentials.
 
 ---
 
