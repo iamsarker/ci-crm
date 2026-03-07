@@ -296,16 +296,33 @@ class Auth_model extends CI_Model{
 		$resetLink = base_url('auth/resetpassword/' . $token);
 		$userName = !empty($user->first_name) ? htmlspecialchars($user->first_name) : 'User';
 
-		$body = 'Dear ' . $userName . ',<br><br>';
-		$body .= 'We received a request to reset your password.<br><br>';
-		$body .= 'Click the link below to set a new password:<br>';
-		$body .= '<a href="' . $resetLink . '">Reset Your Password</a><br><br>';
-		$body .= 'This link will expire in 1 hour.<br><br>';
-		$body .= 'If you did not request this, please ignore this email.<br><br>';
-		$body .= 'Thanks & Regards<br>';
-		$body .= $appSettings->company_name . ' Support';
+		// Try to use email template from database
+		$this->load->model('Emailtemplate_model');
+		$template = $this->Emailtemplate_model->getByKey('password_reset');
 
-		$subject = "Password Reset - " . $appSettings->company_name;
+		if (!empty($template)) {
+			$placeholders = array(
+				'{client_name}' => $userName,
+				'{site_name}' => $appSettings->company_name,
+				'{site_url}' => base_url(),
+				'{reset_link}' => $resetLink
+			);
+
+			$subject = str_replace(array_keys($placeholders), array_values($placeholders), $template['subject']);
+			$body = str_replace(array_keys($placeholders), array_values($placeholders), $template['body']);
+		} else {
+			// Fallback to hardcoded content
+			$body = 'Dear ' . $userName . ',<br><br>';
+			$body .= 'We received a request to reset your password.<br><br>';
+			$body .= 'Click the link below to set a new password:<br>';
+			$body .= '<a href="' . $resetLink . '">Reset Your Password</a><br><br>';
+			$body .= 'This link will expire in 1 hour.<br><br>';
+			$body .= 'If you did not request this, please ignore this email.<br><br>';
+			$body .= 'Thanks & Regards<br>';
+			$body .= $appSettings->company_name . ' Support';
+
+			$subject = "Password Reset - " . $appSettings->company_name;
+		}
 
 		return sendHtmlEmail($user->email, $subject, $body);
 	}
@@ -316,15 +333,32 @@ class Auth_model extends CI_Model{
 		$verifyLink = base_url('auth/verify/' . $verificationCode);
 		$userName = !empty($firstName) ? htmlspecialchars($firstName) : 'User';
 
-		$body = 'Dear ' . $userName . ',<br><br>';
-		$body .= 'Thank you for registering with us.<br><br>';
-		$body .= 'Please click the link below to verify your email address and activate your account:<br>';
-		$body .= '<a href="' . $verifyLink . '">Verify My Email</a><br><br>';
-		$body .= 'If you did not create this account, please ignore this email.<br><br>';
-		$body .= 'Thanks & Regards<br>';
-		$body .= $appSettings->company_name . ' Support';
+		// Try to use email template from database
+		$this->load->model('Emailtemplate_model');
+		$template = $this->Emailtemplate_model->getByKey('welcome_email');
 
-		$subject = "Email Verification - " . $appSettings->company_name;
+		if (!empty($template)) {
+			$placeholders = array(
+				'{client_name}' => $userName,
+				'{site_name}' => $appSettings->company_name,
+				'{site_url}' => base_url(),
+				'{verification_link}' => $verifyLink
+			);
+
+			$subject = str_replace(array_keys($placeholders), array_values($placeholders), $template['subject']);
+			$body = str_replace(array_keys($placeholders), array_values($placeholders), $template['body']);
+		} else {
+			// Fallback to hardcoded content
+			$body = 'Dear ' . $userName . ',<br><br>';
+			$body .= 'Thank you for registering with us.<br><br>';
+			$body .= 'Please click the link below to verify your email address and activate your account:<br>';
+			$body .= '<a href="' . $verifyLink . '">Verify My Email</a><br><br>';
+			$body .= 'If you did not create this account, please ignore this email.<br><br>';
+			$body .= 'Thanks & Regards<br>';
+			$body .= $appSettings->company_name . ' Support';
+
+			$subject = "Email Verification - " . $appSettings->company_name;
+		}
 
 		return sendHtmlEmail($email, $subject, $body);
 	}

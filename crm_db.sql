@@ -810,7 +810,7 @@ CREATE TABLE `dom_registers` (
   `ns_update_api` text DEFAULT NULL,
   `contact_details_api` text DEFAULT NULL,
   `contact_update_api` text DEFAULT NULL,
-  `price_list_api` text DEFAULT NULL,
+  `whitelisted_ip` varchar(45) DEFAULT NULL COMMENT 'Server IP whitelisted at registrar',
   `auth_userid` varchar(50) NOT NULL,
   `auth_apikey` varchar(100) NOT NULL,
   `is_selected` tinyint(4) NOT NULL DEFAULT 1,
@@ -829,9 +829,9 @@ CREATE TABLE `dom_registers` (
 -- Dumping data for table `dom_registers`
 --
 
-INSERT INTO `dom_registers` (`id`, `name`, `platform`, `api_base_url`, `domain_check_api`, `suggestion_api`, `domain_reg_api`, `ns_update_api`, `contact_details_api`, `contact_update_api`, `price_list_api`, `auth_userid`, `auth_apikey`, `is_selected`, `def_ns1`, `def_ns2`, `def_ns3`, `def_ns4`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Resell.Biz', 'STARGATE', 'https://httpapi.com', 'https://httpapi.com/api/domains/available.json?', 'https://httpapi.com/api/domains/v5/suggest-names.json?', 'https://httpapi.com/api/domains/register.xml?', 'https://httpapi.com/api/domains/modify-ns.json', 'https://httpapi.com/api/domains/details-by-name.json', 'https://httpapi.com/api/domains/modify-contact.json', 'test', '572394', 'IPE8mDT7ZoyQc6FmIzRp5b3lxfvabPOA', 1, 'ns1.whmaz.com', 'ns2.whmaz.com', '', '', 1, NULL, NULL, '2026-02-26 22:04:04', 1),
-(2, 'Namecheap', 'NAMECHEAP', 'https://api.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', '', 'tongbaritest', '993d950d882041ed90eea8158abec1d3', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2026-02-10 16:49:03', NULL);
+INSERT INTO `dom_registers` (`id`, `name`, `platform`, `api_base_url`, `domain_check_api`, `suggestion_api`, `domain_reg_api`, `ns_update_api`, `contact_details_api`, `contact_update_api`, `whitelisted_ip`, `auth_userid`, `auth_apikey`, `is_selected`, `def_ns1`, `def_ns2`, `def_ns3`, `def_ns4`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(1, 'Resell.Biz', 'STARGATE', 'https://httpapi.com', 'https://httpapi.com/api/domains/available.json?', 'https://httpapi.com/api/domains/v5/suggest-names.json?', 'https://httpapi.com/api/domains/register.xml?', 'https://httpapi.com/api/domains/modify-ns.json', 'https://httpapi.com/api/domains/details-by-name.json', 'https://httpapi.com/api/domains/modify-contact.json', NULL, '572394', 'IPE8mDT7ZoyQc6FmIzRp5b3lxfvabPOA', 1, 'ns1.whmaz.com', 'ns2.whmaz.com', '', '', 1, NULL, NULL, '2026-02-26 22:04:04', 1),
+(2, 'Namecheap', 'NAMECHEAP', 'https://api.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', NULL, 'tongbaritest', '993d950d882041ed90eea8158abec1d3', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2026-02-10 16:49:03', NULL);
 
 -- --------------------------------------------------------
 

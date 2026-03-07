@@ -133,10 +133,17 @@ class Provisioning_model extends CI_Model
         // New orders also have billing_period dates, so we check domain_order_id instead
         $isRenewal = !empty($domain['domain_order_id']);
 
-        // Get registrar config
+        // Get registrar config (falls back to default if not set)
         $registrar = $this->getRegistrarConfig($domain['dom_register_id']);
         if (empty($registrar)) {
             return array('success' => false, 'action' => 'none', 'error' => 'Registrar not configured');
+        }
+
+        // Update order_domains with registrar ID if it was missing (used default)
+        if (empty($domain['dom_register_id']) && !empty($registrar['id'])) {
+            $this->db->where('id', $domain['id']);
+            $this->db->update('order_domains', array('dom_register_id' => $registrar['id']));
+            $domain['dom_register_id'] = $registrar['id'];
         }
 
         // Get company/customer info
@@ -708,11 +715,25 @@ class Provisioning_model extends CI_Model
 
     /**
      * Get registrar configuration
+     * Falls back to default registrar if ID is empty or not found
      */
     private function getRegistrarConfig($registrarId)
     {
-        $sql = "SELECT * FROM dom_registers WHERE id = ? AND status = 1";
-        return $this->db->query($sql, array(intval($registrarId)))->row_array();
+        $result = array();
+
+        // Try to get by specific ID first
+        if (!empty($registrarId) && is_numeric($registrarId) && $registrarId > 0) {
+            $sql = "SELECT * FROM dom_registers WHERE id = ? AND status = 1";
+            $result = $this->db->query($sql, array(intval($registrarId)))->row_array();
+        }
+
+        // Fall back to default registrar if not found
+        if (empty($result)) {
+            $sql = "SELECT * FROM dom_registers WHERE status = 1 AND is_selected = 1 LIMIT 1";
+            $result = $this->db->query($sql)->row_array();
+        }
+
+        return $result;
     }
 
     /**

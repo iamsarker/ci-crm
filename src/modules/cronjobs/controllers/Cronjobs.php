@@ -283,7 +283,7 @@ class Cronjobs extends WHMAZ_Controller
 				'{currency}' => $invoice['currency_code'] ?? 'USD',
 				'{invoice_url}' => $invoiceUrl,
 				'{item_description}' => $itemDescription,
-				'{site_name}' => $appSettings['site_name'] ?? 'Our Company',
+				'{site_name}' => $appSettings['company_name'] ?? 'Our Company',
 				'{site_url}' => base_url()
 			);
 
@@ -294,7 +294,7 @@ class Cronjobs extends WHMAZ_Controller
 
 			// Send email using the helper function
 			$fromEmail = $appSettings['smtp_user'] ?? $appSettings['site_email'] ?? 'noreply@example.com';
-			$fromName = $appSettings['site_name'] ?? 'Billing System';
+			$fromName = $appSettings['company_name'] ?? 'Billing System';
 
 			$sent = sendHtmlEmail(
 				$item['company_email'],

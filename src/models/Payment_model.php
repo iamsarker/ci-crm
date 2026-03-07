@@ -475,7 +475,7 @@ class Payment_model extends CI_Model
 
         // Get currency symbol
         $currency = $this->db->where('id', $invoice['currency_id'])->get('currencies')->row();
-        $currencySymbol = $currency ? $currency->currency_symbol : '$';
+        $currencySymbol = $currency ? $currency->symbol : '$';
 
         // Get gateway name
         $gateway = $this->db->where('id', $transaction['payment_gateway_id'])->get('payment_gateway')->row();

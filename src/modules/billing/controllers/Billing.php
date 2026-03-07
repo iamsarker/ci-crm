@@ -43,6 +43,13 @@ class Billing extends WHMAZ_Controller
 		$data['companyInfo'] = $this->Appsetting_model->getSettings();
 		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
 		$data['invoice'] = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
+		// Check if invoice exists
+		if (empty($data['invoice']) || empty($data['invoice']['id'])) {
+			$this->session->set_flashdata('alert_error', 'Invoice not found.');
+			redirect('billing/invoices');
+			return;
+		}
+
 		$data['invoiceItems'] = $this->Billing_model->getInvoiceItems($data['invoice']['id']);
 		$logoPath = !empty($data['companyInfo']['logo']) ? $this->upload_dir.'/mics/'.$data['companyInfo']['logo'] : '';
 		$data['logoBase64'] = !empty($logoPath) && file_exists($logoPath) ? convertImageToBase65($logoPath) : '';
@@ -64,6 +71,14 @@ class Billing extends WHMAZ_Controller
 		$data['companyInfo'] = $this->Appsetting_model->getSettings();
 		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
 		$data['invoice'] = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
+
+		// Check if invoice exists
+		if (empty($data['invoice']) || empty($data['invoice']['id'])) {
+			$this->session->set_flashdata('alert_error', 'Invoice not found.');
+			redirect('billing/invoices');
+			return;
+		}
+
 		$data['invoiceItems'] = $this->Billing_model->getInvoiceItems($data['invoice']['id']);
 		$logoPath = !empty($data['companyInfo']['logo']) ? $this->upload_dir.'/mics/'.$data['companyInfo']['logo'] : '';
 		$data['logoBase64'] = !empty($logoPath) && file_exists($logoPath) ? convertImageToBase65($logoPath) : '';

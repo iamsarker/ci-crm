@@ -18,7 +18,7 @@
                     <a href="<?=base_url()?>cart/services/0/0" class="btn btn-light btn-welcome">
                         <i class="fa fa-server mg-r-5"></i> Order Service
                     </a>
-                    <a href="<?=base_url()?>tickets/newticket" class="btn btn-welcome-primary">
+                    <a href="<?=base_url()?>tickets/new_ticket" class="btn btn-welcome-primary">
                         <i class="fa fa-headset mg-r-5"></i> Open Ticket
                     </a>
                 </div>

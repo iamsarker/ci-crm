@@ -88,6 +88,7 @@ class Clientarea_model extends CI_Model{
 
 	/**
 	 * Get domain registrar info for API calls
+	 * Falls back to default registrar if dom_register_id is not set
 	 */
 	function getDomainRegistrarInfo($domainId, $companyId) {
 		if (!is_numeric($domainId) || !is_numeric($companyId) || $domainId <= 0 || $companyId <= 0) {
@@ -95,15 +96,49 @@ class Clientarea_model extends CI_Model{
 		}
 
 		try {
-			$sql = "SELECT od.*, dr.platform, dr.api_base_url, dr.auth_userid, dr.auth_apikey,
-						   dr.ns_update_api, dr.contact_details_api, dr.contact_update_api
+			// First get domain info with its registrar
+			$sql = "SELECT od.*, dr.id as registrar_id, dr.platform, dr.api_base_url, dr.auth_userid, dr.auth_apikey,
+						   dr.ns_update_api, dr.contact_details_api, dr.contact_update_api, dr.whitelisted_ip
 					FROM order_domains od
-					LEFT JOIN dom_registers dr ON od.dom_register_id = dr.id
+					LEFT JOIN dom_registers dr ON od.dom_register_id = dr.id AND dr.status = 1
 					WHERE od.id = ? AND od.company_id = ?";
 
 			$data = $this->db->query($sql, array(intval($domainId), intval($companyId)))->result_array();
 
-			return !empty($data) ? $data[0] : array();
+			if (empty($data)) {
+				return array();
+			}
+
+			$result = $data[0];
+
+			// If no registrar set or registrar fields are NULL, use default registrar
+			if (empty($result['platform']) || empty($result['dom_register_id'])) {
+				$defaultSql = "SELECT id as registrar_id, platform, api_base_url, auth_userid, auth_apikey,
+								      ns_update_api, contact_details_api, contact_update_api, whitelisted_ip
+							   FROM dom_registers
+							   WHERE status = 1 AND is_selected = 1
+							   LIMIT 1";
+				$defaultData = $this->db->query($defaultSql)->result_array();
+
+				if (!empty($defaultData)) {
+					$default = $defaultData[0];
+					$result['dom_register_id'] = $default['registrar_id'];
+					$result['platform'] = $default['platform'];
+					$result['api_base_url'] = $default['api_base_url'];
+					$result['auth_userid'] = $default['auth_userid'];
+					$result['auth_apikey'] = $default['auth_apikey'];
+					$result['ns_update_api'] = $default['ns_update_api'];
+					$result['contact_details_api'] = $default['contact_details_api'];
+					$result['contact_update_api'] = $default['contact_update_api'];
+					$result['whitelisted_ip'] = $default['whitelisted_ip'];
+
+					// Update order_domains with the default registrar for future operations
+					$this->db->where('id', intval($domainId));
+					$this->db->update('order_domains', array('dom_register_id' => $default['registrar_id']));
+				}
+			}
+
+			return $result;
 		} catch (Exception $e) {
 			log_message('error', 'getDomainRegistrarInfo error: ' . $e->getMessage());
 			return array();

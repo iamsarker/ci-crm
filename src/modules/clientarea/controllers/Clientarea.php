@@ -293,59 +293,64 @@ class Clientarea extends WHMAZ_Controller {
 		$this->sendCsrfHeaders();
 		header('Content-Type: application/json');
 
-		// Only accept POST requests
-		if (!$this->input->post()) {
-			echo json_encode(array('success' => false, 'msg' => 'Invalid request method'));
-			return;
-		}
-
-		$domainId = $this->input->post('domain_id');
-		$ns1 = $this->input->post('ns1');
-		$ns2 = $this->input->post('ns2');
-		$ns3 = $this->input->post('ns3');
-		$ns4 = $this->input->post('ns4');
-		$dnsType = $this->input->post('dns_type');
-
-		// Validate domain ID
-		if (!is_numeric($domainId) || $domainId <= 0) {
-			echo json_encode(array('success' => false, 'msg' => 'Invalid domain ID'));
-			return;
-		}
-
-		$companyId = getCompanyId();
-
-		// Get domain and registrar info
-		$domainInfo = $this->Clientarea_model->getDomainRegistrarInfo($domainId, $companyId);
-
-		if (empty($domainInfo)) {
-			echo json_encode(array('success' => false, 'msg' => 'Domain not found or access denied'));
-			return;
-		}
-
-		$apiResult = array('success' => true, 'msg' => '');
-
-		// If registrar is configured, update via API
-		if (!empty($domainInfo['dom_register_id']) && !empty($domainInfo['platform'])) {
-			$apiResult = $this->updateNameserversViaApi($domainInfo, $ns1, $ns2, $ns3, $ns4);
-		}
-
-		// Update database regardless of API result (user might want local update only)
-		$dbResult = $this->Clientarea_model->updateDomainNameservers(
-			$domainId, $companyId, $ns1, $ns2, $ns3, $ns4, $dnsType
-		);
-
-		if ($dbResult['success']) {
-			if ($apiResult['success']) {
-				echo json_encode(array('success' => true, 'msg' => 'Nameservers updated successfully'));
-			} else {
-				// DB updated but API failed
-				echo json_encode(array(
-					'success' => true,
-					'msg' => 'Nameservers saved locally. Registrar API: ' . $apiResult['msg']
-				));
+		try {
+			// Only accept POST requests
+			if (!$this->input->post()) {
+				echo json_encode(array('success' => false, 'msg' => 'Invalid request method'));
+				return;
 			}
-		} else {
-			echo json_encode($dbResult);
+
+			$domainId = $this->input->post('domain_id');
+			$ns1 = $this->input->post('ns1');
+			$ns2 = $this->input->post('ns2');
+			$ns3 = $this->input->post('ns3');
+			$ns4 = $this->input->post('ns4');
+			$dnsType = $this->input->post('dns_type');
+
+			// Validate domain ID
+			if (!is_numeric($domainId) || $domainId <= 0) {
+				echo json_encode(array('success' => false, 'msg' => 'Invalid domain ID'));
+				return;
+			}
+
+			$companyId = getCompanyId();
+
+			// Get domain and registrar info
+			$domainInfo = $this->Clientarea_model->getDomainRegistrarInfo($domainId, $companyId);
+
+			if (empty($domainInfo)) {
+				echo json_encode(array('success' => false, 'msg' => 'Domain not found or access denied'));
+				return;
+			}
+
+			$apiResult = array('success' => true, 'msg' => '');
+
+			// If registrar is configured, update via API
+			if (!empty($domainInfo['dom_register_id']) && !empty($domainInfo['platform'])) {
+				$apiResult = $this->updateNameserversViaApi($domainInfo, $ns1, $ns2, $ns3, $ns4);
+			}
+
+			// Update database regardless of API result (user might want local update only)
+			$dbResult = $this->Clientarea_model->updateDomainNameservers(
+				$domainId, $companyId, $ns1, $ns2, $ns3, $ns4, $dnsType
+			);
+
+			if ($dbResult['success']) {
+				if ($apiResult['success']) {
+					echo json_encode(array('success' => true, 'msg' => 'Nameservers updated successfully'));
+				} else {
+					// DB updated but API failed
+					echo json_encode(array(
+						'success' => true,
+						'msg' => 'Nameservers saved locally. Registrar API: ' . $apiResult['msg']
+					));
+				}
+			} else {
+				echo json_encode($dbResult);
+			}
+		} catch (Exception $e) {
+			log_message('error', 'update_nameservers error: ' . $e->getMessage());
+			echo json_encode(array('success' => false, 'msg' => 'An unexpected error occurred. Please try again.'));
 		}
 	}
 
@@ -439,14 +444,14 @@ class Clientarea extends WHMAZ_Controller {
 		if (!empty(trim(strval($ns3)))) $nsList .= ',' . strval($ns3);
 		if (!empty(trim(strval($ns4)))) $nsList .= ',' . strval($ns4);
 
-		// Get client IP for Namecheap API
-		$clientIp = strval($this->input->ip_address());
+		// Get whitelisted IP for Namecheap API from registrar config
+		$serverIp = !empty($domainInfo['whitelisted_ip']) ? $domainInfo['whitelisted_ip'] : ($_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname()));
 
 		$url = $nsUpdateApi . '?ApiUser=' . urlencode($apiUser)
 			. '&ApiKey=' . urlencode($apiKey)
 			. '&UserName=' . urlencode($apiUser)
 			. '&Command=namecheap.domains.dns.setCustom'
-			. '&ClientIp=' . urlencode($clientIp)
+			. '&ClientIp=' . urlencode($serverIp)
 			. '&SLD=' . urlencode($sld)
 			. '&TLD=' . urlencode($tld)
 			. '&Nameservers=' . urlencode($nsList);
@@ -726,14 +731,15 @@ class Clientarea extends WHMAZ_Controller {
 
 		$apiUser = strval($domainInfo['auth_userid'] ?? '');
 		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
-		$clientIp = $this->input->ip_address();
+		// Get whitelisted IP for Namecheap API from registrar config
+		$serverIp = !empty($domainInfo['whitelisted_ip']) ? $domainInfo['whitelisted_ip'] : ($_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname()));
 
 		// Get contacts
 		$url = $contactDetailsApi . '?ApiUser=' . urlencode($apiUser)
 			. '&ApiKey=' . urlencode($apiKey)
 			. '&UserName=' . urlencode($apiUser)
 			. '&Command=namecheap.domains.getContacts'
-			. '&ClientIp=' . urlencode($clientIp)
+			. '&ClientIp=' . urlencode($serverIp)
 			. '&DomainName=' . urlencode($domain);
 
 		$response = $this->makeApiRequest($url, array(), 'GET');
@@ -778,7 +784,7 @@ class Clientarea extends WHMAZ_Controller {
 			. '&ApiKey=' . urlencode($apiKey)
 			. '&UserName=' . urlencode($apiUser)
 			. '&Command=namecheap.domains.dns.getList'
-			. '&ClientIp=' . urlencode(strval($clientIp))
+			. '&ClientIp=' . urlencode(strval($serverIp))
 			. '&SLD=' . urlencode(strval($sld))
 			. '&TLD=' . urlencode(strval($tld));
 
@@ -931,7 +937,8 @@ class Clientarea extends WHMAZ_Controller {
 		$domain = strval($domainInfo['domain'] ?? '');
 		$apiUser = strval($domainInfo['auth_userid'] ?? '');
 		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
-		$clientIp = strval($this->input->ip_address());
+		// Get whitelisted IP for Namecheap API from registrar config
+		$serverIp = !empty($domainInfo['whitelisted_ip']) ? $domainInfo['whitelisted_ip'] : ($_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname()));
 
 		// Parse name into first/last
 		$nameParts = explode(' ', trim(strval($contactData['contact_name'] ?? '')), 2);
@@ -942,7 +949,7 @@ class Clientarea extends WHMAZ_Controller {
 			. '&ApiKey=' . urlencode($apiKey)
 			. '&UserName=' . urlencode($apiUser)
 			. '&Command=namecheap.domains.setContacts'
-			. '&ClientIp=' . urlencode($clientIp)
+			. '&ClientIp=' . urlencode($serverIp)
 			. '&DomainName=' . urlencode($domain)
 			. '&RegistrantFirstName=' . urlencode(strval($firstName))
 			. '&RegistrantLastName=' . urlencode(strval($lastName))
@@ -1158,14 +1165,15 @@ class Clientarea extends WHMAZ_Controller {
 		$domain = strval($domainInfo['domain'] ?? '');
 		$apiUser = strval($domainInfo['auth_userid'] ?? '');
 		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
-		$clientIp = strval($this->input->ip_address());
+		// Get whitelisted IP for Namecheap API from registrar config
+		$serverIp = !empty($domainInfo['whitelisted_ip']) ? $domainInfo['whitelisted_ip'] : ($_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname()));
 		$baseUrl = strval($domainInfo['api_base_url'] ?? '');
 
 		$url = $baseUrl . '?ApiUser=' . urlencode($apiUser)
 			. '&ApiKey=' . urlencode($apiKey)
 			. '&UserName=' . urlencode($apiUser)
 			. '&Command=namecheap.domains.getInfo'
-			. '&ClientIp=' . urlencode($clientIp)
+			. '&ClientIp=' . urlencode($serverIp)
 			. '&DomainName=' . urlencode($domain);
 
 		$response = $this->makeApiRequest($url, array(), 'GET');

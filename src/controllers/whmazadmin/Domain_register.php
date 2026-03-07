@@ -81,7 +81,7 @@ class Domain_register extends WHMAZADMIN_Controller {
 					'ns_update_api'		=> $this->input->post('ns_update_api'),
 					'contact_details_api'	=> $this->input->post('contact_details_api'),
 					'contact_update_api'	=> $this->input->post('contact_update_api'),
-					'price_list_api'	=> $this->input->post('price_list_api'),
+					'whitelisted_ip'	=> $this->input->post('whitelisted_ip'),
 					'auth_userid'		=> $this->input->post('auth_userid'),
 					'auth_apikey'		=> $this->input->post('auth_apikey'),
 					'is_selected'		=> $this->input->post('is_selected') ? 1 : 0,

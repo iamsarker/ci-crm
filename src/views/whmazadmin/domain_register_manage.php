@@ -148,8 +148,9 @@
 							</div>
 
 							<div class="form-group">
-								<label class="form-label" for="price_list_api"><i class="fa fa-dollar-sign"></i> Price List API</label>
-								<input name="price_list_api" type="text" class="form-control" id="price_list_api" placeholder="https://api.registrar.com/pricing/list" value="<?= htmlspecialchars($detail['price_list_api'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+								<label class="form-label" for="whitelisted_ip"><i class="fa fa-server"></i> Whitelisted Server IP <span class="text-danger">*</span></label>
+								<input name="whitelisted_ip" type="text" class="form-control" id="whitelisted_ip" placeholder="e.g. 203.0.113.50" value="<?= htmlspecialchars($detail['whitelisted_ip'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+								<small class="text-muted">The server IP address that is whitelisted in registrar's API settings</small>
 							</div>
 						</div>
 

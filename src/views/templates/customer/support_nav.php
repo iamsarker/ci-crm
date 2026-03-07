@@ -10,7 +10,7 @@
       <a href="<?=base_url()?>tickets/index" class="nav-sub-link"><i class="fas fa-list"></i>&nbsp;My tickets</a>
     </li>
     <li class="list-group-item">
-      <a href="<?=base_url()?>tickets/newticket" class="nav-sub-link"><i class="fas fa-ticket-alt"></i>&nbsp;Open new ticket</a>
+      <a href="<?=base_url()?>tickets/new_ticket" class="nav-sub-link"><i class="fas fa-ticket-alt"></i>&nbsp;Open new ticket</a>
     </li>
     <li class="list-group-item">
       <a href="<?=base_url()?>supports/announcements" class="nav-sub-link"><i class="fas fa-bullhorn"></i>&nbsp;Announcement</a>

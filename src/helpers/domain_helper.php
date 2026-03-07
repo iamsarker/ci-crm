@@ -655,15 +655,16 @@ function registrar_create_contact($registrar, $customerId, $contactInfo, $type =
 
 /**
  * Get client IP for Namecheap API (required parameter)
+ * Uses whitelisted_ip from registrar config if available
  *
+ * @param array $registrar Registrar config (optional)
  * @return string Client IP address
  */
-function namecheap_get_client_ip()
+function namecheap_get_client_ip($registrar = array())
 {
-    // Try to get server's outgoing IP
-    $ip = @file_get_contents('https://api.ipify.org');
-    if ($ip && filter_var($ip, FILTER_VALIDATE_IP)) {
-        return $ip;
+    // Use whitelisted IP from registrar config if set
+    if (!empty($registrar['whitelisted_ip'])) {
+        return $registrar['whitelisted_ip'];
     }
 
     // Fallback to server IP
@@ -691,7 +692,7 @@ function namecheap_api_request($registrar, $command, $params = array())
         'ApiUser' => $registrar['auth_userid'],
         'ApiKey' => $registrar['auth_apikey'],
         'UserName' => $registrar['auth_userid'],
-        'ClientIp' => namecheap_get_client_ip(),
+        'ClientIp' => namecheap_get_client_ip($registrar),
         'Command' => $command
     );
 

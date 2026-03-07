@@ -94,12 +94,12 @@ This guide is for:
 WHMAZ consists of two main portals:
 
 1. **Customer Portal (Client Area)**
-   - URL: `https://yourdomain.com/clientarea`
+   - URL: `https://yourdomain.com/auth/login`
    - Purpose: Self-service portal for customers
    - Features: Orders, domains, invoices, tickets, knowledge base
 
 2. **Admin Portal (Management Area)**
-   - URL: `https://yourdomain.com/whmazadmin`
+   - URL: `https://yourdomain.com/whmazadmin/authenticate/login`
    - Purpose: Business management and administration
    - Features: Complete system control and configuration
 
@@ -113,7 +113,7 @@ WHMAZ consists of two main portals:
 ### For Administrators
 
 1. **Access Admin Portal**
-   - Navigate to: `https://yourdomain.com/whmazadmin`
+   - Navigate to: `https://yourdomain.com/whmazadmin/authenticate/login`
    - Login with admin credentials
 
 2. **Complete Initial Setup**
@@ -162,7 +162,7 @@ WHMAZ consists of two main portals:
 
 **URL Format:**
 ```
-https://yourdomain.com/clientarea
+https://yourdomain.com/auth/login
 ```
 
 **Login Page Elements:**
@@ -179,7 +179,7 @@ https://yourdomain.com/clientarea
 
 **URL Format:**
 ```
-https://yourdomain.com/whmazadmin
+https://yourdomain.com/whmazadmin/authenticate/login
 ```
 
 **Login Page Elements:**
@@ -213,14 +213,14 @@ If you installed with demo data, use these credentials:
 
 **Administrator:**
 ```
-Email: admin@demo.com
-Password: Admin@123
+Email: admin@whmaz.com
+Password: Abcd.1234
 ```
 
 **Demo Customer:**
 ```
-Email: customer@demo.com
-Password: Customer@123
+Email: client@whmaz.com
+Password: Abcd.1234
 ```
 
 ### Fresh Installation
@@ -357,25 +357,15 @@ Each stat card features:
 - **Domains:** Manage domain registrations
 - **Billing:** View invoices and payment history
 - **Support:** Tickets and knowledge base
-- **Account:** Profile and settings
+- **Contact Us:** Contacting with service provider
 
 ---
 
 ## Managing Profile
 
-### Updating Personal Information
+### Updating Customer Password
 
-1. **Access Profile Settings**
-   - Click your name in top-right corner
-   - Select "Profile" or "Account Settings"
-
-2. **Edit Information**
-   - Update name, email, phone
-   - Modify address details
-   - Update company information
-   - Save changes
-
-3. **Change Password**
+1. **Change Password**
    - Navigate to `/clientarea/changePassword` or click "Change Password" in your account menu
    - Enter your current password
    - Enter new password (minimum 8 characters)
@@ -384,21 +374,6 @@ Each stat card features:
    - A confirmation email will be sent to your registered email address notifying you of the password change
    - If you did not initiate the change, contact support immediately
 
-![Profile Settings](screenshots/customer-profile.png)
-*[Screenshot Placeholder: Customer profile settings page]*
-
-### Managing Contact Information
-
-**Primary Contact Details:**
-- Name and email cannot be changed without email verification
-- Phone number can be updated anytime
-- Address updates reflect immediately
-
-**Email Change Process:**
-1. Enter new email address
-2. System sends verification to new email
-3. Click verification link
-4. Email is updated after verification
 
 ### Setting Preferences
 
@@ -421,7 +396,7 @@ Each stat card features:
 ### Browsing Available Packages
 
 1. **View Package List**
-   - Go to "Order" or "Services" → "New Order"
+   - Go to "Domains" → "Register New Domain" or "Services" → "New Service"
    - Browse available hosting packages
    - Compare features and pricing
 

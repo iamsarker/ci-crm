@@ -25,7 +25,7 @@ class Tickets extends WHMAZ_Controller {
 		$this->load->view('tickets', $data);
 	}
 
-	public function newticket(){
+	public function new_ticket(){
             $user = $this->session->userdata("CUSTOMER");
 
             $this->form_validation->set_rules('title', 'Subject', 'required|trim');
