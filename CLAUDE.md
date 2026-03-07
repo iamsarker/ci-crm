@@ -235,15 +235,22 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 
 | Order Type | Action | API Called |
 |------------|--------|------------|
-| Domain Registration | Register domain at registrar | ResellerClub/Resell.biz API |
-| Domain Transfer | Initiate transfer with EPP code | ResellerClub/Resell.biz API |
-| Domain Renewal | Renew domain, update expiry | ResellerClub/Resell.biz API |
+| Domain Registration | Register domain at registrar | Default Registrar API |
+| Domain Transfer | Initiate transfer with EPP code | Default Registrar API |
+| Domain Renewal | Renew domain, update expiry | Default Registrar API |
 | New Hosting | Create cPanel account | WHM API |
 | Hosting Renewal | Unsuspend if suspended, update dates | WHM API (if suspended) |
 
+**Supported Domain Registrars:**
+| Registrar | Platform Value | Status |
+|-----------|---------------|--------|
+| ResellerClub | `resellerclub` | ✅ Working |
+| Resell.biz | `resellbiz` | ✅ Working |
+| Namecheap | `namecheap` | ✅ Working |
+
 **Key Files:**
 - `src/models/Provisioning_model.php` - Main provisioning logic
-- `src/helpers/domain_helper.php` - Domain registrar API functions
+- `src/helpers/domain_helper.php` - Domain registrar API functions (ResellerClub, Namecheap)
 - `src/helpers/cpanel_helper.php` - cPanel/WHM API functions
 
 **Admin Provisioning Logs:**
@@ -283,9 +290,16 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 8. Updates order status, logs result to `provisioning_logs`
 
 **Adding New Registrar Support:**
-1. Add functions to `domain_helper.php` (e.g., `enom_register_domain()`)
-2. Update switch statements in `registrar_*` dispatcher functions
-3. Match on `dom_registers.platform` field
+1. Add functions to `domain_helper.php` (e.g., `newregistrar_register_domain()`, `newregistrar_transfer_domain()`, etc.)
+2. Update switch statements in `registrar_*` dispatcher functions (register, transfer, renew, get_or_create_customer, create_contact)
+3. Match on `dom_registers.platform` field (case-insensitive)
+4. Add platform detection in `Cart.php` for domain search and suggestions
+
+**Default Registrar System:**
+- All domain operations use the **default registrar** (`is_selected = 1` in `dom_registers`)
+- When admin sets a registrar as default, others are automatically unset
+- Function: `Common_model::getDomRegisterIdByPricingId()` returns default registrar ID
+- Fallback: If no default set, uses extension-specific registrar from `dom_extensions`
 
 ### Admin Order Management
 
@@ -590,10 +604,38 @@ Reference: `src/views/whmazadmin/paymentgateway_manage.php`
 
 ## Domain Registrar Integration
 
+### Supported Registrars
+| Registrar | Platform | API Type | Domain Search | Registration | Transfer | Renewal |
+|-----------|----------|----------|---------------|--------------|----------|---------|
+| ResellerClub | `resellerclub` | JSON REST | ✅ | ✅ | ✅ | ✅ |
+| Resell.biz | `resellbiz` | JSON REST | ✅ | ✅ | ✅ | ✅ |
+| Namecheap | `namecheap` | XML | ✅ | ✅ | ✅ | ✅ |
+
 ### API Configuration
 - **Database Table**: `dom_registers`
-- **Key Fields**: `auth_userid`, `auth_apikey`, `domain_check_api`, `suggestion_api`
+- **Key Fields**: `platform`, `api_base_url`, `auth_userid`, `auth_apikey`, `is_selected`
+- **Default Registrar**: Set `is_selected = 1` (only one can be default)
 - **Model**: `src/models/Cart_model.php` → `getDomRegister()`
+
+### Namecheap Configuration
+| Field | Value |
+|-------|-------|
+| `platform` | `NAMECHEAP` |
+| `api_base_url` | `https://api.namecheap.com/xml.response` (production) |
+| `api_base_url` | `https://api.sandbox.namecheap.com/xml.response` (sandbox) |
+| `auth_userid` | Your Namecheap API username |
+| `auth_apikey` | Your Namecheap API key |
+
+**Important:** Whitelist your server's IP in Namecheap API settings.
+
+### Namecheap API Functions (`domain_helper.php`)
+- `namecheap_api_request()` - Makes XML API requests
+- `namecheap_check_domain()` - Domain availability check
+- `namecheap_register_domain()` - Domain registration
+- `namecheap_transfer_domain()` - Domain transfer
+- `namecheap_renew_domain()` - Domain renewal
+- `namecheap_get_or_create_customer()` - Returns pseudo customer (Namecheap doesn't use customer IDs)
+- `namecheap_create_contact()` - Stores contact info for registration
 
 ### Troubleshooting Domain Search
 

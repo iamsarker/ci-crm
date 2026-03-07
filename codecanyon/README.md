@@ -108,7 +108,8 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 ### 🌐 **Domain Management**
 - Domain availability check
 - Domain suggestions
-- ResellerClub/Resell.biz API integration
+- Multiple registrar support (ResellerClub, Resell.biz, Namecheap)
+- Default registrar system - set one registrar for all operations
 - Multiple TLD support
 - Domain pricing management
 - Registration periods
@@ -391,11 +392,21 @@ Supported payment methods:
 
 For domain registration features:
 
-1. Sign up at [ResellerClub](https://resellerclub.com) or [Resell.biz](https://resell.biz)
+**Supported Registrars:**
+- ResellerClub / Resell.biz (JSON API)
+- Namecheap (XML API)
+
+**Setup Steps:**
+1. Sign up at your preferred registrar
 2. Get your API credentials
-3. Navigate to **Admin → Domain → Registrars**
-4. Enter your credentials
-5. Whitelist your server IP in registrar panel
+3. Navigate to **Admin → Settings → Domain Registrars**
+4. Add/Edit registrar with your credentials
+5. Set one registrar as **Default** (all domain operations use default registrar)
+6. Whitelist your server IP in registrar panel
+
+**For Namecheap:**
+- Use `https://api.namecheap.com/xml.response` for production
+- Use `https://api.sandbox.namecheap.com/xml.response` for testing
 
 #### 5. Cron Jobs (Automated Tasks)
 
@@ -708,7 +719,11 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
   - cPanel account creation via WHM API
   - Auto-unsuspend on renewal if suspended
 - Provisioning logs for tracking and retry
-- Extensible registrar support (ResellerClub/Resell.biz included)
+- Multiple registrar support:
+  - ResellerClub / Resell.biz (JSON API)
+  - Namecheap (XML API)
+- Default registrar system - set one registrar for all domain operations
+- Auto-unset other registrars when setting default
 
 ### Version 1.8.0 (February 2026) - Email Notifications System
 

@@ -3199,6 +3199,22 @@ Reference: Please include your invoice number as reference
 
 ## Domain Registrar Integration
 
+### Supported Registrars
+
+| Registrar | Platform | API Type | Status |
+|-----------|----------|----------|--------|
+| ResellerClub | `resellerclub` | JSON REST | ✅ Supported |
+| Resell.biz | `resellbiz` | JSON REST | ✅ Supported |
+| Namecheap | `namecheap` | XML | ✅ Supported |
+
+### Default Registrar System
+
+WHMAZ uses a **default registrar** system:
+- Set one registrar as "Default" in admin panel
+- All domain operations (search, register, transfer, renew) use the default registrar
+- When you set a registrar as default, others are automatically unset
+- Navigate to: **Admin → Settings → Domain Registrars**
+
 ### Resell.biz / ResellerClub Setup
 
 **Prerequisites:**
@@ -3215,36 +3231,79 @@ Reference: Please include your invoice number as reference
    - Generate or copy API key
 
 2. **Configure in WHMAZ**
-   - Go to Settings → Domain Settings
-   - Or check domain_register table in database
-   - Enter API URL: `https://httpapi.com/api/domains/`
+   - Go to Admin → Settings → Domain Registrars
+   - Click "Add" or edit existing ResellerClub entry
+   - Enter API Base URL: `https://httpapi.com/api/domains/`
    - Enter auth-userid
    - Enter API key
+   - Check "Set as Default" if this is your primary registrar
    - Save settings
 
-3. **Test Domain Search**
+3. **Whitelist Server IP**
+   - Login to ResellerClub control panel
+   - Go to Settings → API → IP Whitelist
+   - Add your server's IP address
+
+4. **Test Domain Search**
    - Go to customer portal
    - Use domain search
    - Verify results return correctly
-   - Check for available/unavailable status
 
-4. **Test Domain Registration**
-   - Register test domain (.test TLD if available)
-   - Verify registration successful
-   - Check ResellerClub control panel
+### Namecheap Setup
 
-**Troubleshooting:**
+**Prerequisites:**
+- Namecheap reseller account
+- API credentials (ApiUser and ApiKey)
+- Funded account (for domain registrations)
+- Server IP whitelisted
 
-**"Sorry, you have been blocked" Error:**
+**Configuration Steps:**
+
+1. **Get API Credentials**
+   - Login to Namecheap dashboard
+   - Go to Profile → Tools → API Access
+   - Enable API access
+   - Note your API Username and API Key
+
+2. **Whitelist Server IP**
+   - In Namecheap dashboard → Profile → Tools → API Access
+   - Add your server's IP to the whitelist
+   - **Important:** API calls will fail without whitelisted IP
+
+3. **Configure in WHMAZ**
+   - Go to Admin → Settings → Domain Registrars
+   - Click "Add" or edit existing Namecheap entry
+   - Set Platform: `NAMECHEAP`
+   - Set API Base URL:
+     - Production: `https://api.namecheap.com/xml.response`
+     - Sandbox: `https://api.sandbox.namecheap.com/xml.response`
+   - Enter API Username (auth_userid field)
+   - Enter API Key (auth_apikey field)
+   - Check "Set as Default" if this is your primary registrar
+   - Save settings
+
+4. **Test Domain Search**
+   - Go to customer portal
+   - Use domain search
+   - Verify results return correctly
+
+**Namecheap-Specific Notes:**
+- Namecheap uses XML API (not JSON)
+- Domain suggestions check common TLDs (.com, .net, .org, .io, .co)
+- Contact info is passed with each request (no separate customer/contact IDs)
+
+### General Troubleshooting
+
+**"Sorry, you have been blocked" / 403 Error:**
 - API IP whitelist issue
-- Contact ResellerClub support to whitelist your server IP
+- Whitelist your server IP in registrar panel
 - Verify API credentials correct
 
 **No Results Returned:**
 - Check API URL correct
-- Verify auth-userid and API key
+- Verify credentials
 - Check server can make external CURL requests
-- Review error logs
+- Review error logs at `src/logs/`
 
 **Domain Not Registering:**
 - Verify account funded
@@ -3255,7 +3314,7 @@ Reference: Please include your invoice number as reference
 ### Adding Domain Extensions
 
 1. **Check Supported TLDs**
-   - Review ResellerClub supported TLDs
+   - Review your registrar's supported TLDs
    - Common: .com, .net, .org, .info, .biz
 
 2. **Add to Database**
@@ -3622,7 +3681,7 @@ A: Process refund through payment gateway, then record in WHMAZ or cancel invoic
 ### Domain Questions
 
 **Q: Which domain registrars are supported?**
-A: Currently Resell.biz/ResellerClub. Others can be integrated with custom development.
+A: ResellerClub, Resell.biz, and Namecheap are fully supported. Set one as the "Default" registrar in Admin → Settings → Domain Registrars.
 
 **Q: Can customers transfer domains to me?**
 A: Yes, domain transfer functionality is included.

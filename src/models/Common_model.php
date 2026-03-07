@@ -401,6 +401,15 @@ class Common_model extends CI_Model {
         }
 
         try {
+            // Get the default/selected registrar instead of extension-specific one
+            $sql = "SELECT id FROM dom_registers WHERE status = 1 AND is_selected = 1 LIMIT 1";
+            $result = $this->db->query($sql)->row();
+
+            if (!empty($result)) {
+                return intval($result->id);
+            }
+
+            // Fallback: get registrar from extension if no default is set
             $sql = "SELECT de.dom_register_id
                     FROM dom_pricing dp
                     JOIN dom_extensions de ON dp.dom_extension_id = de.id
