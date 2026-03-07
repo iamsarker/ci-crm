@@ -35,7 +35,7 @@
             <!-- Main Content -->
             <div class="col-lg-9 col-md-8">
                 <!-- Intro Banner -->
-                <div class="services-intro-banner mg-b-25">
+                <div class="services-intro-banner mg-b-25 mb-2">
                     <div class="intro-icon">
                         <i class="fa fa-rocket"></i>
                     </div>

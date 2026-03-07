@@ -495,7 +495,8 @@ class Support_model extends CI_Model{
 			'{client_email}' => $company['email'],
 			'{ticket_message}' => nl2br(htmlspecialchars($ticket['message'])),
 			'{admin_ticket_url}' => base_url() . 'whmazadmin/ticket/viewticket/' . $ticketId,
-			'{company_name}' => $appSettings->company_name
+			'{company_name}' => $appSettings->company_name,
+			'{site_name}' => $appSettings->company_name
 		);
 
 		$result = $this->_sendTicketEmail('ticket_new_to_department', $department['email'], $placeholders);
@@ -545,7 +546,8 @@ class Support_model extends CI_Model{
 			'{client_name}' => ($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? ''),
 			'{ticket_message}' => nl2br(htmlspecialchars($ticket['message'])),
 			'{ticket_url}' => base_url() . 'tickets/viewticket/' . $ticketId,
-			'{company_name}' => $appSettings->company_name
+			'{company_name}' => $appSettings->company_name,
+			'{site_name}' => $appSettings->company_name
 		);
 
 		$result = $this->_sendTicketEmail('ticket_new_to_customer', $company['email'], $placeholders);
@@ -590,7 +592,8 @@ class Support_model extends CI_Model{
 			'{client_name}' => ($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? ''),
 			'{reply_message}' => nl2br(htmlspecialchars($replyMessage)),
 			'{ticket_url}' => base_url() . 'tickets/viewticket/' . $ticketId,
-			'{company_name}' => $appSettings->company_name
+			'{company_name}' => $appSettings->company_name,
+			'{site_name}' => $appSettings->company_name
 		);
 
 		$result = $this->_sendTicketEmail('ticket_reply_to_customer', $company['email'], $placeholders);
@@ -627,6 +630,9 @@ class Support_model extends CI_Model{
 		// Get customer/company details
 		$company = $this->db->where('id', $ticket['company_id'])->get('companies')->row_array();
 
+		// Get app settings
+		$appSettings = getAppSettings();
+
 		// Build placeholders
 		$placeholders = array(
 			'{ticket_id}' => $ticketId,
@@ -636,7 +642,9 @@ class Support_model extends CI_Model{
 			'{client_name}' => !empty($company) ? (($company['first_name'] ?? '') . ' ' . ($company['last_name'] ?? '')) : 'Customer',
 			'{client_email}' => !empty($company) ? $company['email'] : '',
 			'{reply_message}' => nl2br(htmlspecialchars($replyMessage)),
-			'{admin_ticket_url}' => base_url() . 'whmazadmin/ticket/viewticket/' . $ticketId
+			'{admin_ticket_url}' => base_url() . 'whmazadmin/ticket/viewticket/' . $ticketId,
+			'{company_name}' => $appSettings->company_name,
+			'{site_name}' => $appSettings->company_name
 		);
 
 		$result = $this->_sendTicketEmail('ticket_reply_to_department', $department['email'], $placeholders);

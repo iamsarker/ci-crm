@@ -494,6 +494,7 @@ class Payment_model extends CI_Model
             '{transaction_id}' => $transaction['gateway_transaction_id'] ?: $transaction['transaction_uuid'],
             '{payment_date}' => date('F j, Y g:i A', strtotime($transaction['completed_at'] ?: $transaction['initiated_at'])),
             '{company_name}' => $appSettings->company_name,
+            '{site_name}' => $appSettings->company_name,
             '{admin_invoice_url}' => base_url() . 'whmazadmin/invoice/view/' . $invoice['company_id'] . '/' . $invoice['invoice_uuid']
         );
 

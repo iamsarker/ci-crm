@@ -367,6 +367,7 @@ class Order_model extends CI_Model{
 			'{due_date}' => date('F j, Y', strtotime($invoice['due_date'])),
 			'{order_items}' => $orderItemsHtml,
 			'{company_name}' => $appSettings->company_name,
+			'{site_name}' => $appSettings->company_name,
 			'{invoice_url}' => base_url() . 'billing/pay/' . $invoice['invoice_uuid'],
 			'{admin_order_url}' => base_url() . 'whmazadmin/order/view/' . $order['order_uuid'],
 			'{admin_invoice_url}' => base_url() . 'whmazadmin/invoice/view/' . $order['company_id'] . '/' . $invoice['invoice_uuid']
