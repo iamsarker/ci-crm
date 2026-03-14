@@ -27,6 +27,7 @@
         toastError(<?= json_encode(htmlspecialchars($admin_error, ENT_QUOTES, 'UTF-8')) ?>);
       });
       <?php } ?>
+      <?php $this->session->set_flashdata('new_user_credentials', NULL); ?>
     </script>
 
   </body>
