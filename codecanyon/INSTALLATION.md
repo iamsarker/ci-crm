@@ -88,6 +88,14 @@ You'll need the ability to:
 - Create and edit files
 - Access MySQL/PhpMyAdmin
 
+**Directories that must be writable:**
+- Root directory (for `.env` file creation)
+- `install/` directory (for `install.lock` and logs)
+- `src/sessions/`
+- `src/logs/`
+- `src/cache/`
+- `uploadedfiles/`
+
 ---
 
 ## 🎯 Installation Methods
@@ -1516,11 +1524,12 @@ Use this checklist to ensure complete installation:
 
 ### Installation
 - [ ] Files uploaded to server
+- [ ] Root and install directories are writable
 - [ ] Database created
 - [ ] Database user created with privileges
-- [ ] crm_db.sql imported successfully
-- [ ] crm_db_views.sql imported successfully
-- [ ] database.php configured with correct credentials
+- [ ] crm_db.sql imported successfully (auto-installer does this automatically)
+- [ ] crm_db_views.sql imported successfully (auto-installer does this automatically)
+- [ ] .env file created with database credentials (auto-installer does this automatically)
 - [ ] config.php base URL set correctly
 - [ ] File permissions set (755 on writable folders)
 - [ ] .htaccess working (for Apache)
@@ -1528,8 +1537,8 @@ Use this checklist to ensure complete installation:
 - [ ] Can access admin portal
 
 ### Security
-- [ ] Admin password changed
-- [ ] Admin email updated
+- [ ] Admin password changed (skip if used auto-installer with custom credentials)
+- [ ] Admin email updated (skip if used auto-installer with custom credentials)
 - [ ] Demo accounts deleted or updated
 - [ ] Session encryption key changed
 - [ ] Config files set to read-only
