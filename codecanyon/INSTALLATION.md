@@ -157,8 +157,10 @@ FLUSH PRIVILEGES;
    | 2. Requirements | Automatic server compatibility check |
    | 3. Database | Enter your database credentials |
    | 4. Import | Automatic database import with progress bar |
-   | 5. Settings | Configure site name, URL, and admin account |
+   | 5. Settings | Configure site name, URL, and admin account (name, email, password) |
    | 6. Complete | Get your portal URLs and security reminders |
+
+> **Tip:** If WHMAZ is not installed yet, visiting the main URL will automatically redirect you to the installer.
 
 ### Step 4: Complete Setup
 
@@ -369,7 +371,7 @@ $config['base_url'] = 'https://yourdomain.com/';
    - `src/sessions/`
    - `src/logs/`
    - `src/cache/`
-   - `resources/uploads/`
+   - `uploadedfiles/`
 
 2. Right-click → **Change Permissions**
 3. Set to **755** (or 777 if 755 doesn't work)
@@ -392,11 +394,13 @@ You should see the WHMAZ client portal homepage.
 
 ![Admin Login](screenshots/install/admin-login.png)
 
-**Default Admin Credentials:**
+**Default Admin Credentials (Manual Installation Only):**
 ```
-Email: admin@demo.com
-Password: Admin@123
+Email: admin@whmaz.com
+Password: Abcd.1234
 ```
+
+> **Note:** If you used the auto-installer, use the credentials you created during Step 5.
 
 > ✅ **Success!** If you can access both portals, installation is complete!
 
@@ -559,7 +563,7 @@ $config['base_url'] = 'http://yourdomain.com/';
 sudo chmod -R 755 /var/www/html/whmaz/src/sessions/
 sudo chmod -R 755 /var/www/html/whmaz/src/logs/
 sudo chmod -R 755 /var/www/html/whmaz/src/cache/
-sudo chmod -R 755 /var/www/html/whmaz/resources/uploads/
+sudo chmod -R 755 /var/www/html/whmaz/uploadedfiles/
 sudo chown -R www-data:www-data /var/www/html/whmaz
 ```
 
@@ -1008,6 +1012,11 @@ location /install {
    ```
 3. **Folder Permissions:** Run:
    ```bash
+   # Root and install directory (required for .env and install.lock)
+   chmod 755 /path/to/whmaz
+   chmod 755 /path/to/whmaz/install
+
+   # Application directories
    chmod -R 755 src/sessions/ src/logs/ src/cache/ uploadedfiles/
    ```
 
@@ -1156,10 +1165,15 @@ FLUSH PRIVILEGES;
 
 1. **Set folder permissions:**
 ```bash
+# Root and install directory (for .env and install.lock)
+chmod 755 /path/to/whmaz
+chmod 755 /path/to/whmaz/install
+
+# Application directories
 chmod -R 755 src/sessions/
 chmod -R 755 src/logs/
 chmod -R 755 src/cache/
-chmod -R 755 resources/uploads/
+chmod -R 755 uploadedfiles/
 ```
 
 2. **Set ownership (Ubuntu/Debian):**
@@ -1387,7 +1401,7 @@ If you need to completely remove WHMAZ:
 mysqldump -u whmaz_user -p whmaz_crm > whmaz_backup.sql
 
 # Backup uploads
-tar -czf whmaz_uploads.tar.gz resources/uploads/
+tar -czf whmaz_uploads.tar.gz uploadedfiles/
 ```
 
 ### Step 2: Remove Database

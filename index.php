@@ -38,6 +38,63 @@
 
 /*
  *---------------------------------------------------------------
+ * INSTALLATION CHECK
+ *---------------------------------------------------------------
+ *
+ * Check if the application is installed. If not, redirect to installer.
+ * Installation is considered complete when:
+ * - .env file exists with valid database config, OR
+ * - install/install.lock file exists
+ */
+$_installEnvFile = __DIR__ . DIRECTORY_SEPARATOR . '.env';
+$_installLockFile = __DIR__ . DIRECTORY_SEPARATOR . 'install' . DIRECTORY_SEPARATOR . 'install.lock';
+$_installDir = __DIR__ . DIRECTORY_SEPARATOR . 'install';
+$_isInstalled = false;
+
+// Check 1: install.lock exists
+if (file_exists($_installLockFile)) {
+    $_isInstalled = true;
+}
+
+// Check 2: .env exists with valid DB_DATABASE
+if (!$_isInstalled && file_exists($_installEnvFile)) {
+    $_envContent = @file_get_contents($_installEnvFile);
+    if ($_envContent && preg_match('/^DB_DATABASE=(.+)$/m', $_envContent, $_matches)) {
+        if (!empty(trim($_matches[1]))) {
+            $_isInstalled = true;
+        }
+    }
+}
+
+// If not installed, redirect to installer or show error
+if (!$_isInstalled) {
+    if (is_dir($_installDir) && file_exists($_installDir . DIRECTORY_SEPARATOR . 'index.php')) {
+        // Redirect to installer
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+        $scriptName = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : '/index.php';
+        $baseUrl = $protocol . '://' . $host . rtrim(dirname($scriptName), '/\\');
+
+        header('Location: ' . $baseUrl . '/install/');
+        exit;
+    } else {
+        // Installer not found, show error
+        http_response_code(503);
+        echo '<!DOCTYPE html><html><head><title>Installation Required</title>';
+        echo '<style>body{font-family:Arial,sans-serif;max-width:600px;margin:50px auto;padding:20px;text-align:center;}';
+        echo '.error{background:#fee;border:1px solid #c00;padding:20px;border-radius:8px;}</style></head>';
+        echo '<body><div class="error"><h2>Installation Required</h2>';
+        echo '<p>WHMAZ is not installed. The <code>.env</code> file is missing or invalid.</p>';
+        echo '<p>Please upload the <code>/install</code> folder and run the installer.</p></div></body></html>';
+        exit;
+    }
+}
+
+// Clean up installation check variables
+unset($_installEnvFile, $_installLockFile, $_installDir, $_isInstalled, $_envContent, $_matches);
+
+/*
+ *---------------------------------------------------------------
  * APPLICATION ENVIRONMENT
  *---------------------------------------------------------------
  *

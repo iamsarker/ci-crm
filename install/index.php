@@ -189,6 +189,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($action === 'next') {
                 $siteName = $_POST['site_name'] ?? 'WHMAZ';
                 $siteUrl = $_POST['site_url'] ?? '';
+                $adminFirstName = trim($_POST['admin_first_name'] ?? '');
+                $adminLastName = trim($_POST['admin_last_name'] ?? '');
                 $adminEmail = $_POST['admin_email'] ?? '';
                 $adminPassword = $_POST['admin_password'] ?? '';
                 $adminPasswordConfirm = $_POST['admin_password_confirm'] ?? '';
@@ -202,6 +204,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if (empty($siteUrl)) {
                     $errors[] = 'Site URL is required';
+                }
+
+                if (empty($adminFirstName)) {
+                    $errors[] = 'First name is required';
+                }
+
+                if (empty($adminLastName)) {
+                    $errors[] = 'Last name is required';
                 }
 
                 if (!$installer->validateEmail($adminEmail)) {
@@ -226,7 +236,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $installer->updateSiteSettings($siteName, $siteUrl);
 
                         // Update admin credentials
-                        $installer->updateAdminCredentials($adminEmail, $adminPassword);
+                        $installer->updateAdminCredentials($adminEmail, $adminPassword, $adminFirstName, $adminLastName);
 
                         // Create lock file
                         $installer->createLockFile();

@@ -50,12 +50,12 @@ $allPassed = $requirements['all_passed'];
         <div class="requirement-icon">
             <i class="fas fa-<?= $info['passed'] ? 'check' : 'times' ?>"></i>
         </div>
-        <span class="requirement-name"><?= $info['path'] ?></span>
+        <span class="requirement-name"><?= $info['label'] ?? $info['path'] ?></span>
         <span class="requirement-value">
             <?php if (!$info['exists']): ?>
                 Directory not found
             <?php elseif (!$info['writable']): ?>
-                Not writable (chmod 755)
+                Not writable
             <?php else: ?>
                 Writable
             <?php endif; ?>
@@ -63,6 +63,37 @@ $allPassed = $requirements['all_passed'];
     </li>
     <?php endforeach; ?>
 </ul>
+
+<?php
+$hasPermissionIssue = false;
+foreach ($requirements['directories'] as $info) {
+    if (!$info['passed']) {
+        $hasPermissionIssue = true;
+        break;
+    }
+}
+if ($hasPermissionIssue):
+?>
+<div class="alert alert-warning" style="margin-top: 15px;">
+    <i class="fas fa-terminal"></i>
+    <div>
+        <strong>How to Fix Permission Issues</strong><br>
+        Run these commands in your terminal (adjust path to your installation directory):
+        <pre style="background: #1c273c; color: #e5e9f2; padding: 12px; border-radius: 6px; margin-top: 10px; font-size: 13px; overflow-x: auto;">
+# Set ownership to web server user
+sudo chown -R www-data:www-data /path/to/whmaz
+
+# Or set directory permissions
+sudo chmod 755 /path/to/whmaz
+sudo chmod 755 /path/to/whmaz/install
+sudo chmod -R 755 /path/to/whmaz/src/sessions
+sudo chmod -R 755 /path/to/whmaz/src/logs
+sudo chmod -R 755 /path/to/whmaz/src/cache
+sudo chmod -R 755 /path/to/whmaz/uploadedfiles</pre>
+        <small style="color: #8392a5;">Note: Replace <code>www-data</code> with your web server user (e.g., <code>daemon</code> for XAMPP, <code>apache</code> for CentOS).</small>
+    </div>
+</div>
+<?php endif; ?>
 
 <!-- Required Files -->
 <h4 class="section-title"><i class="fas fa-file-alt"></i> Required Files</h4>

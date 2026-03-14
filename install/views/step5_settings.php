@@ -35,6 +35,19 @@ $detectedUrl = $installer->detectSiteUrl();
         </div>
     </div>
 
+    <div class="input-group">
+        <div class="form-group">
+            <label for="admin_first_name">First Name <span class="required">*</span></label>
+            <input type="text" class="form-control" id="admin_first_name" name="admin_first_name"
+                   placeholder="John" required>
+        </div>
+        <div class="form-group">
+            <label for="admin_last_name">Last Name <span class="required">*</span></label>
+            <input type="text" class="form-control" id="admin_last_name" name="admin_last_name"
+                   placeholder="Doe" required>
+        </div>
+    </div>
+
     <div class="form-group">
         <label for="admin_email">Admin Email <span class="required">*</span></label>
         <input type="email" class="form-control" id="admin_email" name="admin_email"

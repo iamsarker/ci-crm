@@ -37,7 +37,11 @@ class Install
     ];
 
     // Writable directories (relative to base path)
+    // '.' = root directory (for .env file)
+    // 'install' = installer directory (for install.log and install.lock)
     const WRITABLE_DIRS = [
+        '.',
+        'install',
         'src/sessions',
         'src/logs',
         'src/cache',
@@ -203,6 +207,12 @@ class Install
     {
         $results = [];
 
+        // User-friendly names for directories
+        $dirLabels = [
+            '.' => 'Root Directory (for .env file)',
+            'install' => 'Install Directory (for logs)',
+        ];
+
         foreach (self::WRITABLE_DIRS as $dir) {
             $path = $this->basePath . '/' . $dir;
             $exists = is_dir($path);
@@ -210,6 +220,7 @@ class Install
 
             $results[$dir] = [
                 'path' => $dir,
+                'label' => $dirLabels[$dir] ?? $dir,
                 'exists' => $exists,
                 'writable' => $writable,
                 'passed' => $writable
@@ -557,7 +568,7 @@ class Install
     /**
      * Update admin credentials
      */
-    public function updateAdminCredentials($email, $password)
+    public function updateAdminCredentials($email, $password, $firstName = '', $lastName = '')
     {
         $db = $this->getDbCredentials();
         if (!$db) {
@@ -571,17 +582,24 @@ class Install
         // Hash password
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-        // Update admin user
-        $stmt = $this->pdo->prepare("
-            UPDATE admin_users
-            SET email = ?, password = ?, username = ?, updated_on = NOW()
-            WHERE id = 1
-        ");
-
         // Use email as username (before @ part)
         $username = strstr($email, '@', true) ?: 'admin';
 
-        $stmt->execute([$email, $hashedPassword, $username]);
+        // Update admin user
+        $stmt = $this->pdo->prepare("
+            UPDATE admin_users
+            SET email = ?,
+                mobile ='0',
+                phone ='0',
+                password = ?,
+                username = ?,
+                first_name = ?,
+                last_name = ?,
+                updated_on = NOW()
+            WHERE id = 1
+        ");
+
+        $stmt->execute([$email, $hashedPassword, $username, $firstName, $lastName]);
 
         return true;
     }
@@ -603,29 +621,16 @@ class Install
         // Ensure URL has trailing slash
         $siteUrl = rtrim($siteUrl, '/') . '/';
 
-        // Update app_settings
-        $settings = [
-            'site_name' => $siteName,
-            'company_name' => $siteName,
-            'site_url' => $siteUrl,
-        ];
-
-        foreach ($settings as $key => $value) {
-            $stmt = $this->pdo->prepare("
-                UPDATE app_settings SET setting_value = ? WHERE setting_key = ?
-            ");
-            $stmt->execute([$value, $key]);
-
-            // If no rows updated, insert
-            if ($stmt->rowCount() === 0) {
-                $stmt = $this->pdo->prepare("
-                    INSERT INTO app_settings (setting_key, setting_value, status)
-                    VALUES (?, ?, 1)
-                    ON DUPLICATE KEY UPDATE setting_value = ?
-                ");
-                $stmt->execute([$key, $value, $value]);
-            }
-        }
+        // Update app_settings (single row table with direct columns)
+        $stmt = $this->pdo->prepare("
+            UPDATE app_settings
+            SET site_name = ?,
+                site_desc = ?,
+                company_name = ?,
+                updated_on = NOW()
+            WHERE id = 1
+        ");
+        $stmt->execute([$siteName, $siteName, $siteName]);
 
         return true;
     }
