@@ -29,7 +29,8 @@ ci-crm/
 │   ├── SECURITY_AUDIT_REPORT.md   # Security audit results
 │   ├── SECURITY_HEADERS_SETUP.md  # Security headers configuration
 │   ├── PHP82_UPGRADE_AND_TROUBLESHOOTING.md  # PHP 8.2+ guide
-│   └── WHMCS_FEATURE_COMPARISON.md  # Feature comparison
+│   ├── WHMCS_FEATURE_COMPARISON.md  # Feature comparison
+│   └── AUTO_INSTALLER.md          # Auto-installer documentation
 │
 └── codecanyon/                    # CodeCanyon Buyer Documentation
     ├── README.md                  # Product overview
@@ -164,6 +165,21 @@ CI-CRM is a complete business management system designed for hosting and service
 
 #### [SECURITY_FIXES.md](SECURITY_FIXES.md)
 **Purpose:** Detailed security fix documentation
+
+---
+
+### 7. [AUTO_INSTALLER.md](AUTO_INSTALLER.md)
+**Purpose:** Auto-installer wizard documentation for CodeCanyon distribution
+**Best for:** Understanding and maintaining the installation wizard
+
+**Contents:**
+- Installation wizard flow (6 steps)
+- File structure and components
+- Install.php class methods
+- Database import strategy
+- Security features (CSRF, lock file)
+- Customization guide
+- Troubleshooting
 
 ---
 

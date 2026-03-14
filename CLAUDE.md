@@ -53,6 +53,28 @@ src/views/templates/            # Shared templates (header, footer)
 src/views/email/                # Email templates
 ```
 
+### Auto-Installer (CodeCanyon)
+```
+install/
+├── index.php                   # Main router and controller
+├── Install.php                 # Core installer class
+├── .htaccess                   # Security rules
+├── assets/
+│   └── installer.css           # Installer styling
+└── views/
+    ├── layout.php              # Base HTML layout
+    ├── step1_welcome.php       # Welcome & agreement
+    ├── step2_requirements.php  # Server checks
+    ├── step3_database.php      # Database config
+    ├── step4_import.php        # SQL import
+    ├── step5_settings.php      # Site & admin setup
+    ├── step6_complete.php      # Success page
+    ├── error.php               # Error display
+    └── already_installed.php   # Post-install notice
+```
+
+**Full documentation:** `docs/AUTO_INSTALLER.md`
+
 ### CSS Styling
 ```
 resources/assets/css/

@@ -6,7 +6,7 @@
         <div>Invoice #<?php echo htmlspecialchars($invoice['invoice_no']); ?></div>
         <div class="amount"><?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?></div>
         <?php if ($paid_amount > 0): ?>
-        <div style="font-size: 14px; margin-top: 10px; opacity: 0.9;">
+        <div class="invoice-subtitle">
             Previously paid: <?php echo $invoice['currency_code']; ?> <?php echo number_format($paid_amount, 2); ?>
         </div>
         <?php endif; ?>
@@ -101,26 +101,26 @@
         <!-- Payment Details Section (appears after clicking Proceed) -->
         <div class="payment-details-section" id="payment-details-section">
             <!-- Stripe Payment Form -->
-            <div class="payment-form" id="stripe-form" style="display:none;">
-                <h5 style="margin-bottom: 20px;"><i class="fas fa-credit-card"></i> Enter Card Details</h5>
+            <div class="payment-form" id="stripe-form" class="payment-form-section">
+                <h5 class="payment-form-title"><i class="fas fa-credit-card"></i> Enter Card Details</h5>
                 <label>Card Details</label>
                 <div id="stripe-card-element"></div>
-                <div id="stripe-card-errors" style="color: #c62828; margin-top: 10px; font-size: 14px;"></div>
+                <div id="stripe-card-errors" class="payment-error-text"></div>
                 <button type="button" class="btn-pay" id="stripe-pay-btn">
                     <i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>
                 </button>
             </div>
 
             <!-- PayPal Button -->
-            <div class="payment-form" id="paypal-form" style="display:none;">
-                <h5 style="margin-bottom: 20px;"><i class="fab fa-paypal"></i> Pay with PayPal</h5>
+            <div class="payment-form" id="paypal-form" class="payment-form-section">
+                <h5 class="payment-form-title"><i class="fab fa-paypal"></i> Pay with PayPal</h5>
                 <div id="paypal-button-container"></div>
             </div>
 
             <!-- SSLCommerz -->
-            <div class="payment-form" id="sslcommerz-form" style="display:none;">
-                <h5 style="margin-bottom: 20px;"><i class="fas fa-mobile-alt"></i> Pay with SSLCommerz</h5>
-                <p style="margin-bottom: 15px; color: #666;">
+            <div class="payment-form" id="sslcommerz-form" class="payment-form-section">
+                <h5 class="payment-form-title"><i class="fas fa-mobile-alt"></i> Pay with SSLCommerz</h5>
+                <p class="payment-form-description">
                     <i class="fas fa-info-circle"></i> You will be redirected to SSLCommerz secure payment page to complete your payment using bKash, Nagad, Cards, or Mobile Banking.
                 </p>
                 <button type="button" class="btn-pay" id="sslcommerz-pay-btn">
@@ -129,9 +129,9 @@
             </div>
 
             <!-- Razorpay -->
-            <div class="payment-form" id="razorpay-form" style="display:none;">
-                <h5 style="margin-bottom: 20px;"><i class="fas fa-rupee-sign"></i> Pay with Razorpay</h5>
-                <p style="margin-bottom: 15px; color: #666;">
+            <div class="payment-form" id="razorpay-form" class="payment-form-section">
+                <h5 class="payment-form-title"><i class="fas fa-rupee-sign"></i> Pay with Razorpay</h5>
+                <p class="payment-form-description">
                     <i class="fas fa-info-circle"></i> Pay securely using UPI, Cards, Net Banking, or Wallets.
                 </p>
                 <button type="button" class="btn-pay" id="razorpay-pay-btn">
@@ -140,9 +140,9 @@
             </div>
 
             <!-- Paystack -->
-            <div class="payment-form" id="paystack-form" style="display:none;">
-                <h5 style="margin-bottom: 20px;"><i class="fas fa-credit-card"></i> Pay with Paystack</h5>
-                <p style="margin-bottom: 15px; color: #666;">
+            <div class="payment-form" id="paystack-form" class="payment-form-section">
+                <h5 class="payment-form-title"><i class="fas fa-credit-card"></i> Pay with Paystack</h5>
+                <p class="payment-form-description">
                     <i class="fas fa-info-circle"></i> Pay securely using Cards, Bank Transfer, or Mobile Money.
                 </p>
                 <button type="button" class="btn-pay" id="paystack-pay-btn">
@@ -151,8 +151,8 @@
             </div>
 
             <!-- Bank Transfer -->
-            <div class="payment-form" id="bank_transfer-form" style="display:none;">
-                <h5 style="margin-bottom: 20px;"><i class="fas fa-university"></i> Bank Transfer Details</h5>
+            <div class="payment-form" id="bank_transfer-form" class="payment-form-section">
+                <h5 class="payment-form-title"><i class="fas fa-university"></i> Bank Transfer Details</h5>
                 <div class="bank-transfer-details">
                     <table>
                         <?php
@@ -186,7 +186,7 @@
                         <?php endif; ?>
                         <tr><td>Reference:</td><td><strong><?php echo $invoice['invoice_no']; ?></strong></td></tr>
                     </table>
-                    <p style="margin-top: 15px; font-size: 13px; color: #666;">
+                    <p class="payment-instructions-text">
                         <i class="fas fa-exclamation-triangle"></i>
                         Please include the invoice number as payment reference. Your order will be processed once payment is confirmed.
                     </p>
@@ -197,8 +197,8 @@
             </div>
 
             <!-- Manual Payment -->
-            <div class="payment-form" id="manual-form" style="display:none;">
-                <h5 style="margin-bottom: 20px;"><i class="fas fa-hand-holding-usd"></i> Manual Payment</h5>
+            <div class="payment-form" id="manual-form" class="payment-form-section">
+                <h5 class="payment-form-title"><i class="fas fa-hand-holding-usd"></i> Manual Payment</h5>
                 <div class="bank-transfer-details">
                     <?php
                     $manualGateway = null;
@@ -220,12 +220,12 @@
                 </button>
             </div>
 
-            <button type="button" class="btn btn-secondary mt-3" id="back-to-methods" style="width: 100%;">
+            <button type="button" class="btn btn-secondary mt-3" id="back-to-methods" class="btn-full-width">
                 <i class="fas fa-arrow-left"></i> Back to Payment Methods
             </button>
         </div>
 
-        <div style="text-align: center; margin-top: 20px;">
+        <div class="footer-center">
             <a href="<?php echo base_url(); ?>billing/view_invoice/<?php echo $invoice['invoice_uuid']; ?>" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Invoice
             </a>

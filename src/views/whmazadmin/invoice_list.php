@@ -37,7 +37,7 @@
 			<div class="col-xl-3 col-md-6 mb-3">
 				<div class="card stats-card">
 					<div class="card-body d-flex align-items-center">
-						<div class="stats-icon danger me-3" style="background: linear-gradient(135deg, #E53935 0%, #C62828 100%); color: #fff;">
+						<div class="stats-icon danger me-3" class="stats-icon-danger">
 							<i class="fa fa-exclamation-circle"></i>
 						</div>
 						<div>
@@ -68,7 +68,7 @@
 				<div>
 					<h4 class="mb-1"><i class="fa fa-file-invoice me-2"></i>Invoices</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
-						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
+						<ol class="breadcrumb breadcrumb-style1 mb-0" class="breadcrumb-transparent">
 							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
 							<li class="breadcrumb-item active">Invoices</li>
 						</ol>
@@ -233,11 +233,11 @@ $(function(){
 				"render": function(data, type, row) {
 					var paidButton = '';
 					if (row['pay_status'] != "PAID") {
-						paidButton = '<button type="button" class="btn btn-action btn-success-custom" onclick="markAsPaid(\''+row['invoice_uuid']+'\')" title="Mark as Paid" style="background: linear-gradient(135deg, #43A047 0%, #388E3C 100%); border: none; color: #fff;"><i class="fa fa-check"></i></button> ';
+						paidButton = '<button type="button" class="btn btn-action btn-success-custom" onclick="markAsPaid(\''+row['invoice_uuid']+'\')" title="Mark as Paid" class="btn-invoice-paid"><i class="fa fa-check"></i></button> ';
 					}
 
 					return '<button type="button" class="btn btn-action btn-manage" onclick="viewInvoice('+row['company_id']+',\''+row['invoice_uuid']+'\')" title="View Invoice"><i class="fa fa-eye"></i></button> ' +
-						   '<button type="button" class="btn btn-action" onclick="downloadInvoice('+row['company_id']+',\''+row['invoice_uuid']+'\')" title="Download PDF" style="background: linear-gradient(135deg, #E53935 0%, #C62828 100%); border: none; color: #fff;"><i class="fa fa-file-pdf"></i></button> ' +
+						   '<button type="button" class="btn btn-action" onclick="downloadInvoice('+row['company_id']+',\''+row['invoice_uuid']+'\')" title="Download PDF" class="btn-invoice-pdf"><i class="fa fa-file-pdf"></i></button> ' +
 						   paidButton;
 				}
 			}

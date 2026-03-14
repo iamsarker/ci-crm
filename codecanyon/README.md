@@ -2,7 +2,7 @@
 
 > **Lightweight Domain Hosting Management System** - A comprehensive web hosting automation platform and client management system built with CodeIgniter 3.x
 
-[![Version](https://img.shields.io/badge/version-1.9.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](CHANGELOG.md)
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-8892BF.svg)](https://php.net)
 [![CodeIgniter](https://img.shields.io/badge/CodeIgniter-3.1.13-EE4623.svg)](https://codeigniter.com)
 [![License](https://img.shields.io/badge/license-Commercial-green.svg)](LICENSE.txt)
@@ -340,8 +340,8 @@ RewriteRule ^(.*)$ index.php/$1 [L]
 **Admin Portal:** `http://yourdomain.com/whmazadmin/authenticate/login`
 
 **Default Admin Credentials:**
-- Username: `admin@demo.com`
-- Password: `Admin@123`
+- Username: `admin@whmaz.com`
+- Password: `Abcd.1234`
 
 > ⚠️ **IMPORTANT:** Change default admin password immediately after first login!
 
@@ -588,7 +588,7 @@ We're here to help you succeed with WHMAZ!
 
 **📧 Email Support:** support@whmaz.com
 **⏰ Response Time:** Within 24 hours (Monday-Friday)
-**🕐 Support Hours:** 9 AM - 6 PM EST (Monday-Friday)
+**🕐 Support Hours:** 12 PM - 03 PM UTC (Monday-Friday)
 
 ### Support Includes
 
@@ -708,9 +708,17 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
 
 ## 📋 Changelog
 
-### Version 1.9.0 (February 2026) - Auto-Provisioning System
+### Version 1.0.0 (March 2026) - Initial Release
 
-**New Features:**
+**Core System:**
+- Complete domain hosting management system for hosting providers
+- Dual portal architecture (Client + Admin)
+- Order management system with full lifecycle
+- Billing and invoicing with PDF generation
+- Multi-currency support
+- Comprehensive reporting and analytics
+
+**Auto-Provisioning System:**
 - Automatic domain provisioning after payment:
   - Domain registration via registrar API
   - Domain transfer with EPP code
@@ -723,111 +731,75 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
   - ResellerClub / Resell.biz (JSON API)
   - Namecheap (XML API)
 - Default registrar system - set one registrar for all domain operations
-- Auto-unset other registrars when setting default
 
-### Version 1.8.0 (February 2026) - Email Notifications System
-
-**New Features:**
+**Email & Notification System:**
 - Order confirmation emails to customer and admin after checkout
+- Payment confirmation emails (automatic on successful payment)
 - Ticket notification emails:
   - Client creates ticket → Department receives email
   - Admin creates ticket → Customer receives email
-  - Admin replies → Customer receives email
-  - Client replies → Department receives email
-- 6 new email templates with customizable placeholders
-- Configurable admin notifications via sys_cnf settings
-
-### Version 1.0.9 (February 2026) - Client Portal UI Enhancement
-
-**UI Redesign:**
-- Complete client portal beautification with modern, professional design
-- Dashboard redesign with welcome banner and stat cards
-- Services, domains, invoices, and tickets list pages with consistent styling
-- View ticket page with conversation thread and message bubbles
-- Consistent blue-purple gradient theme across all pages
-- All CSS externalized to `custom.css` (CodeCanyon compliant)
-- Fixed footer positioning with flexbox layout
-- Responsive design with mobile-friendly layouts
-- Domain detail page with nameserver management and contact sync
-
-### Version 1.0.8 (February 2026) - Admin Dashboard Widgets
-
-**New Features:**
-- Last 12 Months Expenses chart (Chart.js bar chart)
-- Domain Selling Prices widget with pricing table
-- Chart.js integration for data visualization
-
-### Version 1.0.7 (February 2026) - Security Enhancement
-
-**Security:**
-- Google reCAPTCHA v2 on Admin Portal login
-- JavaScript frame-busting for clickjacking protection
-
-### Version 1.0.6 (February 2026) - Public KB & Announcements
-
-**New Features:**
-- Public Knowledge Base pages (no auth required)
-- Public Announcements with archive filtering
-- Server-side pagination for KB and announcements
-
-### Version 1.0.5 (January 2026) - Email & Account Security
-
-**New Features:**
-- Raw SMTP email helper for reliable delivery
-- Email verification after registration
-- Change Password page in Client Portal
-
-### Version 1.0.4 (January 2026) - Email Templates & Dunning
-
-**New Features:**
-- Email Template Management system with full CRUD and server-side DataTable
-- Quill rich text editor for email body composition
+  - Admin/Client replies → Appropriate party notified
+- Email Template Management with Quill rich text editor
 - 7 template categories: DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, GENERAL
-- Placeholder system for dynamic content (`{client_name}`, `{invoice_no}`, `{amount_due}`, etc.)
-- 10 default email templates (5 dunning, 2 invoice, 1 order, 2 auth)
-- Dunning Rules Management in General Settings with dedicated "Dunning" tab
-- Dunning rule CRUD via AJAX modal (step number, days after due, action type, email template)
-- Dunning workflow preview visualization
-- `ssp_helper.php` enhanced with `$extraWhere` parameter for additional WHERE conditions
+- Placeholder system for dynamic content
+- Dunning Rules Management with workflow preview
 
-### Version 1.0.3 (January 2026) - Service Products & cPanel
+**Client Portal:**
+- Modern, professional UI with blue-purple gradient theme
+- Dashboard with welcome banner and stat cards
+- Services, domains, invoices, and tickets management
+- Ticket conversation thread with message bubbles
+- Domain detail page with nameserver management and contact sync
+- Change Password and Email Verification
+- Real-time cPanel usage sync (disk, bandwidth, emails, databases)
+- Single sign-on to cPanel and Webmail
+- Responsive design with mobile-friendly layouts
 
-**New Features:**
-- Service product management with full CRUD and server-side DataTable
-- cPanel/WHM integration: dynamic package dropdown, auto-populate product description
-- `cpanel_helper.php` for WHM API calls
+**Support System:**
+- Multi-department ticket management
+- Priority levels (Low, Medium, High, Critical)
+- File attachments and internal notes
+- Customer satisfaction ratings
+- Public Knowledge Base with categories and search
+- Upvote/Downvote system for KB articles
+- Public Announcements with archive filtering
 
-**Bug Fixes:**
-- Fixed Cart.php company_id assignment bug
-- Fixed SSP helper numeric column search (exact match instead of LIKE)
+**Admin Dashboard:**
+- Key metrics and analytics widgets
+- Last 12 Months Expenses chart (Chart.js)
+- Domain Selling Prices widget
+- Recent activity feeds
+- Revenue tracking and order statistics
 
-### Version 1.0.0 (January 2026) - Initial Release
-
-**Features:**
-- Complete domain hosting management system for hosting providers
-- Dual portal architecture (Client + Admin)
-- Order management system
-- Billing and invoicing
-- Support ticket system
-- Knowledge base
-- Domain registration integration
-- Expense tracking
-- Multi-currency support
-- Comprehensive reporting
+**Service Products & cPanel Integration:**
+- Service product management with full CRUD
+- cPanel/WHM integration: dynamic package dropdown
+- Auto-populate product descriptions from cPanel
+- Server management
 
 **Security:**
 - CSRF protection
 - XSS prevention
-- SQL injection prevention
-- Password hashing
-- Session security
+- SQL injection prevention with parameterized queries
+- Password hashing with `password_hash()`
+- Session security with database storage
+- Google reCAPTCHA v2 on Admin Portal login
+- Frame-busting for clickjacking protection
+- Input validation and sanitization
+
+**Payment Gateways:**
+- Stripe (Credit/Debit Cards)
+- SSLCommerz (Bangladesh Payments)
+- Bank Transfer (Manual)
+- Webhook handling with signature verification
 
 **Technical:**
 - PHP 8.2+ compatible
+- CodeIgniter 3.x with HMVC architecture
 - Bootstrap 5 responsive design
-- HMVC architecture
-- Server-side pagination
+- Server-side pagination with DataTables
 - RESTful API ready
+- All CSS externalized (CodeCanyon compliant)
 
 For detailed version history, see **[CHANGELOG.md](CHANGELOG.md)**
 

@@ -2,11 +2,11 @@
 ## WHMAZ - Web Host Manager A to Z solutions
 
 **Product:** WHMAZ - Lightweight Domain Hosting Management System
-**Report Date:** February 28, 2026
+**Report Date:** March 14, 2026
 **Project Type:** PHP Scripts - Hosting & Domain Management
 **Framework:** CodeIgniter 3.x with HMVC
 **UI Framework:** AdminLTE 4.0.0 (MIT License)
-**Version:** 1.9.0
+**Version:** 1.0.0
 
 ---
 
@@ -192,18 +192,18 @@ Root Files:
 
 ## Recent Updates (February 2026)
 
-### Version 1.9.0 - Auto-Provisioning System
+### Version 1.0.0 - Auto-Provisioning System
 - Automatic domain provisioning after payment (registration, transfer, renewal)
 - Automatic hosting provisioning via cPanel/WHM API
 - Provisioning logs for tracking and retry
 - Extensible registrar support
 
-### Version 1.8.0 - Email Notifications System
+### Version 1.0.0 - Email Notifications System
 - Order confirmation emails to customer and admin
 - Ticket notification emails (new ticket, replies)
 - 6 new customizable email templates
 
-### Version 1.0.9 - Client Portal UI Enhancement
+### Version 1.0.0 - Client Portal UI Enhancement
 - Complete client portal beautification
 - Modern blue-purple gradient theme
 - All CSS externalized (CodeCanyon compliant)
@@ -220,14 +220,14 @@ Root Files:
 ## Demo Credentials
 
 ### Admin Portal
-- **URL:** `https://yourdomain.com/whmazadmin/authenticate/login`
-- **Email:** `admin@demo.com`
-- **Password:** `Admin@123`
+- **URL:** `https://demo.whmaz.com/whmazadmin/authenticate/login`
+- **Email:** `admin@whmaz.com`
+- **Password:** `Abcd.1234`
 
 ### Customer Portal
-- **URL:** `https://yourdomain.com/auth/login`
-- **Email:** `customer@demo.com`
-- **Password:** `Demo@123`
+- **URL:** `https://demo.whmaz.com/auth/login`
+- **Email:** `client@whmaz.com`
+- **Password:** `Abcd.1234`
 
 ---
 
@@ -341,7 +341,7 @@ Based on:
 
 ---
 
-*Report generated: February 28, 2026*
+*Report generated: March 14, 2026*
 *Product: WHMAZ - Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System*
-*Version: 1.9.0*
+*Version: 1.0.0*
 *Copyright © 2026 WHMAZ. All Rights Reserved.*

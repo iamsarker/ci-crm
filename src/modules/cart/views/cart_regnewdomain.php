@@ -152,7 +152,7 @@
 						<h5>Domain Suggestions</h5>
 					</div>
 					<div class="domain-suggestions-body">
-						<div class="table-responsive" style="max-height: 350px; overflow: auto;">
+						<div class="table-responsive" class="scrollable-md">
 							<table class="table domain-suggestions-table">
 								<thead>
 									<tr>

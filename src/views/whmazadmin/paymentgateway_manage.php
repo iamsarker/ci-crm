@@ -90,7 +90,7 @@
 									</div>
 
 									<!-- Live Credentials -->
-									<div class="live-credentials" style="<?php echo $gateway['is_test_mode'] ? 'display:none;' : ''; ?>">
+									<div class="live-credentials" class="<?php echo $gateway['is_test_mode'] ? 'd-hidden' : ''; ?>">
 										<h6 class="text-success"><i class="fas fa-check-circle"></i> Live Credentials</h6>
 										<div class="mb-3">
 											<label class="form-label">
@@ -109,7 +109,7 @@
 									</div>
 
 									<!-- Test Credentials -->
-									<div class="test-credentials" style="<?php echo $gateway['is_test_mode'] ? '' : 'display:none;'; ?>">
+									<div class="test-credentials" class="<?php echo $gateway['is_test_mode'] ? '' : 'd-hidden'; ?>">
 										<h6 class="text-warning"><i class="fas fa-flask"></i> Test/Sandbox Credentials</h6>
 										<div class="mb-3">
 											<label class="form-label">
@@ -128,7 +128,7 @@
 									</div>
 
 									<!-- Live Webhook Secret -->
-									<div class="live-credentials" style="<?php echo $gateway['is_test_mode'] ? 'display:none;' : ''; ?>">
+									<div class="live-credentials" class="<?php echo $gateway['is_test_mode'] ? 'd-hidden' : ''; ?>">
 										<div class="mb-3">
 											<label class="form-label">
 												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Webhook ID' : 'Webhook Secret'; ?>
@@ -140,7 +140,7 @@
 									</div>
 
 									<!-- Test Webhook Secret -->
-									<div class="test-credentials" style="<?php echo $gateway['is_test_mode'] ? '' : 'display:none;'; ?>">
+									<div class="test-credentials" class="<?php echo $gateway['is_test_mode'] ? '' : 'd-hidden'; ?>">
 										<div class="mb-3">
 											<label class="form-label">
 												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Sandbox Webhook ID' : 'Test Webhook Secret'; ?>
@@ -277,7 +277,7 @@
 											<option value="both" <?php echo $gateway['fee_type'] === 'both' ? 'selected' : ''; ?>>Fixed + Percentage</option>
 										</select>
 									</div>
-									<div class="row fee-fields" style="<?php echo $gateway['fee_type'] === 'none' ? 'display:none;' : ''; ?>">
+									<div class="row fee-fields" class="<?php echo $gateway['fee_type'] === 'none' ? 'd-hidden' : ''; ?>">
 										<div class="col-md-6">
 											<div class="mb-3">
 												<label class="form-label">Fixed Fee</label>
@@ -293,7 +293,7 @@
 											</div>
 										</div>
 									</div>
-									<div class="mb-3 fee-fields" style="<?php echo $gateway['fee_type'] === 'none' ? 'display:none;' : ''; ?>">
+									<div class="mb-3 fee-fields" class="<?php echo $gateway['fee_type'] === 'none' ? 'd-hidden' : ''; ?>">
 										<label class="form-label">Fee Paid By</label>
 										<select class="form-select" name="fee_bearer">
 											<option value="merchant" <?php echo $gateway['fee_bearer'] === 'merchant' ? 'selected' : ''; ?>>Merchant (absorbed)</option>

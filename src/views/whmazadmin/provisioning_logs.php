@@ -162,7 +162,7 @@
 					<i class="fas fa-spinner fa-spin fa-2x"></i>
 				</div>
 			</div>
-			<div class="modal-footer" id="logDetailFooter" style="display: none;">
+			<div class="modal-footer" id="logDetailFooter" class="d-hidden">
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 				<button type="button" class="btn btn-warning" id="btnRetryItem">
 					<i class="fas fa-redo me-1"></i> Retry This Item
@@ -338,14 +338,14 @@ $(document).ready(function() {
 					if (log.error_message) {
 						html += '<div class="alert alert-danger mb-3">';
 						html += '<strong><i class="fas fa-exclamation-triangle me-1"></i> Error:</strong><br>';
-						html += '<pre class="mb-0 mt-2" style="white-space: pre-wrap;">' + log.error_message + '</pre>';
+						html += '<pre class="mb-0 mt-2" class="pre-wrap">' + log.error_message + '</pre>';
 						html += '</div>';
 					}
 
 					// Response data
 					if (log.response_data) {
 						html += '<div class="mb-3"><strong>Response Data:</strong></div>';
-						html += '<pre class="bg-dark text-light p-3 rounded" style="max-height: 300px; overflow: auto;">';
+						html += '<pre class="bg-dark text-light p-3 rounded" class="log-response-block">';
 						try {
 							var responseData = JSON.parse(log.response_data);
 							html += JSON.stringify(responseData, null, 2);

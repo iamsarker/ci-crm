@@ -15,7 +15,8 @@
       "Bash(mysql:*)",
       "Bash(find:*)",
       "Bash(du:*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(xargs:*)"
     ]
   }
 }

@@ -279,7 +279,7 @@ $(document).ready(function() {
 					}
 
 					html += '<div class="mb-3"><strong>Payload:</strong></div>';
-					html += '<pre class="bg-dark text-light p-3 rounded" style="max-height: 400px; overflow: auto;">';
+					html += '<pre class="bg-dark text-light p-3 rounded" class="webhook-response-block">';
 					try {
 						var payload = JSON.parse(log.payload);
 						html += JSON.stringify(payload, null, 2);
@@ -290,7 +290,7 @@ $(document).ready(function() {
 
 					if (log.headers) {
 						html += '<div class="mt-3"><strong>Headers:</strong></div>';
-						html += '<pre class="bg-secondary text-light p-3 rounded" style="max-height: 200px; overflow: auto;">';
+						html += '<pre class="bg-secondary text-light p-3 rounded" class="webhook-request-block">';
 						try {
 							var headers = JSON.parse(log.headers);
 							html += JSON.stringify(headers, null, 2);

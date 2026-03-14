@@ -87,7 +87,7 @@
 													<div class="mt-2">
 														<span class="text-success"><i class="fa fa-check-circle"></i> Current: <?= htmlspecialchars($detail['logo'], ENT_QUOTES, 'UTF-8') ?></span>
 														<br/>
-														<img src="<?= base_url() ?>uploadedfiles/mics/<?= htmlspecialchars($detail['logo'], ENT_QUOTES, 'UTF-8') ?>" alt="Logo" class="img-thumbnail mt-1" style="max-height: 80px;"/>
+														<img src="<?= base_url() ?>uploadedfiles/mics/<?= htmlspecialchars($detail['logo'], ENT_QUOTES, 'UTF-8') ?>" alt="Logo" class="img-thumbnail mt-1" class="img-thumbnail-logo"/>
 													</div>
 												<?php } ?>
 											</div>
@@ -101,7 +101,7 @@
 													<div class="mt-2">
 														<span class="text-success"><i class="fa fa-check-circle"></i> Current: <?= htmlspecialchars($detail['favicon'], ENT_QUOTES, 'UTF-8') ?></span>
 														<br/>
-														<img src="<?= base_url() ?>uploadedfiles/mics/<?= htmlspecialchars($detail['favicon'], ENT_QUOTES, 'UTF-8') ?>" alt="Favicon" class="img-thumbnail mt-1" style="max-height: 50px;"/>
+														<img src="<?= base_url() ?>uploadedfiles/mics/<?= htmlspecialchars($detail['favicon'], ENT_QUOTES, 'UTF-8') ?>" alt="Favicon" class="img-thumbnail mt-1" class="img-thumbnail-favicon"/>
 													</div>
 												<?php } ?>
 											</div>
@@ -549,13 +549,13 @@
 						</div>
 
 						<!-- Crontab Preview Card -->
-						<div class="card mt-4" id="crontabPreviewCard" style="display: none;">
+						<div class="card mt-4" id="crontabPreviewCard" class="d-hidden">
 							<div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
 								<h6 class="mb-0 text-white"><i class="fa fa-terminal"></i>&nbsp;Crontab Preview</h6>
 								<button type="button" class="btn btn-sm btn-outline-light" onclick="copyCrontab()"><i class="fa fa-copy"></i>&nbsp;Copy</button>
 							</div>
 							<div class="card-body bg-light">
-								<pre id="crontabContent" class="mb-0" style="white-space: pre-wrap; font-size: 12px;"></pre>
+								<pre id="crontabContent" class="mb-0" class="pre-code-block"></pre>
 							</div>
 						</div>
 

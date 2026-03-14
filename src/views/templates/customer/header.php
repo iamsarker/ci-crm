@@ -258,7 +258,7 @@
             <li class="nav-item">
               <a href="<?=base_url()?>cart/view" class="nav-link position-relative" title="View cart">
                 <i class="fas fa-shopping-cart"></i>
-                <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count-badge" style="display:none; font-size: 0.65rem;"></span>
+                <span class="cart-count-badge position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count-badge" class="cart-badge-hidden"></span>
               </a>
             </li>
 
@@ -266,12 +266,12 @@
             <!-- User Dropdown (Logged In) -->
             <li class="nav-item dropdown dropdown-profile">
               <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle me-2" alt="" style="width:32px;height:32px;object-fit:cover;">
+                <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle me-2" alt="" class="customer-avatar-sm">
                 <span class="d-none d-lg-inline"><?=htmlspecialchars($user['first_name'])?></span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li class="px-3 py-2 text-center border-bottom">
-                  <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle mb-2" alt="" style="width:64px;height:64px;object-fit:cover;">
+                  <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle mb-2" alt="" class="customer-avatar-md">
                   <h6 class="mb-0"><?=htmlspecialchars($user['first_name'].' '.$user['last_name'])?></h6>
                 </li>
                 <li><a class="dropdown-item" href="<?=base_url()?>clientarea/changePassword"><i class="fas fa-key me-2"></i>Change Password</a></li>
@@ -283,11 +283,11 @@
             <!-- User Dropdown (Not Logged In) -->
             <li class="nav-item dropdown dropdown-profile">
               <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" style="width:32px;height:32px;object-fit:cover;">
+                <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" class="customer-avatar-sm">
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li class="px-3 py-2 text-center border-bottom">
-                  <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle mb-2" alt="" style="width:64px;height:64px;object-fit:cover;">
+                  <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle mb-2" alt="" class="customer-avatar-md">
                   <h6 class="mb-0">WHMAZ</h6>
                 </li>
                 <li><a class="dropdown-item" href="<?=base_url()?>auth/login"><i class="fas fa-sign-in-alt me-2"></i>Sign In</a></li>

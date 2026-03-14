@@ -80,7 +80,7 @@
 
 											<div class="form-group">
 												<label class="form-label">Message <span class="required">*</span></label>
-												<textarea class="form-control" name="message" rows="6" placeholder="Type your message here..." required style="border-radius: 8px; resize: vertical;"><?= $this->input->post('message') ? htmlspecialchars($this->input->post('message')) : '' ?></textarea>
+												<textarea class="form-control" name="message" rows="6" placeholder="Type your message here..." required class="textarea-rounded"><?= $this->input->post('message') ? htmlspecialchars($this->input->post('message')) : '' ?></textarea>
 											</div>
 
 											<?php if (!empty($captcha_site_key)) { ?>

@@ -130,8 +130,8 @@
 							</div>
 							<div class="form-group">
 								<?php echo form_error('body', '<div class="error">', '</div>'); ?>
-								<textarea name="body" id="body" style="display: none"><?= htmlspecialchars($detail['body'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
-								<div id="editor" style="height: 300px"><?= !empty($detail['body']) ? xss_cleaner($detail['body']) : '' ?></div>
+								<textarea name="body" id="body" class="textarea-hidden"><?= htmlspecialchars($detail['body'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+								<div id="editor" class="editor-container-xl"><?= !empty($detail['body']) ? xss_cleaner($detail['body']) : '' ?></div>
 							</div>
 						</div>
 

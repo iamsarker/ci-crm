@@ -68,7 +68,7 @@
 				<div>
 					<h4 class="mb-1"><i class="fa fa-file-alt me-2"></i>Dynamic Pages</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
-						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
+						<ol class="breadcrumb breadcrumb-style1 mb-0" class="breadcrumb-transparent">
 							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
 							<li class="breadcrumb-item active text-white">Pages</li>
 						</ol>
@@ -152,7 +152,7 @@ $(function(){
 				render: function(data, type, row) {
 					let checked = data == 1 ? 'checked' : '';
 					return '<div class="form-check form-switch d-flex justify-content-center">' +
-						   '<input class="form-check-input" type="checkbox" ' + checked + ' onchange="togglePublish(\'' + row.encoded_id + '\')" style="cursor:pointer;">' +
+						   '<input class="form-check-input" type="checkbox" ' + checked + ' onchange="togglePublish(\'' + row.encoded_id + '\')" class="cursor-pointer">' +
 						   '</div>';
 				}
 			},

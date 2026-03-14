@@ -126,14 +126,14 @@
             <li class="nav-item dropdown dropdown-profile">
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="avatar avatar-sm me-2">
-                        <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" style="width:32px;height:32px;object-fit:cover;">
+                        <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" class="admin-avatar-sm">
                     </div>
                     <span class="d-none d-lg-inline text-white"><?=htmlspecialchars($admin['first_name'])?></span>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li class="px-3 py-2 text-center border-bottom">
                         <div class="avatar avatar-lg mx-auto mb-2">
-                            <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" style="width:64px;height:64px;object-fit:cover;">
+                            <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" class="admin-avatar-md">
                         </div>
                         <h6 class="mb-0"><?=htmlspecialchars($admin['first_name'].' '.$admin['last_name'])?></h6>
                     </li>
@@ -146,13 +146,13 @@
             <li class="nav-item dropdown dropdown-profile">
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="avatar avatar-sm">
-                        <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" style="width:32px;height:32px;object-fit:cover;">
+                        <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" class="admin-avatar-sm">
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li class="px-3 py-2 text-center border-bottom">
                         <div class="avatar avatar-lg mx-auto mb-2">
-                            <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" style="width:64px;height:64px;object-fit:cover;">
+                            <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" class="admin-avatar-md">
                         </div>
                         <h6 class="mb-0">WHMAZ</h6>
                     </li>

@@ -154,7 +154,7 @@
 									</div>
 								</div>
 								<input type="hidden" id="domain_amount" name="domain_amount" value="0" />
-								<div class="col-md-12" id="epp_code_section" style="display: none;">
+								<div class="col-md-12" id="epp_code_section" class="d-hidden">
 									<div class="form-group">
 										<label class="form-label" for="epp_code"><i class="fa fa-key"></i> EPP / Authorization Code</label>
 										<input type="text" class="form-control" placeholder="Enter EPP/Auth code for transfer" id="epp_code" name="epp_code" />

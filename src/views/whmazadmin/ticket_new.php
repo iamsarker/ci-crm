@@ -104,7 +104,7 @@
 						</div>
 						<div class="form-group mb-3">
 							<label class="form-label" for="editor"><i class="fa fa-edit"></i> Ticket Message <span class="text-danger">*</span></label>
-							<div style="height: 250px;">
+							<div class="editor-container-md">
 								<div id="editor"><?= set_value('message') ?></div>
 							</div>
 							<?php echo form_error('message', '<div class="text-danger small mt-1">', '</div>'); ?>

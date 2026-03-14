@@ -1,0 +1,44 @@
+# WHMAZ Installer - Security
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Protect log file
+    RewriteRule ^install\.log$ - [F,L]
+    RewriteRule ^install\.lock$ - [F,L]
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect PHP files in views directory
+<FilesMatch "views/.*\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Allow only index.php
+<FilesMatch "^index\.php$">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</FilesMatch>
+
+# Protect Install.php
+<Files "Install.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</Files>

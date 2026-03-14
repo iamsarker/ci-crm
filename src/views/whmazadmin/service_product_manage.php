@@ -87,7 +87,7 @@
 								</div>
 							</div>
 
-							<div class="row" id="cp_package_row" style="display:none;">
+							<div class="row" id="cp_package_row" class="d-hidden">
 								<div class="col-md-6">
 									<div class="form-group">
 										<label class="form-label" for="cp_package"><i class="fa fa-archive"></i> cPanel Package Name</label>
@@ -98,7 +98,7 @@
 											<?php endif; ?>
 										</select>
 										<small class="text-muted" id="cp_package_hint">Select service type, module &amp; server first</small>
-										<div id="cp_package_loading" style="display:none;">
+										<div id="cp_package_loading" class="d-hidden">
 											<span class="spinner-border spinner-border-sm text-primary" role="status"></span>
 											<small class="text-primary">Fetching packages from server...</small>
 										</div>

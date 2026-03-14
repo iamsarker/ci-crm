@@ -166,7 +166,7 @@
                             <div class="editor-wrapper">
                                 <div id="editor"></div>
                             </div>
-                            <textarea name="message" id="message_hidden" style="display:none;"></textarea>
+                            <textarea name="message" id="message_hidden" class="textarea-hidden"></textarea>
                             <?php echo form_error('message', '<div class="error-message"><i class="fa fa-exclamation-circle"></i> ', '</div>'); ?>
                         </div>
 

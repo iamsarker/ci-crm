@@ -41,7 +41,7 @@
 						</div>
 						<div class="form-group">
 							<label class="form-label" for="editor"><i class="fa fa-comment"></i> Reply Message</label>
-							<div class="tx-13 mb-3" style="height: 180px;">
+							<div class="tx-13 mb-3" class="editor-container">
 								<div id="editor"></div>
 							</div>
 							<?php echo form_error('message', '<div class="error">', '</div>'); ?>

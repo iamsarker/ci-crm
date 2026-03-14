@@ -149,8 +149,8 @@
 									<div class="form-group">
 										<label class="form-label"><i class="fa fa-eye"></i> Published</label>
 										<div class="form-check form-switch mt-2">
-											<input class="form-check-input" type="checkbox" name="is_published" id="is_published" value="1" <?= (!empty($detail['is_published']) && $detail['is_published'] == 1) ? 'checked' : '' ?> style="width: 50px; height: 25px; cursor: pointer;">
-											<label class="form-check-label ms-2" for="is_published" style="padding-top: 3px;">
+											<input class="form-check-input" type="checkbox" name="is_published" id="is_published" value="1" <?= (!empty($detail['is_published']) && $detail['is_published'] == 1) ? 'checked' : '' ?> class="checkbox-toggle-lg cursor-pointer">
+											<label class="form-check-label ms-2" for="is_published" class="label-pt-3">
 												<span id="publishLabel"><?= (!empty($detail['is_published']) && $detail['is_published'] == 1) ? 'Published' : 'Draft' ?></span>
 											</label>
 										</div>
@@ -190,7 +190,7 @@
 							</div>
 
 							<div id="quillEditor"><?= !empty($detail['page_content']) ? $detail['page_content'] : '' ?></div>
-							<textarea name="page_content" id="page_content" style="display:none;" required><?= !empty($detail['page_content']) ? htmlspecialchars($detail['page_content']) : '' ?></textarea>
+							<textarea name="page_content" id="page_content" class="textarea-hidden" required><?= !empty($detail['page_content']) ? htmlspecialchars($detail['page_content']) : '' ?></textarea>
 						</div>
 
 						<!-- Submit Button -->
@@ -266,7 +266,7 @@
 						<div class="section-title">
 							<i class="fa fa-lightbulb"></i> Tips
 						</div>
-						<ul class="list-unstyled mb-0" style="font-size: 13px; color: #666;">
+						<ul class="list-unstyled mb-0" class="list-sm">
 							<li class="mb-2"><i class="fa fa-check text-success me-2"></i> Use descriptive slugs for better SEO</li>
 							<li class="mb-2"><i class="fa fa-check text-success me-2"></i> Keep meta descriptions under 160 characters</li>
 							<li class="mb-2"><i class="fa fa-check text-success me-2"></i> All changes are tracked in history</li>

@@ -62,7 +62,7 @@
                             Never synced
                         <?php endif; ?>
                     </span>
-                    <div id="syncStatus" class="sync-status mt-2" style="display: none;"></div>
+                    <div id="syncStatus" class="sync-status mt-2" class="sync-status-container"></div>
                 </div>
 
                 <div class="row">
@@ -194,7 +194,7 @@
                                     <button type="button" id="btnUpdateNS" class="btn btn-primary btn-update-ns">
                                         <i class="fa fa-save mg-r-5"></i>Update Nameservers
                                     </button>
-                                    <div id="nsUpdateStatus" class="ns-update-status mt-3" style="display: none;"></div>
+                                    <div id="nsUpdateStatus" class="ns-update-status mt-3" class="sync-status-container"></div>
                                 </div>
                             </div>
                         </div>
@@ -317,7 +317,7 @@
                                     <button type="button" id="btnUpdateContacts" class="btn btn-primary btn-update-ns">
                                         <i class="fa fa-save mg-r-5"></i>Update Contact Information
                                     </button>
-                                    <div id="contactUpdateStatus" class="ns-update-status mt-3" style="display: none;"></div>
+                                    <div id="contactUpdateStatus" class="ns-update-status mt-3" class="sync-status-container"></div>
                                 </div>
                             </div>
                         </div>

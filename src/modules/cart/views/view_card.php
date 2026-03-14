@@ -57,11 +57,11 @@
                             <table class="table cart-table mg-b-0">
                                 <thead>
                                     <tr>
-                                        <th class="text-center" style="width: 60px;">#</th>
+                                        <th class="text-center" class="col-w-60">#</th>
                                         <th>Item Details</th>
-                                        <th class="text-center" style="width: 120px;">Type</th>
-                                        <th class="text-right" style="width: 180px;">Amount</th>
-                                        <th class="text-center" style="width: 80px;">Action</th>
+                                        <th class="text-center" class="col-w-120">Type</th>
+                                        <th class="text-right" class="col-w-180">Amount</th>
+                                        <th class="text-center" class="col-w-80">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>

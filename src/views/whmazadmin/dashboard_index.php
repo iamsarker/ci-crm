@@ -88,7 +88,7 @@
 							<i class="fas fa-sync-alt"></i>
 						</button>
 					</div>
-					<ul class="list-group list-group-flush">
+					<ul class="list-group list-group-flush dashboard-list-body">
 						<li class="list-group-item dashboard-list-item d-flex align-items-center" ng-repeat="obj in orders track by $index">
 							<div class="item-avatar avatar-order d-none d-sm-flex">
 								<i class="fa fa-shopping-cart"></i>
@@ -127,7 +127,7 @@
 							<i class="fas fa-sync-alt"></i>
 						</button>
 					</div>
-					<ul class="list-group list-group-flush">
+					<ul class="list-group list-group-flush dashboard-list-body">
 						<li class="list-group-item dashboard-list-item d-flex align-items-center" ng-repeat="obj in tickets track by $index">
 							<div class="item-avatar avatar-ticket d-none d-sm-flex">
 								<i class="fa fa-tag"></i>
@@ -170,7 +170,7 @@
 							<i class="fas fa-sync-alt"></i>
 						</button>
 					</div>
-					<ul class="list-group list-group-flush">
+					<ul class="list-group list-group-flush dashboard-list-body">
 						<li class="list-group-item dashboard-list-item d-flex align-items-center" ng-repeat="obj in invoices track by $index">
 							<div class="item-avatar avatar-invoice d-none d-sm-flex">
 								<i class="fa fa-file-invoice"></i>
@@ -218,7 +218,7 @@
 							</button>
 						</div>
 					</div>
-					<div class="card-body" style="min-height: 300px; position: relative;">
+					<div class="card-body chart-container">
 						<div ng-if="loadingExpenses" class="loading-state">
 							<img src="<?=base_url()?>resources/assets/img/working.gif" />
 							<p class="loading-state-text">Loading chart...</p>
@@ -227,7 +227,7 @@
 							<div class="empty-state-icon"><i class="fas fa-chart-bar"></i></div>
 							<p class="empty-state-text">No expense data available</p>
 						</div>
-						<canvas id="expensesChart" ng-show="!loadingExpenses && expensesData && expensesData.total > 0" style="width: 100%; height: 280px;"></canvas>
+						<canvas id="expensesChart" ng-show="!loadingExpenses && expensesData && expensesData.total > 0" class="chart-canvas"></canvas>
 					</div>
 					<div class="card-footer text-center">
 						<a href="<?=base_url()?>whmazadmin/expense/index">View All Expenses <i class="fas fa-arrow-right ms-1"></i></a>
@@ -249,7 +249,7 @@
 							<i class="fas fa-sync-alt"></i>
 						</button>
 					</div>
-					<div class="card-body pd-0" style="max-height: 340px; overflow-y: auto;">
+					<div class="card-body domain-pricing-body">
 						<div ng-if="loadingDomainPrices" class="loading-state">
 							<img src="<?=base_url()?>resources/assets/img/working.gif" />
 						</div>

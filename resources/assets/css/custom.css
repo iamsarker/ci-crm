@@ -4905,3 +4905,133 @@ h6 i {
 	color: #28a745;
 	margin-right: 10px;
 }
+
+/* ============================================
+   UTILITY CLASSES (CodeCanyon Compliance)
+   Replaces inline styles in client views
+   ============================================ */
+
+/* Display Utilities */
+.d-hidden { display: none; }
+
+/* Table Column Widths */
+.col-w-60 { width: 60px; }
+.col-w-80 { width: 80px; }
+.col-w-120 { width: 120px; }
+.col-w-180 { width: 180px; }
+
+/* Scrollable Container */
+.scrollable-md {
+	max-height: 350px;
+	overflow: auto;
+}
+
+/* Hidden Textarea (for Quill) */
+.textarea-hidden {
+	display: none;
+}
+
+/* Textarea Custom */
+.textarea-rounded {
+	border-radius: 8px;
+	resize: vertical;
+}
+
+/* Payment Form Sections */
+.payment-form-section {
+	display: none;
+}
+
+.payment-form-title {
+	margin-bottom: 20px;
+}
+
+.payment-form-description {
+	margin-bottom: 15px;
+	color: #666;
+}
+
+.payment-error-text {
+	color: #c62828;
+	margin-top: 10px;
+	font-size: 14px;
+}
+
+/* Invoice Subtitle */
+.invoice-subtitle {
+	font-size: 14px;
+	margin-top: 10px;
+	opacity: 0.9;
+}
+
+/* Pending Payment Instructions */
+.payment-instructions-list {
+	margin: 0;
+	padding-left: 20px;
+	color: #666;
+}
+
+.payment-instructions-text {
+	margin: 0;
+	color: #666;
+}
+
+/* Domain Detail Sync Status */
+.sync-status-container {
+	display: none;
+}
+
+/* NS Update Status */
+.ns-update-status-container {
+	display: none;
+}
+
+/* Contact Update Status */
+.contact-update-status-container {
+	display: none;
+}
+
+/* Progress Bar Purple */
+.bg-purple {
+	background-color: #6f42c1 !important;
+}
+
+/* Full Width Button */
+.btn-full-width {
+	width: 100%;
+}
+
+/* Center Footer */
+.footer-center {
+	text-align: center;
+	margin-top: 20px;
+}
+
+/* SEO Title (hidden) */
+.seo-title-hidden {
+	display: none;
+}
+
+/* Customer Avatar Sizes */
+.customer-avatar-sm {
+	width: 32px;
+	height: 32px;
+	object-fit: cover;
+}
+
+.customer-avatar-md {
+	width: 64px;
+	height: 64px;
+	object-fit: cover;
+}
+
+/* Cart Count Badge */
+.cart-badge-hidden {
+	display: none;
+	font-size: 0.65rem;
+}
+
+/* EPP Code Status */
+.epp-code-status {
+	display: none;
+}

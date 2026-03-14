@@ -17,13 +17,13 @@
 							<table class="table table-hover">
 								<thead>
 									<tr>
-										<th style="width: 50px;">Order</th>
+										<th class="w-50">Order</th>
 										<th>Gateway</th>
 										<th>Type</th>
 										<th>Mode</th>
 										<th>Currencies</th>
 										<th>Status</th>
-										<th style="width: 200px;">Actions</th>
+										<th class="w-200">Actions</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -32,7 +32,7 @@
 										<td><?php echo $gateway['sort_order']; ?></td>
 										<td>
 											<div class="d-flex align-items-center">
-												<div class="gateway-icon me-3" style="width: 40px; height: 40px; background: #f5f5f5; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+												<div class="gateway-icon me-3" class="gateway-icon-box">
 													<?php
 													$icon = 'fa-money-bill';
 													switch ($gateway['gateway_code']) {

@@ -134,13 +134,13 @@
 							</div>
 							<div class="form-group">
 								<?php echo form_error('article', '<div class="error mb-2">', '</div>'); ?>
-								<textarea name="article" id="article" style="display: none"><?= htmlspecialchars($detail['article'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+								<textarea name="article" id="article" class="textarea-hidden"><?= htmlspecialchars($detail['article'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
 								<div class="kb-editor-container">
-									<div id="editor" style="height: 280px"><?= !empty($detail['article']) ? xss_cleaner($detail['article']) : ''?></div>
+									<div id="editor" class="editor-container-lg"><?= !empty($detail['article']) ? xss_cleaner($detail['article']) : ''?></div>
 								</div>
 							</div>
 
-							<div class="custom-checkbox-toggle mt-3" style="max-width: 250px;">
+							<div class="custom-checkbox-toggle mt-3" class="w-250">
 								<input name="is_hidden" type="checkbox" id="is_hidden" <?= !empty($detail['is_hidden']) && $detail['is_hidden'] == 1 ? 'checked' : ''?>/>
 								<label for="is_hidden"><i class="fa fa-eye-slash me-2"></i> Hidden Article</label>
 							</div>

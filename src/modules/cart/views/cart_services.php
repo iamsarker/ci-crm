@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <h1 style="display: none;"><?=$query_title?></h1>
+        <h1 class="seo-title-hidden"><?=$query_title?></h1>
 
         <div class="row">
             <!-- Sidebar -->

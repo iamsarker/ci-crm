@@ -10,9 +10,10 @@ This guide will walk you through the complete installation process of WHMAZ, fro
 
 - [Prerequisites](#-prerequisites)
 - [Installation Methods](#-installation-methods)
-- [Method 1: cPanel Installation](#method-1-cpanel-installation-recommended)
-- [Method 2: Apache/Ubuntu Installation](#method-2-apacheubuntu-installation)
-- [Method 3: Nginx Installation](#method-3-nginx-installation)
+- [Quick Install: Auto-Installer (Recommended)](#-quick-install-auto-installer-recommended)
+- [Manual Install: cPanel](#method-1-cpanel-installation)
+- [Manual Install: Apache/Ubuntu](#method-2-apacheubuntu-installation)
+- [Manual Install: Nginx](#method-3-nginx-installation)
 - [Post-Installation Configuration](#-post-installation-configuration)
 - [First Login & Security](#-first-login--security)
 - [Advanced Configuration](#-advanced-configuration)
@@ -93,17 +94,109 @@ You'll need the ability to:
 
 Choose the installation method that matches your server setup:
 
-1. **[cPanel Installation](#method-1-cpanel-installation-recommended)** - For shared hosting with cPanel (Recommended for beginners)
-2. **[Apache/Ubuntu Installation](#method-2-apacheubuntu-installation)** - For VPS/Dedicated servers with Ubuntu
-3. **[Nginx Installation](#method-3-nginx-installation)** - For servers running Nginx
+| Method | Best For | Time | Difficulty |
+|--------|----------|------|------------|
+| **[Auto-Installer](#-quick-install-auto-installer-recommended)** | Everyone (Recommended) | 5 min | Easy |
+| [cPanel Manual](#method-1-cpanel-installation) | Shared hosting without auto-installer | 15-20 min | Medium |
+| [Apache/Ubuntu](#method-2-apacheubuntu-installation) | VPS/Dedicated servers | 20-30 min | Advanced |
+| [Nginx](#method-3-nginx-installation) | Nginx servers | 25-35 min | Advanced |
 
 ---
 
-## Method 1: cPanel Installation (Recommended)
+## 🚀 Quick Install: Auto-Installer (Recommended)
+
+**Estimated Time:** 5 minutes
+
+The easiest way to install WHMAZ. The auto-installer wizard guides you through the entire process with a beautiful web interface.
+
+### Step 1: Upload Files
+
+1. Download the WHMAZ package from CodeCanyon
+2. Extract the ZIP file
+3. Upload all files to your web server (via FTP, File Manager, or SSH)
+
+```
+public_html/
+├── index.php
+├── install/          ← Auto-installer folder
+├── src/
+├── resources/
+└── ...
+```
+
+### Step 2: Create Database
+
+Before running the installer, create an empty MySQL database:
+
+**cPanel:**
+1. Go to **MySQL Databases**
+2. Create a new database (e.g., `youruser_whmaz`)
+3. Create a database user with a strong password
+4. Add the user to the database with **ALL PRIVILEGES**
+
+**Command Line:**
+```sql
+CREATE DATABASE whmaz_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'whmaz_user'@'localhost' IDENTIFIED BY 'YourStrongPassword';
+GRANT ALL PRIVILEGES ON whmaz_db.* TO 'whmaz_user'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+### Step 3: Run the Auto-Installer
+
+1. Open your browser and navigate to:
+   ```
+   https://yourdomain.com/install/
+   ```
+
+2. The installation wizard will guide you through 6 simple steps:
+
+   | Step | Description |
+   |------|-------------|
+   | 1. Welcome | Read introduction and accept terms |
+   | 2. Requirements | Automatic server compatibility check |
+   | 3. Database | Enter your database credentials |
+   | 4. Import | Automatic database import with progress bar |
+   | 5. Settings | Configure site name, URL, and admin account |
+   | 6. Complete | Get your portal URLs and security reminders |
+
+### Step 4: Complete Setup
+
+After the installer finishes:
+
+1. **Delete the install folder** (click the button on the completion page or manually delete `/install/`)
+2. **Login to Admin Panel:** `https://yourdomain.com/whmazadmin/authenticate/login`
+3. **Configure your settings** (email, payment gateways, etc.)
+
+### Auto-Installer Screenshots
+
+**Step 2 - Requirements Check:**
+The installer automatically verifies PHP version, extensions, and folder permissions.
+
+**Step 4 - Database Import:**
+Watch the progress bar as tables are created automatically.
+
+**Step 6 - Complete:**
+Get direct links to your Admin and Client portals.
+
+### Auto-Installer Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Requirements not met" | Install missing PHP extensions or fix folder permissions |
+| "Database connection failed" | Verify hostname, database name, username, and password |
+| "Import failed" | Check database user has CREATE/ALTER privileges |
+| Installer won't load | Ensure `/install/` folder was uploaded correctly |
+
+> **Note:** If the auto-installer doesn't work for your environment, use one of the manual installation methods below.
+
+---
+
+## Method 1: cPanel Installation
 
 **Estimated Time:** 15-20 minutes
 
-This is the easiest method for shared hosting environments.
+Manual installation method for shared hosting with cPanel. Use this if the auto-installer doesn't work for your environment.
 
 ### Step 1: Download WHMAZ
 
@@ -692,14 +785,14 @@ If using domain registration features:
 
 **Admin Portal:** `https://yourdomain.com/whmazadmin/authenticate/login`
 ```
-Email: admin@demo.com
-Password: Admin@123
+Email: admin@whmaz.com
+Password: Abcd.1234
 ```
 
 **Demo Customer:** `https://yourdomain.com/auth/login`
 ```
-Email: customer@demo.com
-Password: Demo@123
+Email: client@whmaz.com
+Password: Abcd.1234
 ```
 
 ### Live Demo Site
@@ -786,15 +879,20 @@ chmod 644 .htaccess
 chmod 600 src/config/database.php
 ```
 
-#### 6. Remove Installation Files (Optional)
+#### 6. Remove Installation Files (IMPORTANT)
 
-After successful installation:
+After successful installation, remove these files and folders for security:
+
 ```bash
+# Remove install folder (CRITICAL - contains installer)
+rm -rf install/
+
+# Remove SQL files (optional but recommended)
 rm crm_db.sql
 rm crm_db_views.sql
-rm update_domain_api_production.sql
-rm test_domain_api.php
 ```
+
+> ⚠️ **Security Warning:** The `/install/` folder must be deleted after installation. Leaving it on the server is a security risk.
 
 ---
 
@@ -880,6 +978,63 @@ find $BACKUP_DIR -name "whmaz_*.sql.gz" -mtime +30 -delete
 ---
 
 ## 🔍 Troubleshooting
+
+### Auto-Installer Issues
+
+#### Auto-Installer Won't Load
+
+**Symptoms:** Visiting `/install/` shows 404 or blank page
+
+**Solutions:**
+1. Verify the `/install/` folder was uploaded completely
+2. Check that `install/index.php` exists
+3. For Apache, ensure `mod_rewrite` is enabled
+4. For Nginx, add this location block:
+```nginx
+location /install {
+    try_files $uri $uri/ /install/index.php?$query_string;
+}
+```
+
+#### Requirements Check Fails
+
+**Symptoms:** Red items in requirements check
+
+**Solutions:**
+1. **PHP Version:** Upgrade to PHP 8.2+
+2. **Missing Extensions:** Install via:
+   ```bash
+   sudo apt install php8.2-curl php8.2-gd php8.2-mbstring php8.2-xml php8.2-zip php8.2-mysqli
+   ```
+3. **Folder Permissions:** Run:
+   ```bash
+   chmod -R 755 src/sessions/ src/logs/ src/cache/ uploadedfiles/
+   ```
+
+#### Database Import Fails
+
+**Symptoms:** Progress bar stops, error message appears
+
+**Solutions:**
+1. Verify database user has ALL PRIVILEGES
+2. Check database exists and is empty
+3. Increase PHP `max_execution_time` to 600
+4. Check `install/install.log` for detailed errors
+
+#### "Already Installed" Message
+
+**Symptoms:** Installer shows "WHMAZ is already installed"
+
+**Solutions:**
+1. To reinstall, delete these files:
+   ```bash
+   rm .env
+   rm install/install.lock
+   ```
+2. Drop all database tables or use a fresh database
+3. Access `/install/` again
+
+---
 
 ### Common Installation Issues
 
@@ -1364,7 +1519,8 @@ Use this checklist to ensure complete installation:
 - [ ] Demo accounts deleted or updated
 - [ ] Session encryption key changed
 - [ ] Config files set to read-only
-- [ ] Installation files removed
+- [ ] `/install/` folder deleted (CRITICAL)
+- [ ] SQL files removed (crm_db.sql, crm_db_views.sql)
 
 ### Configuration
 - [ ] Email settings configured

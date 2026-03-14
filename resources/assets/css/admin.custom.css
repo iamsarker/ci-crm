@@ -1098,3 +1098,287 @@ footer.footer {
 	}
 }
 
+/* ============================================
+   UTILITY CLASSES (CodeCanyon Compliance)
+   Replaces inline styles throughout admin views
+   ============================================ */
+
+/* Display Utilities */
+.d-hidden { display: none; }
+.d-block-important { display: block !important; }
+
+/* Cursor Utilities */
+.cursor-pointer { cursor: pointer; }
+
+/* Background Utilities */
+.bg-transparent { background: transparent !important; }
+
+/* Padding Utilities */
+.p-0 { padding: 0 !important; }
+
+/* Breadcrumb Reset (transparent background, no padding) */
+.breadcrumb-transparent {
+	background: transparent;
+	padding: 0;
+}
+
+/* Height Utilities */
+.h-50 { height: 50px; }
+.h-80 { height: 80px; }
+.h-180 { height: 180px; }
+.h-250 { height: 250px; }
+.h-280 { height: 280px; }
+.h-300 { height: 300px; }
+.h-340 { height: 340px; }
+.h-400 { height: 400px; }
+.min-h-300 { min-height: 300px; }
+.min-h-340 { min-height: 340px; }
+
+/* Max Height Utilities */
+.max-h-50 { max-height: 50px; }
+.max-h-80 { max-height: 80px; }
+.max-h-200 { max-height: 200px; }
+.max-h-250 { max-height: 250px; }
+.max-h-300 { max-height: 300px; }
+.max-h-340 { max-height: 340px; }
+.max-h-350 { max-height: 350px; }
+.max-h-400 { max-height: 400px; }
+
+/* Width Utilities */
+.w-40 { width: 40px; }
+.w-50 { width: 50px; }
+.w-60 { width: 60px; }
+.w-80 { width: 80px; }
+.w-100p { width: 100%; }
+.w-120 { width: 120px; }
+.w-150 { width: 150px; }
+.w-180 { width: 180px; }
+.w-200 { width: 200px; }
+.w-250 { max-width: 250px; }
+
+/* Size Utilities (width + height) */
+.size-32 { width: 32px; height: 32px; }
+.size-40 { width: 40px; height: 40px; }
+.size-64 { width: 64px; height: 64px; }
+
+/* Object Fit */
+.object-cover { object-fit: cover; }
+
+/* Overflow Utilities */
+.overflow-auto { overflow: auto; }
+.overflow-y-auto { overflow-y: auto; }
+.overflow-hidden { overflow: hidden; }
+
+/* Scrollable Container */
+.scrollable-container {
+	max-height: 340px;
+	overflow-y: auto;
+}
+
+.scrollable-container-sm {
+	max-height: 200px;
+	overflow: auto;
+}
+
+.scrollable-container-md {
+	max-height: 350px;
+	overflow: auto;
+}
+
+.scrollable-container-lg {
+	max-height: 400px;
+	overflow: auto;
+}
+
+/* Position Utilities */
+.pos-relative { position: relative; }
+.pos-absolute { position: absolute; }
+
+/* Chart Container */
+.chart-container {
+	min-height: 300px;
+	position: relative;
+}
+
+.chart-canvas {
+	width: 100%;
+	height: 280px;
+}
+
+/* Domain Pricing Card Body - matches chart height */
+.domain-pricing-body {
+	height: 320px;
+	overflow-y: auto;
+	padding: 0 !important;
+}
+
+/* Dashboard List Card Body - for Orders, Tickets, Invoices */
+.dashboard-list-body {
+	height: 380px;
+	overflow-y: auto;
+}
+
+/* Gateway Icon Box */
+.gateway-icon-box {
+	width: 40px;
+	height: 40px;
+	background: #f5f5f5;
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Spinner Size */
+.spinner-lg {
+	width: 3rem;
+	height: 3rem;
+}
+
+/* Pre/Code Styling */
+.pre-wrap {
+	white-space: pre-wrap;
+}
+
+.pre-code-block {
+	white-space: pre-wrap;
+	font-size: 12px;
+}
+
+.pre-dark {
+	max-height: 300px;
+	overflow: auto;
+}
+
+/* Thumbnail Sizes */
+.img-thumbnail-logo {
+	max-height: 80px;
+}
+
+.img-thumbnail-favicon {
+	max-height: 50px;
+}
+
+/* Editor Container */
+.editor-container {
+	height: 180px;
+}
+
+.editor-container-md {
+	height: 250px;
+}
+
+.editor-container-lg {
+	height: 280px;
+}
+
+.editor-container-xl {
+	height: 300px;
+}
+
+/* Hidden Textarea (for Quill editors) */
+.textarea-hidden {
+	display: none;
+}
+
+/* Progress Bar (dynamic widths set via JS) */
+.progress-bar-dynamic {
+	transition: width 0.3s ease;
+}
+
+/* Invoice Action Buttons */
+.btn-invoice-paid {
+	background: linear-gradient(135deg, #43A047 0%, #388E3C 100%);
+	border: none;
+	color: #fff;
+}
+
+.btn-invoice-pdf {
+	background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+	border: none;
+	color: #fff;
+}
+
+/* Stats Icon Danger (for invoice list) */
+.stats-icon-danger {
+	background: linear-gradient(135deg, #E53935 0%, #C62828 100%);
+	color: #fff;
+}
+
+/* Alert Card (for company list) */
+.alert-card {
+	border-radius: 8px;
+}
+
+/* Checkbox Toggle Large */
+.checkbox-toggle-lg {
+	width: 50px;
+	height: 25px;
+	cursor: pointer;
+}
+
+/* Label Padding Top (for checkbox alignment) */
+.label-pt-3 {
+	padding-top: 3px;
+}
+
+/* List Font Size */
+.list-sm {
+	font-size: 13px;
+	color: #666;
+}
+
+/* Admin Header Avatar */
+.admin-avatar-sm {
+	width: 32px;
+	height: 32px;
+	object-fit: cover;
+}
+
+.admin-avatar-md {
+	width: 64px;
+	height: 64px;
+	object-fit: cover;
+}
+
+/* SEO Hidden Title */
+.seo-hidden-title {
+	display: none;
+}
+
+/* Credential Section Toggle */
+.credential-section {
+	transition: all 0.3s ease;
+}
+
+/* Fee Fields Toggle */
+.fee-fields-section {
+	transition: all 0.3s ease;
+}
+
+/* Provisioning Log Modal Footer */
+.modal-footer-hidden {
+	display: none;
+}
+
+/* Log Pre Block */
+.log-pre-block {
+	white-space: pre-wrap;
+}
+
+.log-response-block {
+	max-height: 300px;
+	overflow: auto;
+}
+
+/* Webhook Response Block */
+.webhook-response-block {
+	max-height: 400px;
+	overflow: auto;
+}
+
+.webhook-request-block {
+	max-height: 200px;
+	overflow: auto;
+}
+

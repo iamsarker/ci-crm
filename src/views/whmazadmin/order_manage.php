@@ -406,7 +406,7 @@
 					</select>
 				</div>
 
-				<div class="mb-3" id="pricingContainer" style="display: none;">
+				<div class="mb-3" id="pricingContainer" class="d-hidden">
 					<label class="form-label">Billing Cycle</label>
 					<select class="form-select" id="new_pricing_id">
 						<option value="">-- Select Billing Cycle --</option>
@@ -453,7 +453,7 @@
 					</select>
 				</div>
 
-				<div class="mb-3" id="serverPackageContainer" style="display: none;">
+				<div class="mb-3" id="serverPackageContainer" class="d-hidden">
 					<label class="form-label">Package on New Server</label>
 					<select class="form-select" id="new_server_package_id">
 						<option value="">-- Select Package --</option>

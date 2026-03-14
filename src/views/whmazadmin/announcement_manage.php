@@ -91,8 +91,8 @@
 							</div>
 							<div class="form-group">
 								<?php echo form_error('description', '<div class="error">', '</div>'); ?>
-								<textarea name="description" id="description" style="display: none"><?= htmlspecialchars($detail['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
-								<div id="editor" style="height: 300px"><?= !empty($detail['description']) ? xss_cleaner($detail['description']) : ''?></div>
+								<textarea name="description" id="description" class="textarea-hidden"><?= htmlspecialchars($detail['description'] ?? '', ENT_QUOTES, 'UTF-8') ?></textarea>
+								<div id="editor" class="editor-container-xl"><?= !empty($detail['description']) ? xss_cleaner($detail['description']) : ''?></div>
 							</div>
 						</div>
 

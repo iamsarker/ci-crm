@@ -68,7 +68,7 @@
 				<div>
 					<h4 class="mb-1"><i class="fa fa-envelope me-2"></i>Email Templates</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
-						<ol class="breadcrumb breadcrumb-style1 mb-0" style="background: transparent; padding: 0;">
+						<ol class="breadcrumb breadcrumb-style1 mb-0" class="breadcrumb-transparent">
 							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
 							<li class="breadcrumb-item active">Email Templates</li>
 						</ol>

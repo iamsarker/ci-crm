@@ -180,7 +180,7 @@
 					<div class="tab-pane fade" id="service-info" role="tabpanel" aria-labelledby="service-tab">
 						<div class="company-datatable-wrapper">
 							<div class="table-responsive">
-								<table id="serviceListDt" class="table table-hover" style="width: 100%"></table>
+								<table id="serviceListDt" class="table table-hover" class="w-100p"></table>
 							</div>
 						</div>
 					</div>
@@ -188,7 +188,7 @@
 					<div class="tab-pane fade" id="domain-info" role="tabpanel" aria-labelledby="domain-tab">
 						<div class="company-datatable-wrapper">
 							<div class="table-responsive">
-								<table id="domainListDt" class="table table-hover" style="width: 100%"></table>
+								<table id="domainListDt" class="table table-hover" class="w-100p"></table>
 							</div>
 						</div>
 					</div>
@@ -196,7 +196,7 @@
 					<div class="tab-pane fade" id="invoice-info" role="tabpanel" aria-labelledby="invoice-tab">
 						<div class="company-datatable-wrapper">
 							<div class="table-responsive">
-								<table id="invoiceListDt" class="table table-hover" style="width: 100%"></table>
+								<table id="invoiceListDt" class="table table-hover" class="w-100p"></table>
 							</div>
 						</div>
 					</div>
@@ -301,7 +301,7 @@
 						</div>
 					</div>
 
-					<div id="cpanel_section" style="display:none;">
+					<div id="cpanel_section" class="d-hidden">
 						<!-- cPanel Actions Section -->
 						<div class="company-form-section">
 							<div class="section-title">
@@ -330,7 +330,7 @@
 						</div>
 
 						<!-- Usage Stats Section -->
-						<div id="usage_stats_section" style="display:none;">
+						<div id="usage_stats_section" class="d-hidden">
 							<div class="company-form-section">
 								<div class="section-title">
 									<i class="fa fa-chart-pie"></i> Package / Usage Stats
@@ -402,8 +402,8 @@
 					</div>
 				</form>
 
-				<div id="modal_loading" class="text-center py-5" style="display:none;">
-					<div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+				<div id="modal_loading" class="text-center py-5" class="d-hidden">
+					<div class="spinner-border text-primary" role="status" class="spinner-lg">
 						<span class="visually-hidden">Loading...</span>
 					</div>
 					<p class="mt-3 text-muted">Processing request...</p>

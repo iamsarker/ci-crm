@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2026-02-28
+## [1.0.0] - 2026-03-14
 
 ### Initial Release
 
@@ -618,6 +618,6 @@ See license.txt for complete terms.
 
 **Product:** WHMAZ - Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System
 **Version:** 1.0.0
-**Release Date:** February 28, 2026
+**Release Date:** March 14, 2026
 **Status:** Stable Production Release
 **Copyright:** © 2026 WHMAZ. All Rights Reserved.

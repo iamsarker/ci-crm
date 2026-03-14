@@ -173,16 +173,16 @@
             <div class="instructions-box">
                 <h5><i class="fas fa-info-circle"></i> What's Next?</h5>
                 <?php if ($gateway['gateway_code'] === 'bank_transfer'): ?>
-                <ol style="margin: 0; padding-left: 20px; color: #666;">
+                <ol class="payment-instructions-list">
                     <li>Transfer the exact amount shown above to the bank account provided</li>
                     <li>Use your invoice number (<strong><?php echo $invoice['invoice_no']; ?></strong>) as the payment reference</li>
                     <li>Once we receive and verify your payment, your invoice will be marked as paid</li>
                     <li>You will receive an email confirmation when the payment is processed</li>
                 </ol>
                 <?php elseif (!empty($gateway['instructions'])): ?>
-                <p style="margin: 0; color: #666;"><?php echo nl2br(htmlspecialchars($gateway['instructions'])); ?></p>
+                <p class="payment-instructions-text"><?php echo nl2br(htmlspecialchars($gateway['instructions'])); ?></p>
                 <?php else: ?>
-                <ol style="margin: 0; padding-left: 20px; color: #666;">
+                <ol class="payment-instructions-list">
                     <li>Complete the payment using your preferred method</li>
                     <li>Contact our support team with your invoice number and payment details</li>
                     <li>Once verified, your invoice will be marked as paid</li>

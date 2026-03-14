@@ -65,7 +65,7 @@
 								<?php echo form_error('description', '<div class="error">', '</div>'); ?>
 							</div>
 
-							<div class="custom-checkbox-toggle" style="max-width: 250px;">
+							<div class="custom-checkbox-toggle" class="w-250">
 								<input name="is_hidden" type="checkbox" id="is_hidden" <?= !empty($detail['is_hidden']) && $detail['is_hidden'] == 1 ? 'checked' : ''?>/>
 								<label for="is_hidden"><i class="fa fa-eye-slash me-2"></i> Hidden Category</label>
 							</div>
