@@ -127,6 +127,133 @@
 							</div>
 						</div>
 
+						<!-- Pricing Type Selector -->
+						<div class="company-form-section">
+							<div class="section-title">
+								<i class="fa fa-tags"></i> Pricing Type
+							</div>
+							<div class="d-flex gap-4">
+								<div class="form-check">
+									<?php $pt = !empty($detail['pricing_type']) ? $detail['pricing_type'] : 'recurring'; ?>
+									<input class="form-check-input" type="radio" name="pricing_type" id="pt_recurring" value="recurring" <?= $pt === 'recurring' ? 'checked' : '' ?>>
+									<label class="form-check-label" for="pt_recurring"><i class="fa fa-sync-alt me-1"></i> Recurring</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="pricing_type" id="pt_onetime" value="onetime" <?= $pt === 'onetime' ? 'checked' : '' ?>>
+									<label class="form-check-label" for="pt_onetime"><i class="fa fa-shopping-cart me-1"></i> One-Time</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="radio" name="pricing_type" id="pt_free" value="free" <?= $pt === 'free' ? 'checked' : '' ?>>
+									<label class="form-check-label" for="pt_free"><i class="fa fa-gift me-1"></i> Free</label>
+								</div>
+							</div>
+						</div>
+
+						<!-- Recurring Price Setup -->
+						<div id="section_recurring" class="pricing-section">
+							<div class="company-form-section">
+								<div class="section-title">
+									<i class="fa fa-sync-alt"></i> Recurring Price Setup
+								</div>
+								<?php if (!empty($billing_cycles) && !empty($currencies)): ?>
+								<div class="table-responsive">
+									<table class="table table-bordered mb-2">
+										<thead class="bg-light">
+											<tr>
+												<th style="min-width:120px;">Currency</th>
+												<?php foreach ($billing_cycles as $cycle): ?>
+												<th class="text-center" style="min-width:120px;"><?= htmlspecialchars($cycle['cycle_name']) ?></th>
+												<?php endforeach; ?>
+											</tr>
+										</thead>
+										<tbody>
+											<?php foreach ($currencies as $currency): ?>
+											<tr>
+												<td class="align-middle fw-bold bg-light">
+													<?= htmlspecialchars($currency['symbol']) ?> <?= htmlspecialchars($currency['code']) ?>
+												</td>
+												<?php foreach ($billing_cycles as $cycle): ?>
+												<td>
+													<?php
+														$existingPrice = '';
+														if (isset($pricing_matrix[$currency['id']][$cycle['id']])) {
+															$existingPrice = $pricing_matrix[$currency['id']][$cycle['id']];
+														}
+													?>
+													<input type="number"
+														   name="pricing[<?= intval($currency['id']) ?>][<?= intval($cycle['id']) ?>]"
+														   class="form-control text-end"
+														   value="<?= htmlspecialchars($existingPrice) ?>"
+														   placeholder="0.00"
+														   step="0.01"
+														   min="0">
+												</td>
+												<?php endforeach; ?>
+											</tr>
+											<?php endforeach; ?>
+										</tbody>
+									</table>
+								</div>
+								<small class="text-muted"><i class="fa fa-info-circle"></i> Leave empty for billing cycles you don't want to offer.</small>
+								<?php else: ?>
+								<p class="text-muted mb-0">No currencies or billing cycles configured yet.</p>
+								<?php endif; ?>
+							</div>
+						</div>
+
+						<!-- One-Time Price Setup -->
+						<div id="section_onetime" class="pricing-section" style="display:none;">
+							<div class="company-form-section">
+								<div class="section-title">
+									<i class="fa fa-shopping-cart"></i> One-Time Price Setup
+								</div>
+								<?php if (!empty($one_time_cycle_id) && !empty($currencies)): ?>
+								<div class="table-responsive">
+									<table class="table table-bordered mb-2">
+										<thead class="bg-light">
+											<tr>
+												<th style="min-width:120px;">Currency</th>
+												<th class="text-center" style="min-width:150px;">Price</th>
+											</tr>
+										</thead>
+										<tbody>
+											<?php foreach ($currencies as $currency): ?>
+											<tr>
+												<td class="align-middle fw-bold bg-light">
+													<?= htmlspecialchars($currency['symbol']) ?> <?= htmlspecialchars($currency['code']) ?>
+												</td>
+												<td>
+													<?php $otPrice = isset($pricing_matrix[$currency['id']][$one_time_cycle_id]) ? $pricing_matrix[$currency['id']][$one_time_cycle_id] : ''; ?>
+													<input type="number"
+														   name="pricing[<?= intval($currency['id']) ?>][<?= intval($one_time_cycle_id) ?>]"
+														   class="form-control text-end"
+														   value="<?= htmlspecialchars($otPrice) ?>"
+														   placeholder="0.00"
+														   step="0.01"
+														   min="0">
+												</td>
+											</tr>
+											<?php endforeach; ?>
+										</tbody>
+									</table>
+								</div>
+								<small class="text-muted"><i class="fa fa-info-circle"></i> Set price for one-time purchases. Leave empty if not applicable.</small>
+								<?php else: ?>
+								<p class="text-muted mb-0">One-time billing cycle not configured.</p>
+								<?php endif; ?>
+							</div>
+						</div>
+
+						<!-- Free Package -->
+						<div id="section_free" class="pricing-section" style="display:none;">
+							<div class="company-form-section">
+								<div class="section-title">
+									<i class="fa fa-gift"></i> Free Package
+								</div>
+								<p class="text-muted mb-0"><i class="fa fa-info-circle"></i> This package will be offered to customers at no cost.</p>
+							</div>
+						</div>
+
 						<!-- Submit Button -->
 						<div class="form-group mt-4">
 							<button type="submit" class="btn btn-save-company">
@@ -146,6 +273,19 @@
 <script>
 $(function(){
 	'use strict'
+
+	// Pricing type toggle
+	function showPricingSection(type) {
+		$('.pricing-section').hide().find('input').prop('disabled', true);
+		$('#section_' + type).show().find('input').prop('disabled', false);
+	}
+
+	$('input[name="pricing_type"]').on('change', function() {
+		showPricingSection($(this).val());
+	});
+
+	// Init on page load
+	showPricingSection($('input[name="pricing_type"]:checked').val() || 'recurring');
 
 	// Mappings from PHP
 	var serviceTypeKeys = <?= json_encode($service_type_keys) ?>;

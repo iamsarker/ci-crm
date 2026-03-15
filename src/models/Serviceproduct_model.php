@@ -124,10 +124,121 @@ class Serviceproduct_model extends CI_Model{
 	}
 
 	/**
-	 * Get service product statistics for dashboard cards
-	 *
-	 * @return array Stats including total, active, service groups, and hidden counts
+	 * Get all active billing cycles excluding ONE_TIME and FREE
 	 */
+	function getBillingCycles() {
+		$sql = "SELECT id, cycle_key, cycle_name FROM billing_cycle WHERE status=1 AND cycle_key NOT IN ('ONE_TIME', 'FREE') ORDER BY id";
+		return $this->db->query($sql)->result_array();
+	}
+
+	/**
+	 * Get all active currencies
+	 */
+	function getCurrencies() {
+		$sql = "SELECT id, code, symbol FROM currencies WHERE status=1 ORDER BY id";
+		return $this->db->query($sql)->result_array();
+	}
+
+	/**
+	 * Get pricing matrix for a product: [currency_id][billing_cycle_id] => price
+	 */
+	function getPricingMatrix($productId) {
+		if (!is_numeric($productId) || $productId <= 0) {
+			return array();
+		}
+		$sql = "SELECT currency_id, billing_cycle_id, price FROM product_service_pricing WHERE product_service_id = ? AND status = 1";
+		$rows = $this->db->query($sql, array(intval($productId)))->result_array();
+
+		$matrix = array();
+		foreach ($rows as $row) {
+			$matrix[$row['currency_id']][$row['billing_cycle_id']] = $row['price'];
+		}
+		return $matrix;
+	}
+
+	/**
+	 * Save pricing matrix using upsert (INSERT ... ON DUPLICATE KEY UPDATE)
+	 */
+	function savePricingMatrix($productId, $pricingData) {
+		if (!is_numeric($productId) || $productId <= 0 || !is_array($pricingData)) {
+			return;
+		}
+
+		$now = getDateTime();
+		$adminId = getAdminId();
+
+		foreach ($pricingData as $currencyId => $cycles) {
+			if (!is_array($cycles)) continue;
+			foreach ($cycles as $cycleId => $price) {
+				$price = trim($price);
+				if ($price !== '' && is_numeric($price) && floatval($price) >= 0) {
+					$sql = "INSERT INTO product_service_pricing (product_service_id, currency_id, billing_cycle_id, price, status, inserted_on, inserted_by)
+							VALUES (?, ?, ?, ?, 1, ?, ?)
+							ON DUPLICATE KEY UPDATE price = VALUES(price), status = 1, updated_on = ?, updated_by = ?";
+					$this->db->query($sql, array(
+						intval($productId), intval($currencyId), intval($cycleId),
+						floatval($price), $now, $adminId,
+						$now, $adminId
+					));
+				} else {
+					$this->db->query(
+						"DELETE FROM product_service_pricing WHERE product_service_id = ? AND currency_id = ? AND billing_cycle_id = ?",
+						array(intval($productId), intval($currencyId), intval($cycleId))
+					);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Get billing cycle ID by cycle_key
+	 */
+	function getCycleIdByKey($key) {
+		$sql = "SELECT id FROM billing_cycle WHERE cycle_key = ? AND status = 1 LIMIT 1";
+		$row = $this->db->query($sql, array($key))->row_array();
+		return !empty($row) ? intval($row['id']) : null;
+	}
+
+	/**
+	 * Save or remove free pricing for a product
+	 */
+	function saveFreePricing($productId, $isFree, $freeCycleId, $currencies) {
+		if (!$freeCycleId || !is_numeric($productId) || $productId <= 0) return;
+
+		if ($isFree) {
+			foreach ($currencies as $currency) {
+				$sql = "INSERT INTO product_service_pricing (product_service_id, currency_id, billing_cycle_id, price, status, inserted_on, inserted_by)
+						VALUES (?, ?, ?, 0, 1, ?, ?)
+						ON DUPLICATE KEY UPDATE price = 0, status = 1, updated_on = VALUES(inserted_on), updated_by = VALUES(inserted_by)";
+				$this->db->query($sql, array(
+					intval($productId),
+					intval($currency['id']),
+					intval($freeCycleId),
+					getDateTime(),
+					getAdminId()
+				));
+			}
+		} else {
+			$sql = "DELETE FROM product_service_pricing WHERE product_service_id = ? AND billing_cycle_id = ?";
+			$this->db->query($sql, array(intval($productId), intval($freeCycleId)));
+		}
+	}
+
+	/**
+	 * Delete pricing for a product except given billing cycle IDs
+	 */
+	function deletePricingExcept($productId, $keepCycleIds = array()) {
+		if (!is_numeric($productId) || $productId <= 0) return;
+
+		if (!empty($keepCycleIds)) {
+			$placeholders = implode(',', array_fill(0, count($keepCycleIds), '?'));
+			$sql = "DELETE FROM product_service_pricing WHERE product_service_id = ? AND billing_cycle_id NOT IN ($placeholders)";
+			$this->db->query($sql, array_merge(array(intval($productId)), array_map('intval', $keepCycleIds)));
+		} else {
+			$this->db->query("DELETE FROM product_service_pricing WHERE product_service_id = ?", array(intval($productId)));
+		}
+	}
+
 	function getProductStats() {
 		try {
 			$query = $this->db->query("

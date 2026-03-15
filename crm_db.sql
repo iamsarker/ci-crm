@@ -1484,6 +1484,7 @@ CREATE TABLE `product_services` (
   `product_name` varchar(255) NOT NULL,
   `product_desc` text DEFAULT NULL,
   `is_hidden` tinyint(4) NOT NULL DEFAULT 0 COMMENT '1=hidden, 0=not hidden',
+  `pricing_type` varchar(10) NOT NULL DEFAULT 'recurring',
   `cp_package` varchar(150) DEFAULT NULL,
   `status` tinyint(4) NOT NULL DEFAULT 1,
   `inserted_on` datetime DEFAULT NULL,
@@ -2194,7 +2195,8 @@ ALTER TABLE `product_service_modules`
 -- Indexes for table `product_service_pricing`
 --
 ALTER TABLE `product_service_pricing`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_product_currency_cycle` (`product_service_id`,`currency_id`,`billing_cycle_id`);
 
 --
 -- Indexes for table `product_service_types`

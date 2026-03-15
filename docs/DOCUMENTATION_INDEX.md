@@ -30,7 +30,8 @@ ci-crm/
 │   ├── SECURITY_HEADERS_SETUP.md  # Security headers configuration
 │   ├── PHP82_UPGRADE_AND_TROUBLESHOOTING.md  # PHP 8.2+ guide
 │   ├── WHMCS_FEATURE_COMPARISON.md  # Feature comparison
-│   └── AUTO_INSTALLER.md          # Auto-installer documentation
+│   ├── AUTO_INSTALLER.md          # Auto-installer documentation
+│   └── PRICING_MECHANISM.md       # Package pricing mechanism
 │
 └── codecanyon/                    # CodeCanyon Buyer Documentation
     ├── README.md                  # Product overview
@@ -168,7 +169,20 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ---
 
-### 7. [AUTO_INSTALLER.md](AUTO_INSTALLER.md)
+### 7. [PRICING_MECHANISM.md](PRICING_MECHANISM.md)
+**Purpose:** Package pricing mechanism documentation
+**Best for:** Understanding how recurring, one-time, and free pricing works
+
+**Contents:**
+- Pricing types (recurring, onetime, free)
+- Database schema and unique key for upsert
+- UI layout (radio selector, pricing matrix table)
+- Save flow with upsert and cleanup logic
+- Key model methods reference
+
+---
+
+### 8. [AUTO_INSTALLER.md](AUTO_INSTALLER.md)
 **Purpose:** Auto-installer wizard documentation for CodeCanyon distribution
 **Best for:** Understanding and maintaining the installation wizard
 

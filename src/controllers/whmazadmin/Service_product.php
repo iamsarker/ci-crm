@@ -89,6 +89,7 @@ class Service_product extends WHMAZADMIN_Controller {
 					'product_desc'				=> $this->input->post('product_desc'),
 					'cp_package'				=> $this->input->post('cp_package'),
 					'is_hidden'					=> $this->input->post('is_hidden') ? 1 : 0,
+					'pricing_type'				=> in_array($this->input->post('pricing_type'), array('recurring', 'onetime', 'free')) ? $this->input->post('pricing_type') : 'recurring',
 					'status'					=> 1
 				);
 
@@ -104,7 +105,39 @@ class Service_product extends WHMAZADMIN_Controller {
 					$form_data['inserted_by'] = getAdminId();
 				}
 
-				if($this->Serviceproduct_model->saveData($form_data)){
+				$result = $this->Serviceproduct_model->saveData($form_data);
+				if(!empty($result['success'])){
+					$productId = !empty($result['id']) ? $result['id'] : intval($form_data['id']);
+
+					// Save pricing based on selected type
+					$pricingType = $form_data['pricing_type'];
+					$billingCycles = $this->Serviceproduct_model->getBillingCycles();
+					$recurringCycleIds = array_map(function($c) { return $c['id']; }, $billingCycles);
+					$oneTimeCycleId = $this->Serviceproduct_model->getCycleIdByKey('ONE_TIME');
+					$freeCycleId = $this->Serviceproduct_model->getCycleIdByKey('FREE');
+
+					if ($pricingType === 'recurring') {
+						$pricingData = $this->input->post('pricing');
+						if (!empty($pricingData) && is_array($pricingData)) {
+							$this->Serviceproduct_model->savePricingMatrix($productId, $pricingData);
+						}
+						$this->Serviceproduct_model->deletePricingExcept($productId, $recurringCycleIds);
+
+					} else if ($pricingType === 'onetime') {
+						$pricingData = $this->input->post('pricing');
+						if (!empty($pricingData) && is_array($pricingData)) {
+							$this->Serviceproduct_model->savePricingMatrix($productId, $pricingData);
+						}
+						$keepIds = $oneTimeCycleId ? array($oneTimeCycleId) : array();
+						$this->Serviceproduct_model->deletePricingExcept($productId, $keepIds);
+
+					} else if ($pricingType === 'free') {
+						$currencies = $this->Serviceproduct_model->getCurrencies();
+						$this->Serviceproduct_model->saveFreePricing($productId, true, $freeCycleId, $currencies);
+						$keepIds = $freeCycleId ? array($freeCycleId) : array();
+						$this->Serviceproduct_model->deletePricingExcept($productId, $keepIds);
+					}
+
 					$this->session->set_flashdata('admin_success', 'Service product has been saved successfully.');
 					redirect("whmazadmin/service_product/index");
 				}else {
@@ -128,6 +161,15 @@ class Service_product extends WHMAZADMIN_Controller {
 		// Get type key_name and module name mappings for JS (to know which IDs are hosting/cpanel)
 		$data['service_type_keys'] = $this->Serviceproduct_model->getServiceTypeKeys();
 		$data['module_keys'] = $this->Serviceproduct_model->getModuleKeys();
+
+		// Pricing matrix data
+		$data['billing_cycles'] = $this->Serviceproduct_model->getBillingCycles();
+		$data['currencies'] = $this->Serviceproduct_model->getCurrencies();
+		$data['one_time_cycle_id'] = $this->Serviceproduct_model->getCycleIdByKey('ONE_TIME');
+		$data['pricing_matrix'] = array();
+		if (!empty($id_val)) {
+			$data['pricing_matrix'] = $this->Serviceproduct_model->getPricingMatrix(safe_decode($id_val));
+		}
 
 		$this->load->view('whmazadmin/service_product_manage', $data);
 	}
