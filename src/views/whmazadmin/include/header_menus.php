@@ -99,8 +99,8 @@
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_group/index"><i class="fas fa-object-group me-2"></i>Service Groups</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_module/index"><i class="fas fa-puzzle-piece me-2"></i>Service Modules</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_product/index"><i class="fas fa-hdd me-2"></i>Hosting Management</a></li>
-                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/package/index"><i class="fas fa-tag me-2"></i>Hosting Pricing</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_product/index"><i class="fas fa-hdd me-2"></i>Hosting Packages</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/package/index"><i class="fas fa-tag me-2"></i>Package Pricing</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/domain_register/index"><i class="fas fa-globe me-2"></i>Domain Register</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/domain_pricing/index"><i class="fas fa-tags me-2"></i>Domain Pricing</a></li>
                         <li><hr class="dropdown-divider"></li>

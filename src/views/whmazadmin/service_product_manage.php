@@ -10,11 +10,11 @@
 				<div class="company-page-header">
 					<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
 						<div>
-							<h3><i class="fa fa-box"></i> <?= !empty($detail['product_name']) ? htmlspecialchars($detail['product_name']) : 'New Service Product' ?></h3>
+							<h3><i class="fa fa-box"></i> <?= !empty($detail['product_name']) ? htmlspecialchars($detail['product_name']) : 'New Hosting Package' ?></h3>
 							<nav aria-label="breadcrumb">
 								<ol class="breadcrumb mb-0">
 									<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
-									<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/service_product/index">Service Products</a></li>
+									<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/service_product/index">Hosting Packages</a></li>
 									<li class="breadcrumb-item active"><a href="#">Manage</a></li>
 								</ol>
 							</nav>
@@ -43,7 +43,7 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group">
-										<label class="form-label" for="product_name"><i class="fa fa-box"></i> Product Name</label>
+										<label class="form-label" for="product_name"><i class="fa fa-box"></i> Package Name</label>
 										<input name="product_name" type="text" class="form-control" id="product_name" placeholder="Enter product name" value="<?= htmlspecialchars($detail['product_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('product_name', '<div class="error">', '</div>'); ?>
 									</div>
@@ -92,7 +92,7 @@
 									<div class="form-group">
 										<label class="form-label" for="cp_package"><i class="fa fa-archive"></i> cPanel Package Name</label>
 										<select name="cp_package" class="form-select" id="cp_package">
-											<option value="">-- Select Package --</option>
+											<option value="">-- Select CP Package --</option>
 											<?php if (!empty($detail['cp_package'])): ?>
 												<option value="<?= htmlspecialchars($detail['cp_package'], ENT_QUOTES, 'UTF-8') ?>" selected><?= htmlspecialchars($detail['cp_package'], ENT_QUOTES, 'UTF-8') ?></option>
 											<?php endif; ?>
@@ -119,7 +119,7 @@
 						<!-- Description Section -->
 						<div class="company-form-section">
 							<div class="section-title">
-								<i class="fa fa-file-alt"></i> Product Description
+								<i class="fa fa-file-alt"></i> Package Description
 							</div>
 							<div class="form-group">
 								<label class="form-label" for="product_desc"><i class="fa fa-align-left"></i> Description</label>
@@ -220,7 +220,7 @@ $(function(){
 
 				if (response.success && response.packages) {
 					var $select = $('#cp_package');
-					$select.empty().append('<option value="">-- Select Package --</option>');
+					$select.empty().append('<option value="">-- Select CP Package --</option>');
 					packageData = {};
 
 					$.each(response.packages, function(i, pkg) {

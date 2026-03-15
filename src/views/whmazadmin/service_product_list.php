@@ -16,7 +16,7 @@
 						</div>
 						<div>
 							<div class="stats-value" id="totalProducts">-</div>
-							<div class="stats-label">Total Products</div>
+							<div class="stats-label">Total Packages</div>
 						</div>
 					</div>
 				</div>
@@ -29,7 +29,7 @@
 						</div>
 						<div>
 							<div class="stats-value" id="activeProducts">-</div>
-							<div class="stats-label">Active Products</div>
+							<div class="stats-label">Active Packages</div>
 						</div>
 					</div>
 				</div>
@@ -55,7 +55,7 @@
 						</div>
 						<div>
 							<div class="stats-value" id="hiddenProducts">-</div>
-							<div class="stats-label">Hidden Products</div>
+							<div class="stats-label">Hidden Packages</div>
 						</div>
 					</div>
 				</div>
@@ -66,16 +66,16 @@
 		<div class="card table-card">
 			<div class="card-header d-flex justify-content-between align-items-center">
 				<div>
-					<h4 class="mb-1"><i class="fa fa-cube me-2"></i>Service Products</h4>
+					<h4 class="mb-1"><i class="fa fa-cube me-2"></i>Hosting Packages</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" class="breadcrumb-transparent">
 							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
-							<li class="breadcrumb-item active">Service Products</li>
+							<li class="breadcrumb-item active">Hosting Packages</li>
 						</ol>
 					</nav>
 				</div>
 				<a href="<?=base_url()?>whmazadmin/service_product/manage" class="btn btn-light btn-sm">
-					<i class="fa fa-plus-circle me-1"></i> Add Product
+					<i class="fa fa-plus-circle me-1"></i> Add Package
 				</a>
 			</div>
 			<div class="card-body">
@@ -121,7 +121,7 @@ $(function(){
 		"columns": [
 			{ "title": "ID", "data": "id", "width": "5%", "visible": false },
 			{
-				"title": "Product Name",
+				"title": "Package Name",
 				"data": "product_name",
 				"width": "20%",
 				render: function(data) {
