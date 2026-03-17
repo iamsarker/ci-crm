@@ -41,20 +41,30 @@
 								<i class="fa fa-info-circle"></i> Product Details
 							</div>
 							<div class="row">
-								<div class="col-md-6">
+								<div class="col-md-4">
 									<div class="form-group">
 										<label class="form-label" for="product_name"><i class="fa fa-box"></i> Package Name</label>
-										<input name="product_name" type="text" class="form-control" id="product_name" placeholder="Enter product name" value="<?= htmlspecialchars($detail['product_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+										<input name="product_name" type="text" class="form-control" id="product_name" placeholder="Enter Package name" value="<?= htmlspecialchars($detail['product_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('product_name', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
-								<div class="col-md-6">
+								<div class="col-md-4">
 									<div class="form-group">
-										<label class="form-label" for="product_service_group_id"><i class="fa fa-object-group"></i> Service Group</label>
-										<?php echo form_dropdown('product_service_group_id', $service_groups, !empty($detail['product_service_group_id']) ? $detail['product_service_group_id'] : '', 'class="form-select select2" id="product_service_group_id"'); ?>
-										<?php echo form_error('product_service_group_id', '<div class="error">', '</div>'); ?>
+										<label class="form-label"><i class="fa fa-eye-slash"></i> Visibility</label>
+										<div class="custom-checkbox-toggle mt-2">
+											<input type="checkbox" name="is_hidden" id="is_hidden" value="1" <?= (!empty($detail['is_hidden']) && $detail['is_hidden'] == 1) ? 'checked' : '' ?>>
+											<label for="is_hidden">Hidden from client area</label>
+										</div>
 									</div>
 								</div>
+
+								<div class="col-md-4">
+									<div class="form-group">
+										<label class="form-label" for="product_service_module_id"><i class="fa fa-puzzle-piece"></i> Module</label>
+										<?php echo form_dropdown('product_service_module_id', $service_modules, !empty($detail['product_service_module_id']) ? $detail['product_service_module_id'] : '', 'class="form-select select2" id="product_service_module_id"'); ?>
+									</div>
+								</div>
+								
 							</div>
 						</div>
 
@@ -66,29 +76,29 @@
 							<div class="row">
 								<div class="col-md-4">
 									<div class="form-group">
-										<label class="form-label" for="product_service_type_id"><i class="fa fa-layer-group"></i> Service Type</label>
-										<?php echo form_dropdown('product_service_type_id', $service_types, !empty($detail['product_service_type_id']) ? $detail['product_service_type_id'] : '', 'class="form-select select2" id="product_service_type_id"'); ?>
-										<?php echo form_error('product_service_type_id', '<div class="error">', '</div>'); ?>
+										<label class="form-label" for="product_service_group_id"><i class="fa fa-object-group"></i> Service Group</label>
+										<?php echo form_dropdown('product_service_group_id', $service_groups, !empty($detail['product_service_group_id']) ? $detail['product_service_group_id'] : '', 'class="form-select select2" id="product_service_group_id"'); ?>
+										<?php echo form_error('product_service_group_id', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
-								<div class="col-md-4">
-									<div class="form-group">
-										<label class="form-label" for="product_service_module_id"><i class="fa fa-puzzle-piece"></i> Module</label>
-										<?php echo form_dropdown('product_service_module_id', $service_modules, !empty($detail['product_service_module_id']) ? $detail['product_service_module_id'] : '', 'class="form-select select2" id="product_service_module_id"'); ?>
-										<?php echo form_error('product_service_module_id', '<div class="error">', '</div>'); ?>
-									</div>
-								</div>
+
 								<div class="col-md-4">
 									<div class="form-group">
 										<label class="form-label" for="server_id"><i class="fa fa-server"></i> Server</label>
-										<?php echo form_dropdown('server_id', $servers, !empty($detail['server_id']) ? $detail['server_id'] : '', 'class="form-select select2" id="server_id"'); ?>
-										<?php echo form_error('server_id', '<div class="error">', '</div>'); ?>
+										<select name="server_id" class="form-select" id="server_id">
+											<option value="">-- Select One --</option>
+											<?php if (!empty($detail['server_id'])): ?>
+												<?php foreach ($servers_list as $srv): ?>
+													<?php if ($srv['id'] == $detail['server_id']): ?>
+														<option value="<?= $srv['id'] ?>" selected><?= htmlspecialchars($srv['name'], ENT_QUOTES, 'UTF-8') ?></option>
+													<?php endif; ?>
+												<?php endforeach; ?>
+											<?php endif; ?>
+										</select>
 									</div>
 								</div>
-							</div>
 
-							<div class="row" id="cp_package_row" class="d-hidden">
-								<div class="col-md-6">
+								<div class="col-md-4 d-hidden" id="cp_package_row">
 									<div class="form-group">
 										<label class="form-label" for="cp_package"><i class="fa fa-archive"></i> cPanel Package Name</label>
 										<select name="cp_package" class="form-select" id="cp_package">
@@ -101,15 +111,6 @@
 										<div id="cp_package_loading" class="d-hidden">
 											<span class="spinner-border spinner-border-sm text-primary" role="status"></span>
 											<small class="text-primary">Fetching packages from server...</small>
-										</div>
-									</div>
-								</div>
-								<div class="col-md-6">
-									<div class="form-group">
-										<label class="form-label"><i class="fa fa-eye-slash"></i> Visibility</label>
-										<div class="custom-checkbox-toggle mt-2">
-											<input type="checkbox" name="is_hidden" id="is_hidden" value="1" <?= (!empty($detail['is_hidden']) && $detail['is_hidden'] == 1) ? 'checked' : '' ?>>
-											<label for="is_hidden">Hidden from client area</label>
 										</div>
 									</div>
 								</div>
@@ -288,11 +289,40 @@ $(function(){
 	showPricingSection($('input[name="pricing_type"]:checked').val() || 'recurring');
 
 	// Mappings from PHP
+	var groupTypeMap = <?= json_encode($group_type_map) ?>;
 	var serviceTypeKeys = <?= json_encode($service_type_keys) ?>;
 	var moduleKeys = <?= json_encode($module_keys) ?>;
+	var serversList = <?= json_encode($servers_list) ?>;
 	var hostingTypes = ['SHARED_HOSTING', 'RESELLER_HOSTING'];
+	var savedServerId = <?= json_encode($detail['server_id'] ?? '') ?>;
 	var savedCpPackage = <?= json_encode($detail['cp_package'] ?? '') ?>;
 	var packageData = {}; // Store full package details keyed by name
+
+	// Filter server dropdown based on selected module
+	function filterServers() {
+		var moduleId = $('#product_service_module_id').val();
+		var $server = $('#server_id');
+		var currentVal = $server.val() || savedServerId;
+		$server.empty().append('<option value="">-- Select One --</option>');
+
+		if (!moduleId) return;
+
+		$.each(serversList, function(i, srv) {
+			if (String(srv.product_service_module_id) === String(moduleId)) {
+				var selected = (String(srv.id) === String(currentVal)) ? ' selected' : '';
+				$server.append('<option value="' + srv.id + '"' + selected + '>' + escapeXSS(srv.name) + '</option>');
+			}
+		});
+
+		checkCpanelVisibility();
+	}
+
+	$('#product_service_module_id').on('change', function() {
+		filterServers();
+	});
+
+	// Init server filter on page load
+	filterServers();
 
 	// Format quota/bandwidth values for display
 	function formatSize(val, unit) {
@@ -324,9 +354,10 @@ $(function(){
 
 	// Check if cPanel section should be visible
 	function checkCpanelVisibility() {
-		var typeId = $('#product_service_type_id').val();
+		var groupId = $('#product_service_group_id').val();
 		var moduleId = $('#product_service_module_id').val();
 
+		var typeId = groupTypeMap[groupId] || '';
 		var typeKey = serviceTypeKeys[typeId] || '';
 		var moduleName = (moduleKeys[moduleId] || '').toLowerCase();
 
@@ -396,7 +427,7 @@ $(function(){
 	});
 
 	// Bind change events
-	$('#product_service_type_id, #product_service_module_id').on('change', function() {
+	$('#product_service_group_id, #server_id').on('change', function() {
 		checkCpanelVisibility();
 	});
 

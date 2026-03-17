@@ -7,9 +7,12 @@ class Servicegroup_model extends CI_Model{
 	}
 
 	function loadAllData() {
-		$sql = "SELECT * FROM product_service_groups WHERE status=1 ";
+		$sql = "SELECT psg.*, pst.servce_type_name
+				FROM product_service_groups psg
+				LEFT JOIN product_service_types pst ON psg.product_service_type_id = pst.id
+				WHERE psg.status=1";
 		$data = $this->db->query($sql)->result_array();
-		
+
 		return $data;
  	}
 
@@ -23,6 +26,19 @@ class Servicegroup_model extends CI_Model{
 		$data = $this->db->query($sql, array(intval($id)))->result_array();
 
 		return !empty($data) ? $data[0] : array();
+	}
+
+	/**
+	 * Get group_id => product_service_type_id mapping for all active groups
+	 */
+	function getGroupTypeMap() {
+		$sql = "SELECT id, product_service_type_id FROM product_service_groups WHERE status = 1";
+		$rows = $this->db->query($sql)->result_array();
+		$map = array();
+		foreach ($rows as $row) {
+			$map[$row['id']] = intval($row['product_service_type_id']);
+		}
+		return $map;
 	}
 
 	function saveData($data) {

@@ -1641,6 +1641,7 @@ CREATE TABLE `servers` (
   `dns4_ip` varchar(160) DEFAULT NULL,
   `max_accounts` int(11) DEFAULT NULL,
   `type` varchar(100) DEFAULT NULL,
+  `product_service_module_id` int(11) DEFAULT NULL,
   `username` text DEFAULT NULL,
   `authpass` text DEFAULT NULL,
   `access_hash` text DEFAULT NULL,

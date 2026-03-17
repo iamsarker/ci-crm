@@ -41,11 +41,17 @@
 								<i class="fa fa-info-circle"></i> Server Details
 							</div>
 							<div class="row">
-								<div class="col-md-6">
+								<div class="col-md-3">
 									<div class="form-group">
 										<label class="form-label" for="name"><i class="fa fa-server"></i> Server Name</label>
 										<input name="name" type="text" class="form-control" id="name" placeholder="Enter server name" value="<?= htmlspecialchars($detail['name'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 										<?php echo form_error('name', '<div class="error">', '</div>'); ?>
+									</div>
+								</div>
+								<div class="col-md-3">
+									<div class="form-group">
+										<label class="form-label" for="product_service_module_id"><i class="fa fa-puzzle-piece"></i> Server Module</label>
+										<?php echo form_dropdown('product_service_module_id', $service_modules, !empty($detail['product_service_module_id']) ? $detail['product_service_module_id'] : '', 'class="form-select select2" id="product_service_module_id"'); ?>
 									</div>
 								</div>
 								<div class="col-md-3">

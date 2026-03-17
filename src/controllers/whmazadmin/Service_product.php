@@ -6,6 +6,8 @@ class Service_product extends WHMAZADMIN_Controller {
 	function __construct(){
 		parent::__construct();
 		$this->load->model('Serviceproduct_model');
+		$this->load->model('Servicegroup_model');
+		$this->load->model('Server_model');
 		$this->load->model('Common_model');
 		if (!$this->isLogin()) {
 			redirect('/whmazadmin/authenticate/login', 'refresh');
@@ -71,19 +73,18 @@ class Service_product extends WHMAZADMIN_Controller {
 			$this->form_validation->set_rules('product_service_group_id', 'Service Group', 'required|trim');
 			$this->form_validation->set_message('product_service_group_id', 'Service group is required');
 
-			$this->form_validation->set_rules('product_service_type_id', 'Service Type', 'required|trim');
-			$this->form_validation->set_message('product_service_type_id', 'Service type is required');
-
-			$this->form_validation->set_rules('product_service_module_id', 'Module', 'required|trim');
-			$this->form_validation->set_message('product_service_module_id', 'Module is required');
-
 			if ($this->form_validation->run() == true){
+
+				// Auto-resolve type from group
+				$groupTypeMap = $this->Servicegroup_model->getGroupTypeMap();
+				$groupId = $this->input->post('product_service_group_id');
+				$typeId = isset($groupTypeMap[$groupId]) ? $groupTypeMap[$groupId] : 0;
 
 				$form_data = array(
 					'id'						=> safe_decode($this->input->post('id')),
 					'product_name'				=> $this->input->post('product_name'),
-					'product_service_group_id'	=> $this->input->post('product_service_group_id'),
-					'product_service_type_id'	=> $this->input->post('product_service_type_id'),
+					'product_service_group_id'	=> $groupId,
+					'product_service_type_id'	=> $typeId,
 					'product_service_module_id'	=> $this->input->post('product_service_module_id'),
 					'server_id'					=> $this->input->post('server_id'),
 					'product_desc'				=> $this->input->post('product_desc'),
@@ -154,11 +155,11 @@ class Service_product extends WHMAZADMIN_Controller {
 		}
 
 		$data['service_groups'] = $this->Common_model->generate_dropdown('product_service_groups', 'id', 'group_name');
-		$data['service_types'] = $this->Common_model->generate_dropdown('product_service_types', 'id', 'servce_type_name');
 		$data['service_modules'] = $this->Common_model->generate_dropdown('product_service_modules', 'id', 'module_name');
-		$data['servers'] = $this->Common_model->generate_dropdown('servers', 'id', 'name');
+		$data['servers_list'] = $this->Server_model->getActiveServersList();
 
-		// Get type key_name and module name mappings for JS (to know which IDs are hosting/cpanel)
+		// Mappings for JS (group→type, cPanel visibility)
+		$data['group_type_map'] = $this->Servicegroup_model->getGroupTypeMap();
 		$data['service_type_keys'] = $this->Serviceproduct_model->getServiceTypeKeys();
 		$data['module_keys'] = $this->Serviceproduct_model->getModuleKeys();
 

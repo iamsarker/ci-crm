@@ -83,6 +83,7 @@
 					<thead>
 					<tr>
 						<th>Group Name</th>
+						<th>Service Type</th>
 						<th>Group Headline</th>
 						<th>Tags</th>
 						<th class="text-center">Status</th>
@@ -95,6 +96,13 @@
 						<tr>
 							<td>
 								<span class="fw-semibold"><i class="fa fa-layer-group me-1 text-muted"></i><?= htmlspecialchars($row['group_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+							</td>
+							<td>
+								<?php if (!empty($row['servce_type_name'])): ?>
+									<span class="badge bg-primary"><i class="fa fa-tag me-1"></i><?= htmlspecialchars($row['servce_type_name'], ENT_QUOTES, 'UTF-8') ?></span>
+								<?php else: ?>
+									<span class="text-muted">-</span>
+								<?php endif; ?>
 							</td>
 							<td>
 								<small><?= htmlspecialchars($row['group_headline'] ?? '-', ENT_QUOTES, 'UTF-8') ?></small>

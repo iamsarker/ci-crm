@@ -9,9 +9,12 @@ class Server_model extends CI_Model{
 	}
 
 	function loadAllData() {
-		$sql = "SELECT * FROM $this->table WHERE status=1 ";
+		$sql = "SELECT s.*, psm.module_name
+				FROM servers s
+				LEFT JOIN product_service_modules psm ON s.product_service_module_id = psm.id
+				WHERE s.status=1";
 		$data = $this->db->query($sql)->result_array();
-		
+
 		return $data;
  	}
 
@@ -25,6 +28,27 @@ class Server_model extends CI_Model{
 		$data = $this->db->query($sql, array(intval($id)))->result_array();
 
 		return !empty($data) ? $data[0] : array();
+	}
+
+	/**
+	 * Get active servers list with module ID for JS filtering
+	 */
+	function getActiveServersList() {
+		$sql = "SELECT id, name, product_service_module_id FROM servers WHERE status = 1 ORDER BY name";
+		return $this->db->query($sql)->result_array();
+	}
+
+	/**
+	 * Get server_id => product_service_module_id mapping for all active servers
+	 */
+	function getServerModuleMap() {
+		$sql = "SELECT id, product_service_module_id FROM servers WHERE status = 1";
+		$rows = $this->db->query($sql)->result_array();
+		$map = array();
+		foreach ($rows as $row) {
+			$map[$row['id']] = intval($row['product_service_module_id']);
+		}
+		return $map;
 	}
 
 	function saveData($data) {

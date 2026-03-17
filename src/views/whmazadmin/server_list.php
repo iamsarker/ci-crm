@@ -83,12 +83,11 @@
 					<thead>
 					<tr>
 						<th>Server Name</th>
+						<th>Module</th>
 						<th>IP Address</th>
 						<th>Hostname</th>
 						<th>DNS 1</th>
 						<th>DNS 2</th>
-						<th>DNS 3</th>
-						<th>DNS 4</th>
 						<th class="text-center">Actions</th>
 					</tr>
 					</thead>
@@ -99,6 +98,13 @@
 								<span class="fw-bold text-primary"><i class="fa fa-server me-1"></i><?= htmlspecialchars($row['name'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span>
 							</td>
 							<td>
+								<?php if (!empty($row['module_name'])): ?>
+									<span class="badge bg-primary"><i class="fa fa-puzzle-piece me-1"></i><?= htmlspecialchars($row['module_name'], ENT_QUOTES, 'UTF-8'); ?></span>
+								<?php else: ?>
+									<span class="text-muted">-</span>
+								<?php endif; ?>
+							</td>
+							<td>
 								<span class="badge bg-light text-dark"><i class="fa fa-network-wired me-1"></i><?= htmlspecialchars($row['ip_addr'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span>
 							</td>
 							<td>
@@ -106,8 +112,6 @@
 							</td>
 							<td><small class="text-muted"><?= htmlspecialchars($row['dns1'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></small></td>
 							<td><small class="text-muted"><?= htmlspecialchars($row['dns2'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></small></td>
-							<td><small class="text-muted"><?= htmlspecialchars($row['dns3'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></small></td>
-							<td><small class="text-muted"><?= htmlspecialchars($row['dns4'] ?? '-', ENT_QUOTES, 'UTF-8'); ?></small></td>
 							<td class="text-center">
 								<button type="button" class="btn btn-action btn-manage" onclick="openManage('<?=safe_encode($row['id'])?>')" title="Manage Server">
 									<i class="fa fa-cog"></i>

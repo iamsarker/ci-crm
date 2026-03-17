@@ -6,6 +6,7 @@ class Server extends WHMAZADMIN_Controller {
 	function __construct(){
 		parent::__construct();
 		$this->load->model('Server_model');
+		$this->load->model('Common_model');
 		if (!$this->isLogin()) {
 			redirect('/whmazadmin/authenticate/login', 'refresh');
 		}
@@ -61,6 +62,7 @@ class Server extends WHMAZADMIN_Controller {
 					'dns4_ip'=> $this->input->post('dns4_ip'),
 					'username'=> $this->input->post('username'),
 					'type'=> $this->input->post('type'),
+					'product_service_module_id'=> $this->input->post('product_service_module_id'),
 					'authpass'=> $this->input->post('authpass'),
 					'access_hash'=> $this->input->post('access_hash'),
 					'port'=> $this->input->post('port'),
@@ -102,6 +104,7 @@ class Server extends WHMAZADMIN_Controller {
 			$data['detail'] = array();
 		}
 
+		$data['service_modules'] = $this->Common_model->generate_dropdown('product_service_modules', 'id', 'module_name');
 		$this->load->view('whmazadmin/server_manage', $data);
 	}
 
