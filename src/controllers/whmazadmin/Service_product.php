@@ -155,7 +155,7 @@ class Service_product extends WHMAZADMIN_Controller {
 		}
 
 		$data['service_groups'] = $this->Common_model->generate_dropdown('product_service_groups', 'id', 'group_name');
-		$data['service_modules'] = $this->Common_model->generate_dropdown('product_service_modules', 'id', 'module_name');
+		$data['service_modules'] = $this->Common_model->generate_dropdown('server_modules', 'id', 'module_name');
 		$data['servers_list'] = $this->Server_model->getActiveServersList();
 
 		// Mappings for JS (group→type, cPanel visibility)
@@ -202,7 +202,7 @@ class Service_product extends WHMAZADMIN_Controller {
 			// Get module name from server
 			$moduleName = '';
 			if (!empty($serverArr['product_service_module_id'])) {
-				$module = $this->Common_model->get_data_by_id('product_service_modules', $serverArr['product_service_module_id']);
+				$module = $this->Common_model->get_data_by_id('server_modules', $serverArr['product_service_module_id']);
 				$moduleName = strtolower(trim($module->module_name ?? ''));
 			}
 

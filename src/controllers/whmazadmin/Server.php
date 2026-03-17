@@ -104,7 +104,7 @@ class Server extends WHMAZADMIN_Controller {
 			$data['detail'] = array();
 		}
 
-		$data['service_modules'] = $this->Common_model->generate_dropdown('product_service_modules', 'id', 'module_name');
+		$data['service_modules'] = $this->Common_model->generate_dropdown('server_modules', 'id', 'module_name');
 		$this->load->view('whmazadmin/server_manage', $data);
 	}
 

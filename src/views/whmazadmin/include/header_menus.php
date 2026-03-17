@@ -92,7 +92,7 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/general_setting/manage"><i class="fas fa-sliders-h me-2"></i>General Settings</a></li>
-                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_module/index"><i class="fas fa-puzzle-piece me-2"></i>Server Modules</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/server_module/index"><i class="fas fa-puzzle-piece me-2"></i>Server Modules</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/server/index"><i class="fas fa-server me-2"></i>Servers</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/currency/index"><i class="fas fa-dollar-sign me-2"></i>Currencies</a></li>
                         <li><hr class="dropdown-divider"></li>

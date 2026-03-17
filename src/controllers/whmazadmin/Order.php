@@ -122,7 +122,7 @@ class Order extends WHMAZADMIN_Controller
 		$data['currencies'] = $this->Common_model->generate_dropdown('currencies', 'id', "code");
 		$data['billing_cycles'] = $this->Common_model->generate_dropdown('billing_cycle', 'id', "cycle_name");
 		$data['servers'] = $this->Common_model->generate_dropdown('servers', 'id', "name", "hostname");
-		$data['modules'] = $this->Common_model->generate_dropdown('product_service_modules', 'id', "module_name");
+		$data['modules'] = $this->Common_model->generate_dropdown('server_modules', 'id', "module_name");
 		$data['service_groups'] = $this->Common_model->generate_dropdown('product_service_groups', 'id', "group_name");
 		$data['payment_gateways'] = $this->Common_model->generate_dropdown('payment_gateway', 'id', "name");
 

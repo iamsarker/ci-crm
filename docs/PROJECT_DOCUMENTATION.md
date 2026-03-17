@@ -520,7 +520,7 @@ The Admin Portal provides complete system administration capabilities through tr
 
 **Related Tables:**
 - `product_service_groups` - Service grouping
-- `product_service_modules` - Provisioning modules
+- `server_modules` - Provisioning modules
 - `product_service_types` - Service type definitions
 
 **Key URLs:**
@@ -1552,7 +1552,7 @@ src/modules/*/views/
 |-------|---------|
 | `product_services` | Hosting/service packages |
 | `product_service_groups` | Service grouping |
-| `product_service_modules` | Provisioning modules |
+| `server_modules` | Provisioning modules |
 | `product_service_types` | Service type definitions |
 | `product_service_pricing` | Pricing per billing cycle |
 | `servers` | Server information |
@@ -1777,7 +1777,7 @@ All three helpers share the same function signature pattern for consistent provi
 | Generate username | `generate_cpanel_username()` | `generate_plesk_username()` | `generate_da_username()` |
 | Welcome email | `send_cpanel_welcome_email()` | `send_plesk_welcome_email()` | `send_da_welcome_email()` |
 
-**Module is assigned per server** (`servers.product_service_module_id` → `product_service_modules`). The provisioning system reads `module_name` from the server and dispatches to the correct helper.
+**Module is assigned per server** (`servers.product_service_module_id` → `server_modules`). The provisioning system reads `module_name` from the server and dispatches to the correct helper.
 
 **API Details:**
 - **cPanel/WHM**: JSON REST API on port 2087, WHM token auth

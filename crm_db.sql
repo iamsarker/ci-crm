@@ -1528,10 +1528,10 @@ INSERT INTO `product_service_groups` (`id`, `product_service_type_id`, `group_na
 -- --------------------------------------------------------
 
 --
--- Table structure for table `product_service_modules`
+-- Table structure for table `server_modules`
 --
 
-CREATE TABLE `product_service_modules` (
+CREATE TABLE `server_modules` (
   `id` int(11) NOT NULL,
   `module_name` varchar(100) NOT NULL,
   `remarks` text DEFAULT NULL,
@@ -1543,10 +1543,10 @@ CREATE TABLE `product_service_modules` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `product_service_modules`
+-- Dumping data for table `server_modules`
 --
 
-INSERT INTO `product_service_modules` (`id`, `module_name`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+INSERT INTO `server_modules` (`id`, `module_name`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
 (1, 'No Module', 'No modules', 1, '2020-08-20 20:26:51', NULL, '2024-08-03 01:29:42', 1),
 (2, 'cPanel', 'cPanel server', 1, '2020-08-20 20:26:51', NULL, '2024-08-03 01:30:03', 1);
 
@@ -2187,9 +2187,9 @@ ALTER TABLE `product_service_groups`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `product_service_modules`
+-- Indexes for table `server_modules`
 --
-ALTER TABLE `product_service_modules`
+ALTER TABLE `server_modules`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -2526,9 +2526,9 @@ ALTER TABLE `product_service_groups`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT for table `product_service_modules`
+-- AUTO_INCREMENT for table `server_modules`
 --
-ALTER TABLE `product_service_modules`
+ALTER TABLE `server_modules`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --

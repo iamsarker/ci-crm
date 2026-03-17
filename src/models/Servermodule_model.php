@@ -1,5 +1,5 @@
-<?php 
-class Servicemodule_model extends CI_Model{
+<?php
+class Servermodule_model extends CI_Model{
 
 	function __construct(){
 		parent::__construct();
@@ -7,7 +7,7 @@ class Servicemodule_model extends CI_Model{
 	}
 
 	function loadAllData() {
-		$sql = "SELECT * FROM product_service_modules ORDER BY id";
+		$sql = "SELECT * FROM server_modules ORDER BY id";
 		$data = $this->db->query($sql)->result_array();
 
 		return $data;
@@ -17,17 +17,16 @@ class Servicemodule_model extends CI_Model{
 		if (!is_numeric($id) || $id <= 0) {
 			return false;
 		}
-		$sql = "UPDATE product_service_modules SET status = IF(status=1, 0, 1), updated_on = NOW(), updated_by = ? WHERE id = ?";
+		$sql = "UPDATE server_modules SET status = IF(status=1, 0, 1), updated_on = NOW(), updated_by = ? WHERE id = ?";
 		return $this->db->query($sql, array(getAdminId(), intval($id)));
 	}
 
 	function getDetail($id) {
-		// SECURITY FIX: Use prepared statement to prevent SQL injection
 		if (!is_numeric($id) || $id <= 0) {
 			return array();
 		}
 
-		$sql = "SELECT * FROM product_service_modules WHERE id=? AND status=1";
+		$sql = "SELECT * FROM server_modules WHERE id=? AND status=1";
 		$data = $this->db->query($sql, array(intval($id)))->result_array();
 
 		return !empty($data) ? $data[0] : array();
@@ -36,7 +35,7 @@ class Servicemodule_model extends CI_Model{
 	function saveData($data) {
 		$return = array();
 
-		if ($this->db->replace('product_service_modules', $data)) {
+		if ($this->db->replace('server_modules', $data)) {
 			$return['success'] = 1;
 		} else {
 			$return['success'] = 0;

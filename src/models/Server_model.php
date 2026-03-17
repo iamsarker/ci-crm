@@ -11,7 +11,7 @@ class Server_model extends CI_Model{
 	function loadAllData() {
 		$sql = "SELECT s.*, psm.module_name
 				FROM servers s
-				LEFT JOIN product_service_modules psm ON s.product_service_module_id = psm.id
+				LEFT JOIN server_modules psm ON s.product_service_module_id = psm.id
 				WHERE s.status=1";
 		$data = $this->db->query($sql)->result_array();
 

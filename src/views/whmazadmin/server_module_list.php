@@ -139,7 +139,7 @@ $(function(){
 		}).then((result) => {
 			if (result.isConfirmed) {
 				$.ajax({
-					url: '<?= base_url() ?>whmazadmin/service_module/toggle_status_api',
+					url: '<?= base_url() ?>whmazadmin/server_module/toggle_status_api',
 					type: 'POST',
 					data: { id: id, <?= $this->security->get_csrf_token_name() ?>: '<?= $this->security->get_csrf_hash() ?>' },
 					dataType: 'json',

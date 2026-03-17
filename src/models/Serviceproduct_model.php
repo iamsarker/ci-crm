@@ -12,7 +12,7 @@ class Serviceproduct_model extends CI_Model{
 		$sql = "SELECT ps.*, psg.group_name, psm.module_name, pst.servce_type_name
 				FROM product_services ps
 				LEFT JOIN product_service_groups psg ON ps.product_service_group_id = psg.id
-				LEFT JOIN product_service_modules psm ON ps.product_service_module_id = psm.id
+				LEFT JOIN server_modules psm ON ps.product_service_module_id = psm.id
 				LEFT JOIN product_service_types pst ON ps.product_service_type_id = pst.id
 				WHERE ps.status=1";
 		$data = $this->db->query($sql)->result_array();
@@ -101,7 +101,7 @@ class Serviceproduct_model extends CI_Model{
 	 */
 	function getModuleKeys() {
 		try {
-			$query = $this->db->query("SELECT id, module_name FROM product_service_modules WHERE status=1");
+			$query = $this->db->query("SELECT id, module_name FROM server_modules WHERE status=1");
 			$data = array();
 			foreach ($query->result_array() as $row) {
 				$data[$row['id']] = $row['module_name'];

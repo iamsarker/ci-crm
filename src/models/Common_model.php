@@ -222,7 +222,7 @@ class Common_model extends CI_Model {
 				JOIN product_services ps on s.id=ps.server_id
 				JOIN product_service_pricing psp on psp.product_service_id=ps.id
 				JOIN order_services os on psp.id=os.product_service_pricing_id
-				LEFT JOIN product_service_modules psm ON s.product_service_module_id = psm.id
+				LEFT JOIN server_modules psm ON s.product_service_module_id = psm.id
 				WHERE os.id=? and os.company_id=?";
 			$data = $this->db->query($sql, array(intval($orderServiceId), intval($companyId)))->result_array();
 

@@ -776,7 +776,7 @@ class Provisioning_model extends CI_Model
         $sql = "SELECT s.*, psm.module_name
                 FROM product_services ps
                 JOIN servers s ON ps.server_id = s.id
-                LEFT JOIN product_service_modules psm ON s.product_service_module_id = psm.id
+                LEFT JOIN server_modules psm ON s.product_service_module_id = psm.id
                 WHERE ps.id = ? AND s.status = 1";
         return $this->db->query($sql, array(intval($productServiceId)))->row_array();
     }
