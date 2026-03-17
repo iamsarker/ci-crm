@@ -93,7 +93,7 @@
             <!-- Recent Tickets -->
             <div class="col-md-6 col-xl-6" ng-init="getSupportTickets()">
                 <div class="card dashboard-activity-card">
-                    <div class="card-header dashboard-card-header">
+                    <div class="card-header dashboard-card-header d-flex justify-content-between align-items-center">
                         <h5 class="mg-b-0"><i class="fa fa-headset mg-r-10"></i>Recent Support Tickets</h5>
                         <a ng-click="getSupportTickets()" href="javascript:void(0);" class="refresh-btn" title="Refresh">
                             <i class="fa fa-sync-alt"></i>
@@ -134,9 +134,9 @@
             </div>
 
             <!-- Recent Invoices -->
-            <div class="col-md-6 col-xl-6 mg-t-10 mg-md-t-0" ng-init="getRecentInvoices()">
+            <div class="col-md-6 col-xl-6" ng-init="getRecentInvoices()">
                 <div class="card dashboard-activity-card">
-                    <div class="card-header dashboard-card-header">
+                    <div class="card-header dashboard-card-header d-flex justify-content-between align-items-center">
                         <h5 class="mg-b-0"><i class="fa fa-file-invoice-dollar mg-r-10"></i>Recent Invoices</h5>
                         <a ng-click="getRecentInvoices()" href="javascript:void(0);" class="refresh-btn" title="Refresh">
                             <i class="fa fa-sync-alt"></i>

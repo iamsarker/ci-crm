@@ -266,8 +266,10 @@
             <!-- User Dropdown (Logged In) -->
             <li class="nav-item dropdown dropdown-profile">
               <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle me-2" alt="" class="customer-avatar-sm">
-                <span class="d-none d-lg-inline"><?=htmlspecialchars($user['first_name'])?></span>
+				  <div class="avatar avatar-sm">
+					<img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle me-2" alt="" class="customer-avatar-sm">
+				  </div>
+				  <span class="d-none ml-1 ms-1 d-lg-inline"><?=htmlspecialchars($user['first_name'])?></span>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
                 <li class="px-3 py-2 text-center border-bottom">
@@ -283,12 +285,13 @@
             <!-- User Dropdown (Not Logged In) -->
             <li class="nav-item dropdown dropdown-profile">
               <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" class="customer-avatar-sm">
+				  <div class="avatar avatar-sm">
+                	<img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle" alt="" class="customer-avatar-sm">
+				  </div>
               </a>
               <ul class="dropdown-menu dropdown-menu-end">
-                <li class="px-3 py-2 text-center border-bottom">
+                <li class="px-3 py-2 border-bottom">
                   <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle mb-2" alt="" class="customer-avatar-md">
-                  <h6 class="mb-0">WHMAZ</h6>
                 </li>
                 <li><a class="dropdown-item" href="<?=base_url()?>auth/login"><i class="fas fa-sign-in-alt me-2"></i>Sign In</a></li>
                 <li><a class="dropdown-item" href="<?=base_url()?>auth/register"><i class="fas fa-user-plus me-2"></i>Sign Up</a></li>

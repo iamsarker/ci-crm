@@ -1243,6 +1243,7 @@ footer.footer {
     background: #fff;
     border: 1px solid #e9ecef;
     transition: all 0.2s ease;
+    margin-left: auto;
 }
 
 .refresh-btn:hover {
@@ -4282,7 +4283,6 @@ h6 i {
 .auth-login-wrapper {
 	min-height: calc(100vh - 200px);
 	padding: 60px 0;
-	background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
 	display: flex;
 	align-items: center;
 }
