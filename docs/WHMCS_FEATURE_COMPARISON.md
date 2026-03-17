@@ -201,8 +201,8 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [ ] Domain addons (privacy, DNS management)
 - [ ] Product bundle creation
 - [ ] Cross-sell/up-sell system
-- [ ] Promotional codes/coupons
-- [ ] Discount system
+- [x] Promotional codes/coupons
+- [x] Discount system
 - [ ] Referral/affiliate system
 
 #### 5. Advanced Domain Features
@@ -264,10 +264,10 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [ ] Date format customization
 
 #### 11. Marketing Tools
-- [ ] Promotional pricing
+- [x] Promotional pricing
 - [ ] Bundle offers
 - [ ] Seasonal campaigns
-- [ ] Discount codes
+- [x] Discount codes
 - [ ] Gift cards
 - [ ] Loyalty program
 - [ ] Referral program
@@ -453,8 +453,8 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 ### Phase 8: Marketing & Promotions (Priority: MEDIUM)
 **Timeline:** 1-2 months
-- [ ] Coupon/promo code system
-- [ ] Discount management
+- [x] Coupon/promo code system
+- [x] Discount management
 - [ ] Referral program
 - [ ] Affiliate system
 - [ ] Bundle creation

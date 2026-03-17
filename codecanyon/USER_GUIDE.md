@@ -2368,6 +2368,79 @@ The Dunning tab includes a visual workflow preview card that shows all active ru
 
 ---
 
+## Promo Code Management
+
+### Overview
+
+The Promo Code system allows administrators to create discount coupons that customers can apply during checkout. Promo codes support flexible discount rules, targeting options, and usage limits.
+
+**Access:** Go to "Billing" → "Promo Codes"
+
+### Creating a Promo Code
+
+1. **Navigate to Promo Codes**
+   - Go to "Billing" → "Promo Codes"
+   - Click "Add Promo Code"
+
+2. **Basic Information**
+   - **Promo Code:** Enter a code (auto-uppercase) or click the random generator button
+   - **Description:** Optional internal note for this promo code
+
+3. **Discount Settings**
+   - **Discount Type:** Fixed Amount or Percentage
+   - **Discount Value:** The discount amount or percentage
+   - **Currency:** (Fixed type only) Restrict to a specific currency, or leave as "Any Currency"
+   - **Max Discount Cap:** (Percentage only) Maximum discount amount; 0 = no cap
+   - **Min Order Amount:** Minimum cart total required; 0 = no minimum
+
+4. **Validity Period**
+   - **Lifetime:** Check to make the code never expire
+   - **Start Date / End Date:** Set a date range when the code is valid
+
+5. **Usage Limits**
+   - **Max Total Uses:** Total redemptions allowed across all customers; 0 = unlimited
+   - **Max Uses Per Customer:** Redemptions allowed per customer; 0 = unlimited
+
+6. **Targeting**
+   - **All Orders:** Code applies to any order
+   - **Specific Products:** Select products from a multi-select dropdown (Select2)
+   - **Specific Customers:** Select customers from a multi-select dropdown (Select2)
+
+7. **Status**
+   - **Active:** Enable or disable the promo code
+
+8. Click "Save Promo Code"
+
+### Managing Promo Codes
+
+**List Page Features:**
+- **Stats Cards:** Total codes, Active, Expired, Total Redemptions
+- **DataTables:** Server-side pagination with search and sorting
+- **Toggle Switch:** Enable/disable codes directly from the list
+- **Edit:** Click the gear icon to modify a promo code
+- **Delete:** Soft delete (code is deactivated, not removed from database)
+
+### How Customers Use Promo Codes
+
+1. Customer adds items to the shopping cart
+2. In the cart view, a "Promo Code" section appears between cart items and payment options
+3. Customer enters the promo code and clicks "Apply"
+4. System validates the code and shows the discount amount
+5. Cart totals update to show: Subtotal, Discount (with code name), and Order Total
+6. Customer can remove the promo code before checkout
+7. At checkout, the code is re-validated to prevent stale codes
+8. Discount is saved on the order and invoice records
+
+### Promo Code on Invoices
+
+When a promo code is used:
+- The **order** records the coupon code and discount amount
+- The **invoice** records the discount and coupon code
+- **Invoice PDF** (admin and client) shows the discount line with the coupon code
+- **Payment page** shows the discount line in the invoice summary
+
+---
+
 ## Ticket Management
 
 ### Ticket List

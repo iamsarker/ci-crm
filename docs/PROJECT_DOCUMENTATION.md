@@ -254,6 +254,7 @@ The Client Portal is built using HMVC modules and provides customer-facing funct
 - Automatic cart transfer on login (guest cart items assigned to user)
 - Domain search functionality
 - Domain suggestions
+- **Promo code support** - Apply/remove promo codes at checkout with real-time discount preview
 
 **Cart Count Feature:**
 - Real-time cart item count displayed in header navigation
@@ -268,6 +269,8 @@ The Client Portal is built using HMVC modules and provides customer-facing funct
 - `/cart/add_service` - Add service to cart
 - `/cart/add_domain` - Add domain to cart
 - `/cart/getCount` - AJAX endpoint returning cart item count (JSON)
+- `/cart/applyPromoCode` - AJAX POST to validate and apply promo code
+- `/cart/removePromoCode` - AJAX POST to remove applied promo code
 - `/domain-search/{tld}/{domain}` - Domain search
 - `/domain-suggestion/{domain}` - Domain suggestions
 
@@ -834,6 +837,50 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 **Provisioning Entry Points:**
 - `Payment_model::processSuccessfulPayment()` → `Invoice_model::provisionPaidServices()`
 - `Invoice_model::updateInvoiceStatus()` (admin mark as paid) → `provisionPaidServices()`
+
+#### 7.3 Promo Code / Coupon System
+
+**Controller:** `whmazadmin/Promocode.php`
+**Model:** `src/models/Promocode_model.php`
+**Views:** `src/views/whmazadmin/promocode_list.php`, `promocode_manage.php`
+**Database Tables:**
+- `promo_codes` - Main coupon definitions
+- `promo_code_products` - Product targeting (when `applies_to='products'`)
+- `promo_code_customers` - Customer targeting (when `applies_to='customers'`)
+- `promo_code_usage` - Tracks every redemption
+
+**Features:**
+- Create promo codes with fixed amount or percentage discounts
+- Lifetime or date-range validity
+- Global and per-customer usage limits
+- Minimum order amount and max discount cap
+- Target: all orders, specific products, or specific customers
+- Enable/disable toggle without deleting
+- DataTables list with stats cards
+- Select2 multi-select for product/customer targeting
+
+**Cart Integration:**
+- Promo code input in shopping cart (`src/modules/cart/views/view_card.php`)
+- AJAX apply/remove via `Cart::applyPromoCode()` / `Cart::removePromoCode()`
+- Re-validation at checkout in `Cart::checkoutSubmit()`
+- Usage recorded via `Promocode_model::recordUsage()` with atomic increment
+- Discount saved to `orders` (coupon_code, coupon_amount, discount_amount) and `invoices` (discount, coupon_code)
+
+**Validation Checks (in order):**
+1. Code exists and active
+2. Date range valid (skip if lifetime)
+3. Currency match (fixed discount only)
+4. Global max uses not exceeded
+5. Per-customer max uses not exceeded
+6. Minimum order amount met
+7. Product eligibility
+8. Customer eligibility
+
+**Key URLs:**
+- `/whmazadmin/promocode` - Promo code listing
+- `/whmazadmin/promocode/manage` - Create new promo code
+- `/whmazadmin/promocode/manage/{id}` - Edit promo code
+- `/whmazadmin/promocode/toggle_active/{id}` - AJAX toggle status
 
 ---
 
