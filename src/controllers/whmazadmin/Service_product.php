@@ -198,7 +198,25 @@ class Service_product extends WHMAZADMIN_Controller {
 			}
 
 			$serverArr = (array) $serverInfo;
-			$result = whm_list_packages($serverArr);
+
+			// Get module name from server
+			$moduleName = '';
+			if (!empty($serverArr['product_service_module_id'])) {
+				$module = $this->Common_model->get_data_by_id('product_service_modules', $serverArr['product_service_module_id']);
+				$moduleName = strtolower(trim($module->module_name ?? ''));
+			}
+
+			// Dispatch based on module
+			if ($moduleName === 'cpanel') {
+				$result = whm_list_packages($serverArr);
+			} elseif ($moduleName === 'plesk') {
+				$result = plesk_list_packages($serverArr);
+			} elseif ($moduleName === 'directadmin') {
+				$result = da_list_packages($serverArr);
+			} else {
+				echo json_encode(array('success' => false, 'message' => 'Server has no provisioning module configured'));
+				exit;
+			}
 
 			if ($result['success']) {
 				echo json_encode(array('success' => true, 'packages' => $result['packages']));

@@ -89,7 +89,7 @@ $autoload['drivers'] = array();
 |
 |	$autoload['helper'] = array('url', 'file');
 */
-$autoload['helper'] = array('url', 'form', 'html', 'file', 'email', 'whmaz_helper', 'ssp_helper', 'cpanel_helper', 'domain_helper');
+$autoload['helper'] = array('url', 'form', 'html', 'file', 'email', 'whmaz_helper', 'ssp_helper', 'cpanel_helper', 'plesk_helper', 'directadmin_helper', 'domain_helper');
 
 /*
 | -------------------------------------------------------------------

@@ -434,54 +434,51 @@ class Company extends WHMAZADMIN_Controller {
 			// Generate secure password
 			$password = generate_secure_password(16, true);
 
-			// Get cPanel package name
-			$cpPackage = !empty($service['cp_package']) ? $service['cp_package'] : 'default';
+			// Get package name
+			$package = !empty($service['cp_package']) ? $service['cp_package'] : 'default';
 
-			// Create cPanel account via WHM API
-			$result = whm_create_account(
-				$serverInfo,
-				$service['hosting_domain'],
-				$cpUsername,
-				$password,
-				$cpPackage,
-				$company['email']
-			);
+			// Determine module from server
+			$moduleName = strtolower(trim($serverInfo['module_name'] ?? ''));
+
+			$customerName = trim($company['first_name'] . ' ' . $company['last_name']);
+			if (empty($customerName)) {
+				$customerName = $company['name'];
+			}
+
+			// Dispatch based on module
+			if ($moduleName === 'cpanel') {
+				$result = whm_create_account($serverInfo, $service['hosting_domain'], $cpUsername, $password, $package, $company['email']);
+			} elseif ($moduleName === 'plesk') {
+				$result = plesk_create_account($serverInfo, $service['hosting_domain'], $cpUsername, $password, $package, $company['email']);
+			} elseif ($moduleName === 'directadmin') {
+				$result = da_create_account($serverInfo, $service['hosting_domain'], $cpUsername, $password, $package, $company['email']);
+			} else {
+				echo json_encode(array('success' => false, 'message' => 'Server has no provisioning module configured'));
+				exit;
+			}
 
 			if ($result['success']) {
-				// Update service with cp_username and mark as synced
 				$updateData = array(
 					'cp_username' => $cpUsername,
 					'is_synced' => 1,
-					'status' => 1, // Active
+					'status' => 1,
 					'updated_on' => getDateTime(),
 					'updated_by' => getAdminId()
 				);
 				$this->Company_model->updateService($serviceId, $updateData);
 
-				// Send welcome email to customer
-				$customerName = trim($company['first_name'] . ' ' . $company['last_name']);
-				if (empty($customerName)) {
-					$customerName = $company['name'];
+				// Send welcome email based on module
+				if ($moduleName === 'cpanel') {
+					send_cpanel_welcome_email($company['email'], $customerName, $service['hosting_domain'], $cpUsername, $password, $serverInfo['hostname']);
+				} elseif ($moduleName === 'plesk') {
+					send_plesk_welcome_email($company['email'], $customerName, $service['hosting_domain'], $cpUsername, $password, $serverInfo['hostname']);
+				} elseif ($moduleName === 'directadmin') {
+					send_da_welcome_email($company['email'], $customerName, $service['hosting_domain'], $cpUsername, $password, $serverInfo['hostname']);
 				}
 
-				send_cpanel_welcome_email(
-					$company['email'],
-					$customerName,
-					$service['hosting_domain'],
-					$cpUsername,
-					$password,
-					$serverInfo['hostname']
-				);
-
-				echo json_encode(array(
-					'success' => true,
-					'message' => 'cPanel account created successfully. Welcome email sent to customer.'
-				));
+				echo json_encode(array('success' => true, 'message' => 'Hosting account created successfully. Welcome email sent.'));
 			} else {
-				echo json_encode(array(
-					'success' => false,
-					'message' => 'Failed to create cPanel account: ' . $result['error']
-				));
+				echo json_encode(array('success' => false, 'message' => 'Failed to create account: ' . $result['error']));
 			}
 		} catch (Exception $e) {
 			ErrorHandler::log_database_error('create_cpanel_account', 'cPanel account creation', $e->getMessage());
@@ -587,13 +584,10 @@ class Company extends WHMAZADMIN_Controller {
 		}
 
 		try {
-			// Load cPanel helper
-			$this->load->helper('cpanel');
-
 			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
 
 			if (empty($service) || empty($service['cp_username'])) {
-				echo json_encode(array('success' => false, 'message' => 'Service or cPanel username not found'));
+				echo json_encode(array('success' => false, 'message' => 'Service or username not found'));
 				exit;
 			}
 
@@ -604,24 +598,28 @@ class Company extends WHMAZADMIN_Controller {
 				exit;
 			}
 
-			$result = whm_suspend_account($serverInfo, $service['cp_username'], 'Suspended by administrator');
+			$moduleName = strtolower(trim($serverInfo['module_name'] ?? ''));
+
+			if ($moduleName === 'cpanel') {
+				$result = whm_suspend_account($serverInfo, $service['cp_username'], 'Suspended by administrator');
+			} elseif ($moduleName === 'plesk') {
+				$result = plesk_suspend_account($serverInfo, $service['hosting_domain'], 'Suspended by administrator');
+			} elseif ($moduleName === 'directadmin') {
+				$result = da_suspend_account($serverInfo, $service['cp_username'], 'Suspended by administrator');
+			} else {
+				$result = array('success' => true);
+			}
 
 			if ($result['success']) {
-				// Update service status to suspended (3)
-				$updateData = array(
-					'status' => 3,
-					'updated_on' => getDateTime(),
-					'updated_by' => getAdminId()
-				);
+				$updateData = array('status' => 3, 'updated_on' => getDateTime(), 'updated_by' => getAdminId());
 				$this->Company_model->updateService($serviceId, $updateData);
-
-				echo json_encode(array('success' => true, 'message' => 'cPanel account suspended successfully'));
+				echo json_encode(array('success' => true, 'message' => 'Account suspended successfully'));
 			} else {
 				echo json_encode(array('success' => false, 'message' => 'Failed to suspend: ' . $result['error']));
 			}
 		} catch (Exception $e) {
-			ErrorHandler::log_database_error('suspend_cpanel_account', 'cPanel suspend', $e->getMessage());
-			echo json_encode(array('success' => false, 'message' => 'Error suspending cPanel account'));
+			ErrorHandler::log_database_error('suspend_account', 'Account suspend', $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Error suspending account'));
 		}
 		exit;
 	}
@@ -641,13 +639,10 @@ class Company extends WHMAZADMIN_Controller {
 		}
 
 		try {
-			// Load cPanel helper
-			$this->load->helper('cpanel');
-
 			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
 
 			if (empty($service) || empty($service['cp_username'])) {
-				echo json_encode(array('success' => false, 'message' => 'Service or cPanel username not found'));
+				echo json_encode(array('success' => false, 'message' => 'Service or username not found'));
 				exit;
 			}
 
@@ -658,24 +653,28 @@ class Company extends WHMAZADMIN_Controller {
 				exit;
 			}
 
-			$result = whm_unsuspend_account($serverInfo, $service['cp_username']);
+			$moduleName = strtolower(trim($serverInfo['module_name'] ?? ''));
+
+			if ($moduleName === 'cpanel') {
+				$result = whm_unsuspend_account($serverInfo, $service['cp_username']);
+			} elseif ($moduleName === 'plesk') {
+				$result = plesk_unsuspend_account($serverInfo, $service['hosting_domain']);
+			} elseif ($moduleName === 'directadmin') {
+				$result = da_unsuspend_account($serverInfo, $service['cp_username']);
+			} else {
+				$result = array('success' => true);
+			}
 
 			if ($result['success']) {
-				// Update service status to active (1)
-				$updateData = array(
-					'status' => 1,
-					'updated_on' => getDateTime(),
-					'updated_by' => getAdminId()
-				);
+				$updateData = array('status' => 1, 'updated_on' => getDateTime(), 'updated_by' => getAdminId());
 				$this->Company_model->updateService($serviceId, $updateData);
-
-				echo json_encode(array('success' => true, 'message' => 'cPanel account unsuspended successfully'));
+				echo json_encode(array('success' => true, 'message' => 'Account unsuspended successfully'));
 			} else {
 				echo json_encode(array('success' => false, 'message' => 'Failed to unsuspend: ' . $result['error']));
 			}
 		} catch (Exception $e) {
-			ErrorHandler::log_database_error('unsuspend_cpanel_account', 'cPanel unsuspend', $e->getMessage());
-			echo json_encode(array('success' => false, 'message' => 'Error unsuspending cPanel account'));
+			ErrorHandler::log_database_error('unsuspend_account', 'Account unsuspend', $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Error unsuspending account'));
 		}
 		exit;
 	}
@@ -695,13 +694,10 @@ class Company extends WHMAZADMIN_Controller {
 		}
 
 		try {
-			// Load cPanel helper
-			$this->load->helper('cpanel');
-
 			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
 
 			if (empty($service) || empty($service['cp_username'])) {
-				echo json_encode(array('success' => false, 'message' => 'Service or cPanel username not found'));
+				echo json_encode(array('success' => false, 'message' => 'Service or username not found'));
 				exit;
 			}
 
@@ -712,10 +708,19 @@ class Company extends WHMAZADMIN_Controller {
 				exit;
 			}
 
-			$result = whm_terminate_account($serverInfo, $service['cp_username']);
+			$moduleName = strtolower(trim($serverInfo['module_name'] ?? ''));
+
+			if ($moduleName === 'cpanel') {
+				$result = whm_terminate_account($serverInfo, $service['cp_username']);
+			} elseif ($moduleName === 'plesk') {
+				$result = plesk_terminate_account($serverInfo, $service['hosting_domain']);
+			} elseif ($moduleName === 'directadmin') {
+				$result = da_terminate_account($serverInfo, $service['cp_username']);
+			} else {
+				$result = array('success' => true);
+			}
 
 			if ($result['success']) {
-				// Update service status to terminated (4) and clear cp_username
 				$updateData = array(
 					'status' => 4,
 					'cp_username' => null,
@@ -724,14 +729,13 @@ class Company extends WHMAZADMIN_Controller {
 					'updated_by' => getAdminId()
 				);
 				$this->Company_model->updateService($serviceId, $updateData);
-
-				echo json_encode(array('success' => true, 'message' => 'cPanel account terminated successfully'));
+				echo json_encode(array('success' => true, 'message' => 'Account terminated successfully'));
 			} else {
 				echo json_encode(array('success' => false, 'message' => 'Failed to terminate: ' . $result['error']));
 			}
 		} catch (Exception $e) {
-			ErrorHandler::log_database_error('terminate_cpanel_account', 'cPanel terminate', $e->getMessage());
-			echo json_encode(array('success' => false, 'message' => 'Error terminating cPanel account'));
+			ErrorHandler::log_database_error('terminate_account', 'Account terminate', $e->getMessage());
+			echo json_encode(array('success' => false, 'message' => 'Error terminating account'));
 		}
 		exit;
 	}

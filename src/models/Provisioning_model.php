@@ -22,6 +22,8 @@ class Provisioning_model extends CI_Model
         $this->load->database();
         $this->load->helper('domain_helper');
         $this->load->helper('cpanel_helper');
+        $this->load->helper('plesk_helper');
+        $this->load->helper('directadmin_helper');
     }
 
     // =========================================
@@ -566,28 +568,28 @@ class Provisioning_model extends CI_Model
             return array('success' => true, 'action' => 'create', 'error' => null, 'message' => 'Account already exists');
         }
 
-        // Only provision cPanel-based services
-        $serviceTypes = array('SHARED_HOSTING', 'RESELLER_HOSTING', 'shared', 'reseller');
-        if (!in_array($service['product_service_type_key'], $serviceTypes)) {
-            // Activate without cPanel provisioning
-            $this->db->where('id', $service['id'])->update('order_services', array('status' => 1));
-            $this->updateOrderStatus($service['order_id']);
-            return array('success' => true, 'action' => 'activate', 'error' => null, 'message' => 'Non-cPanel service activated');
-        }
-
         // Check if domain is set
         if (empty($service['hosting_domain'])) {
             return array('success' => false, 'action' => 'create', 'error' => 'Hosting domain not set');
         }
 
-        // Get server info
+        // Get server info (includes module_name)
         $serverInfo = $this->getServerInfoForService($service['product_service_id']);
-        if (empty($serverInfo) || empty($serverInfo['hostname']) || empty($serverInfo['access_hash'])) {
+        if (empty($serverInfo) || empty($serverInfo['hostname'])) {
             return array('success' => false, 'action' => 'create', 'error' => 'Server not configured for this product');
         }
 
-        // Get cPanel package
-        $cpPackage = $this->getCpanelPackage($service['product_service_id']);
+        $moduleName = $this->getServerModuleName($serverInfo);
+
+        // No module — just activate without provisioning
+        if (empty($moduleName) || $moduleName === 'no module') {
+            $this->db->where('id', $service['id'])->update('order_services', array('status' => 1));
+            $this->updateOrderStatus($service['order_id']);
+            return array('success' => true, 'action' => 'activate', 'error' => null, 'message' => 'No-module service activated');
+        }
+
+        // Get package name
+        $package = $this->getServerPackage($service['product_service_id']);
 
         // Get company info
         $company = $this->db->where('id', $service['company_id'])->get('companies')->row_array();
@@ -595,48 +597,63 @@ class Provisioning_model extends CI_Model
             return array('success' => false, 'action' => 'create', 'error' => 'Company info not found');
         }
 
-        // Generate username and password
-        $cpUsername = generate_cpanel_username($service['hosting_domain'], $serverInfo);
-        $cpPassword = generate_secure_password(16, true);
+        $customerName = trim($company['first_name'] . ' ' . $company['last_name']);
 
-        // Create account
-        $result = whm_create_account(
-            $serverInfo,
-            $service['hosting_domain'],
-            $cpUsername,
-            $cpPassword,
-            $cpPackage,
-            $company['email']
-        );
+        // Dispatch based on server module
+        if ($moduleName === 'cpanel') {
+            $username = generate_cpanel_username($service['hosting_domain'], $serverInfo);
+            $password = generate_secure_password(16, true);
 
-        if ($result['success']) {
-            // Update order_services
-            $updateData = array(
-                'cp_username' => $cpUsername,
-                'is_synced' => 1,
-                'status' => 1 // Active
-            );
-            $this->db->where('id', $service['id'])->update('order_services', $updateData);
+            $result = whm_create_account($serverInfo, $service['hosting_domain'], $username, $password, $package, $company['email']);
 
-            $this->updateOrderStatus($service['order_id']);
+            if ($result['success']) {
+                $this->db->where('id', $service['id'])->update('order_services', array(
+                    'cp_username' => $username, 'is_synced' => 1, 'status' => 1
+                ));
+                $this->updateOrderStatus($service['order_id']);
+                send_cpanel_welcome_email($company['email'], $customerName, $service['hosting_domain'], $username, $password, $serverInfo['hostname']);
+                log_message('info', 'cPanel account created: ' . $username . '@' . $serverInfo['hostname']);
+                return array('success' => true, 'action' => 'create', 'username' => $username, 'error' => null);
+            }
 
-            // Send welcome email
-            $customerName = trim($company['first_name'] . ' ' . $company['last_name']);
-            send_cpanel_welcome_email(
-                $company['email'],
-                $customerName,
-                $service['hosting_domain'],
-                $cpUsername,
-                $cpPassword,
-                $serverInfo['hostname']
-            );
+        } elseif ($moduleName === 'plesk') {
+            $username = generate_plesk_username($service['hosting_domain']);
+            $password = generate_secure_password(16, true);
 
-            log_message('info', 'Hosting account created: ' . $cpUsername . '@' . $serverInfo['hostname']);
-            return array('success' => true, 'action' => 'create', 'username' => $cpUsername, 'error' => null);
+            $result = plesk_create_account($serverInfo, $service['hosting_domain'], $username, $password, $package, $company['email']);
+
+            if ($result['success']) {
+                $this->db->where('id', $service['id'])->update('order_services', array(
+                    'cp_username' => $username, 'is_synced' => 1, 'status' => 1
+                ));
+                $this->updateOrderStatus($service['order_id']);
+                send_plesk_welcome_email($company['email'], $customerName, $service['hosting_domain'], $username, $password, $serverInfo['hostname']);
+                log_message('info', 'Plesk account created: ' . $username . '@' . $serverInfo['hostname']);
+                return array('success' => true, 'action' => 'create', 'username' => $username, 'error' => null);
+            }
+
+        } elseif ($moduleName === 'directadmin') {
+            $username = generate_da_username($service['hosting_domain']);
+            $password = generate_secure_password(16, true);
+
+            $result = da_create_account($serverInfo, $service['hosting_domain'], $username, $password, $package, $company['email']);
+
+            if ($result['success']) {
+                $this->db->where('id', $service['id'])->update('order_services', array(
+                    'cp_username' => $username, 'is_synced' => 1, 'status' => 1
+                ));
+                $this->updateOrderStatus($service['order_id']);
+                send_da_welcome_email($company['email'], $customerName, $service['hosting_domain'], $username, $password, $serverInfo['hostname']);
+                log_message('info', 'DirectAdmin account created: ' . $username . '@' . $serverInfo['hostname']);
+                return array('success' => true, 'action' => 'create', 'username' => $username, 'error' => null);
+            }
+
         } else {
-            log_message('error', 'Hosting account creation failed: ' . $result['error']);
-            return array('success' => false, 'action' => 'create', 'error' => $result['error']);
+            return array('success' => false, 'action' => 'create', 'error' => 'Unsupported server module: ' . $moduleName);
         }
+
+        log_message('error', 'Hosting account creation failed: ' . $result['error']);
+        return array('success' => false, 'action' => 'create', 'error' => $result['error']);
     }
 
     /**
@@ -683,28 +700,43 @@ class Provisioning_model extends CI_Model
     }
 
     /**
-     * Unsuspend a hosting account via cPanel/WHM
+     * Unsuspend a hosting account via the appropriate module API
      */
     private function unsuspendHostingAccount($service)
     {
-        if (empty($service['cp_username'])) {
-            return array('success' => false, 'error' => 'No cPanel username found');
-        }
-
-        // Get server info
+        // Get server info (includes module_name)
         $serverInfo = $this->getServerInfoForService($service['product_service_id']);
         if (empty($serverInfo) || empty($serverInfo['hostname'])) {
             return array('success' => false, 'error' => 'Server not configured');
         }
 
-        // Call WHM unsuspend API
-        $result = whm_unsuspend_account($serverInfo, $service['cp_username']);
+        $moduleName = $this->getServerModuleName($serverInfo);
+
+        if ($moduleName === 'cpanel') {
+            if (empty($service['cp_username'])) {
+                return array('success' => false, 'error' => 'No cPanel username found');
+            }
+            $result = whm_unsuspend_account($serverInfo, $service['cp_username']);
+        } elseif ($moduleName === 'plesk') {
+            if (empty($service['hosting_domain'])) {
+                return array('success' => false, 'error' => 'No hosting domain found for Plesk');
+            }
+            $result = plesk_unsuspend_account($serverInfo, $service['hosting_domain']);
+        } elseif ($moduleName === 'directadmin') {
+            if (empty($service['cp_username'])) {
+                return array('success' => false, 'error' => 'No DirectAdmin username found');
+            }
+            $result = da_unsuspend_account($serverInfo, $service['cp_username']);
+        } else {
+            // No module — just return success
+            return array('success' => true, 'error' => null);
+        }
 
         if ($result['success']) {
-            log_message('info', 'Account unsuspended: ' . $service['cp_username']);
+            log_message('info', 'Account unsuspended via ' . $moduleName . ': ' . ($service['cp_username'] ?? $service['hosting_domain']));
             return array('success' => true, 'error' => null);
         } else {
-            log_message('error', 'Unsuspend failed: ' . $service['cp_username'] . ' - ' . $result['error']);
+            log_message('error', 'Unsuspend failed via ' . $moduleName . ': ' . $result['error']);
             return array('success' => false, 'error' => $result['error']);
         }
     }
@@ -737,21 +769,30 @@ class Provisioning_model extends CI_Model
     }
 
     /**
-     * Get server info for a product service
+     * Get server info for a product service (includes module name for dispatching)
      */
     private function getServerInfoForService($productServiceId)
     {
-        $sql = "SELECT s.hostname, s.username, s.access_hash
+        $sql = "SELECT s.*, psm.module_name
                 FROM product_services ps
                 JOIN servers s ON ps.server_id = s.id
+                LEFT JOIN product_service_modules psm ON s.product_service_module_id = psm.id
                 WHERE ps.id = ? AND s.status = 1";
         return $this->db->query($sql, array(intval($productServiceId)))->row_array();
     }
 
     /**
-     * Get cPanel package name for a product
+     * Get the server module name (lowercase): 'cpanel', 'plesk', or empty
      */
-    private function getCpanelPackage($productServiceId)
+    private function getServerModuleName($serverInfo)
+    {
+        return strtolower(trim($serverInfo['module_name'] ?? ''));
+    }
+
+    /**
+     * Get server package/plan name for a product
+     */
+    private function getServerPackage($productServiceId)
     {
         $sql = "SELECT cp_package FROM product_services WHERE id = ?";
         $result = $this->db->query($sql, array(intval($productServiceId)))->row();
