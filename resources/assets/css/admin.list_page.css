@@ -60,24 +60,40 @@
 	justify-content: space-between !important;
 }
 
+.card-header-single {
+	background: var(--md-secondary);
+	color: #fff;
+	padding: 1rem 1.25rem;
+	border: none;
+	display: inline-block;
+}
+
 .table-card .card-header > div:last-child,
+.table-card .card-header-single > div:last-child,
 .table-card .card-header > a:last-child,
-.table-card .card-header > button:last-child {
+.table-card .card-header-single > a:last-child,
+.table-card .card-header > button:last-child,
+.table-card .card-header-single > button:last-child {
 	margin-left: auto !important;
 }
 .table-card .card-header h4,
+.table-card .card-header-single h4,
+.table-card .card-header-single h5,
 .table-card .card-header h5 {
 	margin: 0;
 	font-weight: 600;
 }
-.table-card .card-header .breadcrumb-item a {
+.table-card .card-header .breadcrumb-item a,
+.table-card .card-header-single .breadcrumb-item a{
 	color: rgba(255,255,255,0.7);
 	text-decoration: none;
 }
-.table-card .card-header .breadcrumb-item a:hover {
+.table-card .card-header .breadcrumb-item a:hover,
+.table-card .card-header-single .breadcrumb-item a:hover {
 	color: #fff;
 }
-.table-card .card-header .breadcrumb-item.active {
+.table-card .card-header .breadcrumb-item.active,
+.table-card .card-header-single .breadcrumb-item.active {
 	color: rgba(255,255,255,0.9);
 }
 .table-card .card-body {

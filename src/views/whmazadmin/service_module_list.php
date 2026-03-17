@@ -8,7 +8,7 @@
 
 		<!-- Stats Cards -->
 		<div class="row mb-4 mt-4" id="statsRow">
-			<div class="col-xl-3 col-md-6 mb-3">
+			<div class="col-xl-4 col-md-6 mb-3">
 				<div class="card stats-card">
 					<div class="card-body d-flex align-items-center">
 						<div class="stats-icon primary me-3">
@@ -21,7 +21,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-xl-3 col-md-6 mb-3">
+			<div class="col-xl-4 col-md-6 mb-3">
 				<div class="card stats-card">
 					<div class="card-body d-flex align-items-center">
 						<div class="stats-icon success me-3">
@@ -34,20 +34,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-xl-3 col-md-6 mb-3">
-				<div class="card stats-card">
-					<div class="card-body d-flex align-items-center">
-						<div class="stats-icon info me-3">
-							<i class="fa fa-cogs"></i>
-						</div>
-						<div>
-							<div class="stats-value" id="configured"><?= count($results ?? []) ?></div>
-							<div class="stats-label">Configured</div>
-						</div>
-					</div>
-				</div>
-			</div>
-			<div class="col-xl-3 col-md-6 mb-3">
+			<div class="col-xl-4 col-md-6 mb-3">
 				<div class="card stats-card">
 					<div class="card-body d-flex align-items-center">
 						<div class="stats-icon warning me-3">
@@ -64,19 +51,16 @@
 
 		<!-- Modules Table -->
 		<div class="card table-card">
-			<div class="card-header d-flex justify-content-between align-items-center">
+			<div class="card-header-single">
 				<div>
 					<h4 class="mb-1"><i class="fa fa-puzzle-piece me-2"></i>Server Modules</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
-						<ol class="breadcrumb breadcrumb-style1 mb-0" class="breadcrumb-transparent">
+						<ol class="breadcrumb breadcrumb-style1 mb-0">
 							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
 							<li class="breadcrumb-item active">Server Modules</li>
 						</ol>
 					</nav>
 				</div>
-				<a href="<?=base_url()?>whmazadmin/service_module/manage" class="btn btn-light btn-sm">
-					<i class="fa fa-plus-circle me-1"></i> Add Module
-				</a>
 			</div>
 			<div class="card-body">
 				<table id="moduleListDt" class="table table-hover w-100">
@@ -86,7 +70,6 @@
 						<th>Remarks</th>
 						<th class="text-center">Status</th>
 						<th>Last Updated</th>
-						<th class="text-center">Actions</th>
 					</tr>
 					</thead>
 					<tbody>
@@ -99,11 +82,9 @@
 								<small class="text-muted"><?= htmlspecialchars($row['remarks'] ?? '-', ENT_QUOTES, 'UTF-8') ?></small>
 							</td>
 							<td class="text-center">
-								<?php if ($row['status'] == 1): ?>
-									<span class="badge bg-success"><i class="fa fa-check me-1"></i>Active</span>
-								<?php else: ?>
-									<span class="badge bg-danger"><i class="fa fa-times me-1"></i>Inactive</span>
-								<?php endif; ?>
+								<div class="form-check form-switch d-inline-block">
+									<input class="form-check-input module-status-toggle" type="checkbox" data-id="<?= safe_encode($row['id']) ?>" data-name="<?= htmlspecialchars($row['module_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>" <?= $row['status'] == 1 ? 'checked' : '' ?>>
+								</div>
 							</td>
 							<td>
 								<?php if (!empty($row['updated_on'])): ?>
@@ -111,14 +92,6 @@
 								<?php else: ?>
 									<span class="text-muted">-</span>
 								<?php endif; ?>
-							</td>
-							<td class="text-center">
-								<button type="button" class="btn btn-action btn-manage" onclick="openManage('<?=safe_encode($row['id'])?>')" title="Manage Module">
-									<i class="fa fa-cog"></i>
-								</button>
-								<button type="button" class="btn btn-action btn-delete" onclick="deleteRow('<?=safe_encode($row['id'])?>', <?= json_encode($row['module_name'] ?? '') ?>)" title="Delete Module">
-									<i class="fa fa-trash"></i>
-								</button>
 							</td>
 						</tr>
 					<?php } ?>
@@ -138,51 +111,58 @@ $(function(){
 
 	$('#moduleListDt').DataTable({
 		"responsive": true,
+		"paging": false,
+		"searching": false,
+		"info": false,
 		"language": {
-			"processing": '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>',
-			"emptyTable": '<div class="text-center py-4"><i class="fa fa-puzzle-piece fa-3x text-muted mb-3"></i><p class="text-muted">No modules found</p></div>',
-			"zeroRecords": '<div class="text-center py-4"><i class="fa fa-search fa-3x text-muted mb-3"></i><p class="text-muted">No matching modules found</p></div>'
+			"emptyTable": '<div class="text-center py-4"><i class="fa fa-puzzle-piece fa-3x text-muted mb-3"></i><p class="text-muted">No modules found</p></div>'
 		}
+	});
+
+	// Status toggle
+	$('.module-status-toggle').on('change', function() {
+		var $toggle = $(this);
+		var id = $toggle.data('id');
+		var name = $toggle.data('name');
+		var newStatus = $toggle.is(':checked') ? 'Active' : 'Inactive';
+
+		Swal.fire({
+			title: 'Change Status?',
+			html: 'Set <strong>' + escapeXSS(name) + '</strong> to <strong>' + newStatus + '</strong>?',
+			icon: 'question',
+			showCancelButton: true,
+			confirmButtonColor: '#0168fa',
+			cancelButtonColor: '#6c757d',
+			confirmButtonText: 'Yes, Update',
+			cancelButtonText: 'Cancel',
+			reverseButtons: true
+		}).then((result) => {
+			if (result.isConfirmed) {
+				$.ajax({
+					url: '<?= base_url() ?>whmazadmin/service_module/toggle_status_api',
+					type: 'POST',
+					data: { id: id, <?= $this->security->get_csrf_token_name() ?>: '<?= $this->security->get_csrf_hash() ?>' },
+					dataType: 'json',
+					success: function(response) {
+						if (response.success) {
+							Swal.fire({ icon: 'success', title: 'Updated', text: response.message, timer: 1500, showConfirmButton: false });
+						} else {
+							Swal.fire({ icon: 'error', title: 'Error', text: response.message });
+							$toggle.prop('checked', !$toggle.is(':checked'));
+						}
+					},
+					error: function() {
+						Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update status' });
+						$toggle.prop('checked', !$toggle.is(':checked'));
+					}
+				});
+			} else {
+				// Revert toggle
+				$toggle.prop('checked', !$toggle.is(':checked'));
+			}
+		});
 	});
 });
-
-function openManage(id) {
-	Swal.fire({
-		title: 'Loading...',
-		text: 'Please wait',
-		allowOutsideClick: false,
-		allowEscapeKey: false,
-		showConfirmButton: false,
-		didOpen: () => { Swal.showLoading(); }
-	});
-	window.location = "<?=base_url()?>whmazadmin/service_module/manage/" + id;
-}
-
-function deleteRow(id, title) {
-	Swal.fire({
-		title: 'Delete Module?',
-		html: 'Are you sure you want to delete <strong>' + escapeXSS(title) + '</strong>?<br><small class="text-muted">This action cannot be undone.</small>',
-		icon: 'warning',
-		showCancelButton: true,
-		confirmButtonColor: '#d33',
-		cancelButtonColor: '#6c757d',
-		confirmButtonText: '<i class="fa fa-trash me-1"></i> Yes, Delete',
-		cancelButtonText: 'Cancel',
-		reverseButtons: true
-	}).then((result) => {
-		if (result.isConfirmed) {
-			Swal.fire({
-				title: 'Deleting...',
-				text: 'Please wait',
-				allowOutsideClick: false,
-				allowEscapeKey: false,
-				showConfirmButton: false,
-				didOpen: () => { Swal.showLoading(); }
-			});
-			window.location = "<?=base_url()?>whmazadmin/service_module/delete_records/" + id;
-		}
-	});
-}
 </script>
 
 <?php $this->load->view('whmazadmin/include/footer');?>

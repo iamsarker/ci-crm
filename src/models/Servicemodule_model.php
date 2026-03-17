@@ -7,11 +7,19 @@ class Servicemodule_model extends CI_Model{
 	}
 
 	function loadAllData() {
-		$sql = "SELECT * FROM product_service_modules WHERE status=1 ";
+		$sql = "SELECT * FROM product_service_modules ORDER BY id";
 		$data = $this->db->query($sql)->result_array();
-		
+
 		return $data;
  	}
+
+	function toggleStatus($id) {
+		if (!is_numeric($id) || $id <= 0) {
+			return false;
+		}
+		$sql = "UPDATE product_service_modules SET status = IF(status=1, 0, 1), updated_on = NOW(), updated_by = ? WHERE id = ?";
+		return $this->db->query($sql, array(getAdminId(), intval($id)));
+	}
 
 	function getDetail($id) {
 		// SECURITY FIX: Use prepared statement to prevent SQL injection
