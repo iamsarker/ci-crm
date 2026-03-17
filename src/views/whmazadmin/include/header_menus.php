@@ -55,6 +55,8 @@
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/invoice/index"><i class="fas fa-file-alt me-2"></i>View Invoices</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/paymentgateway/index"><i class="fas fa-credit-card me-2"></i>Payment Gateways</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/paymentgateway/transactions"><i class="fas fa-exchange-alt me-2"></i>Transactions</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/promocode/index"><i class="fas fa-tags me-2"></i>Promo Codes</a></li>
                     </ul>
                 </li>
 

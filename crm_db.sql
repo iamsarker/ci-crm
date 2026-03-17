@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 27, 2026 at 04:48 AM
+-- Generation Time: Mar 17, 2026 at 09:30 AM
 -- Server version: 10.11.15-MariaDB-cll-lve
 -- PHP Version: 8.3.30
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `tong0bari_whmaz`
+-- Database: `whmazc_demodb`
 --
 
 -- --------------------------------------------------------
@@ -72,8 +72,6 @@ CREATE TABLE `admin_logins` (
   `active` tinyint(4) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-
-
 -- --------------------------------------------------------
 
 --
@@ -126,7 +124,7 @@ CREATE TABLE `admin_users` (
 --
 
 INSERT INTO `admin_users` (`id`, `admin_role_id`, `first_name`, `last_name`, `username`, `password`, `email`, `mobile`, `phone`, `designation`, `signature`, `profile_pic`, `support_depts`, `pass_reset_key`, `pass_reset_data`, `pass_reset_expiry`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 1, 'AdminFirst', 'AdminLast', 'whmaz.admin', '$2y$10$8LvuVUE2IqNUGuuh5VaEK.tmKBT2x.p0K20CtbLVFido5gHJCKscO', 'test@admin.com', '0', '0', NULL, NULL, NULL, '1,2', NULL, NULL, NULL, 1, NULL, NULL, '2024-07-30 14:39:39', NULL);
+(1, 1, 'WHM', 'Admin', 'whmaz', '$2y$10$HjX8Hz.af07jH5ACIp4aX.i7umbHLgoPkYXvlK.FFNzh30oaXmYVa', 'admin@whmaz.com', '+94788888888', '+94788888888', NULL, NULL, NULL, '1,2', NULL, NULL, NULL, 1, NULL, NULL, '2026-03-07 06:24:41', NULL);
 
 -- --------------------------------------------------------
 
@@ -190,6 +188,7 @@ CREATE TABLE `announcements` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `app_settings`
@@ -231,7 +230,7 @@ CREATE TABLE `app_settings` (
 --
 
 INSERT INTO `app_settings` (`id`, `site_name`, `site_desc`, `admin_url`, `favicon`, `logo`, `bin_tax`, `company_name`, `company_address`, `zip_code`, `city`, `state`, `country`, `license_auth`, `license_hash`, `email`, `fax`, `phone`, `smtp_host`, `smtp_port`, `smtp_username`, `smtp_authkey`, `captcha_site_key`, `captcha_secret_key`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'WHMAZ', 'Light weight Domain Hosting Management System', '', 'favicon_ed6d384d93d183751bb364d239d05765.ico', '0e358147-e5e3-11ee-9a16-14857fbdbc3f.png', NULL, 'WHMAZ', 'Colombo', '98765', NULL, NULL, NULL, NULL, NULL, 'support@whmaz.com', '1234', '12345', 'mail.whmaz.com', '587', 'support@whmaz.com', 'Abcd.1234', '6Lej8lUsAAAAAASMAoMFwiMIvx1_Qkh8pKVLJ6Qo', '6Lej8lUsAAAAAEVPLbN0Yyqyb8_Zoiqtlu0s9bOw', NULL, NULL, '2026-02-12 06:18:12', 1);
+(1, 'WHMAZ', 'Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System', 'https://demo.whmaz.com/whmazadmin/authenticate/login', 'favicon_ea001f05de00bfe79ffb1864114d868e.ico', 'logo_c741480362e311d793820fd49d7b6e33.png', '', 'WHMAZ', 'Colombo', '98765', '', '', '', NULL, NULL, 'support@demo.com', '2345', '12345', 'mail.demo.com', '587', 'support@demo.com', '123456789', '6Lej8lUsAAAAAASMAoMFwiMIvx1_Qkh8pKVLJ6Qo', '6Lej8lUsAAAAAEVPLbN0Yyqyb8_Zoiqtlu0s9bOw', NULL, NULL, '2026-03-07 06:33:36', 1);
 
 -- --------------------------------------------------------
 
@@ -298,6 +297,7 @@ CREATE TABLE `companies` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `countries`
@@ -584,6 +584,34 @@ CREATE TABLE `cron_jobs` (
   `execute_dt` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `cron_jobs`
+--
+
+INSERT INTO `cron_jobs` (`id`, `job_name`, `execute_dt`) VALUES
+(1, 'Invoicegenerator', '2024-11-05 22:59:30'),
+(2, 'Invoicegenerator', '2024-11-05 23:09:21'),
+(3, 'Invoicegenerator', '2024-11-05 23:10:39'),
+(4, 'Invoicegenerator', '2024-11-16 21:22:49'),
+(5, 'Invoicegenerator', '2024-11-16 21:29:47'),
+(6, 'Invoicegenerator', '2024-11-16 22:20:04'),
+(7, 'Invoicegenerator', '2024-11-16 22:27:06'),
+(8, 'Invoicegenerator', '2024-11-16 22:30:03'),
+(9, 'Invoicegenerator', '2024-11-16 22:30:40'),
+(10, 'Invoicegenerator', '2024-11-16 22:31:45'),
+(11, 'Invoicegenerator', '2024-11-16 22:35:33'),
+(12, 'Invoicegenerator', '2024-11-16 22:38:05'),
+(13, 'Invoicegenerator', '2024-11-16 22:42:10'),
+(14, 'Invoicegenerator', '2024-11-16 22:44:23'),
+(15, 'Invoicegenerator', '2024-11-16 22:47:34'),
+(16, 'Invoicegenerator', '2024-11-16 22:49:43'),
+(17, 'Invoicegenerator', '2024-11-16 22:51:26'),
+(18, 'Invoicegenerator', '2024-11-16 23:18:32'),
+(19, 'Invoicegenerator', '2024-11-16 23:20:28'),
+(20, 'Invoicegenerator', '2024-11-16 23:20:47'),
+(21, 'Invoicegenerator', '2024-11-16 23:21:28'),
+(22, 'Invoicegenerator', '2024-11-21 21:12:22'),
+(23, 'Invoicegenerator', '2024-11-21 21:17:03');
 
 -- --------------------------------------------------------
 
@@ -642,7 +670,7 @@ CREATE TABLE `currencies` (
 
 INSERT INTO `currencies` (`id`, `symbol`, `code`, `rate`, `format`, `is_default`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (1, '$', 'USD', 1, 1, 1, 1, NULL, NULL, '2020-08-21 13:37:30', NULL, NULL, NULL),
-(2, '৳', 'BDT', 121, 1, 0, 1, NULL, NULL, '2024-08-09 00:09:53', 1, NULL, NULL);
+(2, 'රු', 'LKR', 312, 1, 0, 1, NULL, NULL, '2026-03-07 06:18:52', 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -711,30 +739,6 @@ CREATE TABLE `dom_pricing` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `dom_pricing`
---
-
-INSERT INTO `dom_pricing` (`id`, `dom_extension_id`, `currency_id`, `reg_period`, `price`, `transfer`, `renewal`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(1, 1, 1, 1, 12.99, 12.99, 12.99, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:45', NULL, NULL, NULL),
-(2, 1, 2, 1, 1550, 1550, 1550, 1, '2020-09-05 08:17:52', NULL, '2026-02-09 07:44:46', 1, NULL, NULL),
-(3, 2, 1, 1, 13.25, 13.25, 13.25, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(4, 2, 2, 1, 1510, 1510, 1510, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(5, 3, 1, 1, 13.85, 13.85, 13.85, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(6, 3, 2, 1, 1580, 1580, 1580, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(7, 4, 1, 1, 20.15, 40.91, 40.91, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(8, 4, 2, 1, 2299, 2299, 2299, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(9, 5, 1, 1, 40.91, 12.99, 12.99, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(10, 5, 2, 1, 4660, 4660, 4660, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(11, 6, 1, 1, 66.39, 66.39, 66.39, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(12, 6, 2, 1, 7560, 7560, 7560, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(13, 7, 1, 1, 19.89, 19.89, 19.89, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(14, 7, 2, 1, 2270, 2270, 2270, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(15, 8, 1, 1, 36.15, 36.15, 36.15, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(16, 8, 2, 1, 4125, 4125, 4125, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
-(17, 16, 2, 1, 1640, 1640, 1640, 1, '2026-01-25 01:01:34', 1, '2026-01-25 07:03:06', 1, NULL, NULL),
-(18, 16, 1, 1, 12.95, 12.95, 12.95, 1, '2026-01-25 01:02:09', 1, '2026-01-25 01:02:09', NULL, NULL, NULL);
-
 -- --------------------------------------------------------
 
 --
@@ -752,7 +756,7 @@ CREATE TABLE `dom_registers` (
   `ns_update_api` text DEFAULT NULL,
   `contact_details_api` text DEFAULT NULL,
   `contact_update_api` text DEFAULT NULL,
-  `whitelisted_ip` varchar(45) DEFAULT NULL COMMENT 'Server IP whitelisted at registrar',
+  `whitelisted_ip` varchar(60) DEFAULT NULL COMMENT 'Server IP whitelisted at registrar',
   `auth_userid` varchar(50) NOT NULL,
   `auth_apikey` varchar(100) NOT NULL,
   `is_selected` tinyint(4) NOT NULL DEFAULT 1,
@@ -772,8 +776,8 @@ CREATE TABLE `dom_registers` (
 --
 
 INSERT INTO `dom_registers` (`id`, `name`, `platform`, `api_base_url`, `domain_check_api`, `suggestion_api`, `domain_reg_api`, `ns_update_api`, `contact_details_api`, `contact_update_api`, `whitelisted_ip`, `auth_userid`, `auth_apikey`, `is_selected`, `def_ns1`, `def_ns2`, `def_ns3`, `def_ns4`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Resell.Biz', 'STARGATE', 'https://httpapi.com', 'https://httpapi.com/api/domains/available.json?', 'https://httpapi.com/api/domains/v5/suggest-names.json?', 'https://httpapi.com/api/domains/register.xml?', 'https://httpapi.com/api/domains/modify-ns.json', 'https://httpapi.com/api/domains/details-by-name.json', 'https://httpapi.com/api/domains/modify-contact.json', NULL, '572394', 'IPE8mDT7ZoyQc6FmIzRp5b3lxfvabPOA', 1, 'ns1.whmaz.com', 'ns2.whmaz.com', '', '', 1, NULL, NULL, '2026-02-26 22:04:04', 1),
-(2, 'Namecheap', 'NAMECHEAP', 'https://api.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', NULL, 'tongbaritest', '993d950d882041ed90eea8158abec1d3', 0, NULL, NULL, NULL, NULL, 1, NULL, NULL, '2026-02-10 16:49:03', NULL);
+(1, 'Resell.Biz', 'STARGATE', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', '103.159.72.22', '123456', 'IPE8me54tgfhgfhfhfd55p5b3lxfvabPOA', 0, 'ns1.whmaz.com', 'ns2.whmaz.com', '', '', 1, NULL, NULL, '2026-03-07 07:44:10', 1),
+(2, 'Namecheap', 'NAMECHEAP', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', '67.222.24.126', 'tongbaritest', '993d950d882041ed90eea8158abec1d3', 1, 'ns1.whmaz.com', 'ns2.whmaz.com', '', '', 1, NULL, NULL, '2026-03-07 08:36:20', 1);
 
 -- --------------------------------------------------------
 
@@ -880,6 +884,8 @@ CREATE TABLE `expenses` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `expense_types`
 --
@@ -896,6 +902,8 @@ CREATE TABLE `expense_types` (
   `deleted_on` datetime DEFAULT NULL,
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `expense_vendors`
@@ -914,6 +922,7 @@ CREATE TABLE `expense_vendors` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `gen_numbers`
@@ -924,14 +933,6 @@ CREATE TABLE `gen_numbers` (
   `no_type` varchar(10) NOT NULL,
   `last_no` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `gen_numbers`
---
-
-INSERT INTO `gen_numbers` (`id`, `no_type`, `last_no`) VALUES
-(1, 'ORDER', 1000),
-(2, 'INVOICE', 1000);
 
 -- --------------------------------------------------------
 
@@ -950,6 +951,8 @@ CREATE TABLE `invoices` (
   `sub_total` decimal(15,2) NOT NULL DEFAULT 0.00,
   `tax` decimal(15,2) NOT NULL DEFAULT 0.00,
   `vat` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `discount` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `coupon_code` varchar(32) DEFAULT NULL,
   `total` decimal(15,2) NOT NULL DEFAULT 0.00,
   `due_date` date NOT NULL,
   `order_date` date DEFAULT NULL,
@@ -967,6 +970,7 @@ CREATE TABLE `invoices` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `invoice_items`
@@ -996,6 +1000,8 @@ CREATE TABLE `invoice_items` (
   `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `invoice_txn`
 --
@@ -1020,6 +1026,8 @@ CREATE TABLE `invoice_txn` (
   `deleted_on` datetime DEFAULT NULL,
   `deleted_by` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `kbs`
@@ -1046,6 +1054,8 @@ CREATE TABLE `kbs` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `kb_cats`
 --
@@ -1066,6 +1076,8 @@ CREATE TABLE `kb_cats` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `kb_cat_mapping`
 --
@@ -1075,6 +1087,8 @@ CREATE TABLE `kb_cat_mapping` (
   `kb_id` int(5) NOT NULL,
   `kb_cat_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `login_attempts`
@@ -1090,6 +1104,8 @@ CREATE TABLE `login_attempts` (
   `attempt_time` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `migrations`
 --
@@ -1100,6 +1116,7 @@ CREATE TABLE `migrations` (
   `batch` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `orders`
@@ -1116,7 +1133,7 @@ CREATE TABLE `orders` (
   `amount` decimal(15,2) NOT NULL,
   `vat_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
   `tax_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `coupon_code` varchar(16) DEFAULT NULL,
+  `coupon_code` varchar(32) DEFAULT NULL,
   `coupon_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
   `discount_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
   `total_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
@@ -1133,6 +1150,8 @@ CREATE TABLE `orders` (
   `deleted_on` datetime DEFAULT NULL,
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `order_domains`
@@ -1193,6 +1212,8 @@ CREATE TABLE `order_domains` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `order_services`
 --
@@ -1248,6 +1269,8 @@ CREATE TABLE `order_services` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `pages`
 --
@@ -1273,14 +1296,34 @@ CREATE TABLE `pages` (
   `status` tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `pages`
---
+-- --------------------------------------------------------
 
-INSERT INTO `pages` (`id`, `page_title`, `page_slug`, `page_content`, `meta_title`, `meta_description`, `meta_keywords`, `is_published`, `is_system`, `sort_order`, `total_view`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`, `status`) VALUES
-(1, 'Terms and Conditions', 'terms-and-conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', '', 1, 1, 1, 13, '2026-02-12 21:24:40', NULL, '2026-02-13 03:35:49', 1, NULL, NULL, 1),
-(2, 'Privacy Policy', 'privacy-policy', '<h2>Privacy Policy</h2><p>Please add your privacy policy here.</p>', 'Privacy Policy', NULL, NULL, 1, 1, 2, 11, '2026-02-12 21:24:40', NULL, NULL, NULL, NULL, NULL, 1),
-(3, 'Refund Policy', 'refund-policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', '', 1, 0, 3, 11, '2026-02-12 21:24:40', NULL, '2026-02-13 03:38:09', 1, NULL, NULL, 1);
+--
+-- Stand-in structure for view `pages_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `pages_view` (
+`id` int(11) unsigned
+,`page_title` varchar(255)
+,`page_slug` varchar(255)
+,`page_content` longtext
+,`meta_title` varchar(255)
+,`meta_description` text
+,`meta_keywords` varchar(500)
+,`is_published` tinyint(1)
+,`is_system` tinyint(1)
+,`sort_order` int(11)
+,`total_view` int(11)
+,`inserted_on` datetime
+,`inserted_by` int(11)
+,`updated_on` datetime
+,`updated_by` int(11)
+,`deleted_on` datetime
+,`deleted_by` int(11)
+,`status` tinyint(1)
+,`created_by_name` text
+,`updated_by_name` text
+);
 
 -- --------------------------------------------------------
 
@@ -1300,14 +1343,6 @@ CREATE TABLE `page_history` (
   `changed_by` int(11) DEFAULT NULL,
   `changed_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `page_history`
---
-
-INSERT INTO `page_history` (`id`, `page_id`, `page_title`, `page_content`, `meta_title`, `meta_description`, `change_type`, `change_note`, `changed_by`, `changed_at`) VALUES
-(1, 1, 'Terms and Conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', 'updated', '', 1, '2026-02-13 03:35:50'),
-(2, 3, 'Refund Policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', 'updated', '', 1, '2026-02-13 03:38:09');
 
 -- --------------------------------------------------------
 
@@ -1376,11 +1411,11 @@ CREATE TABLE `payment_gateway` (
 
 INSERT INTO `payment_gateway` (`id`, `name`, `gateway_code`, `gateway_type`, `icon_fa_unicode`, `pay_type`, `public_key`, `secret_key`, `webhook_secret`, `is_test_mode`, `test_public_key`, `test_secret_key`, `test_webhook_secret`, `extra_config`, `bank_name`, `account_name`, `account_number`, `routing_number`, `swift_code`, `iban`, `supported_currencies`, `min_amount`, `max_amount`, `fee_type`, `fee_fixed`, `fee_percent`, `fee_bearer`, `logo`, `display_name`, `description`, `sort_order`, `webhook_url`, `merchant_id`, `merchant_pwd`, `instructions`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
 (1, 'Offline Payment', 'manual', 'manual', 'f3d1', 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Manual Payment', 'Pay via bank transfer or other offline methods. Your order will be processed after payment confirmation.', 0, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-02-21 12:22:53', NULL),
-(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', '12345', '12345', '12345', 1, '12345', '12345', '12345', NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Credit/Debit Card', 'Pay securely with your credit or debit card via Stripe.', 1, 'http://localhost/ci-crm/webhook/stripe', '', NULL, '', 0, '2026-02-13 10:28:21', NULL, '2026-02-26 23:37:38', 1),
+(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', 1, 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Credit/Debit Card', 'Pay securely with your credit or debit card via Stripe.', 1, 'http://localhost/ci-crm/webhook/stripe', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-03-07 08:40:01', 1),
 (3, 'PayPal', 'paypal', 'online_wallet', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,JPY,CHF,HKD,SGD,SEK,DKK,PLN,NOK,CZK,ILS,MXN,BRL,PHP,TWD,THB,MYR', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'PayPal', 'Pay securely using your PayPal account or card.', 2, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (4, 'Razorpay', 'razorpay', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'INR', 0.00, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'Razorpay', 'Pay with UPI, Cards, Netbanking, or Wallets via Razorpay.', 3, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (5, 'Paystack', 'paystack', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NGN,GHS,ZAR,KES', 0.00, 0.00, 'both', 100.00, 1.50, 'merchant', NULL, 'Paystack', 'Pay with card or bank transfer via Paystack.', 4, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
-(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', 'http://localhost/webhook/sslcommerz', 1, '123456', '12345', NULL, '{\r\n    \"store_id\": \"12345\",\r\n    \"store_password\": \"12345\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD,BDT', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, 'http://localhost/webhook/sslcommerz', '', NULL, '', 0, '2026-02-13 10:28:21', NULL, '2026-02-26 23:37:58', 1),
+(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', 'http://localhost/webhook/sslcommerz', 1, 'titum5d71b6d6edd13', 'titum5d71b6d6edd13@ssl', NULL, '{\r\n    \"store_id\": \"titum5d71b6d6edd13\",\r\n    \"store_password\": \"titum5d71b6d6edd13@ssl\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD,BDT', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, 'http://localhost/webhook/sslcommerz', '', NULL, '', 0, '2026-02-13 10:28:21', NULL, '2026-02-26 23:37:58', 1),
 (7, 'Bank Transfer', 'bank_transfer', 'bank_transfer', NULL, 'OFFLINE', '', '', '', 0, '', '', NULL, NULL, 'TEST Bank PLC', 'WHMAZ', '1234567890123', '1234567', '12345678', '1234567', 'USD,EUR,GBP,BDT,INR', 0.10, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Bank Transfer', 'Transfer funds directly to our bank account. Order will be processed after payment confirmation.', 10, 'http://localhost/webhook/bank_transfer', '', NULL, 'Please share the TXN number after payment', 1, '2026-02-13 10:28:21', NULL, '2026-02-14 08:56:29', 1);
 
 -- --------------------------------------------------------
@@ -1454,6 +1489,8 @@ CREATE TABLE `payment_transactions` (
   `updated_by` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `pending_executions`
 --
@@ -1495,6 +1532,8 @@ CREATE TABLE `product_services` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `product_service_groups`
 --
@@ -1513,42 +1552,6 @@ CREATE TABLE `product_service_groups` (
   `deleted_on` datetime DEFAULT NULL,
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `product_service_groups`
---
-
-INSERT INTO `product_service_groups` (`id`, `product_service_type_id`, `group_name`, `group_headline`, `tags`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(1, 1, 'Shared Hosting', 'Find best shared hosting in Asia', 'shared, hosting', 1, NULL, NULL, '2024-08-07 15:42:49', NULL, NULL, NULL),
-(2, 2, 'Reseller Hosting', 'Start your business with us', 'Reseller, Hosting, Reseller Hosting', 1, '2024-08-03 07:02:11', 1, '2024-08-07 15:42:52', NULL, NULL, NULL),
-(3, 3, 'Managed VPS', 'Enlarge your business with us', 'Server,VPS', 1, NULL, NULL, '2024-08-07 15:42:55', NULL, '2024-08-03 05:00:47', 1),
-(4, 3, 'Un-managed VPS', 'Other products', 'Other, products', 1, NULL, NULL, '2024-08-07 15:42:57', NULL, '2024-08-03 05:13:02', 1),
-(5, 1, 'Corporate Hosting', 'Best hosting packages for your business', 'corporate, business, hosting', 1, NULL, NULL, '2024-08-21 23:54:18', 1, '2024-08-03 07:10:43', 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `server_modules`
---
-
-CREATE TABLE `server_modules` (
-  `id` int(11) NOT NULL,
-  `module_name` varchar(100) NOT NULL,
-  `remarks` text DEFAULT NULL,
-  `status` tinyint(4) NOT NULL DEFAULT 1,
-  `inserted_on` datetime DEFAULT NULL,
-  `inserted_by` int(11) DEFAULT NULL,
-  `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `updated_by` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `server_modules`
---
-
-INSERT INTO `server_modules` (`id`, `module_name`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'No Module', 'No modules', 1, '2020-08-20 20:26:51', NULL, '2024-08-03 01:29:42', 1),
-(2, 'cPanel', 'cPanel server', 1, '2020-08-20 20:26:51', NULL, '2024-08-03 01:30:03', 1);
 
 -- --------------------------------------------------------
 
@@ -1571,6 +1574,8 @@ CREATE TABLE `product_service_pricing` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `product_service_types`
 --
@@ -1590,16 +1595,76 @@ CREATE TABLE `product_service_types` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
--- Dumping data for table `product_service_types`
+-- Table structure for table `promo_codes`
 --
 
-INSERT INTO `product_service_types` (`id`, `servce_type_name`, `key_name`, `remarks`, `sort_order`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(1, 'Shared Hosting', 'SHARED_HOSTING', NULL, 1, 1, '2020-08-20 20:26:51', NULL, '2024-08-07 15:36:09', NULL, NULL, NULL),
-(2, 'Reseller Hosting', 'RESELLER_HOSTING', NULL, 2, 1, '2020-08-20 20:26:51', NULL, '2024-08-07 15:36:15', NULL, NULL, NULL),
-(3, 'Server/VPS', 'SERVER_VPS', NULL, 3, 1, '2020-08-20 20:26:51', NULL, '2024-08-07 15:36:23', NULL, NULL, NULL),
-(4, 'Other', 'OTHER', 'Other', 8, 1, '2020-08-20 20:26:51', NULL, '2024-08-07 15:36:02', 1, NULL, NULL),
-(6, 'Software License', 'SOFTWARE_LICENSE', 'Software License', 4, 1, '2024-08-07 17:44:19', 1, '2024-08-07 15:44:19', NULL, NULL, NULL);
+CREATE TABLE `promo_codes` (
+  `id` bigint(20) NOT NULL,
+  `code` varchar(32) NOT NULL,
+  `description` text DEFAULT NULL,
+  `discount_type` enum('fixed','percentage') NOT NULL DEFAULT 'fixed',
+  `discount_value` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `currency_id` int(11) DEFAULT NULL COMMENT 'Required for fixed type only',
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  `is_lifetime` tinyint(1) NOT NULL DEFAULT 0 COMMENT '1=no expiry',
+  `max_uses` int(11) NOT NULL DEFAULT 0 COMMENT '0=unlimited',
+  `max_uses_per_customer` int(11) NOT NULL DEFAULT 0 COMMENT '0=unlimited',
+  `min_order_amount` decimal(15,2) NOT NULL DEFAULT 0.00 COMMENT '0=no minimum',
+  `max_discount_amount` decimal(15,2) NOT NULL DEFAULT 0.00 COMMENT 'Caps percentage discounts; 0=no cap',
+  `applies_to` enum('all','products','customers') NOT NULL DEFAULT 'all',
+  `total_used` int(11) NOT NULL DEFAULT 0,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1=active, 0=soft deleted',
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` datetime DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `deleted_on` datetime DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `promo_code_customers`
+--
+
+CREATE TABLE `promo_code_customers` (
+  `id` bigint(20) NOT NULL,
+  `promo_code_id` bigint(20) NOT NULL,
+  `company_id` bigint(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `promo_code_products`
+--
+
+CREATE TABLE `promo_code_products` (
+  `id` bigint(20) NOT NULL,
+  `promo_code_id` bigint(20) NOT NULL,
+  `product_service_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `promo_code_usage`
+--
+
+CREATE TABLE `promo_code_usage` (
+  `id` bigint(20) NOT NULL,
+  `promo_code_id` bigint(20) NOT NULL,
+  `company_id` bigint(20) NOT NULL,
+  `order_id` bigint(20) NOT NULL,
+  `discount_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `used_on` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -1621,6 +1686,8 @@ CREATE TABLE `provisioning_logs` (
   `inserted_on` datetime NOT NULL,
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `servers`
@@ -1658,6 +1725,35 @@ CREATE TABLE `servers` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `server_modules`
+--
+
+CREATE TABLE `server_modules` (
+  `id` int(11) NOT NULL,
+  `module_name` varchar(100) NOT NULL,
+  `remarks` text DEFAULT NULL,
+  `status` tinyint(4) NOT NULL DEFAULT 1,
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_by` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `server_modules`
+--
+
+INSERT INTO `server_modules` (`id`, `module_name`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(1, 'No Module', 'No modules', 1, '2020-08-20 20:26:51', 1, '2026-03-17 06:19:50', 1),
+(2, 'cPanel', 'cPanel server', 1, '2020-08-20 20:26:51', 1, '2026-03-17 06:20:01', 1),
+(3, 'Plesk', 'Plesk server', 1, '2026-03-17 00:10:15', 1, '2026-03-17 06:20:01', 1),
+(4, 'DirectAdmin', 'DirectAdmin server', 1, '2026-03-17 00:37:25', 1, '2026-03-17 06:32:04', 1);
+
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `sys_cnf`
 --
@@ -1676,8 +1772,8 @@ CREATE TABLE `sys_cnf` (
 --
 
 INSERT INTO `sys_cnf` (`id`, `cnf_key`, `cnf_val`, `cnf_group`, `created_on`, `updated_on`) VALUES
-(1, 'DefaultNameServer1', 'ns1.whmaz.com', 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
-(2, 'DefaultNameServer2', 'ns2.whmaz.com', 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
+(1, 'DefaultNameServer1', 'ns1.whmaz.com', 'DNS', '2022-10-09 16:43:09', '2026-03-07 00:16:00'),
+(2, 'DefaultNameServer2', 'ns2.whmaz.com', 'DNS', '2022-10-09 16:43:09', '2026-03-07 00:16:10'),
 (3, 'DefaultNameServer3', NULL, 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
 (4, 'DefaultNameServer4', NULL, 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
 (5, 'cron_secret_key', 'a7f3b2c9d8e4f1a0b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8', 'SYSTEM', '2026-02-11 23:12:43', '2026-02-11 23:12:43'),
@@ -1712,7 +1808,7 @@ INSERT INTO `sys_cnf` (`id`, `cnf_key`, `cnf_val`, `cnf_group`, `created_on`, `u
 (34, 'feature_affiliate_system', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (35, 'feature_two_factor_auth', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (36, 'feature_social_login', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
-(37, 'admin_notification_email', 'techno.valley.21@gmail.com', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-22 13:50:17'),
+(37, 'admin_notification_email', 'support@whmaz.com', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-03-07 00:16:33'),
 (38, 'notify_admin_new_order', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (39, 'notify_admin_new_ticket', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (40, 'notify_admin_new_customer', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
@@ -1756,6 +1852,8 @@ CREATE TABLE `tickets` (
   `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `ticket_depts`
 --
@@ -1772,14 +1870,6 @@ CREATE TABLE `ticket_depts` (
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `ticket_depts`
---
-
-INSERT INTO `ticket_depts` (`id`, `name`, `description`, `email`, `sort_order`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Support', 'Technical supports', 'support@whmaz.com', 1, 1, NULL, NULL, '2026-02-13 15:28:08', NULL),
-(2, 'Billing', 'Bill payments department.', 'billing@whmaz.com', 2, 1, NULL, NULL, '2024-08-03 03:42:56', 1);
 
 -- --------------------------------------------------------
 
@@ -1802,6 +1892,7 @@ CREATE TABLE `ticket_replies` (
   `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `users`
@@ -1834,6 +1925,8 @@ CREATE TABLE `users` (
   `pass_reset_expiry` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
 --
 -- Table structure for table `user_logins`
 --
@@ -1847,6 +1940,8 @@ CREATE TABLE `user_logins` (
   `device_info` text DEFAULT NULL,
   `active` tinyint(4) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
 -- Table structure for table `webhook_logs`
@@ -2187,12 +2282,6 @@ ALTER TABLE `product_service_groups`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `server_modules`
---
-ALTER TABLE `server_modules`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `product_service_pricing`
 --
 ALTER TABLE `product_service_pricing`
@@ -2204,6 +2293,34 @@ ALTER TABLE `product_service_pricing`
 --
 ALTER TABLE `product_service_types`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `promo_codes`
+--
+ALTER TABLE `promo_codes`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_code` (`code`);
+
+--
+-- Indexes for table `promo_code_customers`
+--
+ALTER TABLE `promo_code_customers`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_promo_customer` (`promo_code_id`,`company_id`);
+
+--
+-- Indexes for table `promo_code_products`
+--
+ALTER TABLE `promo_code_products`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_promo_product` (`promo_code_id`,`product_service_id`);
+
+--
+-- Indexes for table `promo_code_usage`
+--
+ALTER TABLE `promo_code_usage`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_promo_company` (`promo_code_id`,`company_id`);
 
 --
 -- Indexes for table `provisioning_logs`
@@ -2219,6 +2336,12 @@ ALTER TABLE `provisioning_logs`
 -- Indexes for table `servers`
 --
 ALTER TABLE `servers`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `server_modules`
+--
+ALTER TABLE `server_modules`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -2277,13 +2400,13 @@ ALTER TABLE `webhook_logs`
 -- AUTO_INCREMENT for table `add_to_carts`
 --
 ALTER TABLE `add_to_carts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `admin_logins`
 --
 ALTER TABLE `admin_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `admin_roles`
@@ -2313,7 +2436,7 @@ ALTER TABLE `alert_recipients`
 -- AUTO_INCREMENT for table `announcements`
 --
 ALTER TABLE `announcements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `billing_cycle`
@@ -2325,7 +2448,7 @@ ALTER TABLE `billing_cycle`
 -- AUTO_INCREMENT for table `companies`
 --
 ALTER TABLE `companies`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `countries`
@@ -2361,7 +2484,7 @@ ALTER TABLE `dom_extensions`
 -- AUTO_INCREMENT for table `dom_pricing`
 --
 ALTER TABLE `dom_pricing`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `dom_registers`
@@ -2391,103 +2514,103 @@ ALTER TABLE `email_templates`
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `expense_types`
 --
 ALTER TABLE `expense_types`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `expense_vendors`
 --
 ALTER TABLE `expense_vendors`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `gen_numbers`
 --
 ALTER TABLE `gen_numbers`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `invoice_items`
 --
 ALTER TABLE `invoice_items`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `invoice_txn`
 --
 ALTER TABLE `invoice_txn`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `kbs`
 --
 ALTER TABLE `kbs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `kb_cats`
 --
 ALTER TABLE `kb_cats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `kb_cat_mapping`
 --
 ALTER TABLE `kb_cat_mapping`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `order_domains`
 --
 ALTER TABLE `order_domains`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `order_services`
 --
 ALTER TABLE `order_services`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `pages`
 --
 ALTER TABLE `pages`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `page_history`
 --
 ALTER TABLE `page_history`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `payment_gateway`
@@ -2505,7 +2628,7 @@ ALTER TABLE `payment_refunds`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `pending_executions`
@@ -2517,43 +2640,67 @@ ALTER TABLE `pending_executions`
 -- AUTO_INCREMENT for table `product_services`
 --
 ALTER TABLE `product_services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `product_service_groups`
 --
 ALTER TABLE `product_service_groups`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
-
---
--- AUTO_INCREMENT for table `server_modules`
---
-ALTER TABLE `server_modules`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `product_service_pricing`
 --
 ALTER TABLE `product_service_pricing`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `product_service_types`
 --
 ALTER TABLE `product_service_types`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `promo_codes`
+--
+ALTER TABLE `promo_codes`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `promo_code_customers`
+--
+ALTER TABLE `promo_code_customers`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `promo_code_products`
+--
+ALTER TABLE `promo_code_products`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `promo_code_usage`
+--
+ALTER TABLE `promo_code_usage`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `provisioning_logs`
 --
 ALTER TABLE `provisioning_logs`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `servers`
 --
 ALTER TABLE `servers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `server_modules`
+--
+ALTER TABLE `server_modules`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `sys_cnf`
@@ -2565,37 +2712,46 @@ ALTER TABLE `sys_cnf`
 -- AUTO_INCREMENT for table `tickets`
 --
 ALTER TABLE `tickets`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `ticket_depts`
 --
 ALTER TABLE `ticket_depts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `ticket_replies`
 --
 ALTER TABLE `ticket_replies`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `user_logins`
 --
 ALTER TABLE `user_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `webhook_logs`
 --
 ALTER TABLE `webhook_logs`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `pages_view`
+--
+DROP TABLE IF EXISTS `pages_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`whmazc`@`localhost` SQL SECURITY DEFINER VIEW `pages_view`  AS SELECT `p`.`id` AS `id`, `p`.`page_title` AS `page_title`, `p`.`page_slug` AS `page_slug`, `p`.`page_content` AS `page_content`, `p`.`meta_title` AS `meta_title`, `p`.`meta_description` AS `meta_description`, `p`.`meta_keywords` AS `meta_keywords`, `p`.`is_published` AS `is_published`, `p`.`is_system` AS `is_system`, `p`.`sort_order` AS `sort_order`, `p`.`total_view` AS `total_view`, `p`.`inserted_on` AS `inserted_on`, `p`.`inserted_by` AS `inserted_by`, `p`.`updated_on` AS `updated_on`, `p`.`updated_by` AS `updated_by`, `p`.`deleted_on` AS `deleted_on`, `p`.`deleted_by` AS `deleted_by`, `p`.`status` AS `status`, `u1`.`username` AS `created_by_name`, `u2`.`username` AS `updated_by_name` FROM ((`pages` `p` left join `admin_users` `u1` on(`p`.`inserted_by` = `u1`.`id`)) left join `admin_users` `u2` on(`p`.`updated_by` = `u2`.`id`)) WHERE `p`.`status` = 1 ;
 
 --
 -- Constraints for dumped tables

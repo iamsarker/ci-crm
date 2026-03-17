@@ -148,8 +148,42 @@
                     </div>
                     <div class="card-footer cart-card-footer">
                         <div class="cart-total">
-                            <span class="total-label">Order Total:</span>
-                            <span class="total-amount" id="total">0.00</span>
+                            <span class="total-label">Subtotal:</span>
+                            <span class="total-amount" id="subtotal">0.00</span>
+                        </div>
+                        <div class="cart-total cart-discount-row" id="discountRow" style="display:none;">
+                            <span class="total-label text-success"><i class="fa fa-tag mg-r-5"></i>Discount (<span id="discountCode"></span>):</span>
+                            <span class="total-amount text-success" id="discountAmount">-0.00</span>
+                            <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2" ng-click="removePromo()" title="Remove promo code"><i class="fa fa-times"></i></button>
+                        </div>
+                        <hr class="my-2" style="border-color:#e3e8f1;">
+                        <div class="cart-total">
+                            <span class="total-label fw-bold">Order Total:</span>
+                            <span class="total-amount fw-bold" id="total">0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Promo Code Card -->
+                <div class="card cart-payment-card mg-b-20">
+                    <div class="card-header cart-card-header" style="background: linear-gradient(135deg, #43a047 0%, #2e7d32 100%);">
+                        <h5 class="mg-b-0"><i class="fa fa-tags mg-r-10"></i>Promo Code</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-end">
+                            <div class="col-md-7 mg-b-10">
+                                <label class="payment-label"><i class="fa fa-tag mg-r-5"></i>Have a promo code?</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control text-uppercase" ng-model="promo_code" placeholder="Enter promo code" id="promoCodeInput" />
+                                    <button class="btn btn-success" type="button" ng-click="applyPromo()" ng-disabled="promoLoading">
+                                        <span ng-hide="promoLoading"><i class="fa fa-check mg-r-5"></i>Apply</span>
+                                        <span ng-show="promoLoading"><i class="fa fa-spinner fa-spin"></i></span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-5 mg-b-10">
+                                <div id="promoMessage"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -213,14 +247,37 @@
     var app = angular.module('ServicesApp', ['ngDialog', 'ngToast', 'ngMaterial', 'ngMessages', 'ngSanitize', 'ngAnimate']);
 
     // Calculate total on page load (handles hierarchical cart items)
+    var cartSubTotal = 0;
+    var promoDiscountAmount = 0;
+
     $(function () {
-        var TotalValue = 0;
         $("span.subtotal-item").each(function (index, value) {
             var currentRow = parseFloat($(this).text()) || 0;
-            TotalValue += currentRow;
+            cartSubTotal += currentRow;
         });
-        document.getElementById('total').innerHTML = TotalValue.toFixed(2);
+        document.getElementById('subtotal').innerHTML = cartSubTotal.toFixed(2);
+        document.getElementById('total').innerHTML = cartSubTotal.toFixed(2);
     });
+
+    function updateCartTotal() {
+        var finalTotal = cartSubTotal - promoDiscountAmount;
+        if (finalTotal < 0) finalTotal = 0;
+        document.getElementById('total').innerHTML = finalTotal.toFixed(2);
+    }
+
+    function showPromoDiscount(code, amount) {
+        promoDiscountAmount = amount;
+        document.getElementById('discountCode').innerHTML = code;
+        document.getElementById('discountAmount').innerHTML = '-' + amount.toFixed(2);
+        document.getElementById('discountRow').style.display = 'flex';
+        updateCartTotal();
+    }
+
+    function hidePromoDiscount() {
+        promoDiscountAmount = 0;
+        document.getElementById('discountRow').style.display = 'none';
+        updateCartTotal();
+    }
 </script>
 <script src="<?=base_url()?>resources/angular/app/app.directives.js?v=1.0.0"></script>
 <script src="<?=base_url()?>resources/angular/app/app.services.js?v=1.0.0"></script>

@@ -89,7 +89,7 @@ class Dashboard extends WHMAZADMIN_Controller
 			$body = 'Dear ' . $userName . ',<br><br>';
 			$body .= 'Your admin password has been changed successfully.<br><br>';
 			$body .= 'If you did not make this change, please contact us immediately.<br><br>';
-			$body .= 'Thanks & Regards<br>';
+			$body .= '<b>Thanks & Regards</b><br>';
 			$body .= $appSettings->company_name . ' Support';
 
 			$subject = "Admin Password Changed - " . $appSettings->company_name;

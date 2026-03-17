@@ -499,6 +499,8 @@ $config['csrf_exclude_uris'] = array(
 	'cart/linkHostingToDomain',
 	'cart/getHostingPackages',
 	'cart/checkoutSubmit',
+	'cart/applyPromoCode',
+	'cart/removePromoCode',
 	'cart/delete/.*',
 	'pages/.*',
 	'cart/delete_all',

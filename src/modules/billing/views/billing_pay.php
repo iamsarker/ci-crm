@@ -29,6 +29,12 @@
                     <td><?php echo $invoice['currency_code']; ?> <?php echo number_format($invoice['tax'], 2); ?></td>
                 </tr>
                 <?php endif; ?>
+                <?php if (!empty($invoice['discount']) && $invoice['discount'] > 0): ?>
+                <tr>
+                    <td>Discount <?php echo !empty($invoice['coupon_code']) ? '(<code>' . htmlspecialchars($invoice['coupon_code']) . '</code>)' : ''; ?></td>
+                    <td class="text-success">-<?php echo $invoice['currency_code']; ?> <?php echo number_format($invoice['discount'], 2); ?></td>
+                </tr>
+                <?php endif; ?>
                 <tr>
                     <td>Total Due</td>
                     <td><?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?></td>

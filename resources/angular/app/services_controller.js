@@ -703,6 +703,9 @@ app.controller('ServiceCheckoutCtrl', function ($scope, $http, $timeout, $rootSc
 	$scope.baseurl = BASE_URL;
 	$scope.payment_gateway = "0";
 	$scope.instructions = "";
+	$scope.promo_code = "";
+	$scope.promoLoading = false;
+	$scope.promoApplied = false;
 
 	$scope.clearCartData = function(path){
 		DialogBox.confirm("Are you sure to delete this cart?").then(function (confirm){
@@ -730,6 +733,48 @@ app.controller('ServiceCheckoutCtrl', function ($scope, $http, $timeout, $rootSc
 	}
 
 
+	$scope.applyPromo = function() {
+		if (!$scope.promo_code || $scope.promo_code.trim() === '') {
+			toastWarning("Please enter a promo code");
+			return;
+		}
+
+		$scope.promoLoading = true;
+		$('#promoMessage').html('');
+
+		let req = Communication.request("POST", BASE_URL + 'cart/applyPromoCode', {"promo_code": $scope.promo_code});
+		req.then(function(resp) {
+			$scope.promoLoading = false;
+			if (resp.code == 200) {
+				$scope.promoApplied = true;
+				toastSuccess(resp.msg);
+				$('#promoMessage').html('<div class="alert alert-success py-2 px-3 mb-0"><i class="fa fa-check-circle mg-r-5"></i>' + resp.msg + '</div>');
+				showPromoDiscount(resp.data.promo_code, parseFloat(resp.data.discount_amount));
+				$('#promoCodeInput').prop('disabled', true);
+			} else {
+				$scope.promoApplied = false;
+				toastWarning(resp.msg);
+				$('#promoMessage').html('<div class="alert alert-danger py-2 px-3 mb-0"><i class="fa fa-exclamation-circle mg-r-5"></i>' + resp.msg + '</div>');
+				hidePromoDiscount();
+			}
+		}, function(err) {
+			$scope.promoLoading = false;
+			toastError("Failed to apply promo code");
+		});
+	};
+
+	$scope.removePromo = function() {
+		let req = Communication.request("POST", BASE_URL + 'cart/removePromoCode', {});
+		req.then(function(resp) {
+			$scope.promoApplied = false;
+			$scope.promo_code = "";
+			$('#promoMessage').html('');
+			$('#promoCodeInput').prop('disabled', false);
+			hidePromoDiscount();
+			toastSuccess("Promo code removed");
+		});
+	};
+
 	$scope.btnCartCheckout = function(){
 
 		if( $scope.payment_gateway == "0" ){
@@ -738,7 +783,7 @@ app.controller('ServiceCheckoutCtrl', function ($scope, $http, $timeout, $rootSc
 		}
 
 		DialogBox.showProgress();
-		let req = Communication.request("POST", BASE_URL + 'cart/checkoutSubmit', {"payment_gateway":$scope.payment_gateway, "instructions":$scope.instructions, "promo_code":""});
+		let req = Communication.request("POST", BASE_URL + 'cart/checkoutSubmit', {"payment_gateway":$scope.payment_gateway, "instructions":$scope.instructions, "promo_code":$scope.promo_code || ""});
 		req.then(function (resp) {
 			DialogBox.hideProgress();
 

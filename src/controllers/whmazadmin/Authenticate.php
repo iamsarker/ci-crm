@@ -65,7 +65,7 @@ class Authenticate extends WHMAZADMIN_Controller
 			}
 
 			$username = xssCleaner($this->input->post('username'));
-			$password = xssCleaner($this->input->post('password'));
+			$password = $this->input->post('password');
 
 			$resp = $this->Adminauth_model->doLogin($username, $password);
 			if ($resp['status_code'] == 1) {
@@ -172,6 +172,18 @@ class Authenticate extends WHMAZADMIN_Controller
 			$result = $this->Adminauth_model->resetPassword($user, $password);
 
 			if ($result) {
+				$appSettings = getAppSettings();
+				$userName = !empty($user->first_name) ? htmlspecialchars($user->first_name) : 'Admin';
+
+				$body = 'Dear ' . $userName . ',<br><br>';
+				$body .= 'Your admin password has been reset successfully.<br><br>';
+				$body .= 'If you did not make this change, please contact us immediately.<br><br>';
+				$body .= '<b>Thanks & Regards</b><br>';
+				$body .= $appSettings->company_name . ' Support';
+
+				$subject = "Admin Password Reset Successful - " . $appSettings->company_name;
+				sendHtmlEmail($user->email, $subject, $body);
+
 				$this->session->set_flashdata('admin_success', 'Your password has been reset successfully. Please login.');
 			} else {
 				$this->session->set_flashdata('admin_error', 'This reset link is invalid or has expired.');

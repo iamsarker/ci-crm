@@ -146,6 +146,33 @@ This is the first stable release of WHMAZ, a comprehensive domain hosting manage
 
 ---
 
+### Promo Code / Coupon System
+
+#### Promo Code Management (Admin)
+- Create promo codes with fixed amount or percentage discounts
+- Lifetime or date-range validity periods
+- Global usage limits and per-customer usage limits
+- Minimum order amount requirement
+- Maximum discount cap for percentage-based codes
+- Target: all orders, specific products, or specific customers
+- Enable/disable toggle without deleting
+- DataTables list with stats cards (total, active, expired, redemptions)
+- Select2 multi-select for product and customer targeting
+
+#### Cart Promo Code Integration (Client)
+- Promo code input in shopping cart
+- Real-time AJAX validation and discount preview
+- Apply/remove promo code without page reload
+- Discount line shown in cart totals (subtotal, discount, order total)
+- Re-validation at checkout to prevent stale codes
+
+#### Promo Code Tracking
+- Usage recording per order with discount amount
+- Race-condition-safe usage counter (atomic increment)
+- Coupon code and discount shown on orders, invoices, and PDF
+
+---
+
 ### Billing & Invoicing
 
 #### Invoice Management

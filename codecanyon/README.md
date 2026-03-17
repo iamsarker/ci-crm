@@ -74,6 +74,19 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 - PDF invoice generation
 - **Order confirmation emails** (customer & admin notification)
 - **Payment confirmation emails** (automatic on successful payment)
+- **Promo code / coupon system** with flexible discount rules
+
+### 🏷️ **Promo Code System**
+- Create promo codes with fixed amount or percentage discounts
+- Lifetime or date-range validity
+- Global and per-customer usage limits
+- Minimum order amount requirement
+- Maximum discount cap for percentage codes
+- Target all orders, specific products, or specific customers
+- Enable/disable codes without deleting
+- Real-time cart integration with apply/remove
+- Automatic validation at checkout with usage tracking
+- Discount shown on invoices and PDF
 
 ### 👥 **Customer Management (CRM)**
 - Company/Client profiles

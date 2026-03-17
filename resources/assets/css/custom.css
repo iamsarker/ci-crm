@@ -3514,6 +3514,20 @@ h6 i {
     color: #667eea;
 }
 
+/* Promo Discount Row */
+.cart-discount-row {
+    margin-bottom: 5px;
+}
+
+.cart-discount-row .total-label {
+    font-size: 14px;
+}
+
+.cart-discount-row .total-amount {
+    font-size: 18px;
+    font-weight: 600;
+}
+
 /* Payment Card */
 .cart-payment-card {
     border: none;

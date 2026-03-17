@@ -128,8 +128,8 @@
 			</tr>
 
 			<tr>
-				<td colspan="3" style="border: 1px solid #c0c0c0;text-align: right;">Discount</td>
-				<td style="border: 1px solid #c0c0c0;text-align: right;">(-)&nbsp;<?=htmlspecialchars($invoice['discount_amount'] ?? '', ENT_QUOTES, 'UTF-8').' '.htmlspecialchars($invoice['currency_code'] ?? '', ENT_QUOTES, 'UTF-8')?></td>
+				<td colspan="3" style="border: 1px solid #c0c0c0;text-align: right;">Discount<?= !empty($invoice['coupon_code']) ? ' (' . htmlspecialchars($invoice['coupon_code'], ENT_QUOTES, 'UTF-8') . ')' : '' ?></td>
+				<td style="border: 1px solid #c0c0c0;text-align: right;">(-)&nbsp;<?=htmlspecialchars($invoice['discount_amount'] ?? '0.00', ENT_QUOTES, 'UTF-8').' '.htmlspecialchars($invoice['currency_code'] ?? '', ENT_QUOTES, 'UTF-8')?></td>
 			</tr>
 
 			<tr>

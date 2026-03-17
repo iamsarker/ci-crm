@@ -564,6 +564,83 @@ order_domains.order_type:
 - RESELLER (product_service_type_key = 'reseller')
 - VPS (product_service_type_key = 'vps')
 
+## Promo Code / Coupon System
+
+### Database Tables
+| Table | Purpose |
+|-------|---------|
+| `promo_codes` | Main coupon definitions (code, discount type/value, validity, limits, targeting) |
+| `promo_code_products` | Product targeting (when `applies_to='products'`) |
+| `promo_code_customers` | Customer targeting (when `applies_to='customers'`) |
+| `promo_code_usage` | Tracks every redemption (promo_code_id, company_id, order_id, discount_amount) |
+
+**Related columns in existing tables:**
+- `orders`: `coupon_code` (varchar 32), `coupon_amount`, `discount_amount`
+- `invoices`: `discount` (decimal 15,2), `coupon_code` (varchar 32)
+
+### Key Files
+| File | Purpose |
+|------|---------|
+| `src/controllers/whmazadmin/Promocode.php` | Admin CRUD controller (list, manage, delete, toggle, SSP API) |
+| `src/models/Promocode_model.php` | All promo logic: CRUD, validation, usage tracking, stats |
+| `src/views/whmazadmin/promocode_list.php` | Admin list with DataTables + stats cards |
+| `src/views/whmazadmin/promocode_manage.php` | Admin create/edit form with conditional sections |
+
+### Admin Menu Location
+Under **Billing** dropdown, after Transactions:
+```
+Billing
+├── View Invoices
+├── Payment Gateways
+├── Transactions
+├── [divider]
+└── Promo Codes
+```
+
+### Promo Code Features
+- **Discount types**: Fixed amount or percentage
+- **Validity**: Lifetime (no expiry) or date range (start/end)
+- **Usage limits**: Max total uses (0=unlimited), max per customer (0=unlimited)
+- **Minimum order amount**: 0=no minimum
+- **Max discount cap**: For percentage discounts, 0=no cap
+- **Currency restriction**: Fixed-type codes can be restricted to a specific currency
+- **Targeting**: All orders, specific products (via `promo_code_products`), or specific customers (via `promo_code_customers`)
+- **Toggle active**: Enable/disable without deleting (admin list page switch)
+
+### Cart Integration Flow
+1. **Apply** (AJAX POST `cart/applyPromoCode`): Customer enters code → `Promocode_model::validatePromoCode()` → stores in session (`applied_promo`) → returns discount to UI
+2. **Remove** (AJAX POST `cart/removePromoCode`): Clears session → UI resets
+3. **Checkout** (`checkoutSubmit()`): Re-validates promo from session → subtracts discount from `$grandTotal` → saves to order (`coupon_code`, `coupon_amount`, `discount_amount`) → saves to invoice (`discount`, `coupon_code`) → records usage via `Promocode_model::recordUsage()` → clears session
+
+### Validation Checks (in order)
+1. Code exists and `status=1`
+2. `is_active=1`
+3. Date range (skip if `is_lifetime=1`)
+4. Currency match (fixed discount only)
+5. Global max uses not exceeded
+6. Per-customer max uses not exceeded
+7. Minimum order amount met
+8. Product eligibility (when `applies_to='products'`)
+9. Customer eligibility (when `applies_to='customers'`)
+
+### CSRF Exclusions
+`cart/applyPromoCode` and `cart/removePromoCode` are in `csrf_exclude_uris` (config.php) since Angular sends JSON payloads.
+
+### Admin API Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `whmazadmin/promocode/index` | GET | List page |
+| `whmazadmin/promocode/manage/{id}` | GET/POST | Create/edit form |
+| `whmazadmin/promocode/delete_records/{id}` | GET | Soft delete |
+| `whmazadmin/promocode/ssp_list_api` | GET | DataTables server-side |
+| `whmazadmin/promocode/toggle_active/{id}` | GET | AJAX toggle is_active |
+
+### Cart API Endpoints
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `cart/applyPromoCode` | POST | Validate and apply promo code |
+| `cart/removePromoCode` | POST | Remove applied promo code |
+
 ## Library Naming Convention
 Libraries follow CodeIgniter standard naming:
 - File: `Libraryname.php` (capital first letter only)

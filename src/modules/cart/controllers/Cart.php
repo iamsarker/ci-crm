@@ -12,6 +12,7 @@ class Cart extends WHMAZ_Controller
 		$this->load->model('Order_model');
 		$this->load->model('Appsetting_model');
 		$this->load->model('PaymentGateway_model');
+		$this->load->model('Promocode_model');
 	}
 
 	public function view()
@@ -139,6 +140,44 @@ class Cart extends WHMAZ_Controller
 
 				$grandTotal = $totalAmount + $vatAmount + $taxAmount;
 
+				// ─── Promo Code Handling ─────────────────────────
+				$promoDiscount = 0.0;
+				$promoCode = '';
+				$promoId = 0;
+				$appliedPromo = $this->session->userdata('applied_promo');
+
+				if (!empty($appliedPromo) && !empty($appliedPromo['code'])) {
+					// Re-validate to prevent stale session abuse
+					$cartProductIds = array();
+					foreach ($cartList as $r) {
+						if ($r['item_type'] == 2 && !empty($r['product_service_id'])) {
+							$cartProductIds[] = $r['product_service_id'];
+						}
+						if (!empty($r['children'])) {
+							foreach ($r['children'] as $ch) {
+								if ($ch['item_type'] == 2 && !empty($ch['product_service_id'])) {
+									$cartProductIds[] = $ch['product_service_id'];
+								}
+							}
+						}
+					}
+
+					$promoResult = $this->Promocode_model->validatePromoCode(
+						$appliedPromo['code'], $companyId, $grandTotal, getCurrencyId(), $cartProductIds
+					);
+
+					if ($promoResult['valid']) {
+						$promoDiscount = $promoResult['discount_amount'];
+						$promoCode = $promoResult['promo']['code'];
+						$promoId = $promoResult['promo']['id'];
+					}
+					// If invalid now, silently skip (no discount applied)
+				}
+
+				$grandTotal = $grandTotal - $promoDiscount;
+				if ($grandTotal < 0) $grandTotal = 0;
+				// ─── End Promo Code ──────────────────────────────
+
 				$order['order_uuid'] = gen_uuid();
 				$order['order_no'] = $this->Order_model->generateNumber('ORDER');
 				$order['company_id'] = $companyId;
@@ -148,9 +187,9 @@ class Cart extends WHMAZ_Controller
 				$order['amount'] = $totalAmount;
 				$order['vat_amount'] = $vatAmount;
 				$order['tax_amount'] = $taxAmount;
-				$order['coupon_code'] = $postData['promo_code'];
-				$order['coupon_amount'] = 0.0;
-				$order['discount_amount'] = 0.0;
+				$order['coupon_code'] = $promoCode;
+				$order['coupon_amount'] = $promoDiscount;
+				$order['discount_amount'] = $promoDiscount;
 				$order['total_amount'] = $grandTotal;
 				$order['payment_gateway_id'] = $postData['payment_gateway'];
 				$order['remarks'] = '';
@@ -169,6 +208,8 @@ class Cart extends WHMAZ_Controller
 				$invoice['sub_total'] = $totalAmount;
 				$invoice['tax'] = $taxAmount;
 				$invoice['vat'] = $vatAmount;
+				$invoice['discount'] = $promoDiscount;
+				$invoice['coupon_code'] = $promoCode;
 				$invoice['total'] = $grandTotal;
 				$invoice['order_date'] = getDateAddDay(0);
 				$invoice['due_date'] = getDateAddDay(0);
@@ -198,6 +239,13 @@ class Cart extends WHMAZ_Controller
 					}
 				}
 
+				// Record promo code usage
+				if ($promoId > 0 && $promoDiscount > 0) {
+					$this->Promocode_model->recordUsage($promoId, $companyId, $orderId, $promoDiscount);
+				}
+
+				// Clear promo session and cart
+				$this->session->unset_userdata('applied_promo');
 				$this->Cart_model->deleteAllCarts($userId, $sessionId);
 
 				// Send order confirmation emails to customer and admin
@@ -1217,6 +1265,83 @@ class Cart extends WHMAZ_Controller
 	{
 		$cartList = $this->Cart_model->getCartListWithChildren();
 		echo json_encode(buildSuccessResponse($cartList));
+	}
+
+	/**
+	 * Apply promo code to cart (AJAX)
+	 */
+	public function applyPromoCode()
+	{
+		$this->processRestCall();
+		$postData = $this->input->post();
+
+		$code = !empty($postData['promo_code']) ? trim($postData['promo_code']) : '';
+		$companyId = getCompanyId();
+		$currencyId = getCurrencyId();
+
+		// Calculate cart subtotal
+		$cartList = $this->Cart_model->getCartListWithChildren();
+		$cartSubTotal = 0;
+		$cartProductIds = array();
+
+		foreach ($cartList as $row) {
+			$cartSubTotal += floatval($row['total']);
+			if ($row['item_type'] == 2 && !empty($row['product_service_id'])) {
+				$cartProductIds[] = $row['product_service_id'];
+			}
+			if (!empty($row['children'])) {
+				foreach ($row['children'] as $child) {
+					$cartSubTotal += floatval($child['total']);
+					if ($child['item_type'] == 2 && !empty($child['product_service_id'])) {
+						$cartProductIds[] = $child['product_service_id'];
+					}
+				}
+			}
+		}
+
+		$result = $this->Promocode_model->validatePromoCode($code, $companyId, $cartSubTotal, $currencyId, $cartProductIds);
+
+		if ($result['valid']) {
+			// Store in session
+			$this->session->set_userdata('applied_promo', array(
+				'code' => $result['promo']['code'],
+				'promo_id' => $result['promo']['id'],
+				'discount_amount' => $result['discount_amount'],
+				'discount_type' => $result['promo']['discount_type'],
+				'discount_value' => $result['promo']['discount_value']
+			));
+
+			echo json_encode(array(
+				'code' => 200,
+				'msg' => $result['message'],
+				'data' => array(
+					'discount_amount' => $result['discount_amount'],
+					'promo_code' => $result['promo']['code']
+				)
+			));
+		} else {
+			// Clear any previously applied promo
+			$this->session->unset_userdata('applied_promo');
+
+			echo json_encode(array(
+				'code' => 400,
+				'msg' => $result['message'],
+				'data' => null
+			));
+		}
+	}
+
+	/**
+	 * Remove promo code from cart (AJAX)
+	 */
+	public function removePromoCode()
+	{
+		$this->session->unset_userdata('applied_promo');
+		echo json_encode(array(
+			'code' => 200,
+			'msg' => 'Promo code removed.',
+			'data' => null
+		));
 	}
 
 }
