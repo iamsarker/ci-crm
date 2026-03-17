@@ -55,9 +55,7 @@
 											<option value="">Select Platform</option>
 											<option value="STARGATE" <?= (!empty($detail['platform']) && $detail['platform'] == 'STARGATE') ? 'selected' : ''?>>STARGATE (ResellerClub/Resell.biz)</option>
 											<option value="NAMECHEAP" <?= (!empty($detail['platform']) && $detail['platform'] == 'NAMECHEAP') ? 'selected' : ''?>>NAMECHEAP</option>
-											<option value="GODADDY" <?= (!empty($detail['platform']) && $detail['platform'] == 'GODADDY') ? 'selected' : ''?>>GODADDY</option>
 											<option value="ENOM" <?= (!empty($detail['platform']) && $detail['platform'] == 'ENOM') ? 'selected' : ''?>>ENOM</option>
-											<option value="OTHER" <?= (!empty($detail['platform']) && $detail['platform'] == 'OTHER') ? 'selected' : ''?>>OTHER</option>
 										</select>
 										<?php echo form_error('platform', '<div class="error">', '</div>'); ?>
 									</div>

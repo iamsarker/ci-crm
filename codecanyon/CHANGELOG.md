@@ -101,21 +101,23 @@ This is the first stable release of WHMAZ, a comprehensive domain hosting manage
 - Server assignment
 - Pricing configuration with multiple billing cycles
 
-#### cPanel/WHM Integration
-- Dynamic cPanel package dropdown from WHM server
-- Auto-populate product description from cPanel package details
-- **Real-time cPanel Usage Sync:**
+#### Control Panel Integration (Multi-Module)
+- **Supported panels:** cPanel/WHM, Plesk, DirectAdmin
+- Module assigned per server — products inherit automatically
+- Dynamic package dropdown from server API (all panels)
+- Auto-populate product description from server package details
+- **Real-time Hosting Usage Sync:**
   - Disk space usage
   - Bandwidth usage
   - Email accounts
   - Databases
   - Addon domains
   - Subdomains
-- Single sign-on to cPanel and Webmail
+- Single sign-on to control panel and Webmail
 - Usage data persistence with sync timestamps
 
 #### Server Management
-- WHM server configuration
+- Server configuration with module assignment (cPanel, Plesk, DirectAdmin)
 - API credentials management
 - Server status monitoring
 
@@ -130,8 +132,8 @@ This is the first stable release of WHMAZ, a comprehensive domain hosting manage
 - Customer and contact creation at registrar
 
 #### Hosting Provisioning (After Payment)
-- Automatic cPanel account creation via WHM API
-- Welcome email with cPanel credentials
+- Automatic account creation via server module API (cPanel, Plesk, DirectAdmin)
+- Module-specific welcome email with credentials
 - Auto-unsuspend on renewal payment (if suspended)
 
 #### Provisioning Management
@@ -140,7 +142,7 @@ This is the first stable release of WHMAZ, a comprehensive domain hosting manage
 - Server-side DataTable with sorting and search
 - Log details modal with API response data
 - Retry failed provisioning items individually
-- Extensible for additional registrars
+- Extensible for additional control panels and registrars
 
 ---
 

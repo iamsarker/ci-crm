@@ -66,11 +66,11 @@
 		<div class="card table-card">
 			<div class="card-header d-flex justify-content-between align-items-center">
 				<div>
-					<h4 class="mb-1"><i class="fa fa-puzzle-piece me-2"></i>Service Modules</h4>
+					<h4 class="mb-1"><i class="fa fa-puzzle-piece me-2"></i>Server Modules</h4>
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" class="breadcrumb-transparent">
 							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
-							<li class="breadcrumb-item active">Service Modules</li>
+							<li class="breadcrumb-item active">Server Modules</li>
 						</ol>
 					</nav>
 				</div>

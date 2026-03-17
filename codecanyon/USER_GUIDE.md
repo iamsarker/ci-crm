@@ -534,16 +534,16 @@ A modal will appear asking for your domain information. Choose one of three opti
 ![Service Management](screenshots/service-details.png)
 *[Screenshot Placeholder: Service details page with actions]*
 
-### cPanel Usage Sync (Real-Time)
+### Hosting Usage Sync (Real-Time)
 
-For hosting services with cPanel, you can sync real-time usage statistics from your cPanel account.
+For hosting services with a control panel (cPanel, Plesk, or DirectAdmin), you can sync real-time usage statistics from your hosting account.
 
 **Viewing Service Details:**
 1. Go to "Services" → "My Services"
 2. Click on a hosting service to view details
 3. The **Package / Usage** card shows your resource usage
 
-**Syncing cPanel Usage:**
+**Syncing Usage:**
 1. In the Service Detail page, find the "Package / Usage" card
 2. Click the **sync button** (rotating arrow icon) in the card header
 3. Wait for the sync to complete (button will spin while syncing)
@@ -561,9 +561,9 @@ For hosting services with cPanel, you can sync real-time usage statistics from y
 - "Last synced" timestamp shows when data was last updated
 
 **Note:** The sync button requires:
-- An active cPanel account linked to the service
-- Server connection configured by administrator
-- cPanel username set in the service configuration
+- An active hosting account linked to the service
+- Server connection and module configured by administrator
+- Username set in the service configuration
 
 ---
 
@@ -1423,7 +1423,7 @@ The Order Management page allows administrators to view and modify existing orde
 3. **Hosting Items**
    - List of all hosting services in the order
    - Package name, server, billing cycle
-   - Hosting domain and cPanel username
+   - Hosting domain and control panel username
    - Status badge (Active, Pending, Suspended, etc.)
 
 **Domain Actions:**
@@ -1449,7 +1449,7 @@ The Order Management page allows administrators to view and modify existing orde
   1. Click "Change Package" on a service
   2. Select new package from dropdown
   3. Select billing cycle/pricing
-  4. Check "Apply package change on cPanel" to update cPanel server
+  4. Check "Apply package change on server" to update the control panel
   5. Click "Save Changes"
 
 - **Change Server:**
@@ -1464,7 +1464,7 @@ The Order Management page allows administrators to view and modify existing orde
   2. Choose cancellation type:
      - **Immediate:** Terminate now (status = Terminated)
      - **End of Period:** Schedule termination at expiry date
-  3. Check "Delete cPanel account" for immediate deletion
+  3. Check "Delete server account" for immediate deletion
   4. Enter cancellation reason (optional)
   5. Click "Cancel Service"
 
@@ -1619,8 +1619,8 @@ The Order Management page allows administrators to view and modify existing orde
    - Product name
    - Service group
    - Service type (Shared Hosting, Reseller Hosting, VPS, etc.)
-   - Module (cPanel, etc.)
-   - cPanel package (if applicable)
+   - Module (cPanel, Plesk, DirectAdmin)
+   - Server package (if applicable)
    - Hidden/Active status
    - Last updated date
    - Actions (Manage, Delete)
@@ -1632,15 +1632,14 @@ The Order Management page allows administrators to view and modify existing orde
 
 2. **Basic Information**
    - **Product Name:** Display name (e.g., "Basic Shared Hosting")
-   - **Service Group:** Select from configured service groups
-   - **Service Type:** Select type (Shared Hosting, Reseller Hosting, VPS, Dedicated, etc.)
-   - **Module:** Select provisioning module (cPanel, etc.)
-   - **Server:** Select which server hosts this product
+   - **Service Group:** Select from configured service groups (type is derived from group)
+   - **Module:** Select provisioning module (cPanel, Plesk, DirectAdmin) — filters available servers
+   - **Server:** Select which server hosts this product (filtered by selected module)
    - **Hidden:** Check to hide product from client area
 
-3. **cPanel Package Selection** (Shared Hosting / Reseller Hosting with cPanel module only)
-   - When service type is **Shared Hosting** or **Reseller Hosting** and module is **cPanel**, a dynamic dropdown appears
-   - Select the server first, then available cPanel packages are loaded automatically from the WHM server
+3. **Server Package Selection** (when module is cPanel, Plesk, or DirectAdmin)
+   - After selecting a module and server, a dynamic dropdown loads available packages from the server API
+   - Works with all supported control panels (cPanel/WHM, Plesk, DirectAdmin)
    - Selecting a package auto-fills the **Product Description** with package details:
      - Disk Space
      - Bandwidth
@@ -1654,7 +1653,7 @@ The Order Management page allows administrators to view and modify existing orde
 
 4. **Product Description**
    - Rich text description of the product
-   - Auto-populated from cPanel package details (editable)
+   - Auto-populated from server package details (editable)
    - Displayed to customers when ordering
 
 5. **Save Product**
@@ -1670,7 +1669,7 @@ The Order Management page allows administrators to view and modify existing orde
 2. **Modify Details**
    - Update any field
    - Change service group, type, or module
-   - Re-select cPanel package if needed
+   - Re-select server package if needed
    - Toggle hidden status
 
 3. **Save Changes**

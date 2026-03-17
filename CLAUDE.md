@@ -260,8 +260,8 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 | Domain Registration | Register domain at registrar | Default Registrar API |
 | Domain Transfer | Initiate transfer with EPP code | Default Registrar API |
 | Domain Renewal | Renew domain, update expiry | Default Registrar API |
-| New Hosting | Create cPanel account | WHM API |
-| Hosting Renewal | Unsuspend if suspended, update dates | WHM API (if suspended) |
+| New Hosting | Create hosting account | Server module API (cPanel/Plesk/DirectAdmin) |
+| Hosting Renewal | Unsuspend if suspended, update dates | Server module API (if suspended) |
 
 **Supported Domain Registrars:**
 | Registrar | Platform Value | Status |
@@ -270,10 +270,22 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 | Resell.biz | `resellbiz` | ✅ Working |
 | Namecheap | `namecheap` | ✅ Working |
 
+**Supported Server Modules (Control Panels):**
+| Module | Helper File | API Type | Status |
+|--------|------------|----------|--------|
+| cPanel/WHM | `cpanel_helper.php` | JSON REST (port 2087) | ✅ Working |
+| Plesk | `plesk_helper.php` | XML RPC (port 8443) | ✅ Working |
+| DirectAdmin | `directadmin_helper.php` | REST/JSON (port 2222) | ✅ Working |
+| No Module | — | No API call, just activates | ✅ Working |
+
+**Module is assigned per server** (`servers.product_service_module_id`). Products inherit the module from their server.
+
 **Key Files:**
-- `src/models/Provisioning_model.php` - Main provisioning logic
+- `src/models/Provisioning_model.php` - Main provisioning logic (dispatches by server module)
 - `src/helpers/domain_helper.php` - Domain registrar API functions (ResellerClub, Namecheap)
 - `src/helpers/cpanel_helper.php` - cPanel/WHM API functions
+- `src/helpers/plesk_helper.php` - Plesk XML API functions
+- `src/helpers/directadmin_helper.php` - DirectAdmin API functions
 
 **Admin Provisioning Logs:**
 - **URL**: `whmazadmin/provisioning/index`
@@ -308,7 +320,7 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 4. Determines type: domain (`item_type=1`) or service (`item_type=2`)
 5. For domains: checks `order_type` (1=register, 2=transfer, 3=dns_only) and if renewal
 6. For services: checks if new (create account) or renewal (unsuspend if suspended)
-7. Calls appropriate API (registrar or WHM)
+7. Calls appropriate API (registrar or server module: cPanel/Plesk/DirectAdmin)
 8. Updates order status, logs result to `provisioning_logs`
 
 **Adding New Registrar Support:**
@@ -338,10 +350,10 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 | Domain Items | List of domains with registrar, dates, status |
 | Service Items | List of hosting services with package, server, dates |
 | Change Registrar | Switch domain to different registrar (triggers transfer if active) |
-| Change Package | Change hosting package with optional cPanel upgrade |
+| Change Package | Change hosting package with optional server panel upgrade |
 | Change Server | Move to different server with optional migration |
 | Cancel Domain | Immediate or end-of-period cancellation |
-| Cancel Service | Immediate or end-of-period with optional cPanel deletion |
+| Cancel Service | Immediate or end-of-period with optional server account deletion |
 | Cancel Order | Cancel entire order + unpaid invoices |
 
 **Order Status Values:**

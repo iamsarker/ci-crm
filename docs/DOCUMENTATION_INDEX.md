@@ -293,13 +293,13 @@ CI-CRM is a complete business management system designed for hosting and service
 ### Previous Updates (v1.4 - 2026-01-27)
 - Added Service Product CRUD (controller: `Service_product`, model: `Serviceproduct_model`, views: `service_product_list`, `service_product_manage`)
 - Added server-side DataTable pagination for service product list via `product_service_view` database view
-- Added cPanel/WHM integration: dynamic cPanel package dropdown based on server selection (for SHARED_HOSTING/RESELLER_HOSTING with cpanel module)
-- Added `cpanel_helper.php` with `whm_list_packages()` function for WHM API integration
-- Auto-populate product description from cPanel package details (disk space, bandwidth, addon domains, etc.)
+- Added multi-panel integration: dynamic package dropdown based on server selection (supports cPanel/WHM, Plesk, DirectAdmin)
+- Added `cpanel_helper.php`, `plesk_helper.php`, `directadmin_helper.php` for server control panel APIs
+- Auto-populate product description from server package details (disk space, bandwidth, addon domains, etc.)
 - Fixed Cart.php bug: `company_id` was incorrectly set to `$userId` instead of `$companyId` in order services
 - Fixed SSP helper: numeric column search now uses exact match (`=`) instead of `LIKE` to prevent false matches (e.g., searching for "2" no longer matches "12")
 - Updated `product_service_view` DB view to include `cp_package`, `updated_on`, `servce_type_name` columns with LEFT JOIN for servers
-- Added `cpanel` helper to autoload configuration
+- Added `cpanel`, `plesk`, `directadmin` helpers to autoload configuration
 
 ### Previous Updates (v1.3 - 2026-01-25)
 - Fixed SQL injection in 6 additional models (Server, Servicecategory, Servicegroup, Servicemodule, Ticketdepartment, Support)

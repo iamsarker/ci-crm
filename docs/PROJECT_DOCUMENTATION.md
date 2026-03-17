@@ -85,7 +85,7 @@ src/controllers/whmazadmin/
 ├── Service_category.php      # Service categories
 ├── Service_group.php         # Service groups
 ├── Service_module.php        # Service modules
-├── Service_product.php       # Service product management (with cPanel integration)
+├── Service_product.php       # Service product management (multi-panel: cPanel, Plesk, DirectAdmin)
 ├── Email_template.php        # Email template management (dunning, invoice, order, auth, etc.)
 ├── Domain_pricing.php        # Domain pricing
 ├── Order.php                 # Order management
@@ -324,23 +324,23 @@ The Client Portal is built using HMVC modules and provides customer-facing funct
 - Domain banner with hostname, product name, and status badge
 - Sidebar with Server DNS card and quick actions
 - Order details card with icons (registration date, expiry, renewal amount, billing cycle)
-- **Package/Usage card with real-time cPanel sync:**
+- **Package/Usage card with real-time hosting sync (cPanel, Plesk, DirectAdmin):**
   - Disk space usage with progress bar
   - Bandwidth usage with progress bar
   - Email accounts count
   - Databases count
   - Addon domains count
-  - Sync button to fetch live data from cPanel
+  - Sync button to fetch live data from server control panel
   - Last sync timestamp display
 - Conditional description and instructions cards
-- cPanel Single Sign-On button
+- Control Panel Single Sign-On button
 - Webmail Single Sign-On button
 
-**cPanel Sync API Endpoint:**
+**Hosting Sync API Endpoint:**
 - URL: `/clientarea/sync_cpanel_usage` (POST)
 - Parameters: `service_id`
 - Returns: JSON with success status and usage stats
-- Uses `whm_get_account_stats()` from cpanel_helper
+- Dispatches to appropriate helper based on server module (`whm_get_account_stats()`, `plesk_get_account_stats()`, or `da_get_account_stats()`)
 - Saves stats to `order_services` table for persistence
 
 ### 6. Support Ticket System (Client Side)
@@ -586,8 +586,10 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 - Server-side DataTable pagination via `product_service_view`
 - Service group, service type, and module assignment
 - Server assignment for hosting products
-- **Dynamic cPanel package dropdown** - When service type is `SHARED_HOSTING` or `RESELLER_HOSTING` and module is `cpanel`, the form loads available cPanel packages from the selected server via WHM API
-- Auto-populate product description from cPanel package details (disk space, bandwidth, addon domains, etc.)
+- **Dynamic server package dropdown** - Module is selected first, which filters available servers. When a server is selected, packages are loaded from the server's control panel API (cPanel/WHM, Plesk, or DirectAdmin)
+- Auto-populate product description from server package details (disk space, bandwidth, addon domains, etc.)
+- Service type is auto-derived from the selected service group
+- Module is auto-derived from the selected server's `product_service_module_id`
 - Hidden/visible toggle for products
 - Soft delete support
 
@@ -597,7 +599,7 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 - `/whmazadmin/service_product/manage/{encoded_id}` - Edit product
 - `/whmazadmin/service_product/delete_records/{encoded_id}` - Soft delete
 - `/whmazadmin/service_product/ssp_list_api` - Server-side DataTables API
-- `/whmazadmin/service_product/get_server_packages/{server_id}` - AJAX endpoint for cPanel packages
+- `/whmazadmin/service_product/get_server_packages/{server_id}` - AJAX endpoint for server packages (dispatches to cPanel/Plesk/DirectAdmin based on server module)
 
 #### 4.6 Email Template Management
 **Controller:** `whmazadmin/Email_template.php`
@@ -806,13 +808,22 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 | Domain Registration | Register domain at registrar | ResellerClub/Resell.biz API |
 | Domain Transfer | Initiate transfer with EPP code | ResellerClub/Resell.biz API |
 | Domain Renewal | Renew domain, update expiry | ResellerClub/Resell.biz API |
-| New Hosting | Create cPanel account | WHM API |
-| Hosting Renewal | Unsuspend if suspended, update dates | WHM API (if suspended) |
+| New Hosting | Create hosting account | Server module API (cPanel/Plesk/DirectAdmin) |
+| Hosting Renewal | Unsuspend if suspended, update dates | Server module API (if suspended) |
+
+**Supported Server Modules:**
+| Module | Helper File | API Type |
+|--------|------------|----------|
+| cPanel/WHM | `cpanel_helper.php` | JSON REST (port 2087) |
+| Plesk | `plesk_helper.php` | XML RPC (port 8443) |
+| DirectAdmin | `directadmin_helper.php` | REST/JSON (port 2222) |
 
 **Key Files:**
-- `src/models/Provisioning_model.php` - Main provisioning logic
+- `src/models/Provisioning_model.php` - Main provisioning logic (dispatches by server module)
 - `src/helpers/domain_helper.php` - Domain registrar API functions
 - `src/helpers/cpanel_helper.php` - cPanel/WHM API functions
+- `src/helpers/plesk_helper.php` - Plesk XML API functions
+- `src/helpers/directadmin_helper.php` - DirectAdmin API functions
 
 **Admin Provisioning Logs:**
 - **URL**: `whmazadmin/provisioning/index`
@@ -1571,11 +1582,11 @@ src/modules/*/views/
 | `product_service_id` | INT(11) | Foreign key to `product_services` table |
 | `product_service_pricing_id` | INT(11) | Foreign key to `product_service_pricing` table |
 | `product_service_type_key` | VARCHAR(150) | Service type identifier key (e.g., 'SHARED_HOSTING', 'RESELLER_HOSTING') |
-| `cp_username` | VARCHAR(50) | cPanel username for hosting accounts (used for SSO) |
-| `cp_disk_used` | DECIMAL(10,2) | cPanel disk usage in MB |
-| `cp_disk_limit` | DECIMAL(10,2) | cPanel disk limit in MB (0=unlimited) |
-| `cp_bandwidth_used` | DECIMAL(10,2) | cPanel bandwidth usage in MB |
-| `cp_bandwidth_limit` | DECIMAL(10,2) | cPanel bandwidth limit in MB (0=unlimited) |
+| `cp_username` | VARCHAR(50) | Control panel username for hosting accounts (cPanel/Plesk/DirectAdmin, used for SSO) |
+| `cp_disk_used` | DECIMAL(10,2) | Disk usage in MB (synced from server panel) |
+| `cp_disk_limit` | DECIMAL(10,2) | Disk limit in MB (0=unlimited) |
+| `cp_bandwidth_used` | DECIMAL(10,2) | Bandwidth usage in MB (synced from server panel) |
+| `cp_bandwidth_limit` | DECIMAL(10,2) | Bandwidth limit in MB (0=unlimited) |
 | `cp_email_accounts` | INT | Number of email accounts |
 | `cp_email_limit` | INT | Email account limit (0=unlimited) |
 | `cp_databases` | INT | Number of MySQL databases |
@@ -1584,7 +1595,7 @@ src/modules/*/views/
 | `cp_addon_limit` | INT | Addon domain limit (0=unlimited) |
 | `cp_subdomains` | INT | Number of subdomains |
 | `cp_subdomain_limit` | INT | Subdomain limit (0=unlimited) |
-| `cp_last_sync` | DATETIME | Last cPanel sync timestamp |
+| `cp_last_sync` | DATETIME | Last server panel sync timestamp |
 | `billing_cycle_id` | INT(11) | Foreign key to `billing_cycle` table |
 | `description` | TEXT | Service description |
 | `first_pay_amount` | DOUBLE | Initial payment amount |
@@ -1746,42 +1757,46 @@ DataTables server-side processing for large datasets
 
 ### Custom Helpers
 
-#### cpanel_helper.php (cPanel/WHM API Integration)
+#### Server Control Panel Helpers (Multi-Module)
 
-**Functions:**
-- `whm_api_call($serverInfo, $function, $params)` - Make WHM API calls to remote servers
-- `whm_cpanel_api2_call($serverInfo, $cpanelUser, $module, $function, $params)` - Call cPanel API2 functions via WHM
-- `whm_list_packages($serverInfo)` - List all hosting packages from a WHM server
-- `whm_get_account_stats($serverInfo, $username)` - Get cPanel account usage statistics (disk, bandwidth, emails, databases, addon domains, subdomains)
-- `whm_get_account_info($serverInfo, $username)` - Get cPanel account summary
-- `whm_create_account($serverInfo, $domain, $username, $password, $plan, $email)` - Create cPanel account
-- `whm_suspend_account($serverInfo, $username, $reason)` - Suspend cPanel account
-- `whm_unsuspend_account($serverInfo, $username)` - Unsuspend cPanel account
-- `whm_terminate_account($serverInfo, $username, $keepDns)` - Remove cPanel account
-- `whm_change_password($serverInfo, $username, $newPassword)` - Change cPanel password
-- `generate_cpanel_username($domain, $serverInfo)` - Generate valid cPanel username from domain
+All three helpers share the same function signature pattern for consistent provisioning dispatch:
 
-**Usage - List Packages:**
+| Function | cPanel (`cpanel_helper.php`) | Plesk (`plesk_helper.php`) | DirectAdmin (`directadmin_helper.php`) |
+|----------|-----|------|-------------|
+| Core API call | `whm_api_call()` | `plesk_api_call()` | `da_api_call()` |
+| Create account | `whm_create_account()` | `plesk_create_account()` | `da_create_account()` |
+| Suspend | `whm_suspend_account()` | `plesk_suspend_account()` | `da_suspend_account()` |
+| Unsuspend | `whm_unsuspend_account()` | `plesk_unsuspend_account()` | `da_unsuspend_account()` |
+| Terminate | `whm_terminate_account()` | `plesk_terminate_account()` | `da_terminate_account()` |
+| Account info | `whm_get_account_info()` | `plesk_get_account_info()` | `da_get_account_info()` |
+| Change password | `whm_change_password()` | `plesk_change_password()` | `da_change_password()` |
+| Modify plan | `whm_modify_account()` | `plesk_modify_account()` | `da_modify_account()` |
+| List packages | `whm_list_packages()` | `plesk_list_packages()` | `da_list_packages()` |
+| List accounts | `whm_list_accounts()` | `plesk_list_accounts()` | `da_list_accounts()` |
+| Usage stats | `whm_get_account_stats()` | `plesk_get_account_stats()` | `da_get_account_stats()` |
+| Generate username | `generate_cpanel_username()` | `generate_plesk_username()` | `generate_da_username()` |
+| Welcome email | `send_cpanel_welcome_email()` | `send_plesk_welcome_email()` | `send_da_welcome_email()` |
+
+**Module is assigned per server** (`servers.product_service_module_id` → `product_service_modules`). The provisioning system reads `module_name` from the server and dispatches to the correct helper.
+
+**API Details:**
+- **cPanel/WHM**: JSON REST API on port 2087, WHM token auth
+- **Plesk**: XML RPC API on port 8443, HTTP Basic auth
+- **DirectAdmin**: REST API on port 2222, HTTP Basic auth
+
+**Usage - List Packages (dispatched by module):**
 ```php
-$this->load->helper('cpanel');
 $serverInfo = $this->Server_model->getDetail($serverId);
-$result = whm_list_packages($serverInfo);
-// Returns: array('success' => true, 'packages' => array(...))
-```
+$moduleName = strtolower($serverInfo['module_name']);
 
-**Usage - Get Account Stats (Real-time Sync):**
-```php
-$this->load->helper('cpanel');
-$serverInfo = $this->Common_model->getServerInfoByOrderServiceId($serviceId, $companyId);
-$result = whm_get_account_stats($serverInfo, $cpanelUsername);
-// Returns: array('success' => true, 'stats' => array(
-//   'disk_used', 'disk_limit', 'disk_percent',
-//   'bandwidth_used', 'bandwidth_limit', 'bandwidth_percent',
-//   'email_accounts', 'email_limit', 'email_percent',
-//   'databases', 'database_limit', 'database_percent',
-//   'addon_domains', 'addon_limit', 'addon_percent',
-//   'subdomains', 'subdomain_limit', 'last_sync'
-// ))
+if ($moduleName === 'cpanel') {
+    $result = whm_list_packages($serverInfo);
+} elseif ($moduleName === 'plesk') {
+    $result = plesk_list_packages($serverInfo);
+} elseif ($moduleName === 'directadmin') {
+    $result = da_list_packages($serverInfo);
+}
+// All return: array('success' => true, 'packages' => array(...))
 ```
 
 #### whmaz_helper.php (50+ functions)
@@ -1964,7 +1979,7 @@ $autoload['libraries'] = array(
 
 **Helpers:**
 ```php
-$autoload['helper'] = array('url', 'file', 'whmaz', 'ssp', 'cpanel');
+$autoload['helper'] = array('url', 'file', 'whmaz', 'ssp', 'cpanel', 'plesk', 'directadmin');
 ```
 
 ### Email Configuration

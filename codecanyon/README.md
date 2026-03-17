@@ -60,7 +60,7 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 - Domain registration, transfer, and renewal
 - **Auto-provisioning after payment:**
   - Domain registration/transfer/renewal via registrar API
-  - Hosting account creation via cPanel/WHM API
+  - Hosting account creation via server control panel API (cPanel, Plesk, DirectAdmin)
   - Automatic unsuspend on renewal payment
 - Automated order processing
 
@@ -143,8 +143,8 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 - Service categories and groups
 - Server management
 - Product/Service modules
-- **Service product management with cPanel/WHM integration**
-- **Real-time cPanel usage sync** (disk, bandwidth, emails, databases, addon domains)
+- **Service product management with multi-panel integration** (cPanel, Plesk, DirectAdmin)
+- **Real-time hosting usage sync** (disk, bandwidth, emails, databases, addon domains)
 - Domain extension pricing
 - **Email template management** (database-driven with Quill editor, categories, placeholders)
 - **Dunning rules management** (automated overdue payment collection workflow)
@@ -686,12 +686,12 @@ A: Single license = Single domain. Extended license available for multiple domai
 **Q: Does it work with Nginx?**
 A: Yes! Sample Nginx configuration available in documentation.
 
-**Q: Can I integrate with cPanel/WHM?**
-A: Yes! cPanel/WHM integration is built-in. Features include:
-- List hosting packages from WHM servers via API
-- Link service products to cPanel packages with auto-populated descriptions
-- **Real-time usage sync** - Customers can sync disk, bandwidth, emails, databases, addon domains from cPanel
-- Single sign-on to cPanel and Webmail
+**Q: Which control panels are supported?**
+A: WHMAZ supports multiple server control panels out of the box:
+- **cPanel/WHM** - Full integration via WHM JSON API
+- **Plesk** - Full integration via Plesk XML RPC API
+- **DirectAdmin** - Full integration via DirectAdmin REST API
+- Features include: list packages from server, auto-provisioning, suspend/unsuspend/terminate, real-time usage sync, and welcome emails
 
 ### Licensing & Usage
 
@@ -723,8 +723,8 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
   - Domain registration via registrar API
   - Domain transfer with EPP code
   - Domain renewal
-- Automatic hosting provisioning:
-  - cPanel account creation via WHM API
+- Automatic hosting provisioning (module-aware):
+  - Account creation via cPanel/WHM, Plesk, or DirectAdmin API
   - Auto-unsuspend on renewal if suspended
 - Provisioning logs for tracking and retry
 - Multiple registrar support:
@@ -751,8 +751,8 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
 - Ticket conversation thread with message bubbles
 - Domain detail page with nameserver management and contact sync
 - Change Password and Email Verification
-- Real-time cPanel usage sync (disk, bandwidth, emails, databases)
-- Single sign-on to cPanel and Webmail
+- Real-time hosting usage sync (disk, bandwidth, emails, databases)
+- Single sign-on to control panel and Webmail
 - Responsive design with mobile-friendly layouts
 
 **Support System:**
@@ -771,11 +771,12 @@ A: Please review carefully before purchase. Refund policy per CodeCanyon terms.
 - Recent activity feeds
 - Revenue tracking and order statistics
 
-**Service Products & cPanel Integration:**
+**Service Products & Control Panel Integration:**
 - Service product management with full CRUD
-- cPanel/WHM integration: dynamic package dropdown
-- Auto-populate product descriptions from cPanel
-- Server management
+- Multi-panel support: cPanel/WHM, Plesk, DirectAdmin
+- Dynamic package dropdown from server API
+- Auto-populate product descriptions from server packages
+- Module assigned per server, products inherit automatically
 
 **Security:**
 - CSRF protection
