@@ -298,10 +298,16 @@ function resellerclub_renew_domain($registrar, $domain, $years, $currentExpDate,
         'order-id' => $orderId,
         'years' => $years,
         'exp-date' => $currentExpDate,
-        'invoice-option' => 'NoInvoice'
+        'auto-renew' => 'false',
+        'invoice-option' => 'NoInvoice',
+        'discount-amount' => '0.0'
     );
 
+    log_message('info', 'ResellerClub renew domain API call - domain: ' . $domain . ', order-id: ' . $orderId . ', years: ' . $years . ', exp-date: ' . $currentExpDate);
+
     $response = domain_api_post($apiUrl, $params);
+
+    log_message('info', 'ResellerClub renew domain API response: ' . json_encode($response));
 
     if ($response['success'] && isset($response['data']['actionstatus'])) {
         $newExpiry = date('Y-m-d', strtotime("+{$years} years", $currentExpDate));
@@ -317,7 +323,14 @@ function resellerclub_renew_domain($registrar, $domain, $years, $currentExpDate,
             $errorMsg = $response['data']['message'];
         } elseif (isset($response['data']['error'])) {
             $errorMsg = $response['data']['error'];
+        } elseif (isset($response['data']['status']) && $response['data']['status'] === 'ERROR') {
+            $errorMsg = $response['data']['message'] ?? $response['data']['error'] ?? json_encode($response['data']);
+        } elseif (is_string($response['data'])) {
+            $errorMsg = $response['data'];
+        } elseif (empty($response['data']) && !empty($response['error'])) {
+            $errorMsg = $response['error']; // e.g. "HTTP 403"
         }
+        log_message('error', 'ResellerClub renew failed for ' . $domain . ': ' . $errorMsg . ' | Full response: ' . json_encode($response));
         return array('success' => false, 'new_expiry' => null, 'error' => $errorMsg);
     }
 }
@@ -602,6 +615,169 @@ function registrar_renew_domain($registrar, $domain, $years, $currentExpDate, $o
             log_message('error', 'Unsupported registrar platform: ' . $platform);
             return array('success' => false, 'error' => 'Unsupported registrar platform: ' . $platform);
     }
+}
+
+/**
+ * Get domain expiry date from registrar API
+ * Used to check if domain was already renewed manually at registrar
+ *
+ * @param array $registrar Registrar config
+ * @param string $domain Domain name (e.g. example.com)
+ * @param string $orderId Domain order ID at registrar
+ * @return array|null Array with 'date' (Y-m-d) and 'timestamp' (Unix), or null if unable to fetch
+ */
+function registrar_get_domain_expiry($registrar, $domain, $orderId)
+{
+    $platform = strtolower($registrar['platform'] ?? 'resellerclub');
+
+    switch ($platform) {
+        case 'resellerclub':
+        case 'resellbiz':
+        case 'resell.biz':
+        case 'stargate':
+            return resellerclub_get_domain_expiry($registrar, $orderId);
+
+        case 'namecheap':
+            return namecheap_get_domain_expiry($registrar, $domain);
+
+        default:
+            log_message('error', 'registrar_get_domain_expiry: Unsupported platform: ' . $platform);
+            return null;
+    }
+}
+
+/**
+ * Get domain expiry from ResellerClub/Resell.biz API
+ *
+ * @param array $registrar Registrar config
+ * @param string $orderId Domain order ID
+ * @return array|null Array with 'date' (Y-m-d) and 'timestamp' (Unix), or null
+ */
+function resellerclub_get_domain_expiry($registrar, $orderId)
+{
+    $apiUrl = rtrim($registrar['api_base_url'], '/') . '/api/domains/details.json';
+
+    $params = array(
+        'auth-userid' => $registrar['auth_userid'],
+        'api-key' => $registrar['auth_apikey'],
+        'order-id' => $orderId,
+        'options' => 'OrderDetails'
+    );
+
+    $url = $apiUrl . '?' . http_build_query($params);
+    $response = domain_api_get($url);
+
+    if ($response['success'] && !empty($response['data'])) {
+        $data = $response['data'];
+        // ResellerClub returns endtime as Unix timestamp
+        if (!empty($data['endtime'])) {
+            $rawTimestamp = intval($data['endtime']);
+            $expiry = date('Y-m-d', $rawTimestamp);
+            log_message('info', 'ResellerClub domain expiry for order #' . $orderId . ': ' . $expiry . ' (timestamp: ' . $rawTimestamp . ')');
+            return array('date' => $expiry, 'timestamp' => $rawTimestamp);
+        }
+    }
+
+    log_message('error', 'Failed to fetch domain expiry from ResellerClub for order #' . $orderId . ': ' . json_encode($response));
+    return null;
+}
+
+/**
+ * Get domain expiry from Namecheap API
+ *
+ * @param array $registrar Registrar config
+ * @param string $domain Domain name (e.g. example.com)
+ * @return array|null Array with 'date' (Y-m-d) and 'timestamp' (Unix), or null
+ */
+function namecheap_get_domain_expiry($registrar, $domain)
+{
+    $parts = explode('.', $domain, 2);
+    if (count($parts) < 2) {
+        return null;
+    }
+
+    $params = array(
+        'DomainName' => $domain
+    );
+
+    $response = namecheap_api_request($registrar, 'namecheap.domains.getInfo', $params);
+
+    if ($response['success'] && !empty($response['data'])) {
+        $data = $response['data'];
+        // Namecheap returns DomainGetInfoResult with DomainDetails.ExpiredDate
+        if (isset($data['CommandResponse']['DomainGetInfoResult']['DomainDetails']['ExpiredDate'])) {
+            $expDateStr = $data['CommandResponse']['DomainGetInfoResult']['DomainDetails']['ExpiredDate'];
+            $rawTimestamp = strtotime($expDateStr);
+            $expiry = date('Y-m-d', $rawTimestamp);
+            log_message('info', 'Namecheap domain expiry for ' . $domain . ': ' . $expiry . ' (timestamp: ' . $rawTimestamp . ')');
+            return array('date' => $expiry, 'timestamp' => $rawTimestamp);
+        }
+    }
+
+    log_message('error', 'Failed to fetch domain expiry from Namecheap for ' . $domain . ': ' . json_encode($response));
+    return null;
+}
+
+/**
+ * Get domain order ID from registrar by domain name
+ * Used to fetch missing domain_order_id for renewal
+ *
+ * @param array $registrar Registrar config
+ * @param string $domain Domain name (e.g. example.com)
+ * @return string|null Order ID or null if not found
+ */
+function registrar_get_domain_orderid($registrar, $domain)
+{
+    $platform = strtolower($registrar['platform'] ?? 'resellerclub');
+
+    switch ($platform) {
+        case 'resellerclub':
+        case 'resellbiz':
+        case 'resell.biz':
+        case 'stargate':
+            return resellerclub_get_domain_orderid($registrar, $domain);
+
+        case 'namecheap':
+            // Namecheap doesn't use order IDs the same way
+            return null;
+
+        default:
+            return null;
+    }
+}
+
+/**
+ * Fetch domain order ID from ResellerClub/Resell.biz API
+ *
+ * @param array $registrar Registrar config
+ * @param string $domain Domain name
+ * @return string|null Order ID or null
+ */
+function resellerclub_get_domain_orderid($registrar, $domain)
+{
+    $apiUrl = rtrim($registrar['api_base_url'], '/') . '/api/domains/orderid.json';
+
+    $parts = explode('.', $domain, 2);
+    if (count($parts) < 2) {
+        return null;
+    }
+
+    $params = array(
+        'auth-userid' => $registrar['auth_userid'],
+        'api-key' => $registrar['auth_apikey'],
+        'domain-name' => $parts[0],
+        'tld' => $parts[1]
+    );
+
+    $url = $apiUrl . '?' . http_build_query($params);
+    $response = domain_api_get($url);
+
+    if ($response['success'] && !empty($response['data']) && is_numeric($response['data'])) {
+        return $response['data'];
+    }
+
+    log_message('error', 'Failed to fetch domain_order_id for ' . $domain . ': ' . json_encode($response));
+    return null;
 }
 
 /**

@@ -122,6 +122,7 @@ class Cronjobs extends WHMAZ_Controller
 			echo "\nRenewal Invoices:\n";
 			echo "  Services processed: {$renewalResult['services_processed']}\n";
 			echo "  Domains processed: {$renewalResult['domains_processed']}\n";
+			echo "  Combined (domain+service): {$renewalResult['combined_processed']}\n";
 			echo "  Invoices created: {$renewalResult['invoices_created']}\n";
 			echo "  Emails sent: {$renewalResult['emails_sent']}\n";
 			if (!empty($renewalResult['errors'])) {
@@ -147,6 +148,7 @@ class Cronjobs extends WHMAZ_Controller
 		$result = array(
 			'services_processed' => 0,
 			'domains_processed' => 0,
+			'combined_processed' => 0,
 			'invoices_created' => 0,
 			'emails_sent' => 0,
 			'errors' => array()
@@ -155,10 +157,86 @@ class Cronjobs extends WHMAZ_Controller
 		// Get app settings for email
 		$appSettings = $this->Cronjob_model->getAppSettings();
 
-		// ========== PROCESS EXPIRING SERVICES ==========
+		// Track service IDs that were combined with a domain invoice
+		$combinedServiceIds = array();
+
+		// ========== PROCESS EXPIRING DOMAINS (first, to detect linked services) ==========
+		$expiringDomains = $this->Cronjob_model->getExpiringDomains(self::RENEWAL_DAYS_BEFORE);
+
+		foreach ($expiringDomains as $domain) {
+			$result['domains_processed']++;
+
+			// Check if domain has a linked service with the same renewal date
+			$linkedService = null;
+			if (!empty($domain['linked_service_id'])) {
+				$linkedService = $this->Cronjob_model->getLinkedExpiringService(
+					$domain['linked_service_id'],
+					$domain['next_renewal_date']
+				);
+			}
+
+			if ($linkedService) {
+				// Create combined invoice (domain + service)
+				$invoiceResult = $this->Cronjob_model->createCombinedRenewalInvoice($domain, $linkedService);
+
+				if ($invoiceResult['success']) {
+					$result['combined_processed']++;
+					$result['invoices_created']++;
+					$combinedServiceIds[] = $linkedService['id'];
+
+					// Send email notification (combined)
+					$emailSent = $this->sendRenewalInvoiceEmail(
+						$domain,
+						$invoiceResult['invoice'],
+						'combined',
+						$appSettings,
+						$linkedService
+					);
+
+					if ($emailSent) {
+						$result['emails_sent']++;
+					}
+
+					log_message('info', "Combined renewal invoice #{$invoiceResult['invoice']['invoice_no']} created for domain #{$domain['id']} ({$domain['domain']}) + service #{$linkedService['id']}");
+				} else {
+					$result['errors'][] = "Combined domain #{$domain['id']} + service #{$linkedService['id']}: {$invoiceResult['error']}";
+					log_message('error', "Failed to create combined renewal invoice for domain #{$domain['id']}: {$invoiceResult['error']}");
+				}
+			} else {
+				// Create domain-only invoice
+				$invoiceResult = $this->Cronjob_model->createDomainRenewalInvoice($domain);
+
+				if ($invoiceResult['success']) {
+					$result['invoices_created']++;
+
+					$emailSent = $this->sendRenewalInvoiceEmail(
+						$domain,
+						$invoiceResult['invoice'],
+						'domain',
+						$appSettings
+					);
+
+					if ($emailSent) {
+						$result['emails_sent']++;
+					}
+
+					log_message('info', "Renewal invoice #{$invoiceResult['invoice']['invoice_no']} created for domain #{$domain['id']} ({$domain['domain']})");
+				} else {
+					$result['errors'][] = "Domain #{$domain['id']}: {$invoiceResult['error']}";
+					log_message('error', "Failed to create renewal invoice for domain #{$domain['id']}: {$invoiceResult['error']}");
+				}
+			}
+		}
+
+		// ========== PROCESS EXPIRING SERVICES (skip those already combined) ==========
 		$expiringServices = $this->Cronjob_model->getExpiringServices(self::RENEWAL_DAYS_BEFORE);
 
 		foreach ($expiringServices as $service) {
+			// Skip if this service was already included in a combined invoice
+			if (in_array($service['id'], $combinedServiceIds)) {
+				continue;
+			}
+
 			$result['services_processed']++;
 
 			// Create renewal invoice
@@ -186,37 +264,6 @@ class Cronjobs extends WHMAZ_Controller
 			}
 		}
 
-		// ========== PROCESS EXPIRING DOMAINS ==========
-		$expiringDomains = $this->Cronjob_model->getExpiringDomains(self::RENEWAL_DAYS_BEFORE);
-
-		foreach ($expiringDomains as $domain) {
-			$result['domains_processed']++;
-
-			// Create renewal invoice
-			$invoiceResult = $this->Cronjob_model->createDomainRenewalInvoice($domain);
-
-			if ($invoiceResult['success']) {
-				$result['invoices_created']++;
-
-				// Send email notification
-				$emailSent = $this->sendRenewalInvoiceEmail(
-					$domain,
-					$invoiceResult['invoice'],
-					'domain',
-					$appSettings
-				);
-
-				if ($emailSent) {
-					$result['emails_sent']++;
-				}
-
-				log_message('info', "Renewal invoice #{$invoiceResult['invoice']['invoice_no']} created for domain #{$domain['id']} ({$domain['domain']})");
-			} else {
-				$result['errors'][] = "Domain #{$domain['id']}: {$invoiceResult['error']}";
-				log_message('error', "Failed to create renewal invoice for domain #{$domain['id']}: {$invoiceResult['error']}");
-			}
-		}
-
 		// Log cronjob execution (optional - if table exists)
 		try {
 			$this->Cronjob_model->logCronjobExecution(
@@ -241,7 +288,7 @@ class Cronjobs extends WHMAZ_Controller
 	 * @param array $appSettings App settings
 	 * @return bool Success status
 	 */
-	private function sendRenewalInvoiceEmail($item, $invoice, $type, $appSettings)
+	private function sendRenewalInvoiceEmail($item, $invoice, $type, $appSettings, $linkedService = null)
 	{
 		try {
 			// Get email template
@@ -259,7 +306,13 @@ class Cronjobs extends WHMAZ_Controller
 			}
 
 			// Build item description
-			if ($type === 'service') {
+			if ($type === 'combined' && $linkedService) {
+				$itemDescription = "Domain: " . ($item['domain'] ?? '');
+				$itemDescription .= " + " . ($linkedService['product_name'] ?? 'Hosting');
+				if (!empty($linkedService['hosting_domain'])) {
+					$itemDescription .= " ({$linkedService['hosting_domain']})";
+				}
+			} elseif ($type === 'service') {
 				$itemDescription = ($item['product_name'] ?? 'Service');
 				if (!empty($item['hosting_domain'])) {
 					$itemDescription .= " ({$item['hosting_domain']})";

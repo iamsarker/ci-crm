@@ -71,6 +71,7 @@ class Cronjob_model extends CI_Model
 		$today = date('Y-m-d');
 
 		$sql = "SELECT od.*,
+					od.linked_service_id,
 					o.currency_id, o.currency_code,
 					c.id as company_id, c.name as company_name, c.email as company_email,
 					c.first_name, c.last_name,
@@ -96,6 +97,172 @@ class Cronjob_model extends CI_Model
 				ORDER BY od.next_renewal_date ASC";
 
 		return $this->db->query($sql, array($targetDate, $today))->result_array();
+	}
+
+	/**
+	 * Get linked service data for a domain if it has the same renewal date
+	 * Used to combine domain+service into a single renewal invoice
+	 *
+	 * @param int $serviceId The linked order_services.id
+	 * @param string $renewalDate The domain's next_renewal_date (Y-m-d)
+	 * @return array|null Service data or null if not eligible
+	 */
+	function getLinkedExpiringService($serviceId, $renewalDate)
+	{
+		$sql = "SELECT os.*,
+					o.currency_id, o.currency_code,
+					c.id as company_id, c.name as company_name, c.email as company_email,
+					c.first_name, c.last_name,
+					ps.product_name,
+					bc.cycle_key, bc.cycle_name, bc.cycle_days
+				FROM order_services os
+				JOIN orders o ON os.order_id = o.id
+				JOIN companies c ON os.company_id = c.id
+				JOIN product_services ps ON os.product_service_id = ps.id
+				JOIN billing_cycle bc ON os.billing_cycle_id = bc.id
+				WHERE os.id = ?
+				AND os.status = 1
+				AND os.next_renewal_date = ?
+				AND bc.cycle_days > 0
+				AND os.auto_renew = 1
+				AND os.deleted_on IS NULL
+				AND NOT EXISTS (
+					SELECT 1 FROM invoice_items ii
+					JOIN invoices i ON ii.invoice_id = i.id
+					WHERE ii.ref_id = os.id
+					AND ii.item_type = 2
+					AND i.status = 1
+					AND ii.billing_period_start = os.next_renewal_date
+				)";
+
+		$result = $this->db->query($sql, array($serviceId, $renewalDate))->row_array();
+		return !empty($result) ? $result : null;
+	}
+
+	/**
+	 * Create a combined renewal invoice for a linked domain + service
+	 *
+	 * @param array $domain Domain data from getExpiringDomains()
+	 * @param array $service Service data from getLinkedExpiringService()
+	 * @return array Invoice data with success status
+	 */
+	function createCombinedRenewalInvoice($domain, $service)
+	{
+		$this->db->trans_start();
+
+		try {
+			// === Domain billing period ===
+			$domainBillingStart = $domain['next_renewal_date'];
+			$yearsToRenew = !empty($domain['reg_period']) ? intval($domain['reg_period']) : 1;
+			$domainBillingEnd = date('Y-m-d', strtotime($domainBillingStart . " +{$yearsToRenew} years"));
+			$domainAmount = floatval($domain['renewal_price']) * $yearsToRenew;
+
+			// === Service billing period ===
+			$serviceBillingStart = $service['next_renewal_date'];
+			$serviceBillingEnd = date('Y-m-d', strtotime($serviceBillingStart . " +{$service['cycle_days']} days"));
+			$serviceAmount = floatval($service['recurring_amount']);
+
+			$totalAmount = $domainAmount + $serviceAmount;
+
+			// Invoice due_date: next_renewal_date + 7 days
+			$invoiceDueDate = date('Y-m-d', strtotime($domainBillingStart . " +7 days"));
+
+			// Create invoice
+			$invoice = array(
+				'invoice_uuid' => gen_uuid(),
+				'company_id' => $domain['company_id'],
+				'order_id' => $domain['order_id'],
+				'currency_id' => $domain['currency_id'],
+				'currency_code' => $domain['currency_code'],
+				'invoice_no' => $this->generateNumber('INVOICE'),
+				'sub_total' => $totalAmount,
+				'tax' => 0.00,
+				'vat' => 0.00,
+				'total' => $totalAmount,
+				'order_date' => date('Y-m-d'),
+				'due_date' => $invoiceDueDate,
+				'status' => 1,
+				'pay_status' => 'DUE',
+				'remarks' => 'Auto-generated combined renewal invoice',
+				'inserted_on' => date('Y-m-d H:i:s'),
+				'inserted_by' => 0
+			);
+
+			$this->db->insert('invoices', $invoice);
+			$invoiceId = $this->db->insert_id();
+
+			// === Domain invoice item ===
+			$domainItemDesc = "Domain Renewal - {$domain['domain']} - {$yearsToRenew} Year(s)";
+			$domainItemDesc .= " ({$domainBillingStart} to {$domainBillingEnd})";
+
+			$this->db->insert('invoice_items', array(
+				'invoice_id' => $invoiceId,
+				'item' => 'Domain Renewal',
+				'item_desc' => $domainItemDesc,
+				'item_type' => 1,
+				'ref_id' => $domain['id'],
+				'billing_cycle_id' => $this->getYearlyBillingCycleId(),
+				'quantity' => $yearsToRenew,
+				'unit_price' => floatval($domain['renewal_price']),
+				'discount' => 0.00,
+				'sub_total' => $domainAmount,
+				'tax' => 0.00,
+				'vat' => 0.00,
+				'total' => $domainAmount,
+				'billing_period_start' => $domainBillingStart,
+				'billing_period_end' => $domainBillingEnd,
+				'inserted_on' => date('Y-m-d H:i:s'),
+				'inserted_by' => 0
+			));
+
+			// === Service invoice item ===
+			$serviceItemDesc = "Renewal - {$service['product_name']}";
+			if (!empty($service['hosting_domain'])) {
+				$serviceItemDesc .= " ({$service['hosting_domain']})";
+			}
+			$serviceItemDesc .= " - {$service['cycle_name']}";
+			$serviceItemDesc .= " ({$serviceBillingStart} to {$serviceBillingEnd})";
+
+			$this->db->insert('invoice_items', array(
+				'invoice_id' => $invoiceId,
+				'item' => 'Service Renewal',
+				'item_desc' => $serviceItemDesc,
+				'item_type' => 2,
+				'ref_id' => $service['id'],
+				'billing_cycle_id' => $service['billing_cycle_id'],
+				'quantity' => 1,
+				'unit_price' => $serviceAmount,
+				'discount' => 0.00,
+				'sub_total' => $serviceAmount,
+				'tax' => 0.00,
+				'vat' => 0.00,
+				'total' => $serviceAmount,
+				'billing_period_start' => $serviceBillingStart,
+				'billing_period_end' => $serviceBillingEnd,
+				'inserted_on' => date('Y-m-d H:i:s'),
+				'inserted_by' => 0
+			));
+
+			$this->db->trans_complete();
+
+			if ($this->db->trans_status() === FALSE) {
+				return array('success' => false, 'error' => 'Database transaction failed');
+			}
+
+			$invoice['id'] = $invoiceId;
+			return array(
+				'success' => true,
+				'invoice' => $invoice,
+				'domain' => $domain,
+				'service' => $service,
+				'combined' => true
+			);
+
+		} catch (Exception $e) {
+			$this->db->trans_rollback();
+			log_message('error', 'createCombinedRenewalInvoice error: ' . $e->getMessage());
+			return array('success' => false, 'error' => $e->getMessage());
+		}
 	}
 
 	/**
@@ -245,7 +412,7 @@ class Cronjob_model extends CI_Model
 				'item_desc' => $itemDesc,
 				'item_type' => 1, // 1 = domain
 				'ref_id' => $domain['id'],
-				'billing_cycle_id' => null, // Domains don't use billing_cycle
+				'billing_cycle_id' => $this->getYearlyBillingCycleId(),
 				'quantity' => $yearsToRenew,
 				'unit_price' => floatval($domain['renewal_price']),
 				'discount' => 0.00,
@@ -437,6 +604,16 @@ class Cronjob_model extends CI_Model
 		}
 
 		return true;
+	}
+
+	/**
+	 * Get billing_cycle ID for YEARLY cycle_key
+	 * @return int
+	 */
+	function getYearlyBillingCycleId()
+	{
+		$row = $this->db->query("SELECT id FROM billing_cycle WHERE cycle_key = 'YEARLY' AND status = 1 LIMIT 1")->row();
+		return $row ? intval($row->id) : 4;
 	}
 }
 ?>

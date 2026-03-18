@@ -169,7 +169,7 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Get dunning rule detail (AJAX)
 	 */
 	public function get_dunning_rule($id = 0) {
-		if (!$this->input->is_ajax_request()) {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
 			show_404();
 		}
 
@@ -187,7 +187,7 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Delete dunning rule (AJAX)
 	 */
 	public function delete_dunning_rule($id = 0) {
-		if (!$this->input->is_ajax_request()) {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
 			show_404();
 		}
 
@@ -205,7 +205,7 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Get all dunning rules as JSON (AJAX)
 	 */
 	public function get_dunning_rules() {
-		if (!$this->input->is_ajax_request()) {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
 			show_404();
 		}
 
@@ -248,7 +248,7 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Get system config detail (AJAX)
 	 */
 	public function get_sysconfig($id = 0) {
-		if (!$this->input->is_ajax_request()) {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
 			show_404();
 		}
 
@@ -328,7 +328,7 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Toggle cronjob active status (AJAX)
 	 */
 	public function toggle_cronjob($id = 0) {
-		if (!$this->input->is_ajax_request()) {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
 			show_404();
 		}
 
@@ -347,7 +347,7 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Get cronjob schedule detail (AJAX)
 	 */
 	public function get_cronjob($id = 0) {
-		if (!$this->input->is_ajax_request()) {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
 			show_404();
 		}
 
@@ -367,7 +367,7 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Generate crontab content (AJAX)
 	 */
 	public function generate_crontab() {
-		if (!$this->input->is_ajax_request()) {
+		if (!$this->input->is_ajax_request() || !$this->input->post()) {
 			show_404();
 		}
 

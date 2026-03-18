@@ -323,9 +323,28 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 7. Calls appropriate API (registrar or server module: cPanel/Plesk/DirectAdmin)
 8. Updates order status, logs result to `provisioning_logs`
 
+**Domain Renewal - Registrar Expiry Check:**
+Before calling the registrar renew API, `renewDomain()` fetches the domain's current expiry from the registrar via `registrar_get_domain_expiry()`. If the registrar expiry is already `>=` the expected new expiry date, the domain was renewed manually at the registrar — the API call is skipped and local records are synced to match. This prevents double-renewal charges. The check applies to all code paths: initial provisioning, full retry, and single-item retry.
+
+| Function | Registrar | API Used |
+|----------|-----------|----------|
+| `resellerclub_get_domain_expiry()` | ResellerClub/Resell.biz | GET `/api/domains/details.json` (`endtime` field) |
+| `namecheap_get_domain_expiry()` | Namecheap | GET `namecheap.domains.getInfo` (`ExpiredDate` field) |
+
+**ResellerClub Renew API (`/api/domains/renew.json`):**
+- Method: POST
+- Required params: `auth-userid`, `api-key`, `order-id`, `years`, `exp-date` (epoch timestamp), `auto-renew` (boolean), `invoice-option`
+- Optional: `discount-amount`, `purchase-privacy`, `purchase-premium-dns`
+- `exp-date` must be the **exact** current expiry timestamp from the registrar (use `registrar_get_domain_expiry()` raw timestamp)
+- `auto-renew` set to `false` — renewals are controlled by our cronjob, not the registrar
+- Docs: https://manage.resellerclub.com/kb/answer/746
+
+**Service Renewal - Status Handling:**
+`renewService()` unsuspends hosting accounts for both `status=3` (Suspended) and `status=2` (Expired), since servers may suspend the account when it expires. The unsuspend API is called via the appropriate server module (cPanel/Plesk/DirectAdmin) before updating local status to Active.
+
 **Adding New Registrar Support:**
-1. Add functions to `domain_helper.php` (e.g., `newregistrar_register_domain()`, `newregistrar_transfer_domain()`, etc.)
-2. Update switch statements in `registrar_*` dispatcher functions (register, transfer, renew, get_or_create_customer, create_contact)
+1. Add functions to `domain_helper.php` (e.g., `newregistrar_register_domain()`, `newregistrar_transfer_domain()`, `newregistrar_get_domain_expiry()`, etc.)
+2. Update switch statements in `registrar_*` dispatcher functions (register, transfer, renew, get_domain_expiry, get_or_create_customer, create_contact)
 3. Match on `dom_registers.platform` field (case-insensitive)
 4. Add platform detection in `Cart.php` for domain search and suggestions
 
@@ -334,6 +353,35 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 - When admin sets a registrar as default, others are automatically unset
 - Function: `Common_model::getDomRegisterIdByPricingId()` returns default registrar ID
 - Fallback: If no default set, uses extension-specific registrar from `dom_extensions`
+
+### Renewal Invoice Cronjob
+
+**Key Files:**
+- `src/modules/cronjobs/controllers/Cronjobs.php` - Controller (entry point, email sending)
+- `src/models/Cronjob_model.php` - Model (queries, invoice creation)
+
+**How It Works:**
+1. Cronjob runs daily (`/cronjobs/run?key=SECRET`)
+2. Fetches expiring domains first (`getExpiringDomains()`), then services (`getExpiringServices()`)
+3. For each domain: checks `linked_service_id` — if the linked service has the **same `next_renewal_date`**, creates a **combined invoice** with both domain and service as line items
+4. Tracks combined service IDs in `$combinedServiceIds`
+5. When processing services, skips any already included in a combined invoice
+6. Standalone domains/services get their own invoice as before
+
+**Combined Invoice Logic (`Cronjob_model::createCombinedRenewalInvoice()`):**
+- Creates one invoice with 2 `invoice_items` (domain `item_type=1` + service `item_type=2`)
+- Each item has its own `billing_period_start/end` (domain=yearly, service=per billing cycle)
+- Invoice total = domain renewal amount + service recurring amount
+
+**When Combined vs Separate:**
+| Scenario | Result |
+|----------|--------|
+| Domain with `linked_service_id` + same renewal date | 1 combined invoice |
+| Domain with `linked_service_id` + different renewal date | 2 separate invoices |
+| Domain without `linked_service_id` | 1 domain-only invoice |
+| Service without linked domain | 1 service-only invoice |
+
+**Renewal Invoice Days Before:** 15 days (configurable via `RENEWAL_DAYS_BEFORE` constant)
 
 ### Admin Order Management
 

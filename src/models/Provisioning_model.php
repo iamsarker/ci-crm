@@ -131,10 +131,6 @@ class Provisioning_model extends CI_Model
             return array('success' => false, 'action' => 'none', 'error' => 'Domain order not found: ' . $item['ref_id']);
         }
 
-        // Check if this is a renewal - domain must have been registered at registrar (has domain_order_id)
-        // New orders also have billing_period dates, so we check domain_order_id instead
-        $isRenewal = !empty($domain['domain_order_id']);
-
         // Get registrar config (falls back to default if not set)
         $registrar = $this->getRegistrarConfig($domain['dom_register_id']);
         if (empty($registrar)) {
@@ -146,6 +142,22 @@ class Provisioning_model extends CI_Model
             $this->db->where('id', $domain['id']);
             $this->db->update('order_domains', array('dom_register_id' => $registrar['id']));
             $domain['dom_register_id'] = $registrar['id'];
+        }
+
+        // Determine if this is a renewal:
+        // 1. Has domain_order_id (registered via this system), OR
+        // 2. Domain status is Active (1) and invoice has billing_period_start (renewal invoice from cronjob)
+        $isRenewal = !empty($domain['domain_order_id']);
+
+        if (!$isRenewal && $domain['status'] == 1 && !empty($item['billing_period_start'])) {
+            // Domain is active but missing domain_order_id — try to fetch from registrar
+            $fetchedOrderId = registrar_get_domain_orderid($registrar, $domain['domain']);
+            if (!empty($fetchedOrderId)) {
+                $domain['domain_order_id'] = $fetchedOrderId;
+                $this->db->where('id', $domain['id'])->update('order_domains', array('domain_order_id' => $fetchedOrderId));
+                log_message('info', 'Fetched missing domain_order_id for ' . $domain['domain'] . ': ' . $fetchedOrderId);
+                $isRenewal = true;
+            }
         }
 
         // Get company/customer info
@@ -481,15 +493,49 @@ class Provisioning_model extends CI_Model
         $periodEnd = strtotime($item['billing_period_end']);
         $years = max(1, round(($periodEnd - $periodStart) / (365 * 24 * 60 * 60)));
 
-        // Current expiry date
+        // Current expiry date in our system
         $currentExpDate = $domain['exp_date'];
 
-        // Renew domain
+        // Use billing_period_end as the target expiry after renewal (set by cronjob invoice)
+        // This is more reliable than computing from exp_date which may be stale
+        $expectedNewExpDate = $item['billing_period_end'];
+
+        // Fetch actual expiry from registrar (returns array with 'date' and 'timestamp')
+        $registrarExpiryData = registrar_get_domain_expiry($registrar, $domain['domain'], $domain['domain_order_id']);
+
+        if (!empty($registrarExpiryData)) {
+            // If registrar expiry >= billing_period_end, domain was already renewed manually — skip API call
+            if (strtotime($registrarExpiryData['date']) >= strtotime($expectedNewExpDate)) {
+                log_message('info', 'Domain ' . $domain['domain'] . ' already renewed at registrar (expiry: ' . $registrarExpiryData['date'] . ' >= ' . $expectedNewExpDate . '). Syncing local records only.');
+
+                $updateData = array(
+                    'exp_date' => $registrarExpiryData['date'],
+                    'next_renewal_date' => $registrarExpiryData['date'],
+                    'is_synced' => 1,
+                    'last_sync_dt' => date('Y-m-d H:i:s'),
+                    'status' => 1
+                );
+                $this->db->where('id', $domain['id'])->update('order_domains', $updateData);
+
+                return array(
+                    'success' => true,
+                    'action' => 'renew_skipped',
+                    'new_expiry' => $registrarExpiryData['date'],
+                    'error' => null,
+                    'message' => 'Already renewed at registrar, local records synced'
+                );
+            }
+
+            // Use the raw timestamp from registrar as currentExpDate
+            // ResellerClub requires the exact exp-date timestamp to match their records
+            $currentExpDate = $registrarExpiryData['timestamp'];
+        }
+
+        // Renew domain via registrar API
         $result = registrar_renew_domain($registrar, $domain['domain'], $years, $currentExpDate, $domain['domain_order_id']);
 
         if ($result['success']) {
-            // Update expiry date
-            $newExpDate = date('Y-m-d', strtotime("+{$years} years", strtotime($currentExpDate)));
+            $newExpDate = $expectedNewExpDate;
             $updateData = array(
                 'exp_date' => $newExpDate,
                 'next_renewal_date' => $newExpDate,
@@ -502,6 +548,27 @@ class Provisioning_model extends CI_Model
             log_message('info', 'Domain renewed successfully: ' . $domain['domain'] . ', New expiry: ' . $newExpDate);
             return array('success' => true, 'action' => 'renew', 'new_expiry' => $newExpDate, 'error' => null);
         } else {
+            // If registrar says "already renewed", a renewal order already exists
+            // (pending processing at registrar). Treat as success to prevent futile retries.
+            $errorMsg = strtolower($result['error'] ?? '');
+            if (strpos($errorMsg, 'already renewed') !== false) {
+                log_message('info', 'Domain ' . $domain['domain'] . ' - registrar confirms renewal order already exists. Marking active.');
+
+                $updateData = array(
+                    'status' => 1,
+                    'is_synced' => 0, // needs sync once registrar processes the renewal
+                    'updated_on' => date('Y-m-d H:i:s')
+                );
+                $this->db->where('id', $domain['id'])->update('order_domains', $updateData);
+
+                return array(
+                    'success' => true,
+                    'action' => 'renew_pending',
+                    'error' => null,
+                    'message' => 'Renewal order already exists at registrar, pending processing'
+                );
+            }
+
             log_message('error', 'Domain renewal failed: ' . $domain['domain'] . ' - ' . $result['error']);
             return array('success' => false, 'action' => 'renew', 'error' => $result['error']);
         }
@@ -665,9 +732,9 @@ class Provisioning_model extends CI_Model
 
         $actions = array();
 
-        // Check if service is suspended
-        if ($service['status'] == 2) { // 2 = Suspended
-            // Unsuspend the account
+        // If service is suspended (3), unsuspend via server API
+        // If expired (2), also try unsuspend as server may have suspended the account
+        if ($service['status'] == 3 || $service['status'] == 2) {
             $unsuspendResult = $this->unsuspendHostingAccount($service);
             $actions[] = 'unsuspend';
 
