@@ -10,13 +10,13 @@
 					<h3><i class="fas fa-credit-card me-2"></i> Configure <?php echo htmlspecialchars($gateway['name'] ?? ''); ?></h3>
 					<nav aria-label="breadcrumb">
 						<ol class="breadcrumb mb-0">
-							<li class="breadcrumb-item"><a href="<?php echo base_url(); ?>whmazadmin">Dashboard</a></li>
-							<li class="breadcrumb-item"><a href="<?php echo base_url(); ?>whmazadmin/paymentgateway">Payment Gateways</a></li>
+							<li class="breadcrumb-item"><a href="<?php echo base_url(); ?>whmazadmin/dashboard/index">Dashboard</a></li>
+							<li class="breadcrumb-item"><a href="<?php echo base_url(); ?>whmazadmin/paymentgateway/index">Payment Gateways</a></li>
 							<li class="breadcrumb-item active"><a href="#"><?php echo htmlspecialchars($gateway['name'] ?? ''); ?></a></li>
 						</ol>
 					</nav>
 				</div>
-				<a href="<?php echo base_url(); ?>whmazadmin/paymentgateway" class="btn btn-back">
+				<a href="<?php echo base_url(); ?>whmazadmin/paymentgateway/index" class="btn btn-back">
 					<i class="fas fa-arrow-left me-1"></i> Back
 				</a>
 			</div>

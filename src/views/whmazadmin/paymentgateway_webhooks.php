@@ -11,20 +11,20 @@
 					<h3><i class="fas fa-satellite-dish me-2"></i> Webhook Logs</h3>
 					<nav aria-label="breadcrumb">
 						<ol class="breadcrumb mb-0">
-							<li class="breadcrumb-item"><a href="<?php echo base_url(); ?>whmazadmin">Dashboard</a></li>
-							<li class="breadcrumb-item"><a href="<?php echo base_url(); ?>whmazadmin/paymentgateway">Payment Gateways</a></li>
+							<li class="breadcrumb-item"><a href="<?php echo base_url(); ?>whmazadmin/dashboard/index">Dashboard</a></li>
+							<li class="breadcrumb-item"><a href="<?php echo base_url(); ?>whmazadmin/paymentgateway/index">Payment Gateways</a></li>
 							<li class="breadcrumb-item active"><a href="#">Webhook Logs</a></li>
 						</ol>
 					</nav>
 				</div>
-				<a href="<?php echo base_url(); ?>whmazadmin/paymentgateway" class="btn btn-back">
+				<a href="<?php echo base_url(); ?>whmazadmin/paymentgateway/index" class="btn btn-back">
 					<i class="fas fa-arrow-left me-1"></i> Back
 				</a>
 			</div>
 		</div>
 
 		<!-- Filters -->
-		<div class="table-card mb-4">
+		<div class="table-card mb-4 mt-2">
 			<div class="card-header">
 				<h5 class="mb-0"><i class="fas fa-filter me-2"></i> Filters</h5>
 			</div>
