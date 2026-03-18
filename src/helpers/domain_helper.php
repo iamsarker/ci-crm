@@ -21,35 +21,50 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 function domain_api_get($url, $headers = array())
 {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    $maxRetries = 3;
+    $retryDelay = 5; // seconds
 
-    if (!empty($headers)) {
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+        if (!empty($headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        }
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error) {
+            log_message('error', 'Domain API GET error: ' . $error . ' - URL: ' . $url);
+            return array('success' => false, 'error' => 'cURL error: ' . $error, 'data' => null);
+        }
+
+        // Retry on 403 (Cloudflare block) or 429 (rate limit)
+        if (in_array($httpCode, array(403, 429)) && $attempt < $maxRetries) {
+            log_message('info', 'Domain API GET HTTP ' . $httpCode . ' (attempt ' . $attempt . '/' . $maxRetries . '), retrying in ' . $retryDelay . 's...');
+            sleep($retryDelay);
+            $retryDelay *= 2; // exponential backoff
+            continue;
+        }
+
+        $data = json_decode($response, true);
+
+        if ($httpCode >= 200 && $httpCode < 300) {
+            return array('success' => true, 'data' => $data, 'error' => null, 'http_code' => $httpCode);
+        } else {
+            log_message('error', 'Domain API GET HTTP ' . $httpCode . ' (attempt ' . $attempt . '/' . $maxRetries . '): ' . $response);
+            return array('success' => false, 'data' => $data, 'error' => 'HTTP ' . $httpCode, 'http_code' => $httpCode);
+        }
     }
 
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error = curl_error($ch);
-    curl_close($ch);
-
-    if ($error) {
-        log_message('error', 'Domain API GET error: ' . $error . ' - URL: ' . $url);
-        return array('success' => false, 'error' => 'cURL error: ' . $error, 'data' => null);
-    }
-
-    $data = json_decode($response, true);
-
-    if ($httpCode >= 200 && $httpCode < 300) {
-        return array('success' => true, 'data' => $data, 'error' => null, 'http_code' => $httpCode);
-    } else {
-        log_message('error', 'Domain API GET HTTP ' . $httpCode . ': ' . $response);
-        return array('success' => false, 'data' => $data, 'error' => 'HTTP ' . $httpCode, 'http_code' => $httpCode);
-    }
+    return array('success' => false, 'data' => null, 'error' => 'Max retries exceeded', 'http_code' => 0);
 }
 
 /**
@@ -62,37 +77,52 @@ function domain_api_get($url, $headers = array())
  */
 function domain_api_post($url, $params = array(), $headers = array())
 {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    $maxRetries = 3;
+    $retryDelay = 5; // seconds
 
-    if (!empty($headers)) {
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+        if (!empty($headers)) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        }
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error) {
+            log_message('error', 'Domain API POST error: ' . $error . ' - URL: ' . $url);
+            return array('success' => false, 'error' => 'cURL error: ' . $error, 'data' => null);
+        }
+
+        // Retry on 403 (Cloudflare block) or 429 (rate limit)
+        if (in_array($httpCode, array(403, 429)) && $attempt < $maxRetries) {
+            log_message('info', 'Domain API POST HTTP ' . $httpCode . ' (attempt ' . $attempt . '/' . $maxRetries . '), retrying in ' . $retryDelay . 's...');
+            sleep($retryDelay);
+            $retryDelay *= 2; // exponential backoff
+            continue;
+        }
+
+        $data = json_decode($response, true);
+
+        if ($httpCode >= 200 && $httpCode < 300) {
+            return array('success' => true, 'data' => $data, 'error' => null, 'http_code' => $httpCode);
+        } else {
+            log_message('error', 'Domain API POST HTTP ' . $httpCode . ' (attempt ' . $attempt . '/' . $maxRetries . '): ' . $response);
+            return array('success' => false, 'data' => $data, 'error' => 'HTTP ' . $httpCode, 'http_code' => $httpCode);
+        }
     }
 
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error = curl_error($ch);
-    curl_close($ch);
-
-    if ($error) {
-        log_message('error', 'Domain API POST error: ' . $error . ' - URL: ' . $url);
-        return array('success' => false, 'error' => 'cURL error: ' . $error, 'data' => null);
-    }
-
-    $data = json_decode($response, true);
-
-    if ($httpCode >= 200 && $httpCode < 300) {
-        return array('success' => true, 'data' => $data, 'error' => null, 'http_code' => $httpCode);
-    } else {
-        log_message('error', 'Domain API POST HTTP ' . $httpCode . ': ' . $response);
-        return array('success' => false, 'data' => $data, 'error' => 'HTTP ' . $httpCode, 'http_code' => $httpCode);
-    }
+    return array('success' => false, 'data' => null, 'error' => 'Max retries exceeded', 'http_code' => 0);
 }
 
 /**
@@ -101,38 +131,53 @@ function domain_api_post($url, $params = array(), $headers = array())
  */
 function domain_api_post_raw($url, $postData, $headers = array())
 {
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    $maxRetries = 3;
+    $retryDelay = 5; // seconds
 
-    // Set Content-Type for form data
-    $defaultHeaders = array('Content-Type: application/x-www-form-urlencoded');
-    $allHeaders = array_merge($defaultHeaders, $headers);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, $allHeaders);
+    for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $error = curl_error($ch);
-    curl_close($ch);
+        // Set Content-Type for form data
+        $defaultHeaders = array('Content-Type: application/x-www-form-urlencoded');
+        $allHeaders = array_merge($defaultHeaders, $headers);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $allHeaders);
 
-    if ($error) {
-        log_message('error', 'Domain API POST error: ' . $error . ' - URL: ' . $url);
-        return array('success' => false, 'error' => 'cURL error: ' . $error, 'data' => null);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        if ($error) {
+            log_message('error', 'Domain API POST error: ' . $error . ' - URL: ' . $url);
+            return array('success' => false, 'error' => 'cURL error: ' . $error, 'data' => null);
+        }
+
+        // Retry on 403 (Cloudflare block) or 429 (rate limit)
+        if (in_array($httpCode, array(403, 429)) && $attempt < $maxRetries) {
+            log_message('info', 'Domain API POST RAW HTTP ' . $httpCode . ' (attempt ' . $attempt . '/' . $maxRetries . '), retrying in ' . $retryDelay . 's...');
+            sleep($retryDelay);
+            $retryDelay *= 2;
+            continue;
+        }
+
+        $data = json_decode($response, true);
+
+        if ($httpCode >= 200 && $httpCode < 300) {
+            return array('success' => true, 'data' => $data, 'error' => null, 'http_code' => $httpCode);
+        } else {
+            log_message('error', 'Domain API POST HTTP ' . $httpCode . ' (attempt ' . $attempt . '/' . $maxRetries . '): ' . $response);
+            return array('success' => false, 'data' => $data, 'error' => 'HTTP ' . $httpCode, 'http_code' => $httpCode);
+        }
     }
 
-    $data = json_decode($response, true);
-
-    if ($httpCode >= 200 && $httpCode < 300) {
-        return array('success' => true, 'data' => $data, 'error' => null, 'http_code' => $httpCode);
-    } else {
-        log_message('error', 'Domain API POST HTTP ' . $httpCode . ': ' . $response);
-        return array('success' => false, 'data' => $data, 'error' => 'HTTP ' . $httpCode, 'http_code' => $httpCode);
-    }
+    return array('success' => false, 'data' => null, 'error' => 'Max retries exceeded', 'http_code' => 0);
 }
 
 // ============================================

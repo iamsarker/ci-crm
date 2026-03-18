@@ -1,0 +1,3856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WHMAZ User Guide - Complete Manual</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* ===== CSS Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.7; color: #333; background: #f5f7fa; }
+
+/* ===== Sidebar ===== */
+.sidebar {
+  position: fixed; top: 0; left: 0; width: 300px; height: 100vh;
+  background: #1a2332; color: #c8d6e5; z-index: 1000;
+  overflow-y: auto; transition: transform 0.3s ease;
+  display: flex; flex-direction: column;
+}
+.sidebar-header {
+  padding: 20px; background: #0f1923; border-bottom: 1px solid #2d3d50;
+  flex-shrink: 0;
+}
+.sidebar-header h2 { color: #fff; font-size: 18px; margin-bottom: 4px; }
+.sidebar-header .version { color: #6c8ebf; font-size: 12px; }
+.sidebar-search {
+  padding: 12px 16px; flex-shrink: 0;
+  border-bottom: 1px solid #2d3d50;
+}
+.sidebar-search input {
+  width: 100%; padding: 8px 12px; border: 1px solid #2d3d50;
+  border-radius: 4px; background: #0f1923; color: #c8d6e5;
+  font-size: 13px; outline: none;
+}
+.sidebar-search input::placeholder { color: #5a6f85; }
+.sidebar-search input:focus { border-color: #3498db; }
+.sidebar-nav { padding: 8px 0; flex: 1; overflow-y: auto; }
+.sidebar-nav .part-group { margin-bottom: 2px; }
+.sidebar-nav .part-toggle {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; color: #fff; font-size: 13px; font-weight: 600;
+  cursor: pointer; background: #1e2d3d; border: none; width: 100%;
+  text-align: left; transition: background 0.2s;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.sidebar-nav .part-toggle:hover { background: #253748; }
+.sidebar-nav .part-toggle .chevron {
+  transition: transform 0.2s; font-size: 11px;
+}
+.sidebar-nav .part-toggle.collapsed .chevron { transform: rotate(-90deg); }
+.sidebar-nav .part-items { padding: 0; }
+.sidebar-nav .part-items.collapsed { display: none; }
+.sidebar-nav .nav-link {
+  display: block; padding: 6px 16px 6px 28px;
+  color: #8fa4b8; font-size: 13px; text-decoration: none;
+  transition: all 0.2s; border-left: 3px solid transparent;
+}
+.sidebar-nav .nav-link:hover { color: #fff; background: rgba(255,255,255,0.05); }
+.sidebar-nav .nav-link.active {
+  color: #3498db; background: rgba(52,152,219,0.1);
+  border-left-color: #3498db;
+}
+.sidebar-nav .nav-link.sub { padding-left: 42px; font-size: 12px; }
+
+/* ===== Main Content ===== */
+.main-content { margin-left: 300px; min-height: 100vh; }
+
+/* ===== Top Banner ===== */
+.top-banner {
+  background: linear-gradient(135deg, #1a2332 0%, #2c3e50 50%, #1a5276 100%);
+  color: #fff; padding: 48px 60px; position: relative; overflow: hidden;
+}
+.top-banner::before {
+  content: ''; position: absolute; top: -50%; right: -10%; width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(52,152,219,0.15) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.top-banner h1 { font-size: 32px; margin-bottom: 8px; position: relative; }
+.top-banner .subtitle { font-size: 16px; color: #a0c4e8; margin-bottom: 16px; position: relative; }
+.top-banner .meta { display: flex; gap: 24px; font-size: 13px; color: #7fb3d8; position: relative; }
+.top-banner .meta span i { margin-right: 6px; }
+
+/* ===== Content Area ===== */
+.content-area { max-width: 960px; margin: 0 auto; padding: 40px 60px 80px; }
+
+/* ===== Typography ===== */
+.content-area h1 {
+  font-size: 28px; color: #1a2332; margin: 48px 0 16px;
+  padding-bottom: 12px; border-bottom: 3px solid #3498db;
+}
+.content-area h1:first-child { margin-top: 0; }
+.content-area h2 {
+  font-size: 24px; color: #2c3e50; margin: 40px 0 14px;
+  padding-bottom: 8px; border-bottom: 1px solid #e0e6ed;
+}
+.content-area h3 { font-size: 20px; color: #34495e; margin: 32px 0 12px; }
+.content-area h4 { font-size: 17px; color: #4a6785; margin: 24px 0 10px; }
+.content-area p { margin: 0 0 16px; color: #444; }
+.content-area strong { color: #2c3e50; }
+.content-area a { color: #2980b9; text-decoration: none; }
+.content-area a:hover { text-decoration: underline; }
+.content-area hr { border: none; border-top: 1px solid #e0e6ed; margin: 40px 0; }
+.content-area img { max-width: 100%; border-radius: 6px; margin: 8px 0; }
+
+/* ===== Lists ===== */
+.content-area ul, .content-area ol { margin: 0 0 16px 24px; }
+.content-area li { margin-bottom: 6px; color: #444; }
+.content-area li ul, .content-area li ol { margin-top: 6px; margin-bottom: 0; }
+
+/* ===== Tables ===== */
+.table-wrapper { overflow-x: auto; margin: 0 0 20px; border-radius: 6px; border: 1px solid #e0e6ed; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+thead th {
+  background: #2c3e50; color: #fff; padding: 10px 14px;
+  text-align: left; font-weight: 600; white-space: nowrap;
+}
+tbody td { padding: 10px 14px; border-bottom: 1px solid #e8ecf0; }
+tbody tr:nth-child(even) { background: #f8f9fb; }
+tbody tr:hover { background: #edf2f7; }
+
+/* ===== Code ===== */
+.content-area code {
+  background: #eef2f7; color: #c0392b; padding: 2px 6px;
+  border-radius: 3px; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.88em;
+}
+pre {
+  background: #1e2d3d; color: #e0e6ed; padding: 18px 20px;
+  border-radius: 6px; overflow-x: auto; margin: 0 0 20px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 13px; line-height: 1.6; border: 1px solid #2d3d50;
+}
+pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+/* Syntax colors inside pre */
+pre .kw { color: #c678dd; }
+pre .str { color: #98c379; }
+pre .cmt { color: #5c6370; font-style: italic; }
+pre .fn { color: #61afef; }
+pre .var { color: #e06c75; }
+
+/* ===== Blockquotes / Notes ===== */
+.content-area blockquote {
+  border-left: 4px solid #3498db; background: #edf5fc;
+  padding: 14px 18px; margin: 0 0 16px; border-radius: 0 6px 6px 0;
+  color: #2c3e50;
+}
+
+/* ===== Screenshot Placeholder ===== */
+.screenshot-placeholder {
+  background: #f0f4f8; border: 2px dashed #c8d6e5; border-radius: 8px;
+  padding: 24px; text-align: center; color: #7f8c9b; font-style: italic;
+  margin: 12px 0 20px; font-size: 14px;
+}
+.screenshot-placeholder i { display: block; font-size: 32px; margin-bottom: 8px; color: #b0bec5; }
+.screenshot-img {
+  margin: 12px 0 20px; text-align: center;
+}
+.screenshot-img img {
+  max-width: 100%; height: auto; border-radius: 8px;
+  border: 1px solid #e0e6ed; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.screenshot-img .caption {
+  font-size: 13px; color: #7f8c9b; font-style: italic; margin-top: 8px;
+}
+
+/* ===== Back to Top ===== */
+.back-to-top {
+  position: fixed; bottom: 30px; right: 30px; width: 44px; height: 44px;
+  background: #3498db; color: #fff; border: none; border-radius: 50%;
+  cursor: pointer; font-size: 18px; display: none; z-index: 999;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.25); transition: all 0.3s;
+  align-items: center; justify-content: center;
+}
+.back-to-top:hover { background: #2980b9; transform: translateY(-2px); }
+.back-to-top.visible { display: flex; }
+
+/* ===== Mobile Hamburger ===== */
+.hamburger {
+  display: none; position: fixed; top: 12px; left: 12px; z-index: 1100;
+  background: #1a2332; color: #fff; border: none; padding: 10px 13px;
+  border-radius: 6px; cursor: pointer; font-size: 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.sidebar-overlay {
+  display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5); z-index: 999;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.active { display: block; }
+  .main-content { margin-left: 0; }
+  .hamburger { display: block; }
+  .top-banner { padding: 32px 24px; padding-top: 56px; }
+  .top-banner h1 { font-size: 24px; }
+  .content-area { padding: 24px 20px 60px; }
+  .top-banner .meta { flex-wrap: wrap; gap: 12px; }
+}
+@media (max-width: 600px) {
+  .sidebar { width: 280px; }
+  .content-area h1 { font-size: 22px; }
+  .content-area h2 { font-size: 20px; }
+  .content-area h3 { font-size: 17px; }
+  table { font-size: 12px; }
+  thead th, tbody td { padding: 8px 10px; }
+}
+
+/* ===== Scrollbar (sidebar) ===== */
+.sidebar::-webkit-scrollbar, .sidebar-nav::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-thumb, .sidebar-nav::-webkit-scrollbar-thumb { background: #2d3d50; border-radius: 3px; }
+.sidebar::-webkit-scrollbar-track, .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+
+/* ===== Print ===== */
+@media print {
+  .sidebar, .hamburger, .back-to-top, .sidebar-overlay { display: none !important; }
+  .main-content { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- Hamburger (mobile) -->
+<button class="hamburger" id="hamburgerBtn" aria-label="Toggle navigation">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- Sidebar overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2><i class="fas fa-book-open" style="margin-right:8px;color:#3498db"></i>WHMAZ User Guide</h2>
+    <div class="version">Version 1.0.0 | Complete Manual</div>
+  </div>
+  <div class="sidebar-search">
+    <input type="text" id="tocSearch" placeholder="Search documentation..." aria-label="Search table of contents">
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav">
+    <!-- Part 1 -->
+    <div class="part-group" data-part="1">
+      <button class="part-toggle" data-target="part1-items">
+        <span><i class="fas fa-rocket" style="margin-right:6px;opacity:0.7"></i>Part 1: Getting Started</span>
+        <i class="fas fa-chevron-down chevron"></i>
+      </button>
+      <div class="part-items" id="part1-items">
+        <a class="nav-link" href="#introduction">Introduction</a>
+        <a class="nav-link sub" href="#live-demo">Live Demo</a>
+        <a class="nav-link sub" href="#what-is-whmaz">What is WHMAZ?</a>
+        <a class="nav-link sub" href="#who-should-use-this-guide">Who Should Use This Guide?</a>
+        <a class="nav-link" href="#system-overview">System Overview</a>
+        <a class="nav-link sub" href="#system-architecture">System Architecture</a>
+        <a class="nav-link" href="#quick-start-guide">Quick Start Guide</a>
+        <a class="nav-link" href="#accessing-the-system">Accessing the System</a>
+        <a class="nav-link sub" href="#customer-portal-access">Customer Portal Access</a>
+        <a class="nav-link sub" href="#admin-portal-access">Admin Portal Access</a>
+        <a class="nav-link sub" href="#security-features">Security Features</a>
+        <a class="nav-link" href="#default-credentials">Default Credentials</a>
+      </div>
+    </div>
+    <!-- Part 2 -->
+    <div class="part-group" data-part="2">
+      <button class="part-toggle" data-target="part2-items">
+        <span><i class="fas fa-user" style="margin-right:6px;opacity:0.7"></i>Part 2: Customer Portal</span>
+        <i class="fas fa-chevron-down chevron"></i>
+      </button>
+      <div class="part-items" id="part2-items">
+        <a class="nav-link" href="#customer-registration">Customer Registration</a>
+        <a class="nav-link sub" href="#creating-a-new-account">Creating a New Account</a>
+        <a class="nav-link sub" href="#email-verification">Email Verification</a>
+        <a class="nav-link" href="#customer-dashboard">Customer Dashboard</a>
+        <a class="nav-link" href="#managing-profile">Managing Profile</a>
+        <a class="nav-link" href="#ordering-services">Ordering Services</a>
+        <a class="nav-link sub" href="#placing-an-order">Placing an Order</a>
+        <a class="nav-link sub" href="#shopping-cart-features">Shopping Cart Features</a>
+        <a class="nav-link sub" href="#order-status">Order Status</a>
+        <a class="nav-link sub" href="#managing-existing-orders">Managing Existing Orders</a>
+        <a class="nav-link sub" href="#hosting-usage-sync-real-time">Hosting Usage Sync</a>
+        <a class="nav-link" href="#domain-management">Domain Management</a>
+        <a class="nav-link sub" href="#domain-transfer">Domain Transfer</a>
+        <a class="nav-link" href="#viewing-invoices">Viewing Invoices</a>
+        <a class="nav-link" href="#making-payments">Making Payments</a>
+        <a class="nav-link" href="#support-tickets">Support Tickets</a>
+        <a class="nav-link sub" href="#creating-a-support-ticket">Creating a Ticket</a>
+        <a class="nav-link sub" href="#replying-to-tickets">Replying to Tickets</a>
+        <a class="nav-link" href="#knowledge-base">Knowledge Base</a>
+        <a class="nav-link" href="#announcements">Announcements</a>
+        <a class="nav-link" href="#contact-us">Contact Us</a>
+      </div>
+    </div>
+    <!-- Part 3 -->
+    <div class="part-group" data-part="3">
+      <button class="part-toggle" data-target="part3-items">
+        <span><i class="fas fa-cogs" style="margin-right:6px;opacity:0.7"></i>Part 3: Admin Portal</span>
+        <i class="fas fa-chevron-down chevron"></i>
+      </button>
+      <div class="part-items" id="part3-items">
+        <a class="nav-link" href="#admin-dashboard">Admin Dashboard</a>
+        <a class="nav-link" href="#customer-management">Customer Management</a>
+        <a class="nav-link" href="#order-management">Order Management</a>
+        <a class="nav-link sub" href="#creating-an-order-manual">Creating an Order</a>
+        <a class="nav-link sub" href="#managing-existing-orders-admin">Managing Existing Orders</a>
+        <a class="nav-link" href="#package-management">Package Management</a>
+        <a class="nav-link" href="#service-product-management">Service Product Management</a>
+        <a class="nav-link" href="#email-template-management">Email Template Management</a>
+        <a class="nav-link" href="#dynamic-pages-management">Dynamic Pages Management</a>
+        <a class="nav-link" href="#dunning-rules-management">Dunning Rules Management</a>
+        <a class="nav-link" href="#domain-pricing-management">Domain Pricing Management</a>
+        <a class="nav-link" href="#invoice-management">Invoice Management</a>
+        <a class="nav-link" href="#payment-management">Payment Management</a>
+        <a class="nav-link" href="#promo-code-management">Promo Code Management</a>
+        <a class="nav-link" href="#ticket-management">Ticket Management</a>
+        <a class="nav-link" href="#knowledge-base-management">Knowledge Base Management</a>
+        <a class="nav-link" href="#announcement-management">Announcement Management</a>
+        <a class="nav-link" href="#system-settings">System Settings</a>
+      </div>
+    </div>
+    <!-- Part 4 -->
+    <div class="part-group" data-part="4">
+      <button class="part-toggle" data-target="part4-items">
+        <span><i class="fas fa-sliders-h" style="margin-right:6px;opacity:0.7"></i>Part 4: Advanced Features</span>
+        <i class="fas fa-chevron-down chevron"></i>
+      </button>
+      <div class="part-items" id="part4-items">
+        <a class="nav-link" href="#email-configuration">Email Configuration</a>
+        <a class="nav-link sub" href="#smtp-setup">SMTP Setup</a>
+        <a class="nav-link" href="#payment-gateway-setup">Payment Gateway Setup</a>
+        <a class="nav-link sub" href="#stripe-configuration">Stripe Configuration</a>
+        <a class="nav-link sub" href="#sslcommerz-configuration-bangladesh">SSLCommerz Configuration</a>
+        <a class="nav-link sub" href="#bank-transfer">Bank Transfer</a>
+        <a class="nav-link" href="#domain-registrar-integration">Domain Registrar Integration</a>
+        <a class="nav-link sub" href="#resellbiz--resellerclub-setup">ResellerClub Setup</a>
+        <a class="nav-link sub" href="#namecheap-setup">Namecheap Setup</a>
+        <a class="nav-link" href="#automation--cron-jobs">Automation &amp; Cron Jobs</a>
+        <a class="nav-link" href="#customization-options">Customization Options</a>
+      </div>
+    </div>
+    <!-- Part 5 -->
+    <div class="part-group" data-part="5">
+      <button class="part-toggle" data-target="part5-items">
+        <span><i class="fas fa-question-circle" style="margin-right:6px;opacity:0.7"></i>Part 5: Troubleshooting</span>
+        <i class="fas fa-chevron-down chevron"></i>
+      </button>
+      <div class="part-items" id="part5-items">
+        <a class="nav-link" href="#common-issues">Common Issues</a>
+        <a class="nav-link" href="#frequently-asked-questions">Frequently Asked Questions</a>
+        <a class="nav-link" href="#getting-support">Getting Support</a>
+        <a class="nav-link" href="#conclusion">Conclusion</a>
+      </div>
+    </div>
+  </nav>
+</aside>
+
+<!-- Main Content -->
+<div class="main-content">
+
+<!-- Banner -->
+<div class="top-banner">
+  <h1>WHMAZ User Guide</h1>
+  <div class="subtitle">Complete Manual for Administrators and Customers</div>
+  <div class="meta">
+    <span><i class="fas fa-tag"></i>Version 1.0.0</span>
+    <span><i class="fas fa-calendar-alt"></i>Last Updated: February 18, 2026</span>
+    <span><i class="fas fa-cube"></i>WHMAZ - Web Host Manager A to Z Solutions</span>
+  </div>
+</div>
+
+<!-- Content -->
+<div class="content-area">
+
+<!-- ============================================================ -->
+<!-- PART 1: GETTING STARTED -->
+<!-- ============================================================ -->
+
+<h1 id="part-1-getting-started">Part 1: Getting Started</h1>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Welcome to <strong>WHMAZ</strong>, a lightweight domain hosting management system designed specifically for hosting and service providers. This guide will help you understand and utilize all features of the system effectively.</p>
+
+<h3 id="live-demo">Live Demo</h3>
+
+<p>Try WHMAZ before installing:</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Portal</th><th>URL</th><th>Email</th><th>Password</th></tr></thead>
+<tbody>
+<tr><td><strong>Admin</strong></td><td><a href="https://demo.whmaz.com/whmazadmin/authenticate/login">demo.whmaz.com/whmazadmin</a></td><td>admin@whmaz.com</td><td>Abcd.1234</td></tr>
+<tr><td><strong>Client</strong></td><td><a href="https://demo.whmaz.com/auth/login">demo.whmaz.com</a></td><td>client@whmaz.com</td><td>Abcd.1234</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="what-is-whmaz">What is WHMAZ?</h3>
+
+<p>WHMAZ is a complete business management solution that provides:</p>
+<ul>
+  <li><strong>Client Portal</strong> for customers to manage their services, domains, and support tickets</li>
+  <li><strong>Admin Portal</strong> for business owners to manage customers, orders, billing, and support</li>
+  <li><strong>Billing System</strong> with automated invoicing and payment processing</li>
+  <li><strong>Domain Management</strong> with registrar API integration</li>
+  <li><strong>Support System</strong> with ticketing and knowledge base</li>
+  <li><strong>Reporting &amp; Analytics</strong> for business insights</li>
+</ul>
+
+<h3 id="who-should-use-this-guide">Who Should Use This Guide?</h3>
+
+<p>This guide is for:</p>
+<ul>
+  <li><strong>Administrators/Business Owners</strong> - Part 3 &amp; Part 4</li>
+  <li><strong>Customers/End Users</strong> - Part 2</li>
+  <li><strong>Technical Staff</strong> - All Parts</li>
+  <li><strong>Support Personnel</strong> - Part 2 &amp; Part 3 (Support sections)</li>
+</ul>
+
+<hr>
+
+<h2 id="system-overview">System Overview</h2>
+
+<h3 id="system-architecture">System Architecture</h3>
+
+<p>WHMAZ consists of two main portals:</p>
+<ol>
+  <li><strong>Customer Portal (Client Area)</strong>
+    <ul>
+      <li>URL: <code>https://yourdomain.com/auth/login</code></li>
+      <li>Purpose: Self-service portal for customers</li>
+      <li>Features: Orders, domains, invoices, tickets, knowledge base</li>
+    </ul>
+  </li>
+  <li><strong>Admin Portal (Management Area)</strong>
+    <ul>
+      <li>URL: <code>https://yourdomain.com/whmazadmin/authenticate/login</code></li>
+      <li>Purpose: Business management and administration</li>
+      <li>Features: Complete system control and configuration</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-placeholder"><i class="fas fa-image"></i>[Screenshot Placeholder: System architecture diagram showing dual portal structure]</div>
+
+<hr>
+
+<h2 id="quick-start-guide">Quick Start Guide</h2>
+
+<h3 id="for-administrators">For Administrators</h3>
+<ol>
+  <li><strong>Access Admin Portal</strong>
+    <ul>
+      <li>Navigate to: <code>https://yourdomain.com/whmazadmin/authenticate/login</code></li>
+      <li>Login with admin credentials</li>
+    </ul>
+  </li>
+  <li><strong>Complete Initial Setup</strong>
+    <ul>
+      <li>Configure company settings</li>
+      <li>Set up email configuration</li>
+      <li>Configure payment gateways</li>
+      <li>Create hosting packages</li>
+      <li>Set domain pricing</li>
+    </ul>
+  </li>
+  <li><strong>Create First Customer</strong>
+    <ul>
+      <li>Go to Customers &rarr; Add Customer</li>
+      <li>Fill in customer details</li>
+      <li>Save customer record</li>
+    </ul>
+  </li>
+  <li><strong>Create First Order</strong>
+    <ul>
+      <li>Go to Orders &rarr; New Order</li>
+      <li>Select customer and package</li>
+      <li>Generate invoice</li>
+      <li>Process payment</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="for-customers">For Customers</h3>
+<ol>
+  <li><strong>Register Account</strong>
+    <ul>
+      <li>Visit customer portal</li>
+      <li>Click "Register"</li>
+      <li>Complete registration form</li>
+      <li>Verify email</li>
+    </ul>
+  </li>
+  <li><strong>Place Order</strong>
+    <ul>
+      <li>Browse available packages</li>
+      <li>Select desired package</li>
+      <li>Complete checkout</li>
+      <li>Make payment</li>
+    </ul>
+  </li>
+  <li><strong>Manage Services</strong>
+    <ul>
+      <li>View orders in dashboard</li>
+      <li>Access service details</li>
+      <li>Request upgrades/changes</li>
+      <li>Renew services</li>
+    </ul>
+  </li>
+</ol>
+
+<hr>
+
+<h2 id="accessing-the-system">Accessing the System</h2>
+
+<h3 id="customer-portal-access">Customer Portal Access</h3>
+
+<p><strong>URL Format:</strong></p>
+<pre><code>https://yourdomain.com/auth/login</code></pre>
+
+<p><strong>Login Page Elements:</strong></p>
+<ul>
+  <li>Email address field</li>
+  <li>Password field</li>
+  <li>"Remember Me" checkbox</li>
+  <li>"Forgot Password?" link</li>
+  <li>"Register" link for new customers</li>
+</ul>
+
+<div class="screenshot-img"><img src="screenshots/customer-login.png" alt="Customer Login Page"><div class="caption">Customer portal login page</div></div>
+
+<h3 id="admin-portal-access">Admin Portal Access</h3>
+
+<p><strong>URL Format:</strong></p>
+<pre><code>https://yourdomain.com/whmazadmin/authenticate/login</code></pre>
+
+<p><strong>Login Page Elements:</strong></p>
+<ul>
+  <li>Email address field</li>
+  <li>Password field</li>
+  <li>Google reCAPTCHA checkbox (if configured in General Settings)</li>
+  <li>"Forgot Password?" link</li>
+</ul>
+
+<p><strong>reCAPTCHA Protection:</strong><br>
+If Google reCAPTCHA is configured in the admin General Settings, the admin login page will display a reCAPTCHA checkbox to prevent automated brute force attacks. Complete the "I'm not a robot" verification before clicking Sign In.</p>
+
+<div class="screenshot-img"><img src="screenshots/admin-login.png" alt="Admin Login Page"><div class="caption">Admin portal login page</div></div>
+
+<h3 id="security-features">Security Features</h3>
+<ul>
+  <li><strong>CSRF Protection:</strong> All forms protected against cross-site request forgery</li>
+  <li><strong>XSS Prevention:</strong> All outputs sanitized</li>
+  <li><strong>Session Security:</strong> Secure session management with database storage</li>
+  <li><strong>Password Security:</strong> bcrypt hashing with strong password requirements</li>
+  <li><strong>Login Attempt Limiting:</strong> Protection against brute force attacks</li>
+  <li><strong>Google reCAPTCHA:</strong> Bot protection on registration and admin login pages</li>
+</ul>
+
+<hr>
+
+<h2 id="default-credentials">Default Credentials</h2>
+
+<h3 id="demo-installation">Demo Installation</h3>
+
+<p>If you installed with demo data, use these credentials:</p>
+
+<p><strong>Administrator:</strong></p>
+<pre><code>Email: admin@whmaz.com
+Password: Abcd.1234</code></pre>
+
+<p><strong>Demo Customer:</strong></p>
+<pre><code>Email: client@whmaz.com
+Password: Abcd.1234</code></pre>
+
+<h3 id="fresh-installation">Fresh Installation</h3>
+
+<p>If you installed without demo data:</p>
+<p><strong>Administrator:</strong></p>
+<ul>
+  <li>Email: (set during installation)</li>
+  <li>Password: (set during installation)</li>
+</ul>
+
+<h3 id="important-security-steps">IMPORTANT SECURITY STEPS</h3>
+
+<p>After first login, immediately:</p>
+<ol>
+  <li><strong>Change Default Password</strong>
+    <ul>
+      <li>Go to Profile Settings</li>
+      <li>Click "Change Password"</li>
+      <li>Use strong password (min 8 characters, mixed case, numbers, symbols)</li>
+    </ul>
+  </li>
+  <li><strong>Update Admin Email</strong>
+    <ul>
+      <li>Ensure admin email is your actual business email</li>
+      <li>Used for important system notifications</li>
+    </ul>
+  </li>
+  <li><strong>Delete Demo Users</strong> (if applicable)
+    <ul>
+      <li>Remove demo customer accounts</li>
+      <li>Remove demo admin accounts (if multiple exist)</li>
+    </ul>
+  </li>
+</ol>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- PART 2: CUSTOMER PORTAL GUIDE -->
+<!-- ============================================================ -->
+
+<h1 id="part-2-customer-portal-guide">Part 2: Customer Portal Guide</h1>
+
+<h2 id="customer-registration">Customer Registration</h2>
+
+<h3 id="creating-a-new-account">Creating a New Account</h3>
+
+<ol>
+  <li><strong>Navigate to Registration Page</strong>
+    <ul>
+      <li>Go to customer portal</li>
+      <li>Click "Register" or "Sign Up"</li>
+    </ul>
+  </li>
+  <li><strong>Fill Registration Form</strong>
+    <ul>
+      <li><strong>Personal Information:</strong>
+        <ul>
+          <li>First Name (required)</li>
+          <li>Last Name (required)</li>
+          <li>Email Address (required, used for login)</li>
+          <li>Phone Number (optional)</li>
+        </ul>
+      </li>
+      <li><strong>Account Security:</strong>
+        <ul>
+          <li>Password (required, min 8 characters)</li>
+          <li>Confirm Password (must match)</li>
+        </ul>
+      </li>
+      <li><strong>Company Information:</strong> (optional)
+        <ul>
+          <li>Company Name</li>
+          <li>Tax ID/VAT Number</li>
+        </ul>
+      </li>
+      <li><strong>Address Details:</strong>
+        <ul>
+          <li>Street Address</li>
+          <li>City</li>
+          <li>State/Province</li>
+          <li>ZIP/Postal Code</li>
+          <li>Country (dropdown selection from countries database)</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><strong>Complete Security Verification</strong>
+    <ul>
+      <li>Complete the Google reCAPTCHA checkbox ("I'm not a robot")</li>
+      <li>This prevents automated bot registrations</li>
+    </ul>
+  </li>
+  <li><strong>Accept Terms</strong>
+    <ul>
+      <li>Read Terms of Service</li>
+      <li>Check "I agree" checkbox</li>
+    </ul>
+  </li>
+  <li><strong>Submit Registration</strong>
+    <ul>
+      <li>Click "Register" button</li>
+      <li>Check email for verification link</li>
+      <li>Click verification link to activate account</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/customer-registration.png" alt="Customer Registration Form"><div class="caption">Customer registration form</div></div>
+
+<h3 id="email-verification">Email Verification</h3>
+
+<p>After registration, a verification email is automatically sent to your registered email address:</p>
+<ol>
+  <li>Check your email inbox (and spam/junk folder)</li>
+  <li>Open the email from the system titled "Email Verification - [Company Name]"</li>
+  <li>Click the "Verify My Email" link</li>
+  <li>You will be redirected to the login page with a success message</li>
+  <li>Your account is now activated -- you can login</li>
+</ol>
+
+<p><strong>Important:</strong> You cannot login until your email is verified. If you try to login before verifying, you will see a message asking you to check your email.</p>
+
+<p><strong>Verification URL format:</strong> <code>https://yourdomain.com/auth/verify/{verification_hash}</code></p>
+
+<hr>
+
+<h2 id="customer-dashboard">Customer Dashboard</h2>
+
+<h3 id="dashboard-overview">Dashboard Overview</h3>
+
+<p>The customer dashboard provides a comprehensive overview of your account with a modern, professional design:</p>
+
+<p><strong>Welcome Banner:</strong></p>
+<ul>
+  <li>Personalized greeting with your name</li>
+  <li>Quick description of available features</li>
+  <li>Quick action buttons:
+    <ul>
+      <li>Register Domain</li>
+      <li>Order Service</li>
+      <li>Open Ticket</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>Stat Cards (Top Row):</strong></p>
+<ul>
+  <li><strong>Active Services:</strong> Number of active hosting/service orders with server icon</li>
+  <li><strong>Registered Domains:</strong> Total domain count with globe icon</li>
+  <li><strong>Support Tickets:</strong> Number of support tickets with headset icon</li>
+  <li><strong>Total Invoices:</strong> Invoice count with invoice icon</li>
+</ul>
+
+<p>Each stat card features:</p>
+<ul>
+  <li>Gradient icon backgrounds</li>
+  <li>Real-time count display</li>
+  <li>Click to navigate to detailed list</li>
+  <li>Hover animation effects</li>
+</ul>
+
+<p><strong>Recent Activity Section:</strong></p>
+<ul>
+  <li><strong>Recent Support Tickets:</strong> Latest tickets with priority and status badges</li>
+  <li><strong>Recent Invoices:</strong> Latest invoices with amounts and payment status</li>
+  <li>View All links to full lists</li>
+  <li>Refresh buttons for real-time updates</li>
+</ul>
+
+<div class="screenshot-img"><img src="screenshots/customer-dashboard.png" alt="Customer Dashboard"><div class="caption">Customer dashboard with welcome banner and stat cards</div></div>
+
+<h3 id="navigation-menu">Navigation Menu</h3>
+
+<p><strong>Main Menu Items:</strong></p>
+<ul>
+  <li><strong>Dashboard:</strong> Overview and quick access</li>
+  <li><strong>Services:</strong> View and manage your orders/services</li>
+  <li><strong>Domains:</strong> Manage domain registrations</li>
+  <li><strong>Billing:</strong> View invoices and payment history</li>
+  <li><strong>Support:</strong> Tickets and knowledge base</li>
+  <li><strong>Contact Us:</strong> Contacting with service provider</li>
+</ul>
+
+<hr>
+
+<h2 id="managing-profile">Managing Profile</h2>
+
+<h3 id="updating-customer-password">Updating Customer Password</h3>
+<ol>
+  <li><strong>Change Password</strong>
+    <ul>
+      <li>Navigate to <code>/clientarea/changePassword</code> or click "Change Password" in your account menu</li>
+      <li>Enter your current password</li>
+      <li>Enter new password (minimum 8 characters)</li>
+      <li>Confirm new password (must match)</li>
+      <li>Click "Change Password"</li>
+      <li>A confirmation email will be sent to your registered email address notifying you of the password change</li>
+      <li>If you did not initiate the change, contact support immediately</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="setting-preferences">Setting Preferences</h3>
+
+<p><strong>Notification Preferences:</strong></p>
+<ul>
+  <li>Email notifications for invoices</li>
+  <li>Email notifications for tickets</li>
+  <li>Email notifications for announcements</li>
+  <li>Marketing emails (opt-in/opt-out)</li>
+</ul>
+
+<p><strong>Display Preferences:</strong></p>
+<ul>
+  <li>Preferred language (if multi-language supported)</li>
+  <li>Timezone</li>
+  <li>Date format</li>
+  <li>Currency display</li>
+</ul>
+
+<hr>
+
+<h2 id="ordering-services">Ordering Services</h2>
+
+<h3 id="browsing-available-packages">Browsing Available Packages</h3>
+<ol>
+  <li><strong>View Package List</strong>
+    <ul>
+      <li>Go to "Domains" &rarr; "Register New Domain" or "Services" &rarr; "New Service"</li>
+      <li>Browse available hosting packages</li>
+      <li>Compare features and pricing</li>
+    </ul>
+  </li>
+  <li><strong>Package Information</strong>
+    <ul>
+      <li>Package name and description</li>
+      <li>Features (CPU, RAM, Disk, Bandwidth)</li>
+      <li>Pricing (monthly, quarterly, annually)</li>
+      <li>Setup fee (if applicable)</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/package-browse.png" alt="Available Packages"><div class="caption">Available packages with features and pricing</div></div>
+
+<h3 id="placing-an-order">Placing an Order</h3>
+
+<p>There are two ways to place an order depending on whether you start with a hosting package or a domain:</p>
+
+<h4 id="flow-1-hosting-first-recommended">Flow 1: Hosting First (Recommended)</h4>
+
+<p><strong>Step 1: Select Hosting Package</strong></p>
+<ul>
+  <li>Navigate to "Services" &rarr; "Hosting Services"</li>
+  <li>Browse available hosting packages (Shared, Reseller, VPS)</li>
+  <li>Choose billing cycle (monthly, quarterly, annually)</li>
+  <li>Click "Choose Plan"</li>
+</ul>
+
+<p><strong>Step 2: Configure Domain</strong><br>
+A modal will appear asking for your domain information. Choose one of three options:</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Option</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><strong>Update DNS</strong></td><td>Use your existing domain - just point the DNS to our servers</td></tr>
+<tr><td><strong>Register New</strong></td><td>Search for and register a new domain with your hosting</td></tr>
+<tr><td><strong>Transfer</strong></td><td>Transfer your domain from another registrar (requires EPP/Auth code)</td></tr>
+</tbody>
+</table>
+</div>
+
+<ul>
+  <li><strong>Update DNS:</strong> Enter your existing domain name (e.g., example.com)</li>
+  <li><strong>Register New:</strong> Search for available domains, select one from the results</li>
+  <li><strong>Transfer:</strong> Enter domain name and the EPP/Auth code from your current registrar</li>
+</ul>
+
+<p><strong>Step 3: Add to Cart</strong></p>
+<ul>
+  <li>Click "Add to Cart" to add both hosting and domain to your cart</li>
+  <li>Both items are linked together for easy management</li>
+</ul>
+
+<p><strong>Step 4: Review Cart</strong></p>
+<ul>
+  <li>Navigate to "View Cart" to see your order</li>
+  <li>Cart displays hosting package with linked domain underneath</li>
+  <li>Verify pricing for both services</li>
+</ul>
+
+<p><strong>Step 5: Checkout</strong></p>
+<ul>
+  <li>Select payment method</li>
+  <li>Add any special instructions (optional)</li>
+  <li>Click "Proceed to Checkout"</li>
+</ul>
+
+<p><strong>Step 6: Payment</strong></p>
+<ul>
+  <li>Invoice is generated automatically</li>
+  <li>Complete payment via selected gateway</li>
+  <li>Service activation begins after payment confirmation</li>
+</ul>
+
+<h4 id="flow-2-domain-first">Flow 2: Domain First</h4>
+
+<p><strong>Step 1: Search Domain</strong></p>
+<ul>
+  <li>Navigate to "Services" &rarr; "Register Domain"</li>
+  <li>Enter desired domain name</li>
+  <li>Complete reCAPTCHA verification (if enabled)</li>
+  <li>Click "Search"</li>
+</ul>
+
+<p><strong>Step 2: Select Domain</strong></p>
+<ul>
+  <li>View search results showing availability and pricing</li>
+  <li>Click "Add to Cart" on available domain</li>
+  <li>View domain suggestions for alternatives</li>
+</ul>
+
+<p><strong>Step 3: Add Hosting (Optional)</strong></p>
+<ul>
+  <li>After adding domain, you can optionally add a hosting package</li>
+  <li>Select hosting package and billing cycle</li>
+  <li>Domain will be automatically linked to hosting</li>
+</ul>
+
+<p><strong>Step 4: Complete Order</strong></p>
+<ul>
+  <li>Review cart with domain (and hosting if selected)</li>
+  <li>Proceed to checkout and payment</li>
+</ul>
+
+<div class="screenshot-img"><img src="screenshots/order-checkout.png" alt="Order Checkout"><div class="caption">Order checkout page with linked hosting and domain</div></div>
+
+<h3 id="shopping-cart-features">Shopping Cart Features</h3>
+
+<p><strong>Cart Item Linking:</strong></p>
+<ul>
+  <li>When hosting and domain are purchased together, they are linked</li>
+  <li>Linked items appear as parent-child in cart view</li>
+  <li>Deleting parent item also removes linked child items</li>
+</ul>
+
+<p><strong>Cart Actions:</strong></p>
+<ul>
+  <li><strong>Add More Services:</strong> Add additional packages to your order</li>
+  <li><strong>Remove Item:</strong> Delete individual items from cart</li>
+  <li><strong>Empty Cart:</strong> Clear all items from cart</li>
+</ul>
+
+<p><strong>Payment Options:</strong></p>
+<ul>
+  <li>Select from available payment gateways</li>
+  <li>Add special instructions for your order</li>
+  <li>Apply promotional codes (if available)</li>
+</ul>
+
+<h3 id="order-status">Order Status</h3>
+
+<p><strong>Order Statuses:</strong></p>
+<ul>
+  <li><strong>Pending:</strong> Order placed, awaiting payment</li>
+  <li><strong>Active:</strong> Service is active and running</li>
+  <li><strong>Suspended:</strong> Service suspended (usually due to non-payment)</li>
+  <li><strong>Cancelled:</strong> Service cancelled</li>
+  <li><strong>Fraud:</strong> Flagged for fraud review</li>
+</ul>
+
+<h3 id="managing-existing-orders">Managing Existing Orders</h3>
+
+<ol>
+  <li><strong>View All Orders</strong>
+    <ul>
+      <li>Go to "Services" or "My Services"</li>
+      <li>See list of all orders with status</li>
+    </ul>
+  </li>
+  <li><strong>Order Details</strong>
+    <ul>
+      <li>Click on order to view details</li>
+      <li>See service specifications</li>
+      <li>View billing information</li>
+      <li>Check next due date</li>
+    </ul>
+  </li>
+  <li><strong>Order Actions</strong>
+    <ul>
+      <li><strong>Upgrade/Downgrade:</strong> Request service change</li>
+      <li><strong>Renew:</strong> Pay renewal invoice</li>
+      <li><strong>Cancel:</strong> Request cancellation</li>
+      <li><strong>Support:</strong> Open ticket for this service</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/service-details.png" alt="Service Details"><div class="caption">Service details page with actions</div></div>
+
+<h3 id="hosting-usage-sync-real-time">Hosting Usage Sync (Real-Time)</h3>
+
+<p>For hosting services with a control panel (cPanel, Plesk, or DirectAdmin), you can sync real-time usage statistics from your hosting account.</p>
+
+<p><strong>Viewing Service Details:</strong></p>
+<ol>
+  <li>Go to "Services" &rarr; "My Services"</li>
+  <li>Click on a hosting service to view details</li>
+  <li>The <strong>Package / Usage</strong> card shows your resource usage</li>
+</ol>
+
+<p><strong>Syncing Usage:</strong></p>
+<ol>
+  <li>In the Service Detail page, find the "Package / Usage" card</li>
+  <li>Click the <strong>sync button</strong> (rotating arrow icon) in the card header</li>
+  <li>Wait for the sync to complete (button will spin while syncing)</li>
+  <li>Usage data will update automatically:
+    <ul>
+      <li><strong>Disk Space</strong> - Used vs allocated storage</li>
+      <li><strong>Bandwidth</strong> - Monthly data transfer usage</li>
+      <li><strong>Email Accounts</strong> - Number of email accounts created</li>
+      <li><strong>Databases</strong> - Number of MySQL databases</li>
+      <li><strong>Addon Domains</strong> - Additional domains hosted</li>
+    </ul>
+  </li>
+</ol>
+
+<p><strong>Usage Information:</strong></p>
+<ul>
+  <li>Progress bars show percentage of resources used</li>
+  <li>Green/blue bars indicate normal usage</li>
+  <li>Warning colors appear when approaching limits</li>
+  <li>"Last synced" timestamp shows when data was last updated</li>
+</ul>
+
+<p><strong>Note:</strong> The sync button requires:</p>
+<ul>
+  <li>An active hosting account linked to the service</li>
+  <li>Server connection and module configured by administrator</li>
+  <li>Username set in the service configuration</li>
+</ul>
+
+<hr>
+
+<h2 id="domain-management">Domain Management</h2>
+
+<h3 id="searching-for-domains">Searching for Domains</h3>
+<ol>
+  <li><strong>Access Domain Search</strong>
+    <ul>
+      <li>Go to "Domains" &rarr; "Register Domain"</li>
+      <li>Or use search box on homepage</li>
+    </ul>
+  </li>
+  <li><strong>Enter Domain Name</strong>
+    <ul>
+      <li>Type desired domain name (e.g., "mybusiness" or "mybusiness.com")</li>
+      <li>Complete reCAPTCHA verification (if enabled by administrator)</li>
+      <li>Click "Search"</li>
+    </ul>
+  </li>
+  <li><strong>View Results</strong>
+    <ul>
+      <li>Available domains shown with pricing</li>
+      <li>Unavailable domains indicated</li>
+      <li>Alternative domain suggestions displayed below</li>
+      <li>Pricing shown for each available extension</li>
+    </ul>
+  </li>
+  <li><strong>Domain Suggestions</strong>
+    <ul>
+      <li>System automatically shows alternative domain names</li>
+      <li>Suggestions based on your search keyword</li>
+      <li>Different extensions offered (.com, .net, .org, etc.)</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/domain-search.png" alt="Domain Search Results"><div class="caption">Domain search results page</div></div>
+
+<h3 id="registering-a-domain">Registering a Domain</h3>
+
+<p><strong>Step 1: Select Domain</strong></p>
+<ul>
+  <li>Check boxes next to desired domains</li>
+  <li>Review pricing for selected registration period</li>
+  <li>Add to cart</li>
+</ul>
+
+<p><strong>Step 2: Configure Domain</strong></p>
+<ul>
+  <li>Set nameservers (use default or custom)</li>
+  <li>Enable WHOIS privacy (if available)</li>
+  <li>Select registration period (1-10 years)</li>
+</ul>
+
+<p><strong>Step 3: Complete Registration</strong></p>
+<ul>
+  <li>Review domain order</li>
+  <li>Proceed to checkout</li>
+  <li>Invoice generated</li>
+  <li>Complete payment</li>
+</ul>
+
+<h3 id="managing-domains">Managing Domains</h3>
+
+<p><strong>Domain List:</strong></p>
+<ul>
+  <li>View all registered domains</li>
+  <li>See expiration dates</li>
+  <li>Check renewal status</li>
+  <li>Filter by status (Active, Expired, etc.)</li>
+</ul>
+
+<p><strong>Domain Actions:</strong></p>
+<ul>
+  <li><strong>Renew:</strong> Pay renewal invoice</li>
+  <li><strong>Transfer:</strong> Initiate domain transfer</li>
+  <li><strong>Nameservers:</strong> Update DNS settings</li>
+  <li><strong>WHOIS:</strong> Update contact information</li>
+  <li><strong>Auto-Renew:</strong> Enable/disable automatic renewal</li>
+</ul>
+
+<div class="screenshot-img"><img src="screenshots/domain-list.png" alt="Domain List"><div class="caption">Domain list with management options</div></div>
+
+<h3 id="domain-transfer">Domain Transfer</h3>
+
+<p><strong>Transferring Domain to Your Account:</strong></p>
+<p>There are two ways to transfer a domain:</p>
+
+<h4 id="option-1-transfer-with-hosting-purchase">Option 1: Transfer with Hosting Purchase</h4>
+<ol>
+  <li>Select a hosting package</li>
+  <li>In the domain modal, choose "Transfer"</li>
+  <li>Enter your domain name</li>
+  <li>Enter the EPP/Auth code from your current registrar</li>
+  <li>Domain transfer and hosting are added to cart together</li>
+  <li>Complete checkout and payment</li>
+</ol>
+
+<h4 id="option-2-transfer-domain-only">Option 2: Transfer Domain Only</h4>
+<ol>
+  <li>Go to "Domains" &rarr; "Transfer Domain"</li>
+  <li>Enter domain name</li>
+  <li>Enter authorization/EPP code</li>
+  <li>Add to cart</li>
+  <li>Optionally add hosting package</li>
+  <li>Complete checkout and payment</li>
+</ol>
+
+<p><strong>After Checkout:</strong></p>
+<ul>
+  <li>Transfer request is submitted to registry</li>
+  <li>You'll receive a confirmation email from current registrar</li>
+  <li>Approve the transfer via email link</li>
+  <li>Transfer completes within 5-7 days</li>
+  <li>1 year is added to your domain registration</li>
+</ul>
+
+<p><strong>Transfer Requirements:</strong></p>
+<ul>
+  <li>Domain must be unlocked at current registrar</li>
+  <li>Domain must not be within 60 days of registration or last transfer</li>
+  <li>Valid authorization/EPP code required (get from current registrar)</li>
+  <li>Admin contact email must be accessible for approval</li>
+</ul>
+
+<hr>
+
+<h2 id="viewing-invoices">Viewing Invoices</h2>
+
+<h3 id="invoice-list">Invoice List</h3>
+<ol>
+  <li><strong>Access Invoices</strong>
+    <ul>
+      <li>Go to "Billing" &rarr; "Invoices"</li>
+      <li>View all invoices (paid and unpaid)</li>
+    </ul>
+  </li>
+  <li><strong>Invoice Information</strong>
+    <ul>
+      <li>Invoice number</li>
+      <li>Invoice date</li>
+      <li>Due date</li>
+      <li>Total amount</li>
+      <li>Status (Paid, Unpaid, Cancelled)</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/invoice-list.png" alt="Invoice List"><div class="caption">Invoice list page with filters</div></div>
+
+<h3 id="invoice-details">Invoice Details</h3>
+
+<p><strong>Click on invoice to view:</strong></p>
+<ul>
+  <li><strong>Invoice Header:</strong>
+    <ul>
+      <li>Company information</li>
+      <li>Your billing address</li>
+      <li>Invoice number and date</li>
+      <li>Due date and status</li>
+    </ul>
+  </li>
+  <li><strong>Line Items:</strong>
+    <ul>
+      <li>Item description (service, domain, etc.)</li>
+      <li>Quantity</li>
+      <li>Unit price</li>
+      <li>Subtotal</li>
+    </ul>
+  </li>
+  <li><strong>Totals:</strong>
+    <ul>
+      <li>Subtotal</li>
+      <li>Tax (if applicable)</li>
+      <li>Total amount due</li>
+    </ul>
+  </li>
+  <li><strong>Payment Information:</strong>
+    <ul>
+      <li>Payment status</li>
+      <li>Payment date (if paid)</li>
+      <li>Payment method used</li>
+      <li>Transaction ID</li>
+    </ul>
+  </li>
+</ul>
+
+<div class="screenshot-img"><img src="screenshots/invoice-details.png" alt="Invoice Details"><div class="caption">Invoice details page</div></div>
+
+<h3 id="downloading-invoices">Downloading Invoices</h3>
+<ul>
+  <li>Click "Download PDF" button</li>
+  <li>PDF invoice generated</li>
+  <li>Suitable for printing or record-keeping</li>
+  <li>Contains all invoice details</li>
+</ul>
+
+<h3 id="recurring-invoices">Recurring Invoices</h3>
+<p><strong>Automatic Invoice Generation:</strong></p>
+<ul>
+  <li>System generates invoices before service expiration</li>
+  <li>Invoices sent via email</li>
+  <li>Grace period before suspension (typically 3-7 days)</li>
+  <li>Reminders sent for unpaid invoices</li>
+</ul>
+
+<hr>
+
+<h2 id="making-payments">Making Payments</h2>
+
+<h3 id="payment-methods">Payment Methods</h3>
+<p>Available payment methods (configured by administrator):</p>
+<ul>
+  <li><strong>Credit/Debit Card</strong> (via Stripe)</li>
+  <li><strong>SSLCommerz</strong> (Bangladesh payments)</li>
+  <li><strong>Bank Transfer/Wire Transfer</strong></li>
+  <li><strong>Credit Balance</strong> (if you have account credit)</li>
+</ul>
+
+<h3 id="paying-an-invoice">Paying an Invoice</h3>
+<ol>
+  <li><strong>Open Unpaid Invoice</strong>
+    <ul>
+      <li>Go to "Billing" &rarr; "Invoices"</li>
+      <li>Click on unpaid invoice</li>
+    </ul>
+  </li>
+  <li><strong>Select Payment Method</strong>
+    <ul>
+      <li>Choose preferred payment method</li>
+      <li>Click "Pay Now"</li>
+    </ul>
+  </li>
+  <li><strong>Complete Payment</strong>
+    <ul>
+      <li>For Stripe: Enter card details</li>
+      <li>For SSLCommerz: Complete payment on SSLCommerz page</li>
+      <li>For bank transfer: View payment instructions</li>
+      <li>Confirm payment</li>
+    </ul>
+  </li>
+  <li><strong>Payment Confirmation</strong>
+    <ul>
+      <li>Payment processed</li>
+      <li>Invoice marked as paid</li>
+      <li>Receipt sent via email</li>
+      <li>Service activated/renewed</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/payment-page.png" alt="Payment Page"><div class="caption">Payment page with payment method selection</div></div>
+
+<h3 id="payment-history">Payment History</h3>
+<p><strong>View All Transactions:</strong></p>
+<ul>
+  <li>Go to "Billing" &rarr; "Transactions"</li>
+  <li>See all completed payments</li>
+  <li>Filter by date, amount, or payment method</li>
+</ul>
+
+<p><strong>Transaction Details:</strong></p>
+<ul>
+  <li>Transaction ID</li>
+  <li>Date and time</li>
+  <li>Amount paid</li>
+  <li>Payment method</li>
+  <li>Associated invoice</li>
+  <li>Receipt download</li>
+</ul>
+
+<h3 id="account-credit">Account Credit</h3>
+<p><strong>Adding Credit:</strong></p>
+<ul>
+  <li>Option to add funds to account</li>
+  <li>Use credit for future payments</li>
+  <li>Automatic deduction from credit balance</li>
+</ul>
+
+<p><strong>Credit Balance:</strong></p>
+<ul>
+  <li>View current credit balance in dashboard</li>
+  <li>Credit automatically applied to new invoices</li>
+  <li>Refund to original payment method (if requested)</li>
+</ul>
+
+<hr>
+
+<h2 id="support-tickets">Support Tickets</h2>
+
+<h3 id="creating-a-support-ticket">Creating a Support Ticket</h3>
+<ol>
+  <li><strong>Open Ticket Form</strong>
+    <ul>
+      <li>Go to "Support" &rarr; "Open Ticket"</li>
+      <li>Or click "Get Support" from service details</li>
+      <li>Modern, beautified form with organized sections</li>
+    </ul>
+  </li>
+  <li><strong>Contact Information Section</strong>
+    <ul>
+      <li>Name (pre-filled, read-only)</li>
+      <li>Email (pre-filled, read-only)</li>
+    </ul>
+  </li>
+  <li><strong>Ticket Details Section</strong>
+    <ul>
+      <li><strong>Subject:</strong> Brief description of issue (required)</li>
+      <li><strong>Department:</strong> Select appropriate department (required)
+        <ul>
+          <li>Technical Support</li>
+          <li>Billing Support</li>
+          <li>Sales</li>
+          <li>General Inquiry</li>
+        </ul>
+      </li>
+      <li><strong>Related Service:</strong> Select from your active services (optional)
+        <ul>
+          <li>Dropdown shows your active hosting accounts with domain names</li>
+          <li>Format: "Product Name (domain.com)"</li>
+          <li>Helps support staff identify the affected service quickly</li>
+        </ul>
+      </li>
+      <li><strong>Priority:</strong> Select urgency level (required)
+        <ul>
+          <li>Low (general questions)</li>
+          <li>Medium (minor issues)</li>
+          <li>High (service affecting)</li>
+          <li>Critical (urgent, service down)</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><strong>Message Section</strong>
+    <ul>
+      <li>Rich text editor (Quill) with formatting toolbar</li>
+      <li>Support for bold, italic, underline, lists, links, code blocks</li>
+      <li>Detailed description of your issue</li>
+    </ul>
+  </li>
+  <li><strong>Attachments Section</strong>
+    <ul>
+      <li>Upload screenshots or files</li>
+      <li>Allowed types: GIF, JPG, PNG, PDF, TXT</li>
+      <li>Maximum 5MB per file</li>
+      <li>Multiple attachments supported (click + button to add more)</li>
+    </ul>
+  </li>
+  <li><strong>Submit Ticket</strong>
+    <ul>
+      <li>Click "Submit Ticket" button</li>
+      <li>Ticket number assigned</li>
+      <li>Confirmation email sent</li>
+      <li>Support team notified</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/create-ticket.png" alt="Create Support Ticket"><div class="caption">Create support ticket form with modern design</div></div>
+
+<h3 id="managing-tickets">Managing Tickets</h3>
+
+<p><strong>Ticket List:</strong></p>
+<ul>
+  <li>View all your tickets</li>
+  <li>See ticket status:
+    <ul>
+      <li><strong>Open:</strong> New ticket, awaiting response</li>
+      <li><strong>Pending:</strong> Your response needed</li>
+      <li><strong>Answered:</strong> Support team replied</li>
+      <li><strong>Resolved:</strong> Issue resolved</li>
+      <li><strong>Closed:</strong> Ticket closed</li>
+    </ul>
+  </li>
+</ul>
+
+<p><strong>Ticket Actions:</strong></p>
+<ul>
+  <li>Click ticket to view conversation</li>
+  <li>Reply to ticket</li>
+  <li>Upload additional files</li>
+  <li>Close ticket (if resolved)</li>
+  <li>Reopen ticket (if issue persists)</li>
+</ul>
+
+<div class="screenshot-img"><img src="screenshots/ticket-list.png" alt="Support Ticket List"><div class="caption">Support ticket list</div></div>
+
+<h3 id="replying-to-tickets">Replying to Tickets</h3>
+<ol>
+  <li><strong>Open Ticket</strong>
+    <ul>
+      <li>Click on ticket from list</li>
+      <li>View full conversation history in a modern thread layout</li>
+    </ul>
+  </li>
+  <li><strong>Ticket Information Sidebar</strong>
+    <ul>
+      <li>Status badge showing current ticket state</li>
+      <li>Department assignment</li>
+      <li>Priority level with color-coded badge</li>
+      <li>Submitted date</li>
+      <li>Last updated date</li>
+    </ul>
+  </li>
+  <li><strong>Conversation Thread</strong>
+    <ul>
+      <li>Messages displayed as styled bubbles</li>
+      <li>Color-coded by sender:
+        <ul>
+          <li><strong>Blue border:</strong> Your messages (customer)</li>
+          <li><strong>Green border:</strong> Staff/Admin replies</li>
+          <li><strong>Purple border:</strong> Original ticket message</li>
+        </ul>
+      </li>
+      <li>Each message shows:
+        <ul>
+          <li>Sender name with avatar</li>
+          <li>Timestamp</li>
+          <li>Message content with rich text support</li>
+          <li>Helpful/Not Helpful feedback buttons</li>
+          <li>Attachment links (if any)</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><strong>Add Reply</strong>
+    <ul>
+      <li>Use the rich text editor (Quill) at the top</li>
+      <li>Format text with bold, italic, lists, links, etc.</li>
+      <li>Attach files (GIF, JPG, PNG, PDF, TXT - max 5MB)</li>
+      <li>Click "Send Reply" button</li>
+    </ul>
+  </li>
+  <li><strong>Email Notifications</strong>
+    <ul>
+      <li>You receive email when support replies</li>
+      <li>Click link in email to view ticket</li>
+      <li>Reply via portal (not by email reply)</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="best-practices-for-support">Best Practices for Support</h3>
+
+<p><strong>For Faster Resolution:</strong></p>
+<ul>
+  <li>Provide detailed description</li>
+  <li>Include error messages (screenshots helpful)</li>
+  <li>Specify when issue started</li>
+  <li>Mention what you were doing when issue occurred</li>
+  <li>Include relevant URLs or account details</li>
+  <li>Set appropriate priority level</li>
+  <li>Respond promptly to support questions</li>
+</ul>
+
+<p><strong>Avoid:</strong></p>
+<ul>
+  <li>Opening multiple tickets for same issue</li>
+  <li>Marking all tickets as urgent</li>
+  <li>Providing incomplete information</li>
+  <li>Expecting instant responses (check SLA)</li>
+</ul>
+
+<hr>
+
+<h2 id="knowledge-base">Knowledge Base</h2>
+
+<p>The Knowledge Base is publicly accessible without login, making it easy for visitors to find answers.</p>
+
+<h3 id="browsing-articles">Browsing Articles</h3>
+<ol>
+  <li><strong>Access Knowledge Base</strong>
+    <ul>
+      <li>URL: <code>/supports/KB</code></li>
+      <li>No login required (public page)</li>
+    </ul>
+  </li>
+  <li><strong>KB List Page Features</strong>
+    <ul>
+      <li><strong>Search Box:</strong> Filter articles by keyword in real-time</li>
+      <li><strong>Category Cards:</strong> Visual grid of categories with article counts</li>
+      <li><strong>Article List:</strong> All articles with icons, tags, and view counts</li>
+      <li><strong>Sidebar:</strong> Category navigation with article counts</li>
+      <li><strong>Pagination:</strong> 10 articles per page with page navigation</li>
+    </ul>
+  </li>
+  <li><strong>Browse by Category</strong>
+    <ul>
+      <li>Click on any category card or sidebar link</li>
+      <li>URL: <code>/supports/kb_category/{id}/{slug}</code></li>
+      <li>Shows articles filtered by that category</li>
+      <li>Active category highlighted in sidebar</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/knowledge-base.png" alt="Knowledge Base"><div class="caption">Knowledge base categories and popular articles</div></div>
+
+<h3 id="searching-for-articles">Searching for Articles</h3>
+<ol>
+  <li><strong>Use Search Box</strong>
+    <ul>
+      <li>Located at the top of the KB list page</li>
+      <li>Enter keywords or question</li>
+      <li>Articles filter in real-time as you type</li>
+      <li>Results show title, tags, and view count</li>
+    </ul>
+  </li>
+  <li><strong>Filter by Category</strong>
+    <ul>
+      <li>Click category card in the grid</li>
+      <li>Or use sidebar category links</li>
+      <li>Each category shows article count</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="reading-articles">Reading Articles</h3>
+
+<p><strong>Article Detail Page</strong> (<code>/supports/view_kb/{id}/{slug}</code>):</p>
+
+<p><strong>Article Information:</strong></p>
+<ul>
+  <li>Article title with icon</li>
+  <li>Tags for categorization</li>
+  <li>View count</li>
+</ul>
+
+<p><strong>Article Content:</strong></p>
+<ul>
+  <li>Rich formatted content</li>
+  <li>Sanitized HTML for security</li>
+</ul>
+
+<p><strong>Rating System:</strong></p>
+<ul>
+  <li>"Was this article helpful?" prompt</li>
+  <li>Thumbs up/down buttons with vote counts</li>
+  <li>Helps identify useful content</li>
+</ul>
+
+<p><strong>Sidebar Navigation:</strong></p>
+<ul>
+  <li>KB category links</li>
+  <li>Quick access to other categories</li>
+  <li>Support navigation</li>
+</ul>
+
+<hr>
+
+<h2 id="announcements">Announcements</h2>
+
+<p>Announcements are publicly accessible without login, keeping visitors informed of important updates.</p>
+
+<h3 id="viewing-announcements">Viewing Announcements</h3>
+<ol>
+  <li><strong>Access Announcements</strong>
+    <ul>
+      <li>URL: <code>/supports/announcements</code></li>
+      <li>No login required (public page)</li>
+    </ul>
+  </li>
+  <li><strong>Announcement List Features</strong>
+    <ul>
+      <li><strong>List View:</strong> All announcements with icons and view counts</li>
+      <li><strong>Archive Sidebar:</strong> Year-month grouping (e.g., "February 2026 (5)")</li>
+      <li><strong>Pagination:</strong> 10 announcements per page</li>
+    </ul>
+  </li>
+  <li><strong>Browse by Archive</strong>
+    <ul>
+      <li>Click on any month in the Archive sidebar</li>
+      <li>URL: <code>/supports/announcements_archive/{year}/{month}</code></li>
+      <li>Shows announcements from that specific month</li>
+      <li>Active month highlighted in sidebar</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="reading-announcements">Reading Announcements</h3>
+
+<p><strong>Announcement Detail Page</strong> (<code>/supports/view_announcement/{id}/{slug}</code>):</p>
+
+<p><strong>Announcement Information:</strong></p>
+<ul>
+  <li>Title with icon</li>
+  <li>Tags (if any)</li>
+  <li>View count</li>
+</ul>
+
+<p><strong>Content:</strong></p>
+<ul>
+  <li>Full announcement content</li>
+  <li>Sanitized HTML for security</li>
+</ul>
+
+<p><strong>Share Buttons:</strong></p>
+<ul>
+  <li>Facebook share</li>
+  <li>Twitter share</li>
+  <li>LinkedIn share</li>
+  <li>Copy link to clipboard</li>
+</ul>
+
+<p><strong>Archive Navigation:</strong></p>
+<ul>
+  <li>Year-month archive links in sidebar</li>
+  <li>Quick access to other months</li>
+  <li>Support navigation</li>
+</ul>
+
+<hr>
+
+<h2 id="contact-us">Contact Us</h2>
+
+<p>The Contact Us page allows visitors to send messages to the appropriate department without needing to login.</p>
+
+<h3 id="accessing-contact-us-page">Accessing Contact Us Page</h3>
+<ol>
+  <li><strong>Navigate to Contact Us</strong>
+    <ul>
+      <li>URL: <code>/supports/contactus</code></li>
+      <li>No login required (public page)</li>
+      <li>Link in footer navigation</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="contact-form-features">Contact Form Features</h3>
+
+<p><strong>Modern Design:</strong></p>
+<ul>
+  <li>Clean, professional layout matching registration page</li>
+  <li>Teal gradient header with contact icon</li>
+  <li>Responsive design for mobile devices</li>
+  <li>Real-time form validation</li>
+</ul>
+
+<p><strong>Form Fields:</strong></p>
+<ul>
+  <li><strong>Your Name</strong> (required): Full name of the sender</li>
+  <li><strong>Email Address</strong> (required): Valid email for replies</li>
+  <li><strong>Department</strong> (required): Select from active ticket departments
+    <ul>
+      <li>Dropdown populated from configured departments</li>
+      <li>Each department has its own email address</li>
+    </ul>
+  </li>
+  <li><strong>Subject</strong> (required): Brief topic of the inquiry</li>
+  <li><strong>Message</strong> (required): Detailed message content</li>
+</ul>
+
+<p><strong>Security Features:</strong></p>
+<ul>
+  <li>Google reCAPTCHA protection (if configured)</li>
+  <li>CSRF token validation</li>
+  <li>Input sanitization</li>
+  <li>Email validation</li>
+</ul>
+
+<h3 id="submitting-a-contact-form">Submitting a Contact Form</h3>
+<ol>
+  <li><strong>Fill in Your Details</strong>
+    <ul>
+      <li>Enter your name and email address</li>
+      <li>These are required for the department to respond</li>
+    </ul>
+  </li>
+  <li><strong>Select Department</strong>
+    <ul>
+      <li>Choose the most appropriate department</li>
+      <li>Examples: Sales, Technical Support, Billing, General Inquiry</li>
+    </ul>
+  </li>
+  <li><strong>Enter Subject and Message</strong>
+    <ul>
+      <li>Provide a clear subject line</li>
+      <li>Write your detailed message or inquiry</li>
+    </ul>
+  </li>
+  <li><strong>Complete reCAPTCHA</strong> (if displayed)
+    <ul>
+      <li>Click the "I'm not a robot" checkbox</li>
+      <li>Complete any additional verification if prompted</li>
+    </ul>
+  </li>
+  <li><strong>Submit Form</strong>
+    <ul>
+      <li>Click "Send Message" button</li>
+      <li>Success message displayed on completion</li>
+      <li>Email sent to selected department</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="what-happens-after-submission">What Happens After Submission</h3>
+<ul>
+  <li>Email is sent to the selected department's email address</li>
+  <li>Email contains:
+    <ul>
+      <li>Sender's name and email</li>
+      <li>Department name</li>
+      <li>Subject and message</li>
+      <li>Submission timestamp</li>
+      <li>Sender's IP address</li>
+    </ul>
+  </li>
+  <li>Department staff can reply directly to the sender's email</li>
+</ul>
+
+<h3 id="contact-us-best-practices">Best Practices</h3>
+<p><strong>For Faster Response:</strong></p>
+<ul>
+  <li>Select the correct department</li>
+  <li>Provide detailed information in your message</li>
+  <li>Include any relevant account or order numbers</li>
+  <li>Use a valid email address for replies</li>
+</ul>
+
+<div class="screenshot-img"><img src="screenshots/contact-us.png" alt="Contact Us"><div class="caption">Contact Us form with department selection</div></div>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- PART 3: ADMINISTRATOR PORTAL GUIDE -->
+<!-- ============================================================ -->
+
+<h1 id="part-3-administrator-portal-guide">Part 3: Administrator Portal Guide</h1>
+
+<h2 id="admin-dashboard">Admin Dashboard</h2>
+
+<h3 id="admin-dashboard-overview">Dashboard Overview</h3>
+
+<p>The admin dashboard provides comprehensive business insights:</p>
+
+<p><strong>Key Metrics (Top Row):</strong></p>
+<ul>
+  <li><strong>Total Revenue:</strong> Revenue for selected period</li>
+  <li><strong>Active Orders:</strong> Count of active services</li>
+  <li><strong>Pending Invoices:</strong> Unpaid invoice count and amount</li>
+  <li><strong>Open Tickets:</strong> Support tickets requiring attention</li>
+</ul>
+
+<div class="screenshot-img"><img src="screenshots/admin-dashboard.png" alt="Admin Dashboard"><div class="caption">Admin dashboard with metrics and charts</div></div>
+
+<h3 id="dashboard-widgets">Dashboard Widgets</h3>
+
+<p><strong>Summary Cards (Top Row):</strong></p>
+<ul>
+  <li><strong>Customers:</strong> Total active customer count</li>
+  <li><strong>Orders:</strong> Total active orders count</li>
+  <li><strong>Tickets:</strong> Total open support tickets count</li>
+  <li><strong>Invoices:</strong> Total invoices count</li>
+</ul>
+
+<p><strong>Pending Orders:</strong></p>
+<ul>
+  <li>Latest pending orders list</li>
+  <li>Order number and amount</li>
+  <li>Payment status indicator (Paid/Due/Partial)</li>
+  <li>Link to order details</li>
+</ul>
+
+<p><strong>Recent Support Tickets:</strong></p>
+<ul>
+  <li>Latest support tickets</li>
+  <li>Priority indicator (Low/Medium/High/Critical)</li>
+  <li>Status badges (Opened/Answered/Customer Reply/Closed)</li>
+  <li>Quick link to ticket view</li>
+</ul>
+
+<p><strong>Recent Invoices:</strong></p>
+<ul>
+  <li>Latest invoices with amounts</li>
+  <li>Due date display</li>
+  <li>Payment status badges</li>
+  <li>Link to invoice details</li>
+</ul>
+
+<p><strong>Last 12 Months Expenses (Chart):</strong></p>
+<ul>
+  <li>Interactive bar chart showing monthly expense totals</li>
+  <li>Displays data using Chart.js visualization</li>
+  <li>Shows total expenses sum in header</li>
+  <li>Auto-fills missing months with zero values</li>
+  <li>Refresh button to reload data</li>
+  <li>Link to expenses management page</li>
+</ul>
+
+<p><strong>Domain Selling Prices:</strong></p>
+<ul>
+  <li>Table showing domain extension pricing</li>
+  <li>Columns: Extension, Register, Transfer, Renewal</li>
+  <li>Color-coded prices for easy reading</li>
+  <li>Currency symbol from configuration</li>
+  <li>Scrollable list (up to 10 extensions)</li>
+  <li>Link to domain pricing management</li>
+</ul>
+
+<h3 id="quick-actions">Quick Actions</h3>
+<p><strong>Accessible from Dashboard:</strong></p>
+<ul>
+  <li>Create New Customer</li>
+  <li>Create New Order</li>
+  <li>Generate Invoice</li>
+  <li>Create Support Ticket</li>
+  <li>Add Knowledge Base Article</li>
+  <li>View Reports</li>
+</ul>
+
+<hr>
+
+<h2 id="customer-management">Customer Management</h2>
+
+<h3 id="customer-list">Customer List</h3>
+<ol>
+  <li><strong>Access Customer Management</strong>
+    <ul>
+      <li>Go to "Customers" &rarr; "Manage Customers"</li>
+      <li>View all customer accounts</li>
+    </ul>
+  </li>
+  <li><strong>Customer List Features</strong>
+    <ul>
+      <li>Server-side pagination (fast for large datasets)</li>
+      <li>Search by name, email, phone, company</li>
+      <li>Filter by status (Active, Inactive)</li>
+      <li>Sort by any column</li>
+      <li>Export to CSV/Excel</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/admin-customer-list.png" alt="Customer Management"><div class="caption">Customer management with DataTables pagination</div></div>
+
+<h3 id="customer-details">Customer Details</h3>
+<p><strong>Click on customer to view:</strong></p>
+<ul>
+  <li><strong>Personal Information:</strong> Name, email, phone, company name, address details, tax ID, registration date</li>
+  <li><strong>Account Statistics:</strong> Total orders, active services, total revenue, outstanding balance, last login date</li>
+  <li><strong>Related Records:</strong> All orders/services, all invoices, all payments, all support tickets, notes and comments</li>
+</ul>
+
+<h3 id="adding-a-new-customer">Adding a New Customer</h3>
+<ol>
+  <li><strong>Click "Add Customer"</strong> - Fill in customer form, enter all required fields</li>
+  <li><strong>Customer Information</strong>
+    <ul>
+      <li><strong>Personal Details:</strong> First Name (required), Last Name (required), Email (required, must be unique), Phone Number</li>
+      <li><strong>Company Information:</strong> Company Name, Tax ID/VAT Number</li>
+      <li><strong>Address:</strong> Street Address, City, State/Province, ZIP/Postal Code, Country</li>
+      <li><strong>Account Settings:</strong> Password (auto-generated or manual), Send welcome email (checkbox), Account status (Active/Inactive)</li>
+    </ul>
+  </li>
+  <li><strong>Save Customer</strong>
+    <ul>
+      <li>Click "Save"</li>
+      <li>Customer account created</li>
+      <li>Welcome email sent (if enabled)</li>
+      <li>Customer can now login</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="editing-customer-information">Editing Customer Information</h3>
+<ol>
+  <li><strong>Find Customer</strong> - Search in customer list, click "Edit" button</li>
+  <li><strong>Update Information</strong> - Modify any field except email (requires verification), update address, change status, reset password (if needed)</li>
+  <li><strong>Save Changes</strong> - Click "Save", customer notified of changes (if applicable)</li>
+</ol>
+
+<h3 id="customer-actions">Customer Actions</h3>
+<p><strong>Available Actions:</strong></p>
+<ul>
+  <li><strong>View Orders:</strong> See all customer orders</li>
+  <li><strong>View Invoices:</strong> See billing history</li>
+  <li><strong>View Tickets:</strong> See support history</li>
+  <li><strong>Create Order:</strong> Create order for this customer</li>
+  <li><strong>Generate Invoice:</strong> Create manual invoice</li>
+  <li><strong>Send Email:</strong> Send direct message</li>
+  <li><strong>Add Note:</strong> Internal notes about customer</li>
+  <li><strong>Login as Customer:</strong> (for troubleshooting)</li>
+  <li><strong>Suspend Account:</strong> Temporarily disable</li>
+  <li><strong>Delete Customer:</strong> Permanently remove (with confirmation)</li>
+</ul>
+
+<hr>
+
+<h2 id="order-management">Order Management</h2>
+
+<h3 id="order-list">Order List</h3>
+<ol>
+  <li><strong>Access Order Management</strong>
+    <ul>
+      <li>Go to "Orders" &rarr; "Manage Orders"</li>
+      <li>View all orders/services</li>
+    </ul>
+  </li>
+  <li><strong>Order List Information</strong>
+    <ul>
+      <li>Order ID, Customer name, Package/Service name, Amount, Billing cycle, Next due date, Status, Actions</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/admin-order-list.png" alt="Order Management List"><div class="caption">Order management list with filters and search</div></div>
+
+<h3 id="creating-an-order-manual">Creating an Order (Manual)</h3>
+
+<p><strong>When to Create Manual Order:</strong></p>
+<ul>
+  <li>Phone order from customer</li>
+  <li>Offline sale</li>
+  <li>Custom service not in catalog</li>
+  <li>Migration from another system</li>
+</ul>
+
+<p><strong>Steps:</strong></p>
+<ol>
+  <li><strong>Click "New Order"</strong> - Select customer (or create new), choose package</li>
+  <li><strong>Order Details</strong> - Select billing cycle, choose start date, set custom pricing (if applicable), add setup fee (if applicable)</li>
+  <li><strong>Service Configuration</strong> - Enter domain name, set server location, configure options, add special notes</li>
+  <li><strong>Pricing Override</strong> (optional) - Override standard pricing, add discounts, add custom line items</li>
+  <li><strong>Generate Invoice</strong> - Auto-generate invoice (checkbox), set invoice due date, send invoice to customer (checkbox)</li>
+  <li><strong>Save Order</strong> - Order created, invoice generated (if enabled), email sent to customer (if enabled)</li>
+</ol>
+
+<h3 id="order-status-management">Order Status Management</h3>
+
+<p><strong>Order Statuses:</strong></p>
+<ul>
+  <li><strong>Pending:</strong> Awaiting payment or approval</li>
+  <li><strong>Active:</strong> Service is active</li>
+  <li><strong>Suspended:</strong> Temporarily disabled (non-payment, violation, etc.)</li>
+  <li><strong>Cancelled:</strong> Service cancelled</li>
+  <li><strong>Fraud:</strong> Flagged for manual review</li>
+</ul>
+
+<p><strong>Changing Order Status:</strong></p>
+<ol>
+  <li>Open order details</li>
+  <li>Select new status from dropdown</li>
+  <li>Add reason/note (optional)</li>
+  <li>Save changes</li>
+  <li>Customer notified via email</li>
+</ol>
+
+<h3 id="order-actions">Order Actions</h3>
+<p><strong>Available Actions:</strong></p>
+<ul>
+  <li><strong>Edit Order:</strong> Modify order details</li>
+  <li><strong>Change Package:</strong> Upgrade/downgrade</li>
+  <li><strong>Suspend Service:</strong> Temporarily disable</li>
+  <li><strong>Unsuspend Service:</strong> Reactivate</li>
+  <li><strong>Cancel Order:</strong> Permanently cancel</li>
+  <li><strong>Generate Invoice:</strong> Create renewal invoice</li>
+  <li><strong>View Invoices:</strong> See related invoices</li>
+  <li><strong>Add Notes:</strong> Internal notes</li>
+  <li><strong>Send Email:</strong> Notify customer</li>
+</ul>
+
+<h3 id="bulk-operations">Bulk Operations</h3>
+<p><strong>Select Multiple Orders:</strong></p>
+<ul>
+  <li>Check boxes next to orders</li>
+  <li>Select bulk action: Suspend selected, Activate selected, Generate invoices, Send reminder emails, Export selected, Delete selected</li>
+</ul>
+
+<h3 id="managing-existing-orders-admin">Managing Existing Orders</h3>
+
+<p>The Order Management page allows administrators to view and modify existing orders, including changing registrars, servers, packages, and cancelling orders.</p>
+
+<p><strong>Accessing Order Management:</strong></p>
+<ol>
+  <li>Go to "Orders" in the admin menu</li>
+  <li>Find the order you want to manage</li>
+  <li>Click the <strong>gear icon</strong> (Manage) button</li>
+</ol>
+
+<p><strong>Order Management Page Sections:</strong></p>
+<ol>
+  <li><strong>Order Overview</strong> - Order number and date, total amount and discounts, order status, customer information with link to profile</li>
+  <li><strong>Domain Items</strong> - List of all domains in the order, domain name, registrar, order type, registration and expiry dates, status badge</li>
+  <li><strong>Hosting Items</strong> - List of all hosting services in the order, package name, server, billing cycle, hosting domain and control panel username, status badge</li>
+</ol>
+
+<p><strong>Domain Actions:</strong></p>
+<ul>
+  <li><strong>Change Registrar:</strong>
+    <ol>
+      <li>Click "Change Registrar" on a domain</li>
+      <li>Select the new registrar from dropdown</li>
+      <li>Check "Initiate domain transfer" if domain is active</li>
+      <li>Click "Save Changes"</li>
+      <li>If domain is active, transfer will be initiated to new registrar</li>
+    </ol>
+  </li>
+  <li><strong>Cancel Domain:</strong>
+    <ol>
+      <li>Click "Cancel" on a domain</li>
+      <li>Choose cancellation type: <strong>Immediate</strong> (Cancel now) or <strong>End of Period</strong> (Schedule at expiry)</li>
+      <li>Enter cancellation reason (optional)</li>
+      <li>Click "Cancel Domain"</li>
+    </ol>
+  </li>
+</ul>
+
+<p><strong>Hosting Actions:</strong></p>
+<ul>
+  <li><strong>Change Package:</strong>
+    <ol>
+      <li>Click "Change Package" on a service</li>
+      <li>Select new package from dropdown</li>
+      <li>Select billing cycle/pricing</li>
+      <li>Check "Apply package change on server" to update the control panel</li>
+      <li>Click "Save Changes"</li>
+    </ol>
+  </li>
+  <li><strong>Change Server:</strong>
+    <ol>
+      <li>Click "Change Server" on a service</li>
+      <li>Select new server from dropdown</li>
+      <li>Select package available on new server</li>
+      <li>Check "Migrate account" to move data to new server</li>
+      <li>Click "Save Changes"</li>
+    </ol>
+  </li>
+  <li><strong>Cancel Service:</strong>
+    <ol>
+      <li>Click "Cancel" on a service</li>
+      <li>Choose cancellation type: <strong>Immediate</strong> or <strong>End of Period</strong></li>
+      <li>Check "Delete server account" for immediate deletion</li>
+      <li>Enter cancellation reason (optional)</li>
+      <li>Click "Cancel Service"</li>
+    </ol>
+  </li>
+</ul>
+
+<p><strong>Cancel Entire Order:</strong></p>
+<ol>
+  <li>Click "Cancel Entire Order" button</li>
+  <li>Choose cancellation type: <strong>Immediate</strong> or <strong>End of Period</strong></li>
+  <li>Enter cancellation reason (optional)</li>
+  <li>Click "Cancel Order"</li>
+</ol>
+
+<p><strong>What Happens When Order is Cancelled:</strong></p>
+<ul>
+  <li>All domain items are cancelled</li>
+  <li>All hosting services are terminated</li>
+  <li>All unpaid invoices are automatically cancelled</li>
+  <li>Invoice status changes to "CANCELLED"</li>
+  <li>Cancellation reason is recorded</li>
+</ul>
+
+<p><strong>Status Indicators:</strong></p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Domain Status</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Pending Registration</td><td>Awaiting domain registration</td></tr>
+<tr><td>Active</td><td>Domain is registered and active</td></tr>
+<tr><td>Expired</td><td>Domain has expired</td></tr>
+<tr><td>Grace Period</td><td>Domain in grace period after expiry</td></tr>
+<tr><td>Cancelled</td><td>Domain cancelled</td></tr>
+<tr><td>Pending Transfer</td><td>Transfer in progress</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Service Status</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Pending</td><td>Awaiting setup/activation</td></tr>
+<tr><td>Active</td><td>Service is active</td></tr>
+<tr><td>Expired</td><td>Service has expired</td></tr>
+<tr><td>Suspended</td><td>Service temporarily suspended</td></tr>
+<tr><td>Terminated</td><td>Service permanently terminated</td></tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+
+<h2 id="package-management">Package Management</h2>
+
+<h3 id="package-list">Package List</h3>
+<ol>
+  <li><strong>Access Packages</strong>
+    <ul>
+      <li>Go to "Products" &rarr; "Packages"</li>
+      <li>View all hosting packages</li>
+    </ul>
+  </li>
+  <li><strong>Package Information</strong>
+    <ul>
+      <li>Package name, Package group/category, Pricing, Status (Active/Hidden), Order (display order)</li>
+    </ul>
+  </li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/admin-package-list.png" alt="Package Management List"><div class="caption">Package management list</div></div>
+
+<h3 id="creating-a-package">Creating a Package</h3>
+<ol>
+  <li><strong>Click "Add Package"</strong> - Open package creation form</li>
+  <li><strong>Basic Information</strong>
+    <ul>
+      <li><strong>Package Name:</strong> Display name (e.g., "Starter Hosting")</li>
+      <li><strong>Package Group:</strong> Category (Shared, VPS, Dedicated, etc.)</li>
+      <li><strong>Description:</strong> Detailed description</li>
+      <li><strong>Features:</strong> Bullet points of features</li>
+      <li><strong>Status:</strong> Active (visible) or Hidden</li>
+    </ul>
+  </li>
+  <li><strong>Specifications</strong>
+    <ul>
+      <li><strong>CPU Cores:</strong> Number of CPU cores</li>
+      <li><strong>RAM:</strong> Memory allocation (MB/GB)</li>
+      <li><strong>Disk Space:</strong> Storage allocation (GB/TB)</li>
+      <li><strong>Bandwidth:</strong> Monthly transfer limit (GB/TB/Unlimited)</li>
+      <li><strong>Email Accounts:</strong> Number allowed</li>
+      <li><strong>Databases:</strong> Number allowed</li>
+      <li><strong>Subdomains:</strong> Number allowed</li>
+      <li><strong>FTP Accounts:</strong> Number allowed</li>
+    </ul>
+  </li>
+  <li><strong>Pricing</strong>
+    <ul>
+      <li><strong>Setup Fee:</strong> One-time setup cost</li>
+      <li><strong>Monthly Price:</strong> Recurring monthly cost</li>
+      <li><strong>Quarterly Price:</strong> 3-month pricing</li>
+      <li><strong>Semi-Annual Price:</strong> 6-month pricing</li>
+      <li><strong>Annual Price:</strong> 12-month pricing</li>
+      <li><strong>Bi-Annual Price:</strong> 24-month pricing</li>
+      <li><strong>Tri-Annual Price:</strong> 36-month pricing</li>
+    </ul>
+  </li>
+  <li><strong>Additional Options</strong>
+    <ul>
+      <li><strong>Allow Upgrades:</strong> Can customers upgrade?</li>
+      <li><strong>Allow Downgrades:</strong> Can customers downgrade?</li>
+      <li><strong>Auto-Setup:</strong> Automatically provision?</li>
+      <li><strong>Welcome Email:</strong> Send welcome email?</li>
+      <li><strong>Order:</strong> Display position (lower = higher priority)</li>
+    </ul>
+  </li>
+  <li><strong>Save Package</strong> - Click "Save", package available for ordering, appears in customer portal (if Active)</li>
+</ol>
+
+<h3 id="editing-packages">Editing Packages</h3>
+<ol>
+  <li><strong>Find Package</strong> - Locate in package list, click "Edit"</li>
+  <li><strong>Modify Details</strong> - Update any field, change pricing, modify features, adjust specifications</li>
+  <li><strong>Price Changes</strong> - New prices apply to new orders only, existing orders keep original pricing, can manually adjust existing orders if needed</li>
+  <li><strong>Save Changes</strong> - Click "Save", changes effective immediately</li>
+</ol>
+
+<h3 id="package-groups">Package Groups</h3>
+<p><strong>Organizing Packages:</strong></p>
+<ul>
+  <li>Create package groups (categories)</li>
+  <li>Group related packages</li>
+  <li>Examples: Shared Hosting, VPS Hosting, Dedicated Servers, Reseller Hosting, Email Hosting</li>
+</ul>
+
+<p><strong>Managing Groups:</strong></p>
+<ul>
+  <li>Create new group</li>
+  <li>Edit group name</li>
+  <li>Set group display order</li>
+  <li>Hide/show entire group</li>
+</ul>
+
+<hr>
+
+<h2 id="service-product-management">Service Product Management</h2>
+
+<h3 id="service-product-list">Service Product List</h3>
+<ol>
+  <li><strong>Access Service Products</strong>
+    <ul>
+      <li>Go to "Products" &rarr; "Service Products"</li>
+      <li>View all service products with server-side pagination</li>
+    </ul>
+  </li>
+  <li><strong>Product List Information</strong>
+    <ul>
+      <li>Product name, Service group, Service type (Shared Hosting, Reseller Hosting, VPS, etc.), Module (cPanel, Plesk, DirectAdmin), Server package (if applicable), Hidden/Active status, Last updated date, Actions (Manage, Delete)</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="creating-a-service-product">Creating a Service Product</h3>
+<ol>
+  <li><strong>Click "Add"</strong> - Opens the service product creation form</li>
+  <li><strong>Basic Information</strong>
+    <ul>
+      <li><strong>Product Name:</strong> Display name (e.g., "Basic Shared Hosting")</li>
+      <li><strong>Service Group:</strong> Select from configured service groups (type is derived from group)</li>
+      <li><strong>Module:</strong> Select provisioning module (cPanel, Plesk, DirectAdmin) -- filters available servers</li>
+      <li><strong>Server:</strong> Select which server hosts this product (filtered by selected module)</li>
+      <li><strong>Hidden:</strong> Check to hide product from client area</li>
+    </ul>
+  </li>
+  <li><strong>Server Package Selection</strong> (when module is cPanel, Plesk, or DirectAdmin)
+    <ul>
+      <li>After selecting a module and server, a dynamic dropdown loads available packages from the server API</li>
+      <li>Works with all supported control panels (cPanel/WHM, Plesk, DirectAdmin)</li>
+      <li>Selecting a package auto-fills the <strong>Product Description</strong> with package details: Disk Space, Bandwidth, Max Addon Domains, Max Subdomains, Max FTP Accounts, Max Email Accounts, Max Databases, Shell Access, CGI Access</li>
+    </ul>
+  </li>
+  <li><strong>Product Description</strong>
+    <ul>
+      <li>Rich text description of the product</li>
+      <li>Auto-populated from server package details (editable)</li>
+      <li>Displayed to customers when ordering</li>
+    </ul>
+  </li>
+  <li><strong>Save Product</strong> - Click "Save", product available for assignment to orders</li>
+</ol>
+
+<h3 id="editing-service-products">Editing Service Products</h3>
+<ol>
+  <li><strong>Find Product</strong> - Search in the product list, click "Manage" button (wrench icon)</li>
+  <li><strong>Modify Details</strong> - Update any field, change service group, type, or module, re-select server package if needed, toggle hidden status</li>
+  <li><strong>Save Changes</strong> - Click "Save", changes effective immediately</li>
+</ol>
+
+<h3 id="deleting-service-products">Deleting Service Products</h3>
+<ul>
+  <li>Click the "Delete" button (trash icon) in the product list</li>
+  <li>Confirm deletion in the popup dialog</li>
+  <li>Products are soft-deleted (can be recovered from database)</li>
+</ul>
+
+<hr>
+
+<h2 id="email-template-management">Email Template Management</h2>
+
+<h3 id="email-template-overview">Overview</h3>
+<p>Email Template Management allows you to create, edit, and manage all email templates used throughout the system. Templates support rich text editing via the Quill editor and a placeholder system for dynamic content.</p>
+<p><strong>Access:</strong> <code>whmazadmin/email_template</code></p>
+
+<h3 id="email-template-list">Email Template List</h3>
+<ol>
+  <li><strong>Access Email Templates</strong>
+    <ul>
+      <li>Go to "Settings" &rarr; "Email Templates"</li>
+      <li>View all templates with server-side pagination</li>
+    </ul>
+  </li>
+  <li><strong>Template List Columns</strong>
+    <ul>
+      <li>Template Name, Template Key (unique identifier, displayed in <code>code</code> format), Subject, Category (color-coded badge), Status (Active/Inactive), Last Updated, Actions (Edit, Delete)</li>
+    </ul>
+  </li>
+  <li><strong>Category Color Codes</strong>
+    <ul>
+      <li><strong>DUNNING</strong> -- Yellow/Warning badge</li>
+      <li><strong>INVOICE</strong> -- Blue/Info badge</li>
+      <li><strong>ORDER</strong> -- Primary badge</li>
+      <li><strong>AUTH</strong> -- Secondary badge</li>
+      <li><strong>SUPPORT</strong> -- Green/Success badge</li>
+      <li><strong>SERVICE</strong> -- Teal badge</li>
+      <li><strong>GENERAL</strong> -- Dark badge</li>
+    </ul>
+  </li>
+</ol>
+
+<h3 id="creating-an-email-template">Creating an Email Template</h3>
+<ol>
+  <li><strong>Click "Add"</strong> - Opens the email template form</li>
+  <li><strong>Template Information</strong>
+    <ul>
+      <li><strong>Template Name:</strong> Display name (e.g., "First Payment Reminder")</li>
+      <li><strong>Template Key:</strong> Unique identifier used in code (e.g., <code>dunning_first_reminder</code>). Must be alphanumeric with underscores/dashes only. Cannot be duplicated.</li>
+      <li><strong>Category:</strong> Select from DUNNING, INVOICE, ORDER, SERVICE, SUPPORT, AUTH, or GENERAL</li>
+      <li><strong>Subject:</strong> Email subject line (supports placeholders)</li>
+      <li><strong>Status:</strong> Active checkbox (checked = active)</li>
+    </ul>
+  </li>
+  <li><strong>Email Body</strong>
+    <ul>
+      <li>Rich text editor (Quill) with formatting toolbar</li>
+      <li>Supports: bold, italic, underline, strikethrough, lists, links, colors, alignment, and more</li>
+      <li>Write your email content with placeholders for dynamic data</li>
+    </ul>
+  </li>
+  <li><strong>Available Placeholders</strong>
+    <ul>
+      <li><code>{client_name}</code> -- Customer's full name</li>
+      <li><code>{invoice_no}</code> -- Invoice number</li>
+      <li><code>{amount_due}</code> -- Outstanding amount</li>
+      <li><code>{due_date}</code> -- Invoice due date</li>
+      <li><code>{days_overdue}</code> -- Number of days past due</li>
+      <li><code>{invoice_url}</code> -- Direct link to the invoice</li>
+      <li><code>{currency}</code> -- Currency symbol/code</li>
+      <li><code>{site_name}</code> -- Your website/company name</li>
+      <li><code>{site_url}</code> -- Your website URL</li>
+    </ul>
+  </li>
+  <li><strong>Save Template</strong> - Click "Save", template available for use in the system</li>
+</ol>
+
+<h3 id="editing-email-templates">Editing Email Templates</h3>
+<ol>
+  <li>Search or browse in the template list, click "Manage" button (wrench icon)</li>
+  <li>Update any field except template_key, edit the email body using the Quill editor, toggle active status</li>
+  <li>Click "Save", changes effective immediately</li>
+</ol>
+
+<h3 id="deleting-email-templates">Deleting Email Templates</h3>
+<ul>
+  <li>Click the "Delete" button (trash icon) in the template list</li>
+  <li>Confirm deletion in the SweetAlert2 popup dialog</li>
+  <li>Templates are soft-deleted (can be recovered from database)</li>
+</ul>
+
+<h3 id="default-templates">Default Templates</h3>
+<p>The system comes with 12 pre-configured email templates:</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Template Key</th><th>Category</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>dunning_first_reminder</code></td><td>DUNNING</td><td>First payment reminder</td></tr>
+<tr><td><code>dunning_second_reminder</code></td><td>DUNNING</td><td>Second payment reminder</td></tr>
+<tr><td><code>dunning_final_notice</code></td><td>DUNNING</td><td>Final notice before action</td></tr>
+<tr><td><code>dunning_suspension_notice</code></td><td>DUNNING</td><td>Service suspension notification</td></tr>
+<tr><td><code>dunning_termination_notice</code></td><td>DUNNING</td><td>Service termination notification</td></tr>
+<tr><td><code>invoice_generated</code></td><td>INVOICE</td><td>New invoice notification</td></tr>
+<tr><td><code>invoice_payment_confirmation</code></td><td>INVOICE</td><td>Payment received confirmation (sent to customer)</td></tr>
+<tr><td><code>admin_payment_notification</code></td><td>INVOICE</td><td>Payment received notification (sent to admin)</td></tr>
+<tr><td><code>order_confirmation</code></td><td>ORDER</td><td>Order placed confirmation</td></tr>
+<tr><td><code>auth_welcome</code></td><td>AUTH</td><td>Welcome email for new customers</td></tr>
+<tr><td><code>auth_password_reset</code></td><td>AUTH</td><td>Password reset instructions</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="automatic-payment-confirmation-emails">Automatic Payment Confirmation Emails</h3>
+<p>When a customer successfully pays an invoice, the system automatically sends confirmation emails:</p>
+
+<p><strong>Customer Email (<code>invoice_payment_confirmation</code>):</strong></p>
+<ul>
+  <li>Sent to: Customer's email address</li>
+  <li>Contains: Invoice number, amount paid, payment method, transaction ID, payment date</li>
+  <li>Triggered: When invoice status changes to PAID</li>
+</ul>
+
+<p><strong>Admin Email (<code>admin_payment_notification</code>):</strong></p>
+<ul>
+  <li>Sent to: Admin email from app_settings</li>
+  <li>Contains: Customer details, invoice info, payment details, link to view invoice</li>
+  <li>Triggered: When <code>notify_admin_payment</code> is enabled in Settings &rarr; Notifications</li>
+  <li>Can be disabled via Settings &rarr; Notifications &rarr; "Notify on payment received"</li>
+</ul>
+
+<p><strong>Available Placeholders:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Placeholder</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>{client_name}</code></td><td>Customer's full name</td></tr>
+<tr><td><code>{company_name_customer}</code></td><td>Customer's company name</td></tr>
+<tr><td><code>{client_email}</code></td><td>Customer's email</td></tr>
+<tr><td><code>{invoice_no}</code></td><td>Invoice number</td></tr>
+<tr><td><code>{amount}</code></td><td>Payment amount</td></tr>
+<tr><td><code>{currency_symbol}</code></td><td>Currency symbol (e.g., $)</td></tr>
+<tr><td><code>{payment_method}</code></td><td>Payment method used</td></tr>
+<tr><td><code>{gateway_name}</code></td><td>Payment gateway name</td></tr>
+<tr><td><code>{transaction_id}</code></td><td>Transaction/reference ID</td></tr>
+<tr><td><code>{payment_date}</code></td><td>Date and time of payment</td></tr>
+<tr><td><code>{company_name}</code></td><td>Your company name</td></tr>
+<tr><td><code>{admin_invoice_url}</code></td><td>Admin link to view invoice</td></tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+
+<h2 id="dynamic-pages-management">Dynamic Pages Management</h2>
+
+<h3 id="dynamic-pages-overview">Overview</h3>
+<p>Dynamic Pages Management allows you to create and manage content pages like Terms &amp; Conditions, Privacy Policy, and Refund Policy. The system includes version history with restore functionality, SEO settings, and public page viewing without login.</p>
+<p><strong>Access:</strong> <code>whmazadmin/pages</code></p>
+
+<h3 id="page-list">Page List</h3>
+<ol>
+  <li><strong>Access Dynamic Pages</strong> - Go to "Settings" &rarr; "Dynamic Pages", view all pages with server-side pagination</li>
+  <li><strong>Stats Cards</strong> - Total Pages, Published, Drafts, Total Views</li>
+  <li><strong>Page List Columns</strong> - Page Title (with system page lock icon), URL Slug (in code format), Views count, Published status (toggle switch), Last Updated date, Sort Order, Actions (Edit, History, Delete)</li>
+  <li><strong>Quick Actions</strong> - Toggle publish/unpublish directly from list, system pages show lock icon and cannot be deleted</li>
+</ol>
+
+<h3 id="creating-a-page">Creating a Page</h3>
+<ol>
+  <li><strong>Click "Add Page"</strong> - Opens the page creation form</li>
+  <li><strong>Page Details Section</strong>
+    <ul>
+      <li><strong>Page Title:</strong> Display title (e.g., "Terms and Conditions")</li>
+      <li><strong>URL Slug:</strong> URL-friendly identifier. Auto-generated from title if left blank.</li>
+      <li><strong>Sort Order:</strong> Display position (lower numbers appear first)</li>
+      <li><strong>Published:</strong> Toggle to make page publicly visible</li>
+    </ul>
+  </li>
+  <li><strong>SEO Settings Section</strong>
+    <ul>
+      <li><strong>Meta Title:</strong> SEO title (defaults to page title if blank)</li>
+      <li><strong>Meta Description:</strong> Brief description for search engines (150-160 characters recommended)</li>
+      <li><strong>Meta Keywords:</strong> Comma-separated keywords</li>
+    </ul>
+  </li>
+  <li><strong>Page Content Section</strong> - Rich text editor (Quill) with full formatting toolbar</li>
+  <li><strong>Save Page</strong> - Click "Create Page" or "Update Page", page available at <code>/pages/{slug}</code> if published</li>
+</ol>
+
+<h3 id="editing-pages">Editing Pages</h3>
+<ol>
+  <li>Find page in list, click "Edit" button (gear icon)</li>
+  <li><strong>Page Statistics Sidebar</strong> (edit mode) - Total Views, Created date, Last Updated</li>
+  <li><strong>Recent Changes Sidebar</strong> - Last 5 versions, change type badges, "View All" link</li>
+  <li>Modify content, toggle publish status, update SEO settings</li>
+  <li>Click "Update Page", new version saved to history</li>
+</ol>
+
+<h3 id="version-history">Version History</h3>
+<ol>
+  <li><strong>Access History</strong> - From page list: click "History" button, from edit page: click "View All"</li>
+  <li><strong>Current Version Card</strong> - Shows current live page info with "Live" badge</li>
+  <li><strong>Version Timeline</strong> - All versions as cards with version number, change type, changed by user, content preview</li>
+  <li><strong>View Version</strong> - Modal shows full version details</li>
+  <li><strong>Restore Version</strong> - Click "Restore", confirmation dialog, page restored, new history entry created</li>
+</ol>
+
+<h3 id="system-pages">System Pages</h3>
+<p><strong>What are System Pages?</strong></p>
+<ul>
+  <li>Pre-installed pages that cannot be deleted</li>
+  <li>Marked with lock icon in list</li>
+  <li>Default system pages: Terms and Conditions, Privacy Policy</li>
+</ul>
+<p><strong>System Page Restrictions:</strong> Cannot be deleted, URL slug cannot be changed, can still edit content, SEO settings, and publish status</p>
+
+<h3 id="public-page-viewing">Public Page Viewing</h3>
+<p><strong>Page URLs:</strong></p>
+<ul>
+  <li>Format: <code>https://yourdomain.com/pages/{slug}</code></li>
+  <li>Examples: <code>/pages/terms-and-conditions</code>, <code>/pages/privacy-policy</code>, <code>/pages/refund-policy</code></li>
+</ul>
+<p><strong>No Login Required:</strong> Published pages accessible to all visitors, uses customer portal header/footer, clean professional design, breadcrumb navigation, mobile-responsive layout.</p>
+<p><strong>View Counter:</strong> Each page view increments counter, stats visible in admin list and page edit.</p>
+
+<h3 id="footer-links">Footer Links</h3>
+<p><strong>Updated Footers:</strong> Client portal footer includes page links, admin portal footer includes page links (opens in new tab). <strong>Default Links:</strong> Terms &amp; Conditions, Privacy Policy, Refund Policy.</p>
+
+<hr>
+
+<h2 id="dunning-rules-management">Dunning Rules Management</h2>
+
+<h3 id="dunning-overview">Overview</h3>
+<p>Dunning rules automate the process of collecting overdue payments by defining a sequence of actions (email reminders, service suspension, termination) that occur at specified intervals after an invoice becomes overdue.</p>
+<p><strong>Access:</strong> <code>whmazadmin/general_setting/manage?tab=dunning</code></p>
+
+<h3 id="accessing-dunning-rules">Accessing Dunning Rules</h3>
+<ol>
+  <li><strong>Navigate to General Settings</strong> - Go to "Settings" &rarr; "General Settings", click the "Dunning" tab</li>
+  <li><strong>Dunning Tab Overview</strong> - Information alert, "Manage Email Templates" shortcut, "Add Rule" button, rules table, workflow preview card</li>
+</ol>
+
+<h3 id="creating-a-dunning-rule">Creating a Dunning Rule</h3>
+<ol>
+  <li><strong>Click "Add Rule"</strong> - Opens the dunning rule modal dialog</li>
+  <li><strong>Rule Configuration</strong>
+    <ul>
+      <li><strong>Step Number:</strong> Sequential order (must be unique)</li>
+      <li><strong>Days After Due:</strong> Number of days after invoice due date to trigger</li>
+      <li><strong>Action Type:</strong> EMAIL (send reminder), SUSPEND (suspend service), or TERMINATE (terminate service)</li>
+      <li><strong>Email Template:</strong> Select dunning email template (shown when action involves email)</li>
+      <li><strong>Active:</strong> Checkbox to enable/disable</li>
+    </ul>
+  </li>
+  <li><strong>Save Rule</strong> - Click "Save", workflow preview updates</li>
+</ol>
+
+<h3 id="action-type-color-codes">Action Type Color Codes</h3>
+<ul>
+  <li><strong>EMAIL</strong> -- Blue badge</li>
+  <li><strong>SUSPEND</strong> -- Yellow/Warning badge</li>
+  <li><strong>TERMINATE</strong> -- Red/Danger badge</li>
+</ul>
+
+<h3 id="editing-dunning-rules">Editing Dunning Rules</h3>
+<ol>
+  <li>Click Edit (pencil icon) on the rule row</li>
+  <li>Modal opens pre-filled, modify any field</li>
+  <li>Click "Save"</li>
+</ol>
+
+<h3 id="deleting-dunning-rules">Deleting Dunning Rules</h3>
+<ol>
+  <li>Click Delete (trash icon) on the rule row</li>
+  <li>Confirm deletion in the SweetAlert2 popup</li>
+  <li>Rule permanently removed</li>
+</ol>
+
+<h3 id="workflow-preview">Workflow Preview</h3>
+<p>The Dunning tab includes a visual workflow preview card that shows all active rules in sequence, color-coded by action type.</p>
+
+<h3 id="example-dunning-configuration">Example Dunning Configuration</h3>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Step</th><th>Days After Due</th><th>Action</th><th>Template</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>3 days</td><td>EMAIL</td><td>First Payment Reminder</td></tr>
+<tr><td>2</td><td>7 days</td><td>EMAIL</td><td>Second Payment Reminder</td></tr>
+<tr><td>3</td><td>14 days</td><td>EMAIL</td><td>Final Notice</td></tr>
+<tr><td>4</td><td>21 days</td><td>SUSPEND</td><td>Suspension Notice</td></tr>
+<tr><td>5</td><td>30 days</td><td>TERMINATE</td><td>Termination Notice</td></tr>
+</tbody>
+</table>
+</div>
+
+<hr>
+
+<h2 id="domain-pricing-management">Domain Pricing Management</h2>
+
+<h3 id="accessing-domain-pricing">Accessing Domain Pricing</h3>
+<ol>
+  <li><strong>Navigate to Domain Pricing</strong> - Go to "Domains" &rarr; "Domain Pricing", view all TLD pricing configurations</li>
+  <li><strong>Pricing List Display</strong> - Domain extension, Currency, Registration period, Registration price, Transfer price, Renewal price, Status</li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/admin-domain-pricing.png" alt="Domain Pricing Management"><div class="caption">Domain pricing management with SSP pagination</div></div>
+
+<h3 id="adding-domain-pricing">Adding Domain Pricing</h3>
+<ol>
+  <li><strong>Click "Add Pricing"</strong> - Opens pricing configuration form</li>
+  <li><strong>Select Extension</strong> - Choose from available TLDs (.com, .net, .org, .info, .biz)</li>
+  <li><strong>Select Currency</strong> - Choose currency (USD, EUR, GBP)</li>
+  <li><strong>Set Registration Period</strong> - Number of years (typically 1-10)</li>
+  <li><strong>Configure Pricing</strong> - Registration Price, Transfer Price, Renewal Price</li>
+  <li><strong>Save Pricing</strong> - Click "Save", pricing active immediately</li>
+</ol>
+
+<h3 id="editing-domain-pricing">Editing Domain Pricing</h3>
+<ol>
+  <li>Locate pricing entry using search or filter</li>
+  <li>Click "Edit", modify any price field</li>
+  <li>Save changes -- new pricing applies to new orders immediately, existing orders unaffected</li>
+</ol>
+
+<h3 id="managing-tld-extensions">Managing TLD Extensions</h3>
+<p><strong>Domain Extensions Table:</strong> Located in database <code>dom_extensions</code>, contains available TLDs, enable/disable specific TLDs.</p>
+<p><strong>Adding New TLD:</strong></p>
+<ol>
+  <li>Insert into <code>dom_extensions</code> table</li>
+  <li>Add pricing in Domain Pricing page</li>
+  <li>TLD appears in domain search</li>
+</ol>
+
+<p><strong>Popular TLDs:</strong> .com, .net, .org, .info, .biz, .name, .io, .co, .me, and country codes (.us, .uk, .ca, etc.)</p>
+
+<hr>
+
+<h2 id="invoice-management">Invoice Management</h2>
+
+<h3 id="admin-invoice-list">Invoice List</h3>
+<ol>
+  <li><strong>Access Invoice Management</strong> - Go to "Billing" &rarr; "Invoices", view all invoices</li>
+  <li><strong>Invoice List Columns</strong> - Invoice number, Customer name, Invoice date, Due date, Total amount, Status (Paid, Unpaid, Cancelled), Actions</li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/admin-invoice-list.png" alt="Invoice Management List"><div class="caption">Invoice management list</div></div>
+
+<h3 id="creating-manual-invoice">Creating Manual Invoice</h3>
+<p><strong>When to Create Manual Invoice:</strong> Custom service not in system, one-time charge, adjustment or credit, offline sale.</p>
+
+<p><strong>Steps:</strong></p>
+<ol>
+  <li><strong>Click "Create Invoice"</strong> - Select customer, set invoice date and due date</li>
+  <li><strong>Add Line Items</strong> - Click "Add Item", enter description, amount, quantity, tax</li>
+  <li><strong>Invoice Totals</strong> - Subtotal calculated automatically, tax calculated, total displayed</li>
+  <li><strong>Notes</strong> (optional) - Customer-visible notes and internal admin notes</li>
+  <li><strong>Save Invoice</strong> - Click "Save", option to send to customer</li>
+</ol>
+
+<h3 id="editing-invoices">Editing Invoices</h3>
+<p><strong>Editing Allowed for:</strong> Unpaid invoices only. Can modify line items, change amounts, adjust due date.<br>
+<strong>Cannot Edit:</strong> Paid invoices (read-only). Use credit notes instead for corrections.</p>
+
+<h3 id="recording-payments">Recording Payments</h3>
+<p><strong>Manual Payment Recording:</strong> For offline payments (cash, check, wire transfer) or payments received outside system.</p>
+<ol>
+  <li>Open unpaid invoice</li>
+  <li>Click "Record Payment" - enter amount, payment method, transaction ID, date, notes</li>
+  <li>Save Payment - invoice marked as paid, payment recorded, customer notified</li>
+</ol>
+
+<h3 id="invoice-actions">Invoice Actions</h3>
+<p><strong>Available Actions:</strong> View Invoice, Edit Invoice, Send Invoice, Record Payment, Download PDF, Cancel Invoice, Delete Invoice</p>
+
+<h3 id="admin-recurring-invoices">Recurring Invoices</h3>
+<p><strong>Automatic Invoice Generation:</strong> System generates invoices before service expiration, configured in cron jobs, typically 7-14 days before due date.</p>
+
+<hr>
+
+<h2 id="payment-management">Payment Management</h2>
+
+<h3 id="transaction-history">Transaction History</h3>
+<ol>
+  <li><strong>View All Transactions</strong> - Go to "Billing" &rarr; "Transactions", see all payment records</li>
+  <li><strong>Transaction Information</strong> - Transaction ID, Customer name, Invoice number, Amount, Payment method, Transaction date, Status (Success, Pending, Failed, Refunded)</li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/admin-transactions.png" alt="Transaction History"><div class="caption">Transaction history list</div></div>
+
+<h3 id="admin-payment-methods">Payment Methods</h3>
+<p><strong>Configure Payment Gateways:</strong> Go to "Settings" &rarr; "Payment Gateways"</p>
+
+<p><strong>Gateway List Page Features:</strong></p>
+<ul>
+  <li><strong>Toggle Status:</strong> Enable/disable gateways with confirmation dialog</li>
+  <li><strong>Test Connection:</strong> Test API connectivity for Stripe</li>
+  <li><strong>Configure:</strong> Set up API keys, webhook secrets, and gateway settings</li>
+  <li><strong>Mode Indicator:</strong> Shows Test/Live mode status</li>
+  <li><strong>Supported Currencies:</strong> View configured currencies per gateway</li>
+</ul>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Action</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>Toggle Switch</td><td>Enable/disable gateway (with confirmation)</td></tr>
+<tr><td>Configure Button</td><td>Open gateway settings page</td></tr>
+<tr><td>Test Button</td><td>Verify API credentials work correctly</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Gateway</th><th>Status</th><th>Features</th></tr></thead>
+<tbody>
+<tr><td>Stripe</td><td>Fully Working</td><td>Cards, webhooks, refunds</td></tr>
+<tr><td>SSLCommerz</td><td>Fully Working</td><td>Bangladesh payments, IPN</td></tr>
+<tr><td>Bank Transfer</td><td>Working</td><td>Manual payment recording</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>Additional Admin Pages:</strong></p>
+<ul>
+  <li><strong>Transactions:</strong> View all payment transactions with filtering</li>
+  <li><strong>Webhook Logs:</strong> Monitor incoming webhook events and processing status</li>
+</ul>
+
+<h3 id="refunding-payments">Refunding Payments</h3>
+<ol>
+  <li><strong>Find Transaction</strong> - Locate in transaction history, click to view details</li>
+  <li><strong>Process Refund</strong> - Click "Refund", enter refund amount (full or partial), enter reason, confirm</li>
+  <li><strong>Refund Processing</strong> - Processed through payment gateway, transaction updated to "Refunded", customer notified, invoice status updated</li>
+</ol>
+
+<hr>
+
+<h2 id="promo-code-management">Promo Code Management</h2>
+
+<h3 id="promo-code-overview">Overview</h3>
+<p>The Promo Code system allows administrators to create discount coupons that customers can apply during checkout. Promo codes support flexible discount rules, targeting options, and usage limits.</p>
+<p><strong>Access:</strong> Go to "Settings" &rarr; "Promo Codes"</p>
+
+<h3 id="creating-a-promo-code">Creating a Promo Code</h3>
+<ol>
+  <li><strong>Navigate to Promo Codes</strong> - Go to "Settings" &rarr; "Promo Codes", click "Add Promo Code"</li>
+  <li><strong>Basic Information</strong>
+    <ul>
+      <li><strong>Promo Code:</strong> Enter a code (auto-uppercase) or click the random generator button</li>
+      <li><strong>Description:</strong> Optional internal note for this promo code</li>
+    </ul>
+  </li>
+  <li><strong>Discount Settings</strong>
+    <ul>
+      <li><strong>Discount Type:</strong> Fixed Amount or Percentage</li>
+      <li><strong>Discount Value:</strong> The discount amount or percentage</li>
+      <li><strong>Currency:</strong> (Fixed type only) Restrict to a specific currency, or "Any Currency"</li>
+      <li><strong>Max Discount Cap:</strong> (Percentage only) Maximum discount amount; 0 = no cap</li>
+      <li><strong>Min Order Amount:</strong> Minimum cart total required; 0 = no minimum</li>
+    </ul>
+  </li>
+  <li><strong>Validity Period</strong>
+    <ul>
+      <li><strong>Lifetime:</strong> Check to make the code never expire</li>
+      <li><strong>Start Date / End Date:</strong> Set a date range when the code is valid</li>
+    </ul>
+  </li>
+  <li><strong>Usage Limits</strong>
+    <ul>
+      <li><strong>Max Total Uses:</strong> Total redemptions allowed; 0 = unlimited</li>
+      <li><strong>Max Uses Per Customer:</strong> Redemptions per customer; 0 = unlimited</li>
+    </ul>
+  </li>
+  <li><strong>Targeting</strong>
+    <ul>
+      <li><strong>All Orders:</strong> Code applies to any order</li>
+      <li><strong>Specific Products:</strong> Select products from multi-select dropdown</li>
+      <li><strong>Specific Customers:</strong> Select customers from multi-select dropdown</li>
+    </ul>
+  </li>
+  <li><strong>Status</strong> - Active: Enable or disable the promo code</li>
+  <li>Click "Save Promo Code"</li>
+</ol>
+
+<h3 id="managing-promo-codes">Managing Promo Codes</h3>
+<p><strong>List Page Features:</strong></p>
+<ul>
+  <li><strong>Stats Cards:</strong> Total codes, Active, Expired, Total Redemptions</li>
+  <li><strong>DataTables:</strong> Server-side pagination with search and sorting</li>
+  <li><strong>Toggle Switch:</strong> Enable/disable codes directly from the list</li>
+  <li><strong>Edit:</strong> Click the gear icon to modify a promo code</li>
+  <li><strong>Delete:</strong> Soft delete (code is deactivated, not removed from database)</li>
+</ul>
+
+<h3 id="how-customers-use-promo-codes">How Customers Use Promo Codes</h3>
+<ol>
+  <li>Customer adds items to the shopping cart</li>
+  <li>In the cart view, a "Promo Code" section appears between cart items and payment options</li>
+  <li>Customer enters the promo code and clicks "Apply"</li>
+  <li>System validates the code and shows the discount amount</li>
+  <li>Cart totals update to show: Subtotal, Discount (with code name), and Order Total</li>
+  <li>Customer can remove the promo code before checkout</li>
+  <li>At checkout, the code is re-validated to prevent stale codes</li>
+  <li>Discount is saved on the order and invoice records</li>
+</ol>
+
+<h3 id="promo-code-on-invoices">Promo Code on Invoices</h3>
+<p>When a promo code is used:</p>
+<ul>
+  <li>The <strong>order</strong> records the coupon code and discount amount</li>
+  <li>The <strong>invoice</strong> records the discount and coupon code</li>
+  <li><strong>Invoice PDF</strong> (admin and client) shows the discount line with the coupon code</li>
+  <li><strong>Payment page</strong> shows the discount line in the invoice summary</li>
+</ul>
+
+<hr>
+
+<h2 id="ticket-management">Ticket Management</h2>
+
+<h3 id="ticket-list">Ticket List</h3>
+<ol>
+  <li><strong>Access Ticket Management</strong> - Go to "Support" &rarr; "Manage Tickets", view all support tickets</li>
+  <li><strong>Ticket List Columns</strong> - Ticket ID, Customer name, Subject, Department, Priority, Status, Last update, Actions</li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/admin-ticket-list.png" alt="Ticket Management"><div class="caption">Support ticket management with filters</div></div>
+
+<h3 id="viewing-and-replying-to-tickets">Viewing and Replying to Tickets</h3>
+<ol>
+  <li><strong>Open Ticket</strong> - Click on ticket from list, view full conversation</li>
+  <li><strong>Ticket Details</strong> - Customer information, related service, priority level, department, all messages, attached files</li>
+  <li><strong>Reply to Customer</strong> - Type response, attach files if needed, click "Reply", customer notified via email</li>
+  <li><strong>Internal Notes</strong> (optional) - Add notes visible only to staff, useful for documentation, not sent to customer</li>
+</ol>
+
+<h3 id="ticket-assignment">Ticket Assignment</h3>
+<p><strong>Assigning Tickets:</strong> Assign to specific staff member, assign to department, auto-assignment based on department.</p>
+<ol>
+  <li>Open ticket</li>
+  <li>Select staff member from dropdown</li>
+  <li>Save assignment</li>
+  <li>Assigned staff notified</li>
+</ol>
+
+<h3 id="ticket-status-management">Ticket Status Management</h3>
+<p><strong>Available Statuses:</strong></p>
+<ul>
+  <li><strong>Open:</strong> New ticket, awaiting response</li>
+  <li><strong>Pending:</strong> Waiting for customer response</li>
+  <li><strong>Answered:</strong> Staff replied, awaiting customer</li>
+  <li><strong>Resolved:</strong> Issue fixed, awaiting closure</li>
+  <li><strong>Closed:</strong> Ticket closed</li>
+</ul>
+
+<h3 id="ticket-departments">Ticket Departments</h3>
+<p><strong>Managing Departments:</strong> Technical Support, Billing Support, Sales, General Inquiry, Custom departments.</p>
+<p><strong>Department Settings:</strong> Department name, department email, auto-assignment rules, email templates.</p>
+
+<h3 id="canned-responses">Canned Responses</h3>
+<p><strong>What are Canned Responses?</strong> Pre-written reply templates for common questions that save time.</p>
+<p><strong>Using Canned Responses:</strong></p>
+<ol>
+  <li>While replying to ticket</li>
+  <li>Click "Canned Responses" button</li>
+  <li>Select appropriate response</li>
+  <li>Customize if needed</li>
+  <li>Send reply</li>
+</ol>
+
+<p><strong>Managing Canned Responses:</strong> Create new responses, edit existing, organize by category, set access permissions.</p>
+
+<hr>
+
+<h2 id="knowledge-base-management">Knowledge Base Management</h2>
+
+<h3 id="article-list">Article List</h3>
+<ol>
+  <li><strong>Access Knowledge Base Management</strong> - Go to "Support" &rarr; "Knowledge Base", view all articles</li>
+  <li><strong>Article Information</strong> - Article title, Category, Author, Published date, Status (Published, Draft), Views count</li>
+</ol>
+
+<h3 id="creating-articles">Creating Articles</h3>
+<ol>
+  <li><strong>Click "New Article"</strong> - Open article editor</li>
+  <li><strong>Article Details</strong> - Title, Category, Summary, Content, Tags, Status, Featured</li>
+  <li><strong>Content Editor</strong> - Rich text editor (Quill), format text, add images, links, code blocks, preview before publishing</li>
+  <li><strong>SEO Settings</strong> (optional) - Meta description, keywords, URL slug</li>
+  <li><strong>Publish Article</strong> - Click "Publish" or "Save as Draft"</li>
+</ol>
+
+<div class="screenshot-img"><img src="screenshots/admin-kb-editor.png" alt="Knowledge Base Editor"><div class="caption">Knowledge base article editor</div></div>
+
+<h3 id="managing-categories">Managing Categories</h3>
+<p><strong>Article Categories:</strong> Organize articles by topic, help customers find relevant articles.</p>
+<p><strong>Managing Categories:</strong></p>
+<ol>
+  <li>Go to "Knowledge Base" &rarr; "Categories"</li>
+  <li>Create new category</li>
+  <li>Set category name and description</li>
+  <li>Set display order</li>
+  <li>Save category</li>
+</ol>
+
+<p><strong>Common Categories:</strong> Getting Started, Account Management, Billing &amp; Payments, Technical Support, Troubleshooting, FAQs</p>
+
+<h3 id="editing-articles">Editing Articles</h3>
+<ol>
+  <li>Find article, click "Edit"</li>
+  <li>Modify content, change category, update content, add/remove images</li>
+  <li><strong>Version History</strong> (if enabled) - View/restore previous versions</li>
+  <li>Save changes, reflected immediately</li>
+</ol>
+
+<h3 id="article-analytics">Article Analytics</h3>
+<p><strong>Track Article Performance:</strong> View count, helpful ratings, search terms, popular articles report.</p>
+<p><strong>Using Analytics:</strong> Identify knowledge gaps, improve low-rated articles, create content on popular topics.</p>
+
+<hr>
+
+<h2 id="announcement-management">Announcement Management</h2>
+
+<h3 id="announcement-list">Announcement List</h3>
+<ol>
+  <li><strong>Access Announcements</strong> - Go to "Support" &rarr; "Announcements", view all announcements</li>
+  <li><strong>Announcement Information</strong> - Title, Category, Published date, Status (Published, Draft)</li>
+</ol>
+
+<h3 id="creating-announcements">Creating Announcements</h3>
+<ol>
+  <li><strong>Click "New Announcement"</strong> - Open announcement form</li>
+  <li><strong>Announcement Details</strong>
+    <ul>
+      <li><strong>Title:</strong> Announcement headline</li>
+      <li><strong>Category:</strong> General, Maintenance, New Feature, Service Update</li>
+      <li><strong>Content:</strong> Full announcement text</li>
+      <li><strong>Publish Date:</strong> When to display</li>
+      <li><strong>Status:</strong> Draft or Published</li>
+    </ul>
+  </li>
+  <li><strong>Notification Options</strong> - Send email to all customers, display on customer dashboard, mark as important</li>
+  <li><strong>Publish Announcement</strong> - Click "Publish", appears in customer portal, email sent (if enabled)</li>
+</ol>
+
+<h3 id="managing-announcements">Managing Announcements</h3>
+<p><strong>Editing:</strong> Find announcement, click "Edit", modify content, save changes.</p>
+<p><strong>Scheduling:</strong> Set future publish date, announcement automatically published on date.</p>
+<p><strong>Expiring:</strong> Set expiration date (optional), announcement automatically hidden after date.</p>
+
+<hr>
+
+<h2 id="system-settings">System Settings</h2>
+
+<h3 id="general-settings">General Settings</h3>
+<p><strong>Access:</strong> <code>whmazadmin/general_setting/manage</code></p>
+
+<p>The General Settings page allows you to configure all core application settings in one place.</p>
+
+<p><strong>Site Information:</strong></p>
+<ul>
+  <li><strong>Site Name:</strong> Your website/application name</li>
+  <li><strong>Site Description:</strong> Brief description</li>
+  <li><strong>Admin URL:</strong> Custom admin panel URL</li>
+  <li><strong>Logo:</strong> Upload company logo (JPG, PNG, GIF - Max 2MB)</li>
+  <li><strong>Favicon:</strong> Upload site favicon (JPG, PNG, GIF, ICO - Max 2MB)</li>
+</ul>
+
+<p><strong>Company Information:</strong> Company Name, Company Address, Zip Code</p>
+<p><strong>Contact Information:</strong> Email, Phone, Fax</p>
+
+<p><strong>SMTP Configuration:</strong></p>
+<ul>
+  <li><strong>SMTP Host:</strong> Mail server address (e.g., smtp.gmail.com)</li>
+  <li><strong>SMTP Port:</strong> Usually 587 (TLS) or 465 (SSL)</li>
+  <li><strong>SMTP Username:</strong> Email account username</li>
+  <li><strong>SMTP Auth Key/Password:</strong> Email account password or app-specific password</li>
+</ul>
+
+<p><strong>Google reCAPTCHA Configuration:</strong></p>
+<ul>
+  <li><strong>reCAPTCHA Site Key:</strong> Public site key from Google reCAPTCHA admin</li>
+  <li><strong>reCAPTCHA Secret Key:</strong> Private secret key from Google reCAPTCHA admin</li>
+  <li>Get keys from: <a href="https://www.google.com/recaptcha/admin">https://www.google.com/recaptcha/admin</a></li>
+</ul>
+
+<h3 id="company-settings">Company Settings</h3>
+<p><strong>Access:</strong> Settings &rarr; Company Settings</p>
+<p><strong>Configuration:</strong> Company Name, Email, Phone, Address, Tax ID, Website, Logo (displayed on invoices)</p>
+
+<h3 id="email-configuration-settings">Email Configuration</h3>
+<p><strong>Access:</strong> Settings &rarr; Email Settings</p>
+<p><strong>SMTP Configuration:</strong> SMTP Host, SMTP Port, SMTP Username, SMTP Password, Encryption (None/TLS/SSL), From Email, From Name.</p>
+<p><strong>Testing Email:</strong> Send test email, verify delivery, check spam folder if not received.</p>
+<p><strong>Email Templates:</strong> Managed via dedicated Email Template Management page. See <a href="#email-template-management">Email Template Management</a> for full details.</p>
+
+<h3 id="invoice-settings">Invoice Settings</h3>
+<p><strong>Access:</strong> Settings &rarr; Invoice Settings</p>
+<p><strong>Configuration:</strong> Invoice Prefix, Next Invoice Number, Tax Name, Tax Rate, Tax Inclusive, Invoice Due Days, Late Fee, Payment Terms.</p>
+
+<h3 id="currency-settings">Currency Settings</h3>
+<p><strong>Access:</strong> Settings &rarr; Currency Settings</p>
+<p><strong>Managing Currencies:</strong> Add currencies, set symbol and code, set default currency, set exchange rates, enable/disable currencies.</p>
+
+<h3 id="security-settings">Security Settings</h3>
+<p><strong>Access:</strong> Settings &rarr; Security Settings</p>
+<p><strong>Configuration:</strong> Session Timeout, Password Requirements (minimum length, uppercase, numbers, symbols), Login Attempts, Lockout Duration, Two-Factor Authentication, IP Whitelist.</p>
+
+<h3 id="automation-settings">Automation Settings</h3>
+<p><strong>Access:</strong> Settings &rarr; Automation</p>
+<p><strong>Database Table:</strong> <code>sys_cnf</code> (group: AUTOMATION)</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Setting</th><th>Description</th><th>Default</th></tr></thead>
+<tbody>
+<tr><td><code>cron_enabled</code></td><td>Enable/disable all cron jobs</td><td>1 (enabled)</td></tr>
+<tr><td><code>invoice_generation_days_before</code></td><td>Days before expiry to generate invoice</td><td>7</td></tr>
+<tr><td><code>payment_reminder_first</code></td><td>First reminder (days before due)</td><td>3</td></tr>
+<tr><td><code>payment_reminder_second</code></td><td>Second reminder (days before due)</td><td>1</td></tr>
+<tr><td><code>payment_reminder_overdue</code></td><td>Overdue reminder (days after due)</td><td>3</td></tr>
+<tr><td><code>suspension_days_after_due</code></td><td>Days after due to suspend service</td><td>5</td></tr>
+<tr><td><code>cancellation_days_after_suspension</code></td><td>Days after suspension to cancel</td><td>30</td></tr>
+<tr><td><code>domain_reminder_first</code></td><td>First domain reminder (days before expiry)</td><td>30</td></tr>
+<tr><td><code>domain_reminder_second</code></td><td>Second domain reminder</td><td>15</td></tr>
+<tr><td><code>domain_reminder_third</code></td><td>Third domain reminder</td><td>7</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>Cron Job Command:</strong></p>
+<pre><code>php /path/to/whmaz/index.php cron/run</code></pre>
+<p>Set to run every hour or as needed.</p>
+
+<h3 id="feature-flags">Feature Flags</h3>
+<p><strong>Access:</strong> Settings &rarr; Features</p>
+<p><strong>Database Table:</strong> <code>sys_cnf</code> (group: FEATURES)</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Setting</th><th>Description</th><th>Default</th></tr></thead>
+<tbody>
+<tr><td><code>feature_customer_registration</code></td><td>Allow new customer registration</td><td>1 (enabled)</td></tr>
+<tr><td><code>feature_domain_registration</code></td><td>Enable domain registration features</td><td>1 (enabled)</td></tr>
+<tr><td><code>feature_support_tickets</code></td><td>Enable support ticket system</td><td>1 (enabled)</td></tr>
+<tr><td><code>feature_knowledge_base</code></td><td>Enable knowledge base</td><td>1 (enabled)</td></tr>
+<tr><td><code>feature_announcements</code></td><td>Enable announcements system</td><td>1 (enabled)</td></tr>
+<tr><td><code>feature_affiliate_system</code></td><td>Enable affiliate/referral system</td><td>0 (disabled)</td></tr>
+<tr><td><code>feature_two_factor_auth</code></td><td>Enable two-factor authentication</td><td>0 (disabled)</td></tr>
+<tr><td><code>feature_social_login</code></td><td>Enable social login (Google, Facebook)</td><td>0 (disabled)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="notification-settings">Notification Settings</h3>
+<p><strong>Access:</strong> Settings &rarr; Notifications</p>
+<p><strong>Database Table:</strong> <code>sys_cnf</code> (group: NOTIFICATIONS)</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Setting</th><th>Description</th><th>Default</th></tr></thead>
+<tbody>
+<tr><td><code>admin_notification_email</code></td><td>Email for admin notifications</td><td>admin@yourcompany.com</td></tr>
+<tr><td><code>notify_admin_new_order</code></td><td>Notify on new order</td><td>1 (enabled)</td></tr>
+<tr><td><code>notify_admin_new_ticket</code></td><td>Notify on new support ticket</td><td>1 (enabled)</td></tr>
+<tr><td><code>notify_admin_new_customer</code></td><td>Notify on new customer registration</td><td>1 (enabled)</td></tr>
+<tr><td><code>notify_admin_payment</code></td><td>Notify on payment received</td><td>1 (enabled)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="customer-portal-settings">Customer Portal Settings</h3>
+<p><strong>Access:</strong> Settings &rarr; Customer Portal</p>
+<p><strong>Database Table:</strong> <code>sys_cnf</code> (group: PORTAL)</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Setting</th><th>Description</th><th>Default</th></tr></thead>
+<tbody>
+<tr><td><code>allow_customer_registration</code></td><td>Allow self-registration</td><td>1 (enabled)</td></tr>
+<tr><td><code>email_verification_required</code></td><td>Require email verification</td><td>1 (enabled)</td></tr>
+<tr><td><code>default_account_status</code></td><td>New account status</td><td>active</td></tr>
+<tr><td><code>dashboard_show_services</code></td><td>Show services widget</td><td>1 (enabled)</td></tr>
+<tr><td><code>dashboard_show_invoices</code></td><td>Show invoices widget</td><td>1 (enabled)</td></tr>
+<tr><td><code>dashboard_show_tickets</code></td><td>Show tickets widget</td><td>1 (enabled)</td></tr>
+<tr><td><code>dashboard_show_announcements</code></td><td>Show announcements widget</td><td>1 (enabled)</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="support-system-settings">Support System Settings</h3>
+<p><strong>Access:</strong> Settings &rarr; Support</p>
+<p><strong>Database Table:</strong> <code>sys_cnf</code> (group: SUPPORT)</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Setting</th><th>Description</th><th>Default</th></tr></thead>
+<tbody>
+<tr><td><code>default_ticket_department</code></td><td>Default department for new tickets</td><td>General Support</td></tr>
+<tr><td><code>ticket_departments</code></td><td>Available departments (comma-separated)</td><td>Technical Support,Billing Support,Sales,General Inquiry</td></tr>
+<tr><td><code>ticket_priorities</code></td><td>Priority levels (comma-separated)</td><td>Low,Medium,High,Urgent</td></tr>
+<tr><td><code>auto_close_tickets_after</code></td><td>Auto-close resolved tickets (days)</td><td>7</td></tr>
+<tr><td><code>notify_customer_ticket_reply</code></td><td>Notify customer on staff reply</td><td>1 (enabled)</td></tr>
+<tr><td><code>ticket_attachments_enabled</code></td><td>Allow file attachments</td><td>1 (enabled)</td></tr>
+<tr><td><code>ticket_max_attachment_size</code></td><td>Max attachment size (KB)</td><td>5120</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="configuration-storage-overview">Configuration Storage Overview</h3>
+<p>WHMAZ stores configuration in the database for easy management via Admin Portal:</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Configuration Type</th><th>Database Table</th><th>Admin Location</th></tr></thead>
+<tbody>
+<tr><td>Company Information</td><td><code>app_settings</code></td><td>Settings &rarr; General</td></tr>
+<tr><td>Google reCAPTCHA</td><td><code>app_settings</code></td><td>Settings &rarr; General</td></tr>
+<tr><td>Payment Gateways</td><td><code>payment_gateway</code></td><td>Settings &rarr; Payment Gateways</td></tr>
+<tr><td>Email Templates</td><td><code>email_templates</code></td><td>Settings &rarr; Email Templates</td></tr>
+<tr><td>Domain Registrar</td><td><code>dom_registers</code></td><td>Settings &rarr; Domain Registrar</td></tr>
+<tr><td>Billing Settings</td><td><code>sys_cnf</code></td><td>Settings &rarr; Billing</td></tr>
+<tr><td>Automation/Cron</td><td><code>sys_cnf</code></td><td>Settings &rarr; Automation</td></tr>
+<tr><td>Feature Flags</td><td><code>sys_cnf</code></td><td>Settings &rarr; Features</td></tr>
+<tr><td>Notifications</td><td><code>sys_cnf</code></td><td>Settings &rarr; Notifications</td></tr>
+<tr><td>Customer Portal</td><td><code>sys_cnf</code></td><td>Settings &rarr; Customer Portal</td></tr>
+<tr><td>Support System</td><td><code>sys_cnf</code></td><td>Settings &rarr; Support</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>Environment File (.env):</strong> Only contains server-specific settings: Database credentials, Encryption key, Session configuration, Environment mode (development/production).</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- PART 4: ADVANCED FEATURES -->
+<!-- ============================================================ -->
+
+<h1 id="part-4-advanced-features">Part 4: Advanced Features</h1>
+
+<h2 id="email-configuration">Email Configuration</h2>
+
+<h3 id="smtp-setup">SMTP Setup</h3>
+<p><strong>Recommended SMTP Providers:</strong></p>
+<ul>
+  <li>Gmail (Google Workspace)</li>
+  <li>SendGrid</li>
+  <li>Amazon SES</li>
+  <li>Mailgun</li>
+  <li>Your web host's SMTP server</li>
+</ul>
+
+<h3 id="gmail-smtp-configuration">Gmail SMTP Configuration</h3>
+<p><strong>Settings:</strong></p>
+<pre><code>SMTP Host: smtp.gmail.com
+SMTP Port: 587
+Encryption: TLS
+Username: your-email@gmail.com
+Password: Your App Password (not regular password)</code></pre>
+<p><strong>Important:</strong> Enable "Less Secure App Access" or use App Password</p>
+
+<h3 id="sendgrid-configuration">SendGrid Configuration</h3>
+<p><strong>Settings:</strong></p>
+<pre><code>SMTP Host: smtp.sendgrid.net
+SMTP Port: 587
+Encryption: TLS
+Username: apikey
+Password: Your SendGrid API Key</code></pre>
+
+<h3 id="testing-email-delivery">Testing Email Delivery</h3>
+<ol>
+  <li>Go to Settings &rarr; Email Settings</li>
+  <li>Click "Send Test Email"</li>
+  <li>Enter test email address</li>
+  <li>Click "Send"</li>
+  <li>Check inbox (and spam folder)</li>
+  <li>Verify email received correctly</li>
+</ol>
+
+<h3 id="troubleshooting-email-issues">Troubleshooting Email Issues</h3>
+
+<p><strong>Emails Not Sending:</strong></p>
+<ul>
+  <li>Check SMTP credentials</li>
+  <li>Verify SMTP port and encryption</li>
+  <li>Check firewall/server blocks port 587 or 465</li>
+  <li>Enable less secure apps (Gmail)</li>
+  <li>Check email logs</li>
+</ul>
+
+<p><strong>Emails Going to Spam:</strong></p>
+<ul>
+  <li>Set up SPF record</li>
+  <li>Set up DKIM signing</li>
+  <li>Set up DMARC policy</li>
+  <li>Use business email (not Gmail/Yahoo)</li>
+  <li>Ensure reverse DNS is set</li>
+</ul>
+
+<hr>
+
+<h2 id="payment-gateway-setup">Payment Gateway Setup</h2>
+
+<h3 id="gateway-status-overview">Gateway Status Overview</h3>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Gateway</th><th>Status</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><strong>Stripe</strong></td><td>Fully Working</td><td>Complete integration with PaymentIntent API and webhook support</td></tr>
+<tr><td><strong>SSLCommerz</strong></td><td>Fully Working</td><td>Full integration with automatic session restoration for external redirects</td></tr>
+<tr><td><strong>Bank Transfer</strong></td><td>Working</td><td>Manual payment recording</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="payment-notification-emails">Payment Notification Emails</h3>
+<p>When a payment is successfully processed, the system automatically sends email notifications:</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Email</th><th>Recipient</th><th>Template</th><th>Configurable</th></tr></thead>
+<tbody>
+<tr><td>Payment Confirmation</td><td>Customer</td><td><code>invoice_payment_confirmation</code></td><td>Always sent</td></tr>
+<tr><td>Payment Notification</td><td>Admin</td><td><code>admin_payment_notification</code></td><td>Settings &rarr; Notifications</td></tr>
+</tbody>
+</table>
+</div>
+
+<p><strong>What triggers payment emails:</strong></p>
+<ul>
+  <li>Successful payment via Stripe (webhook: <code>payment_intent.succeeded</code>)</li>
+  <li>Successful payment via SSLCommerz (IPN callback)</li>
+  <li>Manual payment recording by admin</li>
+</ul>
+
+<p><strong>To customize payment emails:</strong></p>
+<ol>
+  <li>Go to Admin &rarr; Settings &rarr; Email Templates</li>
+  <li>Search for "payment" templates</li>
+  <li>Edit subject and body as needed</li>
+  <li>Use placeholders for dynamic content</li>
+</ol>
+
+<h3 id="stripe-configuration">Stripe Configuration</h3>
+<ol>
+  <li><strong>Create Stripe Account</strong> - Go to stripe.com, sign up, complete business verification</li>
+  <li><strong>Get API Keys</strong> - Go to Developers &rarr; API Keys, copy Publishable Key (<code>pk_</code>) and Secret Key (<code>sk_</code>)</li>
+  <li><strong>Configure Webhook (Required)</strong>
+    <ul>
+      <li>Go to Developers &rarr; Webhooks in Stripe Dashboard</li>
+      <li>Click "Add endpoint"</li>
+      <li>Enter Webhook URL: <code>https://yourdomain.com/webhook/stripe</code></li>
+      <li>Select events: <code>payment_intent.succeeded</code>, <code>payment_intent.payment_failed</code>, <code>checkout.session.completed</code>, <code>charge.refunded</code></li>
+      <li>Copy the "Signing secret" (<code>whsec_</code>)</li>
+    </ul>
+  </li>
+  <li><strong>Configure in WHMAZ</strong>
+    <ul>
+      <li>Go to Admin &rarr; Settings &rarr; Payment Gateways</li>
+      <li>Click "Configure" on Stripe</li>
+      <li><strong>Test Mode:</strong> Toggle ON for testing, OFF for live</li>
+      <li>Enter test or live credentials (Public Key, Secret Key, Webhook Secret)</li>
+      <li>Enable the gateway and Save</li>
+    </ul>
+  </li>
+  <li><strong>Test Payment</strong> - Use test card: <code>4242 4242 4242 4242</code>, any future expiry, any 3-digit CVC</li>
+</ol>
+
+<p><strong>Stripe Test Cards:</strong></p>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Card Number</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td>4242 4242 4242 4242</td><td>Successful payment</td></tr>
+<tr><td>4000 0000 0000 0002</td><td>Card declined</td></tr>
+<tr><td>4000 0000 0000 9995</td><td>Insufficient funds</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="sslcommerz-configuration-bangladesh">SSLCommerz Configuration (Bangladesh)</h3>
+<ol>
+  <li><strong>Create SSLCommerz Account</strong> - Go to sslcommerz.com, sign up for merchant account, complete verification</li>
+  <li><strong>Get API Credentials</strong> - Login to Merchant Panel, go to Developers &rarr; API Credentials, copy Store ID and Store Password</li>
+  <li><strong>Configure IPN (Webhook)</strong> - IPN URL: <code>https://yourdomain.com/webhook/sslcommerz</code></li>
+  <li><strong>Configure in WHMAZ</strong> - Go to Admin &rarr; Settings &rarr; Payment Gateways, configure SSLCommerz, enter Store ID and Store Password, enable and Save</li>
+  <li><strong>Test Payment</strong> - Enable Sandbox Mode, create test invoice with BDT currency, complete payment using sandbox credentials</li>
+</ol>
+
+<p><strong>Note:</strong> SSLCommerz uses external redirect flow. The system handles session restoration automatically using secure payment tokens.</p>
+
+<h3 id="bank-transfer">Bank Transfer</h3>
+<p><strong>Setup:</strong> Enable Bank Transfer payment method, add bank account details, instructions displayed to customers.</p>
+
+<p><strong>Instructions Template:</strong></p>
+<pre><code>Bank Transfer Instructions:
+
+Bank Name: [Your Bank Name]
+Account Name: [Your Company Name]
+Account Number: [Account Number]
+Routing Number: [Routing Number]
+SWIFT/BIC: [For international transfers]
+
+Reference: Please include your invoice number as reference</code></pre>
+
+<p><strong>Manual Processing:</strong> Customers transfer funds, notify you or upload proof, you verify payment, manually mark invoice as paid.</p>
+
+<hr>
+
+<h2 id="domain-registrar-integration">Domain Registrar Integration</h2>
+
+<h3 id="supported-registrars">Supported Registrars</h3>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Registrar</th><th>Platform</th><th>API Type</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>ResellerClub</td><td><code>resellerclub</code></td><td>JSON REST</td><td>Supported</td></tr>
+<tr><td>Resell.biz</td><td><code>resellbiz</code></td><td>JSON REST</td><td>Supported</td></tr>
+<tr><td>Namecheap</td><td><code>namecheap</code></td><td>XML</td><td>Supported</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="default-registrar-system">Default Registrar System</h3>
+<p>WHMAZ uses a <strong>default registrar</strong> system:</p>
+<ul>
+  <li>Set one registrar as "Default" in admin panel</li>
+  <li>All domain operations use the default registrar</li>
+  <li>When you set a registrar as default, others are automatically unset</li>
+  <li>Navigate to: <strong>Admin &rarr; Settings &rarr; Domain Registrars</strong></li>
+</ul>
+
+<h3 id="resellbiz--resellerclub-setup">Resell.biz / ResellerClub Setup</h3>
+<p><strong>Prerequisites:</strong> ResellerClub reseller account, API credentials, funded account.</p>
+<p><strong>Configuration Steps:</strong></p>
+<ol>
+  <li><strong>Get API Credentials</strong> - Login to control panel, go to Settings &rarr; API, note auth-userid and API key</li>
+  <li><strong>Configure in WHMAZ</strong> - Go to Admin &rarr; Settings &rarr; Domain Registrars, enter API Base URL: <code>https://httpapi.com/api/domains/</code>, enter auth-userid and API key, check "Set as Default"</li>
+  <li><strong>Whitelist Server IP</strong> - In ResellerClub control panel, go to Settings &rarr; API &rarr; IP Whitelist, add your server's IP</li>
+  <li><strong>Test Domain Search</strong> - Go to customer portal, use domain search, verify results return correctly</li>
+</ol>
+
+<h3 id="namecheap-setup">Namecheap Setup</h3>
+<p><strong>Prerequisites:</strong> Namecheap reseller account, API credentials, funded account, server IP whitelisted.</p>
+<p><strong>Configuration Steps:</strong></p>
+<ol>
+  <li><strong>Get API Credentials</strong> - Login to Namecheap dashboard, go to Profile &rarr; Tools &rarr; API Access, enable API access, note Username and Key</li>
+  <li><strong>Whitelist Server IP</strong> - In Namecheap dashboard &rarr; Profile &rarr; Tools &rarr; API Access, add your server's IP</li>
+  <li><strong>Configure in WHMAZ</strong>
+    <ul>
+      <li>Set Platform: <code>NAMECHEAP</code></li>
+      <li>Set API Base URL: <code>https://api.namecheap.com/xml.response</code> (production) or <code>https://api.sandbox.namecheap.com/xml.response</code> (sandbox)</li>
+      <li>Enter API Username and Key</li>
+      <li>Check "Set as Default"</li>
+    </ul>
+  </li>
+  <li><strong>Test Domain Search</strong> - Go to customer portal, verify results</li>
+</ol>
+
+<p><strong>Namecheap-Specific Notes:</strong></p>
+<ul>
+  <li>Namecheap uses XML API (not JSON)</li>
+  <li>Domain suggestions check common TLDs (.com, .net, .org, .io, .co)</li>
+  <li>Contact info is passed with each request (no separate customer/contact IDs)</li>
+</ul>
+
+<h3 id="general-troubleshooting">General Troubleshooting</h3>
+<p><strong>"Sorry, you have been blocked" / 403 Error:</strong> API IP whitelist issue, whitelist your server IP in registrar panel, verify API credentials.</p>
+<p><strong>No Results Returned:</strong> Check API URL, verify credentials, check server can make external CURL requests, review error logs at <code>src/logs/</code>.</p>
+<p><strong>Domain Not Registering:</strong> Verify account funded, check domain availability, verify customer details complete, check extension supported.</p>
+
+<h3 id="adding-domain-extensions">Adding Domain Extensions</h3>
+<ol>
+  <li><strong>Check Supported TLDs</strong> - Review registrar's supported TLDs</li>
+  <li><strong>Add to Database</strong> - Insert into <code>dom_extensions</code> table, set extension name, set status to active</li>
+  <li><strong>Configure Pricing</strong> - Go to Domain Pricing management, add pricing for new extension</li>
+  <li><strong>Test in Portal</strong> - Search for domain with new extension, verify pricing displays correctly</li>
+</ol>
+
+<hr>
+
+<h2 id="automation--cron-jobs">Automation &amp; Cron Jobs</h2>
+
+<h3 id="setting-up-cron-jobs">Setting Up Cron Jobs</h3>
+<p><strong>Required Cron Jobs:</strong></p>
+<ol>
+  <li><strong>Invoice Generation</strong> - Generates renewal invoices before due date. Daily. <code>php /path/to/whmaz/index.php cron/generate_invoices</code></li>
+  <li><strong>Payment Reminders</strong> - Sends reminder emails for unpaid invoices. Daily. <code>php /path/to/whmaz/index.php cron/payment_reminders</code></li>
+  <li><strong>Service Suspension</strong> - Suspends services with overdue invoices. Daily. <code>php /path/to/whmaz/index.php cron/suspend_services</code></li>
+  <li><strong>Domain Expiry Reminders</strong> - Reminds customers of upcoming expirations. Daily. <code>php /path/to/whmaz/index.php cron/domain_reminders</code></li>
+</ol>
+
+<h3 id="cpanel-cron-setup">cPanel Cron Setup</h3>
+<ol>
+  <li><strong>Access Cron Jobs</strong> - Login to cPanel, find "Cron Jobs" icon</li>
+  <li><strong>Add New Cron Job</strong> - Select frequency (e.g., daily at 3:00 AM), enter command:
+    <pre><code>php /home/username/public_html/index.php cron/generate_invoices</code></pre>
+    Save cron job.
+  </li>
+  <li><strong>Repeat for Each Cron Task</strong> - Add separate cron jobs, stagger times to avoid overload</li>
+</ol>
+
+<h3 id="linux-server-cron-setup">Linux Server Cron Setup</h3>
+<ol>
+  <li><strong>Edit Crontab</strong>
+    <pre><code>crontab -e</code></pre>
+  </li>
+  <li><strong>Add Cron Entries</strong>
+<pre><code># Invoice generation - Daily at 3:00 AM
+0 3 * * * php /var/www/html/whmaz/index.php cron/generate_invoices
+
+# Payment reminders - Daily at 9:00 AM
+0 9 * * * php /var/www/html/whmaz/index.php cron/payment_reminders
+
+# Service suspension - Daily at 11:00 AM
+0 11 * * * php /var/www/html/whmaz/index.php cron/suspend_services
+
+# Domain reminders - Daily at 10:00 AM
+0 10 * * * php /var/www/html/whmaz/index.php cron/domain_reminders</code></pre>
+  </li>
+  <li><strong>Save and Exit</strong> - Press Ctrl+X, then Y, then Enter (in nano)</li>
+</ol>
+
+<h3 id="verifying-cron-execution">Verifying Cron Execution</h3>
+<p><strong>Check Cron Logs:</strong></p>
+<pre><code>tail -f /var/log/syslog | grep CRON</code></pre>
+<p><strong>Check Application Logs:</strong> View logs in <code>application/logs/</code> directory, look for cron execution entries, verify no errors.</p>
+
+<hr>
+
+<h2 id="customization-options">Customization Options</h2>
+
+<h3 id="changing-logo">Changing Logo</h3>
+<ol>
+  <li><strong>Prepare Logo File</strong> - Format: PNG or JPG, recommended size: 200x50 pixels, transparent background (PNG)</li>
+  <li><strong>Upload Logo</strong> - Go to Settings &rarr; Company Settings, click "Upload Logo", select file, save changes</li>
+  <li><strong>Logo Usage</strong> - Displayed on invoices, customer portal header, admin portal header, emails</li>
+</ol>
+
+<h3 id="customizing-colorstheme">Customizing Colors/Theme</h3>
+<p><strong>CSS Customization:</strong> Main CSS file: <code>resources/css/custom.css</code>. Modify colors, fonts, spacing. Use browser inspector to find CSS selectors.</p>
+
+<p><strong>Common Customizations:</strong></p>
+<pre><code>/* Primary color */
+.btn-primary {
+    background-color: #your-color;
+}
+
+/* Header background */
+.header {
+    background-color: #your-color;
+}
+
+/* Links */
+a {
+    color: #your-color;
+}</code></pre>
+
+<h3 id="customizing-email-templates">Customizing Email Templates</h3>
+<ol>
+  <li><strong>Access Email Template Management</strong> - Go to Admin Portal &rarr; "Settings" &rarr; "Email Templates" or navigate to <code>whmazadmin/email_template</code></li>
+  <li><strong>Edit Template</strong> - Click "Manage" on the template, use Quill editor, use placeholders, save changes</li>
+  <li><strong>Create New Template</strong> - Click "Add", assign unique template key, category, subject, and body</li>
+  <li><strong>Test Email</strong> - Send test email, verify formatting, check all placeholders replaced correctly</li>
+</ol>
+
+<h3 id="adding-custom-pages">Adding Custom Pages</h3>
+<p><strong>Creating Custom Page:</strong></p>
+<ol>
+  <li><strong>Create Controller</strong> - File: <code>application/controllers/Custom_page.php</code>, extend appropriate base controller</li>
+  <li><strong>Create View</strong> - File: <code>application/views/custom_page.php</code>, add your HTML content</li>
+  <li><strong>Add to Menu</strong> (optional) - Edit navigation menu file, add link to custom page</li>
+</ol>
+
+<hr>
+
+<!-- ============================================================ -->
+<!-- PART 5: TROUBLESHOOTING & FAQ -->
+<!-- ============================================================ -->
+
+<h1 id="part-5-troubleshooting--faq">Part 5: Troubleshooting &amp; FAQ</h1>
+
+<h2 id="common-issues">Common Issues</h2>
+
+<h3 id="issue-cannot-login-to-admin-panel">Issue: Cannot Login to Admin Panel</h3>
+<p><strong>Possible Causes:</strong> Incorrect email or password, account suspended or deleted, session expired, browser cache issues.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+  <li>Verify email and password correct</li>
+  <li>Use "Forgot Password" to reset</li>
+  <li>Clear browser cache and cookies</li>
+  <li>Try different browser</li>
+  <li>Check database for user account status</li>
+</ol>
+
+<h3 id="issue-blank-white-page">Issue: Blank White Page</h3>
+<p><strong>Possible Causes:</strong> PHP error, missing files, insufficient permissions, memory limit exceeded.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+  <li>Check error logs in <code>application/logs/</code></li>
+  <li>Enable error display temporarily: Set <code>ENVIRONMENT</code> to 'development' in <code>index.php</code></li>
+  <li>Check file permissions (755 for directories, 644 for files)</li>
+  <li>Increase PHP memory_limit in php.ini</li>
+  <li>Contact server administrator</li>
+</ol>
+
+<h3 id="issue-404-error-on-pages">Issue: 404 Error on Pages</h3>
+<p><strong>Possible Causes:</strong> .htaccess file missing or incorrect, mod_rewrite not enabled, base URL not configured correctly.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+  <li>Verify .htaccess exists in root directory</li>
+  <li>Check .htaccess content:
+<pre><code>RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php/$1 [L]</code></pre>
+  </li>
+  <li>Verify mod_rewrite enabled on server</li>
+  <li>Check base_url in <code>application/config/config.php</code></li>
+</ol>
+
+<h3 id="issue-database-connection-error">Issue: Database Connection Error</h3>
+<p><strong>Possible Causes:</strong> Incorrect database credentials, database server down, firewall blocking connection, database not created.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+  <li>Verify credentials in <code>application/config/database.php</code></li>
+  <li>Test database connection: <pre><code>mysql -u username -p database_name</code></pre></li>
+  <li>Check database server is running</li>
+  <li>Verify database exists</li>
+  <li>Check user has permissions on database</li>
+</ol>
+
+<h3 id="issue-emails-not-sending">Issue: Emails Not Sending</h3>
+<p><strong>Possible Causes:</strong> SMTP settings incorrect, SMTP port blocked, authentication failed, email provider blocks.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+  <li>Verify SMTP settings in Settings &rarr; Email</li>
+  <li>Send test email and check error</li>
+  <li>Try different SMTP port (587, 465, 25)</li>
+  <li>Check server firewall allows outbound on SMTP port</li>
+  <li>Enable "less secure apps" if using Gmail</li>
+  <li>Check email logs for specific errors</li>
+</ol>
+
+<h3 id="issue-payment-gateway-not-working">Issue: Payment Gateway Not Working</h3>
+<p><strong>Possible Causes:</strong> API credentials incorrect, gateway in test mode, SSL certificate issues, account not verified.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+  <li>Verify API credentials</li>
+  <li>Check test/live mode setting</li>
+  <li>Ensure site uses HTTPS (SSL)</li>
+  <li>Verify gateway account approved and active</li>
+  <li>Check gateway logs for specific errors</li>
+  <li>Test with different payment gateway</li>
+</ol>
+
+<h3 id="issue-domain-search-not-working">Issue: Domain Search Not Working</h3>
+<p><strong>Possible Causes:</strong> API credentials incorrect, IP not whitelisted, API URL incorrect, no domain pricing configured.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+  <li>Verify API credentials in database (domain_register table)</li>
+  <li>Contact registrar to whitelist server IP</li>
+  <li>Check API URL format correct</li>
+  <li>Verify pricing exists for searched extensions</li>
+  <li>Check CURL enabled on server</li>
+  <li>Review error logs</li>
+</ol>
+
+<h3 id="issue-slow-performance">Issue: Slow Performance</h3>
+<p><strong>Possible Causes:</strong> Server resources limited, database not optimized, too many plugins/modules, large log files.</p>
+<p><strong>Solutions:</strong></p>
+<ol>
+  <li>Enable OPcache</li>
+  <li>Optimize database tables</li>
+  <li>Increase PHP memory_limit</li>
+  <li>Clear old log files</li>
+  <li>Enable caching</li>
+  <li>Upgrade server resources</li>
+  <li>Use CDN for static assets</li>
+</ol>
+
+<hr>
+
+<h2 id="frequently-asked-questions">Frequently Asked Questions</h2>
+
+<h3 id="general-questions">General Questions</h3>
+
+<p><strong>Q: Can I use WHMAZ for other types of businesses besides hosting?</strong><br>
+A: Yes, while designed for hosting providers, WHMAZ can be adapted for any service-based business that needs customer management, billing, and support.</p>
+
+<p><strong>Q: Does WHMAZ support multiple currencies?</strong><br>
+A: Yes, you can configure multiple currencies and set exchange rates.</p>
+
+<p><strong>Q: Can I customize the look and feel?</strong><br>
+A: Yes, you can customize CSS, logos, colors, and email templates.</p>
+
+<p><strong>Q: Is WHMAZ mobile-friendly?</strong><br>
+A: Yes, both customer and admin portals are fully responsive and work on mobile devices.</p>
+
+<p><strong>Q: Can I import customers from another system?</strong><br>
+A: Currently manual import. You can insert directly into database with proper SQL knowledge, or contact support for assistance.</p>
+
+<h3 id="billing-questions">Billing Questions</h3>
+
+<p><strong>Q: How do I set up recurring billing?</strong><br>
+A: Configure cron jobs for automatic invoice generation. Set up payment gateway for auto-payments (if supported).</p>
+
+<p><strong>Q: Can I offer discounts or coupons?</strong><br>
+A: Coupon functionality may need custom development. You can manually adjust invoice amounts.</p>
+
+<p><strong>Q: How do I handle taxes?</strong><br>
+A: Configure tax rate in Settings &rarr; Invoice Settings. Tax applies to all invoices.</p>
+
+<p><strong>Q: Can I accept payments in multiple currencies?</strong><br>
+A: Yes, configure multiple currencies in Settings &rarr; Currency.</p>
+
+<p><strong>Q: How do I issue refunds?</strong><br>
+A: Process refund through payment gateway, then record in WHMAZ or cancel invoice.</p>
+
+<h3 id="domain-questions">Domain Questions</h3>
+
+<p><strong>Q: Which domain registrars are supported?</strong><br>
+A: ResellerClub, Resell.biz, and Namecheap are fully supported. Set one as the "Default" registrar in Admin &rarr; Settings &rarr; Domain Registrars.</p>
+
+<p><strong>Q: Can customers transfer domains to me?</strong><br>
+A: Yes, domain transfer functionality is included.</p>
+
+<p><strong>Q: Do domains auto-renew?</strong><br>
+A: Renewal invoices are generated automatically. Payment must be made (auto-payment depends on gateway).</p>
+
+<p><strong>Q: How do I set domain pricing?</strong><br>
+A: Go to Domains &rarr; Domain Pricing in admin panel.</p>
+
+<h3 id="support-questions">Support Questions</h3>
+
+<p><strong>Q: Can I have multiple support departments?</strong><br>
+A: Yes, create departments in ticket settings.</p>
+
+<p><strong>Q: Can customers reply to tickets via email?</strong><br>
+A: Email-to-ticket functionality requires additional configuration (pipe to email).</p>
+
+<p><strong>Q: How do I create canned responses?</strong><br>
+A: Go to Support &rarr; Canned Responses in admin panel.</p>
+
+<p><strong>Q: Can I assign tickets to specific staff?</strong><br>
+A: Yes, assign tickets to staff members from ticket details page.</p>
+
+<h3 id="technical-questions">Technical Questions</h3>
+
+<p><strong>Q: What are the server requirements?</strong><br>
+A: PHP 8.2+, MySQL 5.7+, Apache/Nginx. See README.md for complete requirements.</p>
+
+<p><strong>Q: Can I run WHMAZ on shared hosting?</strong><br>
+A: Yes, as long as server meets minimum requirements.</p>
+
+<p><strong>Q: Is the source code encrypted?</strong><br>
+A: No, full source code is provided and can be customized.</p>
+
+<p><strong>Q: Can I use WHMAZ on multiple domains?</strong><br>
+A: Regular license: One domain. Extended license: Multiple under one business/SaaS.</p>
+
+<p><strong>Q: How do I backup WHMAZ?</strong><br>
+A: Backup database (MySQL dump) and files (entire directory). See INSTALLATION.md for commands.</p>
+
+<hr>
+
+<h2 id="getting-support">Getting Support</h2>
+
+<h3 id="support-channels">Support Channels</h3>
+
+<p><strong>Documentation:</strong></p>
+<ul>
+  <li>README.md - Overview and quick start</li>
+  <li>INSTALLATION.md - Installation guide</li>
+  <li>USER_GUIDE.md - This document</li>
+  <li>CHANGELOG.md - Version history</li>
+</ul>
+
+<p><strong>Email Support:</strong></p>
+<ul>
+  <li>Email: support@whmaz.com</li>
+  <li>Response time: Within 48 hours (business days)</li>
+  <li>Include: Order ID, version, detailed description, screenshots</li>
+</ul>
+
+<p><strong>Knowledge Base:</strong> Search for common issues, step-by-step guides, video tutorials (if available).</p>
+
+<p><strong>Community Forum</strong> (if available): Ask questions, share solutions, connect with other users.</p>
+
+<h3 id="before-contacting-support">Before Contacting Support</h3>
+<p><strong>Information to Provide:</strong></p>
+<ol>
+  <li><strong>WHMAZ Version:</strong> Check in footer or about page</li>
+  <li><strong>Server Environment:</strong>
+    <ul>
+      <li>PHP version: <code>php -v</code></li>
+      <li>MySQL version: <code>mysql --version</code></li>
+      <li>Server OS: Linux, Windows, etc.</li>
+    </ul>
+  </li>
+  <li><strong>Detailed Description:</strong> What were you trying to do? What happened instead? Error messages (exact text)</li>
+  <li><strong>Screenshots:</strong> Error page, relevant configuration pages, console errors (F12 in browser)</li>
+  <li><strong>Steps to Reproduce:</strong> Step 1, Step 2, Step 3... Helps support team replicate issue</li>
+</ol>
+
+<h3 id="support-limitations">Support Limitations</h3>
+<p><strong>Support Includes:</strong> Installation assistance (guidance, not service), configuration help, bug fixing, feature usage questions, troubleshooting.</p>
+<p><strong>Support Does NOT Include:</strong> Custom development, server management, third-party plugin support, training sessions, consulting services.</p>
+<p>These services available separately at additional cost.</p>
+
+<h3 id="support-period">Support Period</h3>
+<ul>
+  <li><strong>Included:</strong> 6 months from purchase date</li>
+  <li><strong>Extended Support:</strong> Available for purchase</li>
+  <li><strong>Lifetime Updates:</strong> Check license terms</li>
+</ul>
+
+<hr>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>Thank you for using <strong>WHMAZ</strong>!</p>
+
+<p>This guide covered:</p>
+<ul>
+  <li>Customer portal usage</li>
+  <li>Administrator functions</li>
+  <li>Advanced configuration</li>
+  <li>Troubleshooting common issues</li>
+</ul>
+
+<p><strong>Next Steps:</strong></p>
+<ol>
+  <li>Complete initial configuration</li>
+  <li>Create first customer and order</li>
+  <li>Test billing and payment flow</li>
+  <li>Configure automation/cron jobs</li>
+  <li>Customize branding and emails</li>
+  <li>Train staff on admin functions</li>
+  <li>Create knowledge base articles for customers</li>
+</ol>
+
+<p><strong>Need Help?</strong></p>
+<ul>
+  <li>Email: <a href="mailto:support@whmaz.com">support@whmaz.com</a></li>
+  <li>Documentation: See other guides</li>
+  <li>Website: <a href="https://whmaz.com/">https://whmaz.com/</a></li>
+</ul>
+
+<p><strong>Stay Updated:</strong></p>
+<ul>
+  <li>Check CHANGELOG.md for new features</li>
+  <li>Subscribe to announcements</li>
+</ul>
+
+<hr>
+
+<p style="text-align:center;color:#7f8c9b;font-size:13px;margin-top:40px;">
+  <strong>Document Information:</strong><br>
+  Version: 1.0.0 | Last Updated: February 18, 2026<br>
+  Product: WHMAZ - Web Host Manager A to Z Solutions. Lightweight Domain Hosting Management System<br>
+  Copyright 2026 WHMAZ. All Rights Reserved.
+</p>
+
+</div><!-- /content-area -->
+</div><!-- /main-content -->
+
+<!-- Back to Top -->
+<button class="back-to-top" id="backToTop" aria-label="Back to top">
+  <i class="fas fa-arrow-up"></i>
+</button>
+
+<script>
+(function() {
+  // === Sidebar toggle (mobile) ===
+  var hamburger = document.getElementById('hamburgerBtn');
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+
+  hamburger.addEventListener('click', function() {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  });
+  overlay.addEventListener('click', function() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
+
+  // === Part collapse/expand ===
+  var toggles = document.querySelectorAll('.part-toggle');
+  toggles.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var target = document.getElementById(btn.getAttribute('data-target'));
+      if (target) {
+        btn.classList.toggle('collapsed');
+        target.classList.toggle('collapsed');
+      }
+    });
+  });
+
+  // === TOC Search / Filter ===
+  var searchInput = document.getElementById('tocSearch');
+  searchInput.addEventListener('input', function() {
+    var query = this.value.toLowerCase().trim();
+    var links = document.querySelectorAll('.sidebar-nav .nav-link');
+    var partGroups = document.querySelectorAll('.part-group');
+
+    if (!query) {
+      links.forEach(function(link) { link.style.display = ''; });
+      partGroups.forEach(function(pg) {
+        pg.style.display = '';
+        var items = pg.querySelector('.part-items');
+        var toggle = pg.querySelector('.part-toggle');
+        if (items) items.classList.remove('collapsed');
+        if (toggle) toggle.classList.remove('collapsed');
+      });
+      return;
+    }
+
+    partGroups.forEach(function(pg) {
+      var pgLinks = pg.querySelectorAll('.nav-link');
+      var anyVisible = false;
+      pgLinks.forEach(function(link) {
+        if (link.textContent.toLowerCase().indexOf(query) !== -1) {
+          link.style.display = '';
+          anyVisible = true;
+        } else {
+          link.style.display = 'none';
+        }
+      });
+      pg.style.display = anyVisible ? '' : 'none';
+      if (anyVisible) {
+        var items = pg.querySelector('.part-items');
+        var toggle = pg.querySelector('.part-toggle');
+        if (items) items.classList.remove('collapsed');
+        if (toggle) toggle.classList.remove('collapsed');
+      }
+    });
+  });
+
+  // === Active state highlighting on scroll ===
+  var navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+  var headings = [];
+  navLinks.forEach(function(link) {
+    var id = link.getAttribute('href');
+    if (id && id.charAt(0) === '#') {
+      var el = document.getElementById(id.substring(1));
+      if (el) headings.push({ el: el, link: link });
+    }
+  });
+
+  function updateActiveLink() {
+    var scrollPos = window.scrollY + 100;
+    var current = null;
+    for (var i = 0; i < headings.length; i++) {
+      if (headings[i].el.offsetTop <= scrollPos) {
+        current = headings[i];
+      }
+    }
+    navLinks.forEach(function(l) { l.classList.remove('active'); });
+    if (current) {
+      current.link.classList.add('active');
+      // Scroll sidebar to keep active link visible
+      var nav = document.getElementById('sidebarNav');
+      var linkTop = current.link.offsetTop;
+      var navScrollTop = nav.scrollTop;
+      var navHeight = nav.clientHeight;
+      if (linkTop < navScrollTop || linkTop > navScrollTop + navHeight - 40) {
+        nav.scrollTop = linkTop - navHeight / 2;
+      }
+    }
+  }
+
+  var scrollTimeout;
+  window.addEventListener('scroll', function() {
+    if (scrollTimeout) cancelAnimationFrame(scrollTimeout);
+    scrollTimeout = requestAnimationFrame(updateActiveLink);
+  });
+  updateActiveLink();
+
+  // === Close sidebar on link click (mobile) ===
+  navLinks.forEach(function(link) {
+    link.addEventListener('click', function() {
+      if (window.innerWidth <= 900) {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+      }
+    });
+  });
+
+  // === Back to Top button ===
+  var backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', function() {
+    if (window.scrollY > 400) {
+      backToTop.classList.add('visible');
+    } else {
+      backToTop.classList.remove('visible');
+    }
+  });
+  backToTop.addEventListener('click', function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+})();
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 # WHMAZ User Guide
 ## Complete Manual for Administrators and Customers
 
-**Version:** 1.7.1
+**Version:** 1.0.0
 **Last Updated:** February 18, 2026
 **Product:** WHMAZ - Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System
 
