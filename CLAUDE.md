@@ -709,14 +709,34 @@ order_domains.order_type:
 | `src/views/whmazadmin/promocode_manage.php` | Admin create/edit form with conditional sections |
 
 ### Admin Menu Location
-Under **Billing** dropdown, after Transactions:
+Under **Settings** dropdown, after Currencies:
+```
+Settings
+├── General Settings
+├── Server Modules
+├── Servers
+├── Currencies
+├── [divider]
+├── Payment Gateways
+├── Promo Codes
+├── [divider]
+├── Service Categories
+├── Service Groups
+├── Hosting Packages
+├── [divider]
+├── Domain Register
+├── Domain Pricing
+├── [divider]
+├── Email Template
+└── Dynamic Pages
+```
+
+**Billing** dropdown contains:
 ```
 Billing
 ├── View Invoices
-├── Payment Gateways
 ├── Transactions
-├── [divider]
-└── Promo Codes
+└── Webhook Logs
 ```
 
 ### Promo Code Features

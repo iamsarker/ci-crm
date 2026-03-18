@@ -70,6 +70,7 @@
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0" class="breadcrumb-transparent">
 							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index" class="text-white-50">Dashboard</a></li>
+							<li class="breadcrumb-item"><a href="#">Settings</a></li>
 							<li class="breadcrumb-item active text-white">Promo Codes</li>
 						</ol>
 					</nav>

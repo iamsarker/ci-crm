@@ -2374,12 +2374,12 @@ The Dunning tab includes a visual workflow preview card that shows all active ru
 
 The Promo Code system allows administrators to create discount coupons that customers can apply during checkout. Promo codes support flexible discount rules, targeting options, and usage limits.
 
-**Access:** Go to "Billing" → "Promo Codes"
+**Access:** Go to "Settings" → "Promo Codes"
 
 ### Creating a Promo Code
 
 1. **Navigate to Promo Codes**
-   - Go to "Billing" → "Promo Codes"
+   - Go to "Settings" → "Promo Codes"
    - Click "Add Promo Code"
 
 2. **Basic Information**

@@ -53,10 +53,8 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/invoice/index"><i class="fas fa-file-alt me-2"></i>View Invoices</a></li>
-                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/paymentgateway/index"><i class="fas fa-credit-card me-2"></i>Payment Gateways</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/paymentgateway/transactions"><i class="fas fa-exchange-alt me-2"></i>Transactions</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/promocode/index"><i class="fas fa-tags me-2"></i>Promo Codes</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/paymentgateway/webhooks"><i class="fas fa-satellite-dish me-2"></i>Webhook Logs</a></li>
                     </ul>
                 </li>
 
@@ -98,10 +96,13 @@
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/server/index"><i class="fas fa-server me-2"></i>Servers</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/currency/index"><i class="fas fa-dollar-sign me-2"></i>Currencies</a></li>
                         <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/paymentgateway/index"><i class="fas fa-credit-card me-2"></i>Payment Gateways</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/promocode/index"><i class="fas fa-tags me-2"></i>Promo Codes</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_category/index"><i class="fas fa-folder me-2"></i>Service Categories</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_group/index"><i class="fas fa-object-group me-2"></i>Service Groups</a></li>
-                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_product/index"><i class="fas fa-hdd me-2"></i>Hosting Packages</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/domain_register/index"><i class="fas fa-globe me-2"></i>Domain Register</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/domain_pricing/index"><i class="fas fa-tags me-2"></i>Domain Pricing</a></li>
                         <li><hr class="dropdown-divider"></li>

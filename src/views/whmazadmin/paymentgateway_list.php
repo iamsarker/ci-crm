@@ -57,7 +57,7 @@
 					<nav aria-label="breadcrumb" class="mb-0">
 						<ol class="breadcrumb breadcrumb-style1 mb-0">
 							<li class="breadcrumb-item"><a href="<?=base_url()?>whmazadmin/dashboard/index">Dashboard</a></li>
-							<li class="breadcrumb-item"><a href="#">Billing</a></li>
+							<li class="breadcrumb-item"><a href="#">Settings</a></li>
 							<li class="breadcrumb-item active">Payment Gateways</li>
 						</ol>
 					</nav>

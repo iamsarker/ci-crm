@@ -5,7 +5,7 @@
 	<div class="container pd-x-0 pd-lg-x-12 pd-xl-x-0">
 
 		<!-- Page Header -->
-		<div class="row mt-4">
+		<div class="row mt-2">
 			<div class="col-12">
 				<div class="company-page-header">
 					<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -28,7 +28,7 @@
 		</div>
 
 		<!-- Form Section -->
-		<div class="row mt-4">
+		<div class="row mt-2">
 			<div class="col-12">
 				<div class="manage-form-card">
 					<form method="post" name="entityManageForm" id="entityManageForm" class="company-form" action="<?=base_url()?>whmazadmin/promocode/manage/<?= safe_encode(!empty($detail['id']) ? $detail['id'] : 0)?>">

@@ -180,7 +180,7 @@
 					<div class="tab-pane fade" id="service-info" role="tabpanel" aria-labelledby="service-tab">
 						<div class="company-datatable-wrapper">
 							<div class="table-responsive">
-								<table id="serviceListDt" class="table table-hover" class="w-100p"></table>
+								<table id="serviceListDt" class="table table-hover w-100"></table>
 							</div>
 						</div>
 					</div>
@@ -188,7 +188,7 @@
 					<div class="tab-pane fade" id="domain-info" role="tabpanel" aria-labelledby="domain-tab">
 						<div class="company-datatable-wrapper">
 							<div class="table-responsive">
-								<table id="domainListDt" class="table table-hover" class="w-100p"></table>
+								<table id="domainListDt" class="table table-hover w-100"></table>
 							</div>
 						</div>
 					</div>
@@ -196,7 +196,7 @@
 					<div class="tab-pane fade" id="invoice-info" role="tabpanel" aria-labelledby="invoice-tab">
 						<div class="company-datatable-wrapper">
 							<div class="table-responsive">
-								<table id="invoiceListDt" class="table table-hover" class="w-100p"></table>
+								<table id="invoiceListDt" class="table table-hover w-100"></table>
 							</div>
 						</div>
 					</div>
@@ -578,6 +578,11 @@
 					}
 				}
 			]
+		});
+
+		// Recalculate DataTable column widths when tab becomes visible
+		$('a[data-bs-toggle="tab"]').on('shown.bs.tab', function () {
+			$.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
 		});
 
 		// Service Management Modal handlers
