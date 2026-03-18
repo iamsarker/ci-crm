@@ -13,6 +13,21 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 // ============================================
 
 /**
+ * Common cURL options for all domain API requests
+ * Sets User-Agent and Accept headers to avoid Cloudflare blocks
+ */
+function _domain_api_curl_defaults($ch)
+{
+    curl_setopt($ch, CURLOPT_USERAGENT, 'WHMAZ/1.0 (Domain API Client)');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_ENCODING, ''); // accept all encodings
+}
+
+/**
  * Make a GET request to registrar API
  *
  * @param string $url Full API URL with parameters
@@ -27,14 +42,10 @@ function domain_api_get($url, $headers = array())
     for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        _domain_api_curl_defaults($ch);
 
-        if (!empty($headers)) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        }
+        $reqHeaders = array_merge(array('Accept: application/json'), $headers);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $reqHeaders);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -85,14 +96,10 @@ function domain_api_post($url, $params = array(), $headers = array())
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        _domain_api_curl_defaults($ch);
 
-        if (!empty($headers)) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        }
+        $reqHeaders = array_merge(array('Accept: application/json'), $headers);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $reqHeaders);
 
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -139,13 +146,9 @@ function domain_api_post_raw($url, $postData, $headers = array())
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        _domain_api_curl_defaults($ch);
 
-        // Set Content-Type for form data
-        $defaultHeaders = array('Content-Type: application/x-www-form-urlencoded');
+        $defaultHeaders = array('Content-Type: application/x-www-form-urlencoded', 'Accept: application/json');
         $allHeaders = array_merge($defaultHeaders, $headers);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $allHeaders);
 
