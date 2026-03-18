@@ -68,8 +68,8 @@ class Company extends WHMAZADMIN_Controller {
 					$form_data['updated_on'] = getDateTime();
 					$form_data['updated_by'] = getAdminId();
 
-					$form_data['inserted_on'] = $oldEntity['inserted_on'];
-					$form_data['inserted_by'] = $oldEntity['inserted_by'];
+					$form_data['inserted_on'] = $oldEntity['inserted_on'] ?? getDateTime();
+					$form_data['inserted_by'] = $oldEntity['inserted_by'] ?? getAdminId();
 				} else {
 					$form_data['inserted_on'] = getDateTime();
 					$form_data['inserted_by'] = getAdminId();

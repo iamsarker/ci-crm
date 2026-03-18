@@ -101,6 +101,12 @@
 										<?php echo form_error('product_service_id', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>
+								<div class="col-md-12 mt-2">
+									<div class="custom-checkbox-toggle">
+										<input name="hosting_already_exists" type="checkbox" id="hosting_already_exists">
+										<label for="hosting_already_exists"><i class="fa fa-check-circle"></i> Already Configured (existing hosting account)</label>
+									</div>
+								</div>
 							</div>
 							<input type="hidden" id="package_amount" name="package_amount" value="0" />
 						</div>
@@ -122,6 +128,10 @@
 											<label class="form-check-custom" id="label_radioTransfer">
 												<input type="radio" id="radioTransfer" name="order_type" value="2" class="order_type">
 												<span><i class="fa fa-exchange-alt me-1 text-info"></i>Transfer Domain</span>
+											</label>
+											<label class="form-check-custom" id="label_radioExisting">
+												<input type="radio" id="radioExisting" name="order_type" value="4" class="order_type">
+												<span><i class="fa fa-check-circle me-1 text-primary"></i>Already Registered</span>
 											</label>
 											<label class="form-check-custom active" id="label_radioNothing">
 												<input type="radio" id="radioNothing" name="order_type" value="3" class="order_type" checked>
@@ -154,11 +164,68 @@
 									</div>
 								</div>
 								<input type="hidden" id="domain_amount" name="domain_amount" value="0" />
-								<div class="col-md-12" id="epp_code_section" class="d-hidden">
+								<div class="col-md-12" id="epp_code_section" style="display:none;">
 									<div class="form-group">
 										<label class="form-label" for="epp_code"><i class="fa fa-key"></i> EPP / Authorization Code</label>
 										<input type="text" class="form-control" placeholder="Enter EPP/Auth code for transfer" id="epp_code" name="epp_code" />
 										<small class="form-text text-muted">Required for domain transfers</small>
+									</div>
+								</div>
+								<!-- Existing domain date fields (shown when "Already Registered" selected) -->
+								<div class="col-md-12" id="existing_domain_section" style="display:none;">
+									<div class="row">
+										<div class="col-md-3">
+											<div class="form-group">
+												<label class="form-label" for="domain_reg_date"><i class="fa fa-calendar-plus"></i> Domain Registration Date</label>
+												<input type="date" class="form-control" id="domain_reg_date" name="domain_reg_date" value="<?= date('Y-m-d') ?>">
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+												<label class="form-label" for="domain_exp_date"><i class="fa fa-calendar-times"></i> Domain Expiry Date</label>
+												<input type="date" class="form-control" id="domain_exp_date" name="domain_exp_date" value="<?= date('Y-m-d', strtotime('+1 year')) ?>">
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+												<label class="form-label" for="domain_cust_id"><i class="fa fa-id-card"></i> Registrar Customer ID</label>
+												<input type="text" class="form-control" placeholder="e.g. 12345678" id="domain_cust_id" name="domain_cust_id" />
+											</div>
+										</div>
+										<div class="col-md-3">
+											<div class="form-group">
+												<label class="form-label" for="domain_order_id"><i class="fa fa-hashtag"></i> Registrar Order ID</label>
+												<input type="text" class="form-control" placeholder="e.g. 87654321" id="domain_order_id" name="domain_order_id" />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Existing Hosting Details (shown when "Already Registered" selected) -->
+						<div class="company-form-section" id="existing_hosting_section" style="display:none;">
+							<div class="section-title">
+								<i class="fa fa-link"></i> Existing Hosting Details
+							</div>
+							<div class="row">
+								<div class="col-md-3">
+									<div class="form-group">
+										<label class="form-label" for="cp_username"><i class="fa fa-user-cog"></i> Control Panel Username</label>
+										<input type="text" class="form-control" placeholder="e.g. myuser" id="cp_username" name="cp_username" />
+										<small class="form-text text-muted">Existing cPanel/Plesk/DA username</small>
+									</div>
+								</div>
+								<div class="col-md-3">
+									<div class="form-group">
+										<label class="form-label" for="hosting_reg_date"><i class="fa fa-calendar-plus"></i> Hosting Start Date</label>
+										<input type="date" class="form-control" id="hosting_reg_date" name="hosting_reg_date" value="<?= date('Y-m-d') ?>">
+									</div>
+								</div>
+								<div class="col-md-3">
+									<div class="form-group">
+										<label class="form-label" for="hosting_exp_date"><i class="fa fa-calendar-times"></i> Hosting Expiry Date</label>
+										<input type="date" class="form-control" id="hosting_exp_date" name="hosting_exp_date" value="<?= date('Y-m-d', strtotime('+1 year')) ?>">
 									</div>
 								</div>
 							</div>
@@ -192,7 +259,7 @@
 											<span class="summary-label"><i class="fa fa-server text-primary"></i> Hosting Package</span>
 											<input type="text" class="form-control form-control-sm summary-input" id="display_package_amount" readonly value="0.00">
 										</div>
-										<div class="summary-row">
+										<div class="summary-row" id="summary_domain_row">
 											<span class="summary-label"><i class="fa fa-globe text-danger"></i> Domain</span>
 											<input type="text" class="form-control form-control-sm summary-input" id="display_domain_amount" readonly value="0.00">
 										</div>
@@ -222,7 +289,7 @@
 									</div>
 									<div class="form-group">
 										<label class="form-label"><i class="fa fa-cog"></i> Options</label>
-										<div class="d-flex gap-3">
+										<div class="d-flex gap-3 flex-wrap">
 											<div class="custom-checkbox-toggle">
 												<input name="has_notification" type="checkbox" id="has_notification" <?= !empty($detail['has_notification']) && $detail['has_notification'] == 1 ? 'checked' : ''?>>
 												<label for="has_notification"><i class="fa fa-bell"></i> Notify</label>
@@ -230,6 +297,10 @@
 											<div class="custom-checkbox-toggle">
 												<input name="need_api_call" type="checkbox" id="need_api_call" <?= !empty($detail['need_api_call']) && $detail['need_api_call'] == 1 ? 'checked' : ''?>>
 												<label for="need_api_call"><i class="fa fa-code"></i> API</label>
+											</div>
+											<div class="custom-checkbox-toggle">
+												<input name="mark_as_paid" type="checkbox" id="mark_as_paid">
+												<label for="mark_as_paid"><i class="fa fa-check"></i> Paid</label>
 											</div>
 										</div>
 									</div>
@@ -262,15 +333,37 @@ $(document).ready(function(){
 		}
 	});
 
-	// Radio button styling
+	// Radio button styling & section toggling
 	$("input.order_type").on("change", function(){
 		$(".form-check-custom").removeClass("active");
 		$(this).closest(".form-check-custom").addClass("active");
 
-		if($(this).val() == 2){
+		var val = $(this).val();
+
+		// EPP code: only for transfer
+		if(val == 2){
 			$("#epp_code_section").slideDown();
 		} else {
 			$("#epp_code_section").slideUp();
+		}
+
+		// No domain: reset domain amount to zero
+		if(val == 3){
+			$("input#domain_amount").val("0.00");
+			$("input#display_domain_amount").val("0.00");
+			calculateTotalAmount();
+		}
+
+		// Existing domain: only for "Already Registered"
+		if(val == 4){
+			$("#existing_domain_section").slideDown();
+			// Auto-check hosting exists too
+			$("#hosting_already_exists").prop("checked", true).trigger("change");
+			// Auto-uncheck API call and auto-check Paid
+			$("#need_api_call").prop("checked", false);
+			$("#mark_as_paid").prop("checked", true);
+		} else {
+			$("#existing_domain_section").slideUp();
 		}
 	});
 
@@ -304,6 +397,15 @@ $(document).ready(function(){
 	// Discount amount change
 	$("input#discount_amount").on("keyup", function(){
 		calculateTotalAmount();
+	});
+
+	// Hosting already exists checkbox
+	$("#hosting_already_exists").on("change", function(){
+		if($(this).is(":checked")){
+			$("#existing_hosting_section").slideDown();
+		} else {
+			$("#existing_hosting_section").slideUp();
+		}
 	});
 });
 
@@ -386,6 +488,15 @@ function loadHostingPrice(){
 }
 
 function loadDomainPrice(){
+	// Skip price lookup for "No Domain" (order_type=3) or "Already Registered" (order_type=4)
+	let orderType = $("input.order_type:checked").val();
+	if(orderType == 3 || orderType == 4){
+		$("input#domain_amount").val("0.00");
+		$("input#display_domain_amount").val("0.00");
+		calculateTotalAmount();
+		return;
+	}
+
 	let currency_id = $("select#currency_id").val();
 	let reg_period = $("select#reg_period").val();
 	let domain = $("input#domain").val();

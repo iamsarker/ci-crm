@@ -38,8 +38,13 @@ class Order extends WHMAZADMIN_Controller
 			$this->form_validation->set_rules('currency_id', 'currency', 'required|trim');
 			$this->form_validation->set_message('currency_id', 'currency is required');
 
-			if( $this->input->post('module_id') > 0 || $this->input->post('server_id') > 0 ){
+			$this->form_validation->set_rules('payment_gateway_id', 'payment gateway', 'required|trim');
+			$this->form_validation->set_message('payment_gateway_id', 'Payment gateway is required');
 
+			$hasHosting = ($this->input->post('module_id') > 0 && $this->input->post('server_id') > 0);
+			$hasDomain = ($this->input->post('domain') != "");
+
+			if( $hasHosting ){
 				$this->form_validation->set_rules('billing_cycle_id', 'billing cycle', 'required|trim');
 				$this->form_validation->set_message('billing_cycle_id', 'billing cycle is required');
 
@@ -52,12 +57,10 @@ class Order extends WHMAZADMIN_Controller
 				$this->form_validation->set_message('domain', 'domain is required');
 			}
 
-			if( $this->input->post('product_service_id') == "" && $this->input->post('domain') == "" ){
-				$this->form_validation->set_rules('product_service_id', 'package', 'required|trim');
-				$this->form_validation->set_message('product_service_id', 'domain or hosting is required');
-
+			// At least domain or hosting must be provided
+			if( !$hasHosting && !$hasDomain ){
 				$this->form_validation->set_rules('domain', 'domain', 'required|trim');
-				$this->form_validation->set_message('domain', 'domain or hosting is required');
+				$this->form_validation->set_message('domain', 'Domain or hosting is required');
 			}
 
 			if ($this->form_validation->run() == true){
@@ -88,6 +91,15 @@ class Order extends WHMAZADMIN_Controller
 					'reg_date'				=> $this->input->post('reg_date') ? $this->input->post('reg_date') : date('Y-m-d'),
 					'has_notification'		=> $this->input->post('has_notification') ? 1 : 0,
 					'need_api_call'			=> $this->input->post('need_api_call') ? 1 : 0,
+					'mark_as_paid'			=> $this->input->post('mark_as_paid') ? 1 : 0,
+					'hosting_already_exists'=> $this->input->post('hosting_already_exists') ? 1 : 0,
+					'cp_username'			=> $this->input->post('cp_username'),
+					'domain_reg_date'		=> $this->input->post('domain_reg_date'),
+					'domain_exp_date'		=> $this->input->post('domain_exp_date'),
+					'domain_cust_id'		=> $this->input->post('domain_cust_id'),
+					'domain_order_id'		=> $this->input->post('domain_order_id'),
+					'hosting_reg_date'		=> $this->input->post('hosting_reg_date'),
+					'hosting_exp_date'		=> $this->input->post('hosting_exp_date'),
 				);
 
 				$order = $this->saveOrderTable($form_data);
@@ -99,7 +111,7 @@ class Order extends WHMAZADMIN_Controller
 					$billingCycle = array();
 				}
 
-				$invoice = $this->saveInvoiceTable($order, $billingCycle);
+				$invoice = $this->saveInvoiceTable($order, $billingCycle, $form_data);
 				$this->saveInvoiceItemTable($invoice, $form_data, $billingCycle, $savedItemIds);
 
 				if( $order['id'] > 0 && $invoice['id'] > 0 ){
@@ -178,23 +190,44 @@ class Order extends WHMAZADMIN_Controller
 
 		$savedIds = array('domain_id' => 0, 'service_id' => 0);
 
+		$isExistingDomain = ($form_data['order_type'] == 4);
+		$isExistingHosting = !empty($form_data['hosting_already_exists']);
+
 		// Use posted reg_date or default to today
 		$regDate = !empty($form_data['reg_date']) ? $form_data['reg_date'] : date('Y-m-d');
 		$regPeriod = !empty($form_data['reg_period']) ? intval($form_data['reg_period']) : 1;
+		$dueDate = date('Y-m-d', strtotime($regDate . " +7 days"));
 
-		// Calculate dates based on reg_date
-		$expDate = date('Y-m-d', strtotime($regDate . " +{$regPeriod} years"));
-		$dueDate = date('Y-m-d', strtotime($regDate . " +7 days")); // Payment due: reg_date + 7 days
-		$nextRenewalDate = $expDate; // Renewal date = expiration date
+		// --- Domain dates ---
+		if ($isExistingDomain && !empty($form_data['domain_reg_date'])) {
+			$domainRegDate = $form_data['domain_reg_date'];
+			$domainExpDate = !empty($form_data['domain_exp_date']) ? $form_data['domain_exp_date'] : date('Y-m-d', strtotime($domainRegDate . " +{$regPeriod} years"));
+		} else {
+			$domainRegDate = $regDate;
+			$domainExpDate = date('Y-m-d', strtotime($regDate . " +{$regPeriod} years"));
+		}
 
+		// --- Hosting dates ---
+		if ($isExistingHosting && !empty($form_data['hosting_reg_date'])) {
+			$hostingRegDate = $form_data['hosting_reg_date'];
+			$hostingExpDate = !empty($form_data['hosting_exp_date']) ? $form_data['hosting_exp_date'] : date('Y-m-d', strtotime($hostingRegDate . " +1 year"));
+		} else {
+			$hostingRegDate = $regDate;
+			// Calculate from billing cycle days
+			if (!empty($form_data['billing_cycle_id'])) {
+				$billingCycleRow = $this->Common_model->get_data_by_id("billing_cycle", $form_data['billing_cycle_id']);
+				$cycleDays = !empty($billingCycleRow->cycle_days) ? intval($billingCycleRow->cycle_days) : 365;
+			} else {
+				$cycleDays = 365;
+			}
+			$hostingExpDate = date('Y-m-d', strtotime($hostingRegDate . " +{$cycleDays} days"));
+		}
+
+		// Common base for items
 		$item['order_id'] = $order['id'];
 		$item['company_id'] = $order['company_id'];
 		$item['is_synced'] = 0;
 		$item['remarks'] = "";
-		$item['reg_date'] = $regDate;
-		$item['exp_date'] = $expDate;
-		$item['due_date'] = $dueDate;
-		$item['next_renewal_date'] = $nextRenewalDate;
 		$item['suspension_date'] = null;
 		$item['suspension_reason'] = null;
 		$item['termination_date'] = null;
@@ -202,7 +235,8 @@ class Order extends WHMAZADMIN_Controller
 		$item['inserted_on'] = getDateTime();
 		$item['inserted_by'] = getAdminId();
 
-		$domain_name = $form_data['domain'];
+		// Domain price lookup
+		$domain_name = !empty($form_data['domain']) ? $form_data['domain'] : '';
 		$domain_array = explode(".", $domain_name);
 		if ( count($domain_array) == 3 ){
 			$extension = '.'.$domain_array[1].'.'.$domain_array[2];
@@ -212,10 +246,14 @@ class Order extends WHMAZADMIN_Controller
 			$extension = "";
 		}
 
-		$domain_prices = $this->Common_model->getDomainPrices($form_data['currency_id'], $form_data['reg_period'], $extension);
+		$domain_prices = !empty($domain_name) ? $this->Common_model->getDomainPrices($form_data['currency_id'], $form_data['reg_period'], $extension) : array();
 
-		if( !empty($form_data['domain']) ){ // order_domain
+		if( !empty($form_data['domain']) && $form_data['order_type'] != 3 ){ // order_domain (skip for "No Domain")
 			$domain_arr = $item;
+			$domain_arr['reg_date'] = $domainRegDate;
+			$domain_arr['exp_date'] = $domainExpDate;
+			$domain_arr['due_date'] = $dueDate;
+			$domain_arr['next_renewal_date'] = $domainExpDate;
 			$domain_arr['domain'] = $form_data['domain'];
 			$domain_arr['epp_code'] = !empty($form_data['epp_code']) ? $form_data['epp_code'] : '';
 			$domain_arr['reg_period'] = $form_data['reg_period'];
@@ -226,7 +264,17 @@ class Order extends WHMAZADMIN_Controller
 
 			 // domain status; 0=pending reg, 1=active, 2=expired, 3=grace, 4=cancelled, 5=pending transfer
 
-			if( $form_data['order_type'] == 3 ){
+			if( $form_data['order_type'] == 4 ){
+				// Already registered - import as active, use admin-entered dates
+				$domain_arr['status'] = 1;
+				$domain_arr['reg_date'] = $domainRegDate;
+				$domain_arr['exp_date'] = $domainExpDate;
+				$domain_arr['next_renewal_date'] = $domainExpDate;
+				$domain_arr['is_synced'] = 1;
+				$domain_arr['domain_cust_id'] = !empty($form_data['domain_cust_id']) ? $form_data['domain_cust_id'] : null;
+				$domain_arr['domain_order_id'] = !empty($form_data['domain_order_id']) ? $form_data['domain_order_id'] : null;
+
+			} else if( $form_data['order_type'] == 3 ){
 				$domain_arr['reg_period'] = 1;
 				$domain_arr['status'] = 1;
 
@@ -247,24 +295,45 @@ class Order extends WHMAZADMIN_Controller
 
 			$hostingPrices = $this->Common_model->getHostingPrices($form_data['currency_id'], $form_data['product_service_id'], $form_data['billing_cycle_id']);
 
+			$service_arr['reg_date'] = $hostingRegDate;
+			$service_arr['exp_date'] = $hostingExpDate;
+			$service_arr['due_date'] = $dueDate;
+			$service_arr['next_renewal_date'] = $hostingExpDate;
 			$service_arr['billing_cycle_id'] = $form_data['billing_cycle_id'];
-			$service_arr['status'] = 0; // 0=pending, 1=active, 2=expired, 3=suspended, 4=terminated
 			$service_arr['hosting_domain'] = $form_data['domain'];
 			$service_arr['first_pay_amount'] = $form_data['package_amount'];
-			$service_arr['recurring_amount'] = $hostingPrices['price'];
+			$service_arr['recurring_amount'] = !empty($hostingPrices['price']) ? $hostingPrices['price'] : $form_data['package_amount'];
 			$service_arr['description'] = '';
-			$service_arr['product_service_pricing_id'] = $hostingPrices['id'];
+			$service_arr['product_service_pricing_id'] = !empty($hostingPrices['id']) ? $hostingPrices['id'] : 0;
 			$service_arr['product_service_id'] = $form_data['product_service_id'];
+			$service_arr['product_service_type_key'] = $this->Common_model->getProductServiceTypeKeyByPricingId(!empty($hostingPrices['id']) ? $hostingPrices['id'] : 0);
+
+			if ($isExistingHosting) {
+				// Already configured - import as active
+				$service_arr['status'] = 1;
+				$service_arr['is_synced'] = 1;
+				$service_arr['cp_username'] = !empty($form_data['cp_username']) ? $form_data['cp_username'] : null;
+			} else {
+				$service_arr['status'] = 0; // 0=pending, 1=active, 2=expired, 3=suspended, 4=terminated
+			}
 
 			$savedIds['service_id'] = $this->Order_model->saveOrderService($service_arr);
+		}
+
+		// Bi-directional linking: domain ↔ service
+		if (!empty($savedIds['domain_id']) && !empty($savedIds['service_id'])) {
+			$this->db->where('id', $savedIds['domain_id'])->update('order_domains', array('linked_service_id' => $savedIds['service_id']));
+			$this->db->where('id', $savedIds['service_id'])->update('order_services', array('linked_domain_id' => $savedIds['domain_id']));
 		}
 
 		return $savedIds;
 	}
 
-	public function saveInvoiceTable($order, $billing_cycle){
+	public function saveInvoiceTable($order, $billing_cycle, $form_data = array()){
 		// Calculate invoice due_date: order_date (reg_date) + 7 days
 		$invoiceDueDate = date('Y-m-d', strtotime($order['order_date'] . ' +7 days'));
+
+		$markAsPaid = !empty($form_data['mark_as_paid']);
 
 		$invoice['invoice_uuid'] = gen_uuid();
 		$invoice['company_id'] = $order['company_id'];
@@ -279,7 +348,7 @@ class Order extends WHMAZADMIN_Controller
 		$invoice['order_date'] = $order['order_date'];
 		$invoice['due_date'] = $invoiceDueDate;
 		$invoice['status'] = 1;
-		$invoice['pay_status'] = 'DUE';
+		$invoice['pay_status'] = $markAsPaid ? 'PAID' : 'DUE';
 		$invoice['need_api_call'] = $order['need_api_call'];
 		$invoice['inserted_on'] = $order['inserted_on'];
 		$invoice['inserted_by'] = $order['inserted_by'];
@@ -296,7 +365,7 @@ class Order extends WHMAZADMIN_Controller
 
 		$cycleDays = !empty($billingCycle) && isset($billingCycle->cycle_days) ? $billingCycle->cycle_days : 0;
 
-		if( !empty($form_data['domain']) && $form_data['domain'] != "") {
+		if( !empty($form_data['domain']) && $form_data['domain'] != "" && $form_data['order_type'] != 3 ) {
 			$invoiceItem['item'] = 'Domain registration';
 			$invoiceItem['item_desc'] = $form_data['domain'] . ' - ' . $form_data['reg_period'] . ' year(s)';
 
@@ -306,7 +375,8 @@ class Order extends WHMAZADMIN_Controller
 			$invoiceItem['total'] = $form_data['domain_amount'];
 			$invoiceItem['item_type'] = 1; // domain
 			$invoiceItem['ref_id'] = !empty($savedItemIds['domain_id']) ? $savedItemIds['domain_id'] : null;
-			$invoiceItem['billing_cycle_id'] = null;
+			$yearlyCycle = $this->db->where('cycle_key', 'YEARLY')->where('status', 1)->get('billing_cycle')->row();
+			$invoiceItem['billing_cycle_id'] = !empty($yearlyCycle) ? $yearlyCycle->id : null;
 			$invoiceItem['quantity'] = 1;
 			$invoiceItem['unit_price'] = $form_data['domain_amount'];
 			$invoiceItem['discount'] = 0;
@@ -322,7 +392,9 @@ class Order extends WHMAZADMIN_Controller
 			$package = $this->Common_model->get_data_by_id("product_services", $form_data['product_service_id']);
 
 			$invoiceItem['item'] = 'Hosting package';
-			$invoiceItem['item_desc'] = $billingCycle->cycle_name . ' ' . $package->product_name . ' for ' . $form_data['domain'] . ' domain';
+			$cycleName = !empty($billingCycle) && isset($billingCycle->cycle_name) ? $billingCycle->cycle_name : '';
+			$domainLabel = !empty($form_data['domain']) ? ' for ' . $form_data['domain'] . ' domain' : '';
+			$invoiceItem['item_desc'] = trim($cycleName . ' ' . $package->product_name . $domainLabel);
 
 			$invoiceItem['tax'] = 0.0;
 			$invoiceItem['vat'] = 0.0;

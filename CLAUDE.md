@@ -480,10 +480,83 @@ When admin cancels an entire order:
 4. Invoice gets: `pay_status='CANCELLED'`, `status=0`, `cancel_date=today`
 5. Cancellation reason stored in `remarks` field
 
+### Admin New Order / Import Existing Order
+
+**New Order Page:**
+- **URL**: `whmazadmin/order/new_order`
+- **Menu**: Orders → New Order
+- **Controller**: `src/controllers/whmazadmin/Order.php` → `new_order()`
+- **View**: `src/views/whmazadmin/order_new.php`
+
+**Key Files:**
+| File | Purpose |
+|------|---------|
+| `src/controllers/whmazadmin/Order.php` | Main controller (`new_order`, `saveOrderTable`, `saveOrderItemTable`, `saveInvoiceTable`, `saveInvoiceItemTable`) |
+| `src/controllers/whmazadmin/Package.php` | AJAX API for package filtering and pricing |
+| `src/views/whmazadmin/order_new.php` | New order form view |
+
+**Package Controller API Endpoints:**
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `whmazadmin/package/filter_api` | POST (JSON) | Filter packages by `module_id`, `server_id`, `service_group_id` |
+| `whmazadmin/package/prices` | POST (JSON) | Get package price by `currency_id`, `billing_cycle_id`, `product_service_id` |
+
+**Domain Action Options (radio buttons):**
+| Value | Label | Behavior |
+|-------|-------|----------|
+| 1 | Register New Domain | Domain status=Pending, triggers registrar API on payment |
+| 2 | Transfer Domain | Domain status=Pending Transfer, shows EPP code field |
+| 4 | Already Registered | Domain status=Active, shows date/ID fields, no API calls |
+| 3 | No Domain | Hosting-only order, no domain record created |
+
+**Import Existing Order (order_type=4):**
+
+Use "Already Registered" to import domains/hosting that are already live at the registrar/server into the CRM for billing and renewal tracking.
+
+**What it does:**
+- Creates order, domain, and service records with **Active** status
+- Sets `is_synced = 1` (no provisioning needed)
+- Stores admin-entered dates (`reg_date`, `exp_date`, `next_renewal_date`)
+- Stores registrar IDs (`domain_cust_id`, `domain_order_id`)
+- Stores existing control panel username (`cp_username`)
+- Creates invoice (optionally marked as PAID via "Paid" checkbox)
+- Bi-directional linking between domain and service items
+- Auto-unchecks "API" checkbox (no provisioning)
+- Auto-checks "Paid" checkbox
+
+**What it does NOT do:**
+- No registrar API calls (no domain registration/transfer)
+- No server API calls (no hosting account creation)
+- No welcome emails sent
+- No provisioning triggered
+
+**Form fields shown for "Already Registered":**
+
+| Field | Table Column | Description |
+|-------|-------------|-------------|
+| Domain Registration Date | `order_domains.reg_date` | Original registration date |
+| Domain Expiry Date | `order_domains.exp_date` | Current expiry date |
+| Registrar Customer ID | `order_domains.domain_cust_id` | Customer ID at registrar |
+| Registrar Order ID | `order_domains.domain_order_id` | Order/domain ID at registrar |
+| Control Panel Username | `order_services.cp_username` | Existing cPanel/Plesk/DA username |
+| Hosting Start Date | `order_services.reg_date` | Hosting activation date |
+| Hosting Expiry Date | `order_services.exp_date` | Hosting expiry date |
+
+**Validation Rules:**
+- Customer and currency are always required
+- Payment gateway is always required
+- At least domain or hosting must be provided
+- Package and billing cycle only required when module + server are selected (hosting order)
+- Domain-only orders: no hosting fields required
+
+**Invoice for domain items:**
+- `billing_cycle_id` is set to the ID of `cycle_key='YEARLY'` from `billing_cycle` table
+
 ### Database
 - **Database Config**: `src/config/database.php`
 - **SQL Schema**: `crm_db.sql` (contains all tables and data)
 - **DB Views**: `crm_db_views.sql` (contains all database views)
+- **Note**: `order_view` uses `LEFT JOIN payment_gateway` (not INNER JOIN) so orders with `payment_gateway_id=0` are not excluded
 
 ### Views
 - **Customer Payment Page**: `src/modules/billing/views/billing_pay.php`
@@ -596,6 +669,7 @@ order_domains.order_type:
 - 1 = Registration (new domain)
 - 2 = Transfer (from another registrar)
 - 3 = DNS Update only (no registration needed)
+- 4 = Already Registered (import existing domain, no API calls)
 ```
 
 ### Cart Files Reference
