@@ -361,8 +361,11 @@ class Clientarea extends WHMAZ_Controller {
 		$platform = strtoupper($domainInfo['platform']);
 
 		switch ($platform) {
-			case 'STARGATE': // ResellerClub, Resell.biz
-				return $this->updateNameserversStargate($domainInfo, $ns1, $ns2, $ns3, $ns4);
+			case 'RESELLERCLUB':
+			case 'RESELLBIZ':
+			case 'RESELL.BIZ':
+			case 'STARGATE':
+				return $this->updateNameserversResellerclub($domainInfo, $ns1, $ns2, $ns3, $ns4);
 
 			case 'NAMECHEAP':
 				return $this->updateNameserversNamecheap($domainInfo, $ns1, $ns2, $ns3, $ns4);
@@ -373,9 +376,9 @@ class Clientarea extends WHMAZ_Controller {
 	}
 
 	/**
-	 * Update nameservers via Stargate (ResellerClub) API
+	 * Update nameservers via ResellerClub/Resell.biz/Stargate API
 	 */
-	private function updateNameserversStargate($domainInfo, $ns1, $ns2, $ns3, $ns4) {
+	private function updateNameserversResellerclub($domainInfo, $ns1, $ns2, $ns3, $ns4) {
 		if (empty($domainInfo['domain_order_id'])) {
 			return array('success' => false, 'msg' => 'Domain order ID not found for registrar');
 		}
@@ -383,7 +386,7 @@ class Clientarea extends WHMAZ_Controller {
 		// Use ns_update_api from database, fallback to base_url + default endpoint
 		$nsUpdateApi = !empty($domainInfo['ns_update_api'])
 			? rtrim(strval($domainInfo['ns_update_api']), '/')
-			: rtrim(strval($domainInfo['api_base_url'] ?? ''), '/') . '/modify-ns.json';
+			: rtrim(strval($domainInfo['api_base_url'] ?? ''), '/') . '/api/domains/modify-ns.json';
 
 		$authUserId = strval($domainInfo['auth_userid'] ?? '');
 		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
@@ -595,7 +598,6 @@ class Clientarea extends WHMAZ_Controller {
 	 * Sync domain from ResellerClub/Resell.biz/Stargate API
 	 */
 	private function syncDomainResellerclub($domainInfo) {
-		// Validate required registrar configuration
 		if (empty($domainInfo['api_base_url']) && empty($domainInfo['contact_details_api'])) {
 			return array('success' => false, 'msg' => 'Registrar API URL not configured. Please contact support.');
 		}
@@ -604,40 +606,35 @@ class Clientarea extends WHMAZ_Controller {
 			return array('success' => false, 'msg' => 'Registrar API credentials not configured. Please contact support.');
 		}
 
-		$contactDetailsApi = !empty($domainInfo['contact_details_api'])
-			? strval($domainInfo['contact_details_api'])
-			: rtrim(strval($domainInfo['api_base_url']), '/') . '/api/domains/details-by-name.json';
-
+		$baseUrl = rtrim(strval($domainInfo['api_base_url'] ?? ''), '/');
 		$domain = strval($domainInfo['domain'] ?? '');
 		$authUserId = strval($domainInfo['auth_userid'] ?? '');
 		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
 
-		$url = $contactDetailsApi . '?auth-userid=' . urlencode($authUserId)
-			. '&api-key=' . urlencode($apiKey)
-			. '&domain-name=' . urlencode($domain)
-			. '&options=All';
+		// Step 1: Get domain details (nameservers + registrant contact ID)
+		$detailsUrl = $baseUrl . '/api/domains/details-by-name.json?'
+			. http_build_query(array(
+				'auth-userid' => $authUserId,
+				'api-key' => $apiKey,
+				'domain-name' => $domain,
+				'options' => 'All'
+			));
 
-		log_message('debug', 'ResellerClub Sync URL: ' . preg_replace('/api-key=[^&]+/', 'api-key=***', $url));
+		$apiResponse = domain_api_get($detailsUrl);
 
-		$response = $this->makeApiRequest($url, array(), 'GET');
-
-		if ($response === false) {
-			return array('success' => false, 'msg' => 'Failed to connect to registrar API. Please verify your internet connection and registrar credentials.');
+		if (!$apiResponse['success'] || empty($apiResponse['data'])) {
+			$error = $apiResponse['error'] ?? 'Failed to connect to registrar API';
+			return array('success' => false, 'msg' => $error);
 		}
 
-		// Check for empty response
-		if (empty($response)) {
-			return array('success' => false, 'msg' => 'Empty response from registrar API');
-		}
-
-		$result = json_decode($response, true);
+		$result = $apiResponse['data'];
 
 		if (isset($result['status']) && strtolower($result['status']) == 'error') {
-			$errorMsg = isset($result['message']) ? $result['message'] : 'API Error';
-			return array('success' => false, 'msg' => $errorMsg);
+			return array('success' => false, 'msg' => $result['message'] ?? 'API Error');
 		}
 
-		// Parse the response data
+		log_message('debug', 'ResellerClub Sync response keys: ' . implode(', ', array_keys($result)));
+
 		$syncData = array();
 
 		// Nameservers - ensure string values
@@ -646,69 +643,44 @@ class Clientarea extends WHMAZ_Controller {
 		if (isset($result['ns3'])) $syncData['ns3'] = is_array($result['ns3']) ? ($result['ns3'][0] ?? '') : strval($result['ns3']);
 		if (isset($result['ns4'])) $syncData['ns4'] = is_array($result['ns4']) ? ($result['ns4'][0] ?? '') : strval($result['ns4']);
 
-		// Contact info - Stargate returns contact IDs, we need to fetch contact details
-		if (isset($result['registrantcontact']) || isset($result['registrantcontactid'])) {
-			$contactId = $result['registrantcontact'] ?? $result['registrantcontactid'] ?? null;
-			// Handle if contactId is an array (extract first value or 'contactid' key)
-			if (is_array($contactId)) {
-				$contactId = $contactId['contactid'] ?? $contactId[0] ?? null;
-			}
-			if ($contactId && !is_array($contactId)) {
-				$contactDetails = $this->fetchResellerclubContactDetails($domainInfo, strval($contactId));
-				if (!empty($contactDetails)) {
-					$syncData = array_merge($syncData, $contactDetails);
-				}
-			}
+		// Step 2: Get registrant contact ID and fetch contact details
+		$contactId = $result['registrantcontact'] ?? $result['registrantcontactid'] ?? null;
+		if (is_array($contactId)) {
+			$contactId = $contactId['contactid'] ?? $contactId[0] ?? null;
 		}
 
-		// If direct contact info is available - ensure string values
-		if (isset($result['registrant_name'])) $syncData['contact_name'] = is_array($result['registrant_name']) ? '' : strval($result['registrant_name']);
-		if (isset($result['registrant_company'])) $syncData['contact_company'] = is_array($result['registrant_company']) ? '' : strval($result['registrant_company']);
-		if (isset($result['registrant_email'])) $syncData['contact_email'] = is_array($result['registrant_email']) ? '' : strval($result['registrant_email']);
-		if (isset($result['registrant_phone'])) $syncData['contact_phone'] = is_array($result['registrant_phone']) ? '' : strval($result['registrant_phone']);
-		if (isset($result['registrant_address1'])) $syncData['contact_address1'] = is_array($result['registrant_address1']) ? '' : strval($result['registrant_address1']);
-		if (isset($result['registrant_city'])) $syncData['contact_city'] = is_array($result['registrant_city']) ? '' : strval($result['registrant_city']);
-		if (isset($result['registrant_state'])) $syncData['contact_state'] = is_array($result['registrant_state']) ? '' : strval($result['registrant_state']);
-		if (isset($result['registrant_zip'])) $syncData['contact_zip'] = is_array($result['registrant_zip']) ? '' : strval($result['registrant_zip']);
-		if (isset($result['registrant_country'])) $syncData['contact_country'] = is_array($result['registrant_country']) ? '' : strval($result['registrant_country']);
+		if ($contactId && !is_array($contactId)) {
+			$contactUrl = $baseUrl . '/api/contacts/details.json?'
+				. http_build_query(array(
+					'auth-userid' => $authUserId,
+					'api-key' => $apiKey,
+					'contact-id' => strval($contactId)
+				));
+
+			$contactResponse = domain_api_get($contactUrl);
+
+			if ($contactResponse['success'] && !empty($contactResponse['data'])) {
+				$c = $contactResponse['data'];
+				if (!isset($c['status'])) {
+					$syncData['contact_name'] = strval($c['name'] ?? '');
+					$syncData['contact_company'] = strval($c['company'] ?? '');
+					$syncData['contact_email'] = strval($c['emailaddr'] ?? '');
+					$syncData['contact_phone'] = strval($c['telnocc'] ?? '') . strval($c['telno'] ?? '');
+					$syncData['contact_address1'] = strval($c['address1'] ?? '');
+					$syncData['contact_address2'] = strval($c['address2'] ?? '');
+					$syncData['contact_city'] = strval($c['city'] ?? '');
+					$syncData['contact_state'] = strval($c['state'] ?? '');
+					$syncData['contact_zip'] = strval($c['zip'] ?? '');
+					$syncData['contact_country'] = strval($c['country'] ?? '');
+				}
+			} else {
+				log_message('error', 'ResellerClub contact fetch failed for ID ' . $contactId . ': ' . ($contactResponse['error'] ?? 'unknown'));
+			}
+		} else {
+			log_message('error', 'ResellerClub Sync: No registrant contact ID found in response');
+		}
 
 		return array('success' => true, 'msg' => 'Data synced', 'data' => $syncData);
-	}
-
-	/**
-	 * Fetch contact details from ResellerClub/Resell.biz/Stargate API
-	 */
-	private function fetchResellerclubContactDetails($domainInfo, $contactId) {
-		$baseUrl = rtrim(strval($domainInfo['api_base_url'] ?? ''), '/');
-
-		$url = $baseUrl . '/api/contacts/details.json?auth-userid=' . urlencode(strval($domainInfo['auth_userid'] ?? ''))
-			. '&api-key=' . urlencode(strval($domainInfo['auth_apikey'] ?? ''))
-			. '&contact-id=' . urlencode(strval($contactId));
-
-		$response = $this->makeApiRequest($url, array(), 'GET');
-
-		if ($response === false) {
-			return array();
-		}
-
-		$result = json_decode($response, true);
-
-		if (empty($result) || isset($result['status'])) {
-			return array();
-		}
-
-		return array(
-			'contact_name' => ($result['name'] ?? ''),
-			'contact_company' => ($result['company'] ?? ''),
-			'contact_email' => ($result['emailaddr'] ?? ''),
-			'contact_phone' => ($result['telnocc'] ?? '') . ($result['telno'] ?? ''),
-			'contact_address1' => ($result['address1'] ?? ''),
-			'contact_address2' => ($result['address2'] ?? ''),
-			'contact_city' => ($result['city'] ?? ''),
-			'contact_state' => ($result['state'] ?? ''),
-			'contact_zip' => ($result['zip'] ?? ''),
-			'contact_country' => ($result['country'] ?? '')
-		);
 	}
 
 	/**
@@ -877,24 +849,27 @@ class Clientarea extends WHMAZ_Controller {
 		$platform = strtoupper($domainInfo['platform']);
 
 		switch ($platform) {
+			case 'RESELLERCLUB':
+			case 'RESELLBIZ':
+			case 'RESELL.BIZ':
 			case 'STARGATE':
-				return $this->updateContactsStargate($domainInfo, $contactData);
+				return $this->updateContactsResellerclub($domainInfo, $contactData);
 			case 'NAMECHEAP':
 				return $this->updateContactsNamecheap($domainInfo, $contactData);
 			default:
-				return array('success' => false, 'msg' => 'Unsupported registrar platform');
+				return array('success' => false, 'msg' => 'Unsupported registrar platform: ' . $platform);
 		}
 	}
 
 	/**
-	 * Update contacts via Stargate (ResellerClub) API
+	 * Update contacts via ResellerClub/Resell.biz/Stargate API
 	 */
-	private function updateContactsStargate($domainInfo, $contactData) {
+	private function updateContactsResellerclub($domainInfo, $contactData) {
 		// Note: ResellerClub requires updating contact by contact-id
 		// This is a simplified implementation - full implementation would need contact ID management
 		$contactUpdateApi = !empty($domainInfo['contact_update_api'])
 			? strval($domainInfo['contact_update_api'])
-			: rtrim(strval($domainInfo['api_base_url'] ?? ''), '/') . '/modify-contact.json';
+			: rtrim(strval($domainInfo['api_base_url'] ?? ''), '/') . '/api/contacts/modify.json';
 
 		if (empty($domainInfo['domain_order_id'])) {
 			return array('success' => false, 'msg' => 'Domain order ID not found');
@@ -1090,6 +1065,311 @@ class Clientarea extends WHMAZ_Controller {
 	}
 
 	/**
+	 * Get transfer lock status from registrar API
+	 */
+	public function get_transfer_lock() {
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
+		if (!$this->input->post()) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid request method'));
+			return;
+		}
+
+		$domainId = $this->input->post('domain_id');
+		$companyId = getCompanyId();
+
+		if (!is_numeric($domainId) || $domainId <= 0) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid domain ID'));
+			return;
+		}
+
+		$domainInfo = $this->Clientarea_model->getDomainRegistrarInfo($domainId, $companyId);
+
+		if (empty($domainInfo)) {
+			echo json_encode(array('success' => false, 'msg' => 'Domain not found or access denied'));
+			return;
+		}
+
+		if (empty($domainInfo['dom_register_id']) || empty($domainInfo['platform'])) {
+			// No registrar — return local DB value
+			echo json_encode(array('success' => true, 'locked' => (int)($domainInfo['transfer_lock'] ?? 1)));
+			return;
+		}
+
+		$result = $this->getTransferLockFromApi($domainInfo);
+
+		if ($result['success']) {
+			// Sync local DB with registrar status
+			$this->db->where('id', intval($domainId));
+			$this->db->where('company_id', intval($companyId));
+			$this->db->update('order_domains', array('transfer_lock' => $result['locked'] ? 1 : 0));
+		} else {
+			// API failed (e.g. Cloudflare 403) — fall back to DB value
+			$result = array('success' => true, 'locked' => (int)($domainInfo['transfer_lock'] ?? 1));
+		}
+
+		echo json_encode($result);
+	}
+
+	/**
+	 * Toggle transfer lock via registrar API
+	 */
+	public function toggle_transfer_lock() {
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
+		if (!$this->input->post()) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid request method'));
+			return;
+		}
+
+		$domainId = $this->input->post('domain_id');
+		$action = $this->input->post('action'); // 'lock' or 'unlock'
+		$companyId = getCompanyId();
+
+		if (!is_numeric($domainId) || $domainId <= 0) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid domain ID'));
+			return;
+		}
+
+		if (!in_array($action, array('lock', 'unlock'))) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid action'));
+			return;
+		}
+
+		$domainInfo = $this->Clientarea_model->getDomainRegistrarInfo($domainId, $companyId);
+
+		if (empty($domainInfo)) {
+			echo json_encode(array('success' => false, 'msg' => 'Domain not found or access denied'));
+			return;
+		}
+
+		if (empty($domainInfo['dom_register_id']) || empty($domainInfo['platform'])) {
+			echo json_encode(array('success' => false, 'msg' => 'No registrar configured for this domain'));
+			return;
+		}
+
+		$result = $this->setTransferLockViaApi($domainInfo, $action);
+
+		if ($result['success']) {
+			$locked = ($action === 'lock') ? 1 : 0;
+			$this->db->where('id', intval($domainId));
+			$this->db->where('company_id', intval($companyId));
+			$this->db->update('order_domains', array('transfer_lock' => $locked));
+			$result['locked'] = $locked;
+		}
+
+		echo json_encode($result);
+	}
+
+	/**
+	 * Get transfer lock status from registrar API
+	 */
+	private function getTransferLockFromApi($domainInfo) {
+		$platform = strtoupper($domainInfo['platform'] ?? '');
+
+		switch ($platform) {
+			case 'RESELLERCLUB':
+			case 'RESELLBIZ':
+			case 'RESELL.BIZ':
+			case 'STARGATE':
+				return $this->getTransferLockResellerclub($domainInfo);
+			case 'NAMECHEAP':
+				return $this->getTransferLockNamecheap($domainInfo);
+			default:
+				return array('success' => false, 'msg' => 'Unsupported registrar platform: ' . $platform);
+		}
+	}
+
+	/**
+	 * Set transfer lock via registrar API
+	 */
+	private function setTransferLockViaApi($domainInfo, $action) {
+		$platform = strtoupper($domainInfo['platform'] ?? '');
+
+		switch ($platform) {
+			case 'RESELLERCLUB':
+			case 'RESELLBIZ':
+			case 'RESELL.BIZ':
+			case 'STARGATE':
+				return $this->setTransferLockResellerclub($domainInfo, $action);
+			case 'NAMECHEAP':
+				return $this->setTransferLockNamecheap($domainInfo, $action);
+			default:
+				return array('success' => false, 'msg' => 'Unsupported registrar platform: ' . $platform);
+		}
+	}
+
+	/**
+	 * Get transfer lock from ResellerClub API
+	 * Uses simple GET: /api/domains/details.json?auth-userid=X&api-key=X&order-id=X
+	 * Response contains "islocked": true/false
+	 */
+	private function getTransferLockResellerclub($domainInfo) {
+		if (empty($domainInfo['domain_order_id'])) {
+			return array('success' => false, 'msg' => 'Domain order ID not found');
+		}
+
+		$baseUrl = rtrim(strval($domainInfo['api_base_url'] ?? ''), '/');
+		$url = $baseUrl . '/api/domains/details.json?'
+			. http_build_query(array(
+				'auth-userid' => strval($domainInfo['auth_userid'] ?? ''),
+				'api-key' => strval($domainInfo['auth_apikey'] ?? ''),
+				'order-id' => strval($domainInfo['domain_order_id'] ?? ''),
+				'options' => 'All'
+			));
+
+		$apiResponse = domain_api_get($url);
+
+		if (!$apiResponse['success'] || empty($apiResponse['data'])) {
+			$error = $apiResponse['error'] ?? 'Failed to connect to registrar API';
+			log_message('error', 'Transfer lock API error: ' . $error);
+			return array('success' => false, 'msg' => $error);
+		}
+
+		$result = $apiResponse['data'];
+
+		if (isset($result['status']) && strtolower($result['status']) == 'error') {
+			return array('success' => false, 'msg' => $result['message'] ?? 'API Error');
+		}
+
+		$locked = false;
+		if (isset($result['islocked'])) {
+			$locked = filter_var($result['islocked'], FILTER_VALIDATE_BOOLEAN);
+		} else {
+			log_message('error', 'Transfer lock API: islocked key not found. Keys: ' . implode(', ', array_keys($result)));
+		}
+
+		return array('success' => true, 'locked' => $locked ? 1 : 0);
+	}
+
+	/**
+	 * Set transfer lock via ResellerClub API (enable/disable theft protection)
+	 * Uses domain_api_post() from domain_helper for proper headers and Cloudflare retry
+	 */
+	private function setTransferLockResellerclub($domainInfo, $action) {
+		if (empty($domainInfo['domain_order_id'])) {
+			return array('success' => false, 'msg' => 'Domain order ID not found');
+		}
+
+		$baseUrl = rtrim(strval($domainInfo['api_base_url'] ?? ''), '/');
+		$endpoint = ($action === 'lock') ? '/api/domains/enable-theft-protection.json' : '/api/domains/disable-theft-protection.json';
+
+		$postData = array(
+			'auth-userid' => strval($domainInfo['auth_userid'] ?? ''),
+			'api-key' => strval($domainInfo['auth_apikey'] ?? ''),
+			'order-id' => strval($domainInfo['domain_order_id'] ?? '')
+		);
+
+		$apiResponse = domain_api_post($baseUrl . $endpoint, $postData);
+
+		if (!$apiResponse['success']) {
+			$error = $apiResponse['error'] ?? 'Failed to connect to registrar API';
+			return array('success' => false, 'msg' => $error);
+		}
+
+		$result = $apiResponse['data'];
+
+		if (is_array($result) && isset($result['status']) && strtolower($result['status']) == 'error') {
+			return array('success' => false, 'msg' => $result['message'] ?? 'API Error');
+		}
+
+		$label = ($action === 'lock') ? 'enabled' : 'disabled';
+		return array('success' => true, 'msg' => 'Transfer lock ' . $label . ' successfully');
+	}
+
+	/**
+	 * Get transfer lock from Namecheap API
+	 */
+	private function getTransferLockNamecheap($domainInfo) {
+		$domain = strval($domainInfo['domain'] ?? '');
+		$apiUser = strval($domainInfo['auth_userid'] ?? '');
+		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
+		$serverIp = !empty($domainInfo['whitelisted_ip']) ? $domainInfo['whitelisted_ip'] : ($_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname()));
+		$baseUrl = strval($domainInfo['api_base_url'] ?? '');
+
+		$url = $baseUrl . '?ApiUser=' . urlencode($apiUser)
+			. '&ApiKey=' . urlencode($apiKey)
+			. '&UserName=' . urlencode($apiUser)
+			. '&Command=namecheap.domains.getRegistrarLock'
+			. '&ClientIp=' . urlencode($serverIp)
+			. '&DomainName=' . urlencode($domain);
+
+		$response = $this->makeApiRequest($url, array(), 'GET');
+
+		if ($response === false) {
+			return array('success' => false, 'msg' => 'Failed to connect to Namecheap API');
+		}
+
+		$xml = @simplexml_load_string($response);
+		if ($xml === false) {
+			return array('success' => false, 'msg' => 'Invalid API response');
+		}
+
+		$status = (string)$xml->attributes()->Status;
+		if (strtolower($status) != 'ok') {
+			$errorMsg = 'API Error';
+			if (isset($xml->Errors->Error)) {
+				$errorMsg = (string)$xml->Errors->Error;
+			}
+			return array('success' => false, 'msg' => $errorMsg);
+		}
+
+		if (isset($xml->CommandResponse->DomainGetRegistrarLockResult)) {
+			$lockStatus = (string)$xml->CommandResponse->DomainGetRegistrarLockResult->attributes()->RegistrarLockStatus;
+			$locked = (strtolower($lockStatus) === 'true') ? 1 : 0;
+			return array('success' => true, 'locked' => $locked);
+		}
+
+		return array('success' => false, 'msg' => 'Could not determine lock status');
+	}
+
+	/**
+	 * Set transfer lock via Namecheap API
+	 */
+	private function setTransferLockNamecheap($domainInfo, $action) {
+		$domain = strval($domainInfo['domain'] ?? '');
+		$apiUser = strval($domainInfo['auth_userid'] ?? '');
+		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
+		$serverIp = !empty($domainInfo['whitelisted_ip']) ? $domainInfo['whitelisted_ip'] : ($_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname()));
+		$baseUrl = strval($domainInfo['api_base_url'] ?? '');
+
+		$lockAction = ($action === 'lock') ? 'LOCK' : 'UNLOCK';
+
+		$url = $baseUrl . '?ApiUser=' . urlencode($apiUser)
+			. '&ApiKey=' . urlencode($apiKey)
+			. '&UserName=' . urlencode($apiUser)
+			. '&Command=namecheap.domains.setRegistrarLock'
+			. '&ClientIp=' . urlencode($serverIp)
+			. '&DomainName=' . urlencode($domain)
+			. '&LockAction=' . urlencode($lockAction);
+
+		$response = $this->makeApiRequest($url, array(), 'GET');
+
+		if ($response === false) {
+			return array('success' => false, 'msg' => 'Failed to connect to Namecheap API');
+		}
+
+		$xml = @simplexml_load_string($response);
+		if ($xml === false) {
+			return array('success' => false, 'msg' => 'Invalid API response');
+		}
+
+		$status = (string)$xml->attributes()->Status;
+		if (strtolower($status) != 'ok') {
+			$errorMsg = 'API Error';
+			if (isset($xml->Errors->Error)) {
+				$errorMsg = (string)$xml->Errors->Error;
+			}
+			return array('success' => false, 'msg' => $errorMsg);
+		}
+
+		$label = ($action === 'lock') ? 'enabled' : 'disabled';
+		return array('success' => true, 'msg' => 'Transfer lock ' . $label . ' successfully');
+	}
+
+	/**
 	 * Get EPP code from registrar API
 	 */
 	private function getEppCodeFromApi($domainInfo) {
@@ -1121,27 +1401,28 @@ class Clientarea extends WHMAZ_Controller {
 		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
 		$orderId = strval($domainInfo['domain_order_id'] ?? '');
 
-		// ResellerClub API endpoint for getting domain details (includes domsecret)
-		$url = $baseUrl . '/api/domains/details.json?auth-userid=' . urlencode($authUserId)
-			. '&api-key=' . urlencode($apiKey)
-			. '&order-id=' . urlencode($orderId)
-			. '&options=OrderDetails';
+		// ResellerClub API endpoint — options=All includes domsecret (EPP code)
+		$url = $baseUrl . '/api/domains/details.json?'
+			. http_build_query(array(
+				'auth-userid' => $authUserId,
+				'api-key' => $apiKey,
+				'order-id' => $orderId,
+				'options' => 'All'
+			));
 
-		$response = $this->makeApiRequest($url, array(), 'GET');
+		$apiResponse = domain_api_get($url);
 
-		if ($response === false) {
-			return array('success' => false, 'msg' => 'Failed to connect to registrar API');
+		if (!$apiResponse['success'] || empty($apiResponse['data'])) {
+			$error = $apiResponse['error'] ?? 'Failed to connect to registrar API';
+			log_message('error', 'EPP code API error: ' . $error);
+			return array('success' => false, 'msg' => $error);
 		}
 
-		$result = json_decode($response, true);
+		$result = $apiResponse['data'];
 
-		if (isset($result['domsecret'])) {
-			return array('success' => true, 'epp_code' => strval($result['domsecret']));
-		}
-
-		// Try alternate key names
-		if (isset($result['authcode'])) {
-			return array('success' => true, 'epp_code' => strval($result['authcode']));
+		if (!is_array($result)) {
+			log_message('error', 'EPP code API: Invalid response data');
+			return array('success' => false, 'msg' => 'Invalid response from registrar API');
 		}
 
 		if (isset($result['status']) && strtolower($result['status']) == 'error') {
@@ -1149,24 +1430,34 @@ class Clientarea extends WHMAZ_Controller {
 			return array('success' => false, 'msg' => $errorMsg);
 		}
 
-		return array('success' => false, 'msg' => 'EPP code not found in registrar response');
+		if (isset($result['domsecret']) && $result['domsecret'] !== '') {
+			return array('success' => true, 'epp_code' => strval($result['domsecret']));
+		}
+
+		// Try alternate key names
+		if (isset($result['authcode']) && $result['authcode'] !== '') {
+			return array('success' => true, 'epp_code' => strval($result['authcode']));
+		}
+
+		log_message('error', 'EPP code API: domsecret not in response. Keys: ' . implode(', ', array_keys($result)));
+		return array('success' => false, 'msg' => 'EPP code not found in registrar response. The registrar may not support EPP retrieval for this domain.');
 	}
 
 	/**
-	 * Get EPP code from Namecheap API
+	 * Get EPP code from Namecheap API using namecheap.domains.getEPPCode command
+	 * Note: Domain must be unlocked (Transfer Lock OFF) before EPP code can be retrieved
 	 */
 	private function getEppCodeNamecheap($domainInfo) {
 		$domain = strval($domainInfo['domain'] ?? '');
 		$apiUser = strval($domainInfo['auth_userid'] ?? '');
 		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
-		// Get whitelisted IP for Namecheap API from registrar config
 		$serverIp = !empty($domainInfo['whitelisted_ip']) ? $domainInfo['whitelisted_ip'] : ($_SERVER['SERVER_ADDR'] ?? gethostbyname(gethostname()));
 		$baseUrl = strval($domainInfo['api_base_url'] ?? '');
 
 		$url = $baseUrl . '?ApiUser=' . urlencode($apiUser)
 			. '&ApiKey=' . urlencode($apiKey)
 			. '&UserName=' . urlencode($apiUser)
-			. '&Command=namecheap.domains.getInfo'
+			. '&Command=namecheap.domains.getEPPCode'
 			. '&ClientIp=' . urlencode($serverIp)
 			. '&DomainName=' . urlencode($domain);
 
@@ -1178,6 +1469,7 @@ class Clientarea extends WHMAZ_Controller {
 
 		$xml = @simplexml_load_string($response);
 		if ($xml === false) {
+			log_message('error', 'Namecheap EPP: Invalid XML response: ' . substr($response, 0, 500));
 			return array('success' => false, 'msg' => 'Invalid API response');
 		}
 
@@ -1190,12 +1482,12 @@ class Clientarea extends WHMAZ_Controller {
 			return array('success' => false, 'msg' => $errorMsg);
 		}
 
-		// Get EPP code from response
-		if (isset($xml->CommandResponse->DomainGetInfoResult->DomainDetails->EPPCode)) {
-			$eppCode = (string)$xml->CommandResponse->DomainGetInfoResult->DomainDetails->EPPCode;
+		if (isset($xml->CommandResponse->DomainGetEPPCodeResult->EPPCode)) {
+			$eppCode = (string)$xml->CommandResponse->DomainGetEPPCodeResult->EPPCode;
 			return array('success' => true, 'epp_code' => $eppCode);
 		}
 
-		return array('success' => false, 'msg' => 'EPP code not available from Namecheap');
+		log_message('error', 'Namecheap EPP: EPPCode not found in response: ' . substr($response, 0, 500));
+		return array('success' => false, 'msg' => 'EPP code not found in Namecheap response. Please ensure Transfer Lock is disabled first.');
 	}
 }

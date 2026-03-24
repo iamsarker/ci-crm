@@ -1185,6 +1185,7 @@ CREATE TABLE `order_domains` (
   `email_forwarding` tinyint(4) NOT NULL DEFAULT 0,
   `id_protection` tinyint(4) NOT NULL DEFAULT 0,
   `auto_renew` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=auto renew, 0=manual',
+  `transfer_lock` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1=locked, 0=unlocked',
   `dns_type` varchar(12) NOT NULL DEFAULT 'default_ns' COMMENT 'default_ns, custom_ns, records',
   `ns1` varchar(150) DEFAULT NULL,
   `ns2` varchar(150) DEFAULT NULL,

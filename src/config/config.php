@@ -514,7 +514,12 @@ $config['csrf_exclude_uris'] = array(
 	'billing/pay/sslcommerz_success',
 	'billing/pay/sslcommerz_cancel',
 	'billing/pay/sslcommerz_fail',
-	'webhook/sslcommerz'
+	'webhook/sslcommerz',
+	// Client area domain AJAX endpoints (authenticated, session-based)
+	'clientarea/get_transfer_lock',
+	'clientarea/toggle_transfer_lock',
+	'clientarea/send_epp_code',
+	'clientarea/sync_domain_data'
 );
 
 /*

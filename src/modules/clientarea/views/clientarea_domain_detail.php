@@ -50,21 +50,6 @@
                     </div>
                 </div>
 
-                <!-- Sync Button -->
-                <div class="sync-section mb-4">
-                    <button type="button" id="btnSyncDomain" class="btn btn-outline-primary btn-sync">
-                        <i class="fa fa-sync-alt mg-r-5"></i>Sync from Registrar
-                    </button>
-                    <span class="sync-info text-muted ms-3">
-                        <?php if(!empty($detail['last_contact_sync'])): ?>
-                            Last synced: <?= date('M d, Y H:i', strtotime($detail['last_contact_sync'])) ?>
-                        <?php else: ?>
-                            Never synced
-                        <?php endif; ?>
-                    </span>
-                    <div id="syncStatus" class="sync-status mt-2" class="sync-status-container"></div>
-                </div>
-
                 <div class="row">
                     <div class="col-lg-6 col-md-12 mb-4">
                         <div class="card detail-card h-100">
@@ -122,6 +107,23 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <br /><br />
+
+                                <div class="sync-section mt-4">
+                                    <button type="button" id="btnSyncDomain" class="btn btn-outline-primary btn-sync">
+                                        <i class="fa fa-sync-alt mg-r-5"></i>Sync from Registrar
+                                    </button>
+                                    <span class="sync-info text-muted ms-3">
+                                        <?php if(!empty($detail['last_contact_sync'])): ?>
+                                            Last synced: <?= date('M d, Y H:i', strtotime($detail['last_contact_sync'])) ?>
+                                        <?php else: ?>
+                                            Never synced
+                                        <?php endif; ?>
+                                    </span>
+                                    <div id="syncStatus" class="sync-status mt-2" class="sync-status-container"></div>
+                                </div>
+
                             </div>
                         </div>
                     </div>
@@ -603,55 +605,170 @@ $(function(){
         }
     }
 
-    // Send EPP Code button
-    $('#btnSendEppCode').on('click', function(e) {
-        e.preventDefault();
-        var $btn = $(this);
-        var $status = $('#eppCodeStatus');
+    // Fetch live transfer lock status after page load (fallback to DB value on failure)
+    (function() {
         var domainId = $('#domain_id').val();
+        if (!domainId) return;
 
-        if (!domainId) {
-            alert('Domain ID not found');
-            return;
-        }
-
-        if (!confirm('Send EPP/Authorization code to your registered email address?')) {
-            return;
-        }
-
-        $btn.addClass('disabled').html('<i class="fa fa-spinner fa-spin"></i>&nbsp;Sending...');
-        $status.hide();
+        var $toggle = $('#transferLockToggle');
 
         var csrfName = $('meta[name="csrf-token-name"]').attr('content');
         var csrfToken = $('meta[name="csrf-token-hash"]').attr('content');
-
         var postData = { domain_id: domainId };
         postData[csrfName] = csrfToken;
 
         $.ajax({
-            url: BASE_URL + 'clientarea/send_epp_code',
+            url: BASE_URL + 'clientarea/get_transfer_lock',
             type: 'POST',
             data: postData,
             dataType: 'json',
             success: function(response) {
                 if (response.success) {
-                    $status.removeClass('text-danger').addClass('text-success')
-                           .html('<small><i class="fa fa-check-circle"></i> ' + escapeXSS(response.msg) + '</small>')
-                           .fadeIn();
-                } else {
-                    $status.removeClass('text-success').addClass('text-danger')
-                           .html('<small><i class="fa fa-exclamation-circle"></i> ' + escapeXSS(response.msg) + '</small>')
-                           .fadeIn();
+                    $toggle.prop('checked', response.locked == 1);
                 }
-            },
-            error: function() {
-                $status.removeClass('text-success').addClass('text-danger')
-                       .html('<small><i class="fa fa-exclamation-circle"></i> An error occurred. Please try again.</small>')
-                       .fadeIn();
-            },
-            complete: function() {
-                $btn.removeClass('disabled').html('<i class="fas fa-envelope"></i>&nbsp;Send EPP Code');
+                // On failure, keep the DB value already set in the checkbox
             }
+        });
+    })();
+
+    // Transfer Lock toggle change
+    $('#transferLockToggle').on('change', function() {
+        var $toggle = $(this);
+        var isChecked = $toggle.is(':checked');
+        var action = isChecked ? 'lock' : 'unlock';
+        var domainId = $('#domain_id').val();
+        var actionLabel = isChecked ? 'Enable' : 'Disable';
+
+        Swal.fire({
+            title: actionLabel + ' Transfer Lock?',
+            text: isChecked
+                ? 'This prevents unauthorized domain transfers.'
+                : 'This allows the domain to be transferred to another registrar.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0168fa',
+            confirmButtonText: 'Yes, ' + actionLabel,
+            cancelButtonText: 'Cancel'
+        }).then(function(result) {
+            if (!result.isConfirmed) {
+                $toggle.prop('checked', !isChecked);
+                return;
+            }
+
+            Swal.fire({
+                title: 'Please wait...',
+                text: (isChecked ? 'Enabling' : 'Disabling') + ' transfer lock at registrar',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: function() { Swal.showLoading(); }
+            });
+
+            var csrfName = $('meta[name="csrf-token-name"]').attr('content');
+            var csrfToken = $('meta[name="csrf-token-hash"]').attr('content');
+            var postData = { domain_id: domainId, action: action };
+            postData[csrfName] = csrfToken;
+
+            $.ajax({
+                url: BASE_URL + 'clientarea/toggle_transfer_lock',
+                type: 'POST',
+                data: postData,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.msg,
+                            confirmButtonColor: '#0168fa'
+                        }).then(function() { location.reload(); });
+                    } else {
+                        $toggle.prop('checked', !isChecked);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Failed',
+                            text: response.msg || 'Failed to update transfer lock.',
+                            confirmButtonColor: '#0168fa'
+                        }).then(function() { location.reload(); });
+                    }
+                },
+                error: function() {
+                    $toggle.prop('checked', !isChecked);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred. Please try again.',
+                        confirmButtonColor: '#0168fa'
+                    }).then(function() { location.reload(); });
+                }
+            });
+        });
+    });
+
+    // Send EPP Code button
+    $('#btnSendEppCode').on('click', function(e) {
+        e.preventDefault();
+        var domainId = $('#domain_id').val();
+
+        if (!domainId) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Domain ID not found', confirmButtonColor: '#0168fa' });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Send EPP Code?',
+            text: 'The EPP/Authorization code will be sent to your registered email address.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0168fa',
+            confirmButtonText: 'Yes, Send',
+            cancelButtonText: 'Cancel'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+
+            Swal.fire({
+                title: 'Please wait...',
+                text: 'Fetching EPP code from registrar and sending to your email',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: function() { Swal.showLoading(); }
+            });
+
+            var csrfName = $('meta[name="csrf-token-name"]').attr('content');
+            var csrfToken = $('meta[name="csrf-token-hash"]').attr('content');
+            var postData = { domain_id: domainId };
+            postData[csrfName] = csrfToken;
+
+            $.ajax({
+                url: BASE_URL + 'clientarea/send_epp_code',
+                type: 'POST',
+                data: postData,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'EPP Code Sent',
+                            text: response.msg,
+                            confirmButtonColor: '#0168fa'
+                        }).then(function() { location.reload(); });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Failed',
+                            text: response.msg || 'Failed to send EPP code.',
+                            confirmButtonColor: '#0168fa'
+                        }).then(function() { location.reload(); });
+                    }
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'An error occurred. Please try again.',
+                        confirmButtonColor: '#0168fa'
+                    }).then(function() { location.reload(); });
+                }
+            });
         });
     });
 });
