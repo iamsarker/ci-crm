@@ -1068,9 +1068,10 @@ class Clientarea extends WHMAZ_Controller {
 			return;
 		}
 
-		// Get customer email
-		$customerEmail = $this->session->userdata('user_email');
-		$customerName = $this->session->userdata('first_name') ?? 'Customer';
+		// Get customer email from CUSTOMER session
+		$customer = $this->session->userdata('CUSTOMER');
+		$customerEmail = !empty($customer['email']) ? $customer['email'] : '';
+		$customerName = !empty($customer['first_name']) ? $customer['first_name'] : 'Customer';
 
 		if (empty($customerEmail)) {
 			echo json_encode(array('success' => false, 'msg' => 'Customer email not found'));
