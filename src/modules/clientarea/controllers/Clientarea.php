@@ -489,11 +489,10 @@ class Clientarea extends WHMAZ_Controller {
 
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-		// Note: SSL verification disabled for development/Windows compatibility
-		// For production with valid SSL, set CURLOPT_SSL_VERIFYPEER to true
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($curl, CURLOPT_USERAGENT, 'WHMAZ-CRM/1.0 (Domain Management)');
 
 		if ($method == 'POST') {
 			curl_setopt($curl, CURLOPT_POST, true);
@@ -580,19 +579,22 @@ class Clientarea extends WHMAZ_Controller {
 		$platform = strtoupper($domainInfo['platform']);
 
 		switch ($platform) {
+			case 'RESELLERCLUB':
+			case 'RESELLBIZ':
+			case 'RESELL.BIZ':
 			case 'STARGATE':
-				return $this->syncDomainStargate($domainInfo);
+				return $this->syncDomainResellerclub($domainInfo);
 			case 'NAMECHEAP':
 				return $this->syncDomainNamecheap($domainInfo);
 			default:
-				return array('success' => false, 'msg' => 'Unsupported registrar platform');
+				return array('success' => false, 'msg' => 'Unsupported registrar platform: ' . $platform);
 		}
 	}
 
 	/**
-	 * Sync domain from Stargate (ResellerClub) API
+	 * Sync domain from ResellerClub/Resell.biz/Stargate API
 	 */
-	private function syncDomainStargate($domainInfo) {
+	private function syncDomainResellerclub($domainInfo) {
 		// Validate required registrar configuration
 		if (empty($domainInfo['api_base_url']) && empty($domainInfo['contact_details_api'])) {
 			return array('success' => false, 'msg' => 'Registrar API URL not configured. Please contact support.');
@@ -604,7 +606,7 @@ class Clientarea extends WHMAZ_Controller {
 
 		$contactDetailsApi = !empty($domainInfo['contact_details_api'])
 			? strval($domainInfo['contact_details_api'])
-			: rtrim(strval($domainInfo['api_base_url']), '/') . '/details-by-name.json';
+			: rtrim(strval($domainInfo['api_base_url']), '/') . '/api/domains/details-by-name.json';
 
 		$domain = strval($domainInfo['domain'] ?? '');
 		$authUserId = strval($domainInfo['auth_userid'] ?? '');
@@ -615,7 +617,7 @@ class Clientarea extends WHMAZ_Controller {
 			. '&domain-name=' . urlencode($domain)
 			. '&options=All';
 
-		log_message('debug', 'Stargate Sync URL: ' . preg_replace('/api-key=[^&]+/', 'api-key=***', $url));
+		log_message('debug', 'ResellerClub Sync URL: ' . preg_replace('/api-key=[^&]+/', 'api-key=***', $url));
 
 		$response = $this->makeApiRequest($url, array(), 'GET');
 
@@ -652,7 +654,7 @@ class Clientarea extends WHMAZ_Controller {
 				$contactId = $contactId['contactid'] ?? $contactId[0] ?? null;
 			}
 			if ($contactId && !is_array($contactId)) {
-				$contactDetails = $this->fetchStargateContactDetails($domainInfo, strval($contactId));
+				$contactDetails = $this->fetchResellerclubContactDetails($domainInfo, strval($contactId));
 				if (!empty($contactDetails)) {
 					$syncData = array_merge($syncData, $contactDetails);
 				}
@@ -674,14 +676,12 @@ class Clientarea extends WHMAZ_Controller {
 	}
 
 	/**
-	 * Fetch contact details from Stargate API
+	 * Fetch contact details from ResellerClub/Resell.biz/Stargate API
 	 */
-	private function fetchStargateContactDetails($domainInfo, $contactId) {
+	private function fetchResellerclubContactDetails($domainInfo, $contactId) {
 		$baseUrl = rtrim(strval($domainInfo['api_base_url'] ?? ''), '/');
-		// Remove /domains from the base URL if present for contacts API
-		$baseUrl = str_replace('/domains', '', $baseUrl);
 
-		$url = $baseUrl . '/contacts/details.json?auth-userid=' . urlencode(strval($domainInfo['auth_userid'] ?? ''))
+		$url = $baseUrl . '/api/contacts/details.json?auth-userid=' . urlencode(strval($domainInfo['auth_userid'] ?? ''))
 			. '&api-key=' . urlencode(strval($domainInfo['auth_apikey'] ?? ''))
 			. '&contact-id=' . urlencode(strval($contactId));
 
@@ -1044,29 +1044,19 @@ class Clientarea extends WHMAZ_Controller {
 			return;
 		}
 
-		$eppCode = '';
-
-		// First check if EPP code is stored in database
-		if (!empty($domainInfo['epp_code'])) {
-			$eppCode = $domainInfo['epp_code'];
-		}
-		// If not in DB and registrar is configured, try to fetch from API
-		elseif (!empty($domainInfo['dom_register_id']) && !empty($domainInfo['platform'])) {
-			$apiResult = $this->getEppCodeFromApi($domainInfo);
-			if ($apiResult['success'] && !empty($apiResult['epp_code'])) {
-				$eppCode = $apiResult['epp_code'];
-				// Save to database for future use
-				$this->Clientarea_model->updateEppCode($domainId, $companyId, $eppCode);
-			} else {
-				echo json_encode(array('success' => false, 'msg' => $apiResult['msg'] ?? 'Failed to retrieve EPP code from registrar'));
-				return;
-			}
-		}
-
-		if (empty($eppCode)) {
-			echo json_encode(array('success' => false, 'msg' => 'EPP code not available. Please contact support.'));
+		// Always fetch EPP code fresh from registrar API — never store in DB
+		if (empty($domainInfo['dom_register_id']) || empty($domainInfo['platform'])) {
+			echo json_encode(array('success' => false, 'msg' => 'No registrar configured for this domain. Please contact support.'));
 			return;
 		}
+
+		$apiResult = $this->getEppCodeFromApi($domainInfo);
+		if (!$apiResult['success'] || empty($apiResult['epp_code'])) {
+			echo json_encode(array('success' => false, 'msg' => $apiResult['msg'] ?? 'Failed to retrieve EPP code from registrar'));
+			return;
+		}
+
+		$eppCode = $apiResult['epp_code'];
 
 		// Get customer email from CUSTOMER session
 		$customer = $this->session->userdata('CUSTOMER');
@@ -1106,19 +1096,22 @@ class Clientarea extends WHMAZ_Controller {
 		$platform = strtoupper($domainInfo['platform'] ?? '');
 
 		switch ($platform) {
+			case 'RESELLERCLUB':
+			case 'RESELLBIZ':
+			case 'RESELL.BIZ':
 			case 'STARGATE':
-				return $this->getEppCodeStargate($domainInfo);
+				return $this->getEppCodeResellerclub($domainInfo);
 			case 'NAMECHEAP':
 				return $this->getEppCodeNamecheap($domainInfo);
 			default:
-				return array('success' => false, 'msg' => 'Unsupported registrar platform');
+				return array('success' => false, 'msg' => 'Unsupported registrar platform: ' . $platform);
 		}
 	}
 
 	/**
-	 * Get EPP code from Stargate (ResellerClub) API
+	 * Get EPP code from ResellerClub/Resell.biz/Stargate API
 	 */
-	private function getEppCodeStargate($domainInfo) {
+	private function getEppCodeResellerclub($domainInfo) {
 		if (empty($domainInfo['domain_order_id'])) {
 			return array('success' => false, 'msg' => 'Domain order ID not found for registrar');
 		}
@@ -1128,8 +1121,8 @@ class Clientarea extends WHMAZ_Controller {
 		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
 		$orderId = strval($domainInfo['domain_order_id'] ?? '');
 
-		// Stargate API endpoint for getting domain secret/auth code
-		$url = $baseUrl . '/details.json?auth-userid=' . urlencode($authUserId)
+		// ResellerClub API endpoint for getting domain details (includes domsecret)
+		$url = $baseUrl . '/api/domains/details.json?auth-userid=' . urlencode($authUserId)
 			. '&api-key=' . urlencode($apiKey)
 			. '&order-id=' . urlencode($orderId)
 			. '&options=OrderDetails';
@@ -1156,7 +1149,7 @@ class Clientarea extends WHMAZ_Controller {
 			return array('success' => false, 'msg' => $errorMsg);
 		}
 
-		return array('success' => false, 'msg' => 'EPP code not available from registrar');
+		return array('success' => false, 'msg' => 'EPP code not found in registrar response');
 	}
 
 	/**

@@ -283,23 +283,6 @@ class Clientarea_model extends CI_Model{
 	}
 
 	/**
-	 * Update EPP code in database
-	 */
-	function updateEppCode($domainId, $companyId, $eppCode) {
-		if (!is_numeric($domainId) || !is_numeric($companyId) || $domainId <= 0 || $companyId <= 0) {
-			return false;
-		}
-
-		$this->db->where('id', intval($domainId));
-		$this->db->where('company_id', intval($companyId));
-
-		return $this->db->update('order_domains', array(
-			'epp_code' => $eppCode,
-			'updated_on' => date('Y-m-d H:i:s')
-		));
-	}
-
-	/**
 	 * Save cPanel usage stats to order_services
 	 */
 	function saveCpanelUsageStats($serviceId, $companyId, $stats) {

@@ -156,39 +156,6 @@ $billingConfig = $this->Syscnf_model->getByGroup('BILLING');
 - **Content Security Policy (CSP)**: `src/config/config.php` (line ~599)
   - Add external script domains here for payment gateways, analytics, etc.
 
-### Payment Gateways
-
-**Enabled Gateways:**
-| Gateway | Status | Webhook | Notes |
-|---------|--------|---------|-------|
-| Stripe | ✅ Working | ✅ Implemented | Full integration with PaymentIntent API |
-| SSLCommerz | ✅ Working | ✅ Implemented | Session restoration for external redirects |
-| Bank Transfer | ✅ Working | N/A | Manual payment recording |
-
-- **Payment Libraries**: `src/libraries/`
-  - `Stripe.php` - Stripe payment integration
-  - `Sslcommerz.php` - SSLCommerz payment integration
-
-- **Payment Controllers**:
-  - `src/modules/billing/controllers/Pay.php` - Customer payment processing
-  - `src/modules/webhook/controllers/Webhook.php` - Payment webhook handlers
-  - `src/controllers/whmazadmin/Paymentgateway.php` - Admin gateway management
-
-- **Payment Models**:
-  - `src/models/Payment_model.php` - Transaction handling
-  - `src/models/PaymentGateway_model.php` - Gateway configuration
-
-- **Admin Payment Gateway Pages**:
-  - List page: `src/views/whmazadmin/paymentgateway_list.php`
-  - Configure page: `src/views/whmazadmin/paymentgateway_manage.php`
-  - Transactions: `src/views/whmazadmin/paymentgateway_transactions.php`
-  - Webhook logs: `src/views/whmazadmin/paymentgateway_webhooks.php`
-
-- **Admin Gateway Features**:
-  - Toggle gateway status (enable/disable) with SweetAlert2 confirmation
-  - Test connection button for Stripe
-  - View transaction history with DataTables
-  - View webhook logs with filtering
 
 ### Webhook Configuration
 Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
@@ -686,27 +653,6 @@ order_domains.order_type:
 - RESELLER (product_service_type_key = 'reseller')
 - VPS (product_service_type_key = 'vps')
 
-## Promo Code / Coupon System
-
-### Database Tables
-| Table | Purpose |
-|-------|---------|
-| `promo_codes` | Main coupon definitions (code, discount type/value, validity, limits, targeting) |
-| `promo_code_products` | Product targeting (when `applies_to='products'`) |
-| `promo_code_customers` | Customer targeting (when `applies_to='customers'`) |
-| `promo_code_usage` | Tracks every redemption (promo_code_id, company_id, order_id, discount_amount) |
-
-**Related columns in existing tables:**
-- `orders`: `coupon_code` (varchar 32), `coupon_amount`, `discount_amount`
-- `invoices`: `discount` (decimal 15,2), `coupon_code` (varchar 32)
-
-### Key Files
-| File | Purpose |
-|------|---------|
-| `src/controllers/whmazadmin/Promocode.php` | Admin CRUD controller (list, manage, delete, toggle, SSP API) |
-| `src/models/Promocode_model.php` | All promo logic: CRUD, validation, usage tracking, stats |
-| `src/views/whmazadmin/promocode_list.php` | Admin list with DataTables + stats cards |
-| `src/views/whmazadmin/promocode_manage.php` | Admin create/edit form with conditional sections |
 
 ### Admin Menu Location
 Under **Settings** dropdown, after Currencies:
