@@ -144,19 +144,26 @@ class Provisioning_model extends CI_Model
             $domain['dom_register_id'] = $registrar['id'];
         }
 
-        // Determine if this is a renewal:
-        // 1. Has domain_order_id (registered via this system), OR
-        // 2. Domain status is Active (1) and invoice has billing_period_start (renewal invoice from cronjob)
-        $isRenewal = !empty($domain['domain_order_id']);
+        // Determine if this is a renewal invoice.
+        // A renewal invoice is any invoice paid AFTER an earlier paid invoice for the same
+        // order_domains.id. This is the only unambiguous signal: the initial-order invoice
+        // has no prior paid invoice for the same ref_id; renewal invoices do.
+        // Relying on domain_order_id/status alone is unsafe — they can be missing (imports,
+        // inconsistent data) or stale (status flipped to Expired/Grace before payment).
+        $isRenewal = $this->isRenewalInvoiceItem($item, 1);
 
-        if (!$isRenewal && $domain['status'] == 1 && !empty($item['billing_period_start'])) {
-            // Domain is active but missing domain_order_id — try to fetch from registrar
+        // Renewals call the registrar renew API which requires domain_order_id.
+        // If it's missing (e.g. imported domain, or lost), try to recover it.
+        // DNS-only (3) and already-registered imports (4) don't use the registrar, so skip.
+        if ($isRenewal
+            && empty($domain['domain_order_id'])
+            && !in_array((int)$domain['order_type'], array(3, 4), true)
+        ) {
             $fetchedOrderId = registrar_get_domain_orderid($registrar, $domain['domain']);
             if (!empty($fetchedOrderId)) {
                 $domain['domain_order_id'] = $fetchedOrderId;
                 $this->db->where('id', $domain['id'])->update('order_domains', array('domain_order_id' => $fetchedOrderId));
                 log_message('info', 'Fetched missing domain_order_id for ' . $domain['domain'] . ': ' . $fetchedOrderId);
-                $isRenewal = true;
             }
         }
 
@@ -166,23 +173,59 @@ class Provisioning_model extends CI_Model
             return array('success' => false, 'action' => 'none', 'error' => 'Company not found');
         }
 
-        // Determine action based on order_type and renewal status
+        // Determine action based on renewal status and order_type
         if ($isRenewal) {
-            // This is a renewal invoice
+            // DNS-only and imported-without-registrar renewals just extend local dates
+            if ((int)$domain['order_type'] === 3
+                || ((int)$domain['order_type'] === 4 && empty($domain['domain_order_id']))
+            ) {
+                return $this->activateDomainOnly($domain);
+            }
             return $this->renewDomain($domain, $registrar, $company, $item);
         } else {
-            // New order - check order_type
-            switch ($domain['order_type']) {
+            // Initial order - dispatch by order_type
+            switch ((int)$domain['order_type']) {
                 case 1: // Registration
                     return $this->registerDomain($domain, $registrar, $company);
                 case 2: // Transfer
                     return $this->transferDomain($domain, $registrar, $company);
                 case 3: // DNS only - no API call needed
                     return $this->activateDomainOnly($domain);
+                case 4: // Already registered (import) - no API call needed
+                    return $this->activateDomainOnly($domain);
                 default:
                     return array('success' => false, 'action' => 'none', 'error' => 'Unknown order type: ' . $domain['order_type']);
             }
         }
+    }
+
+    /**
+     * Determine whether an invoice item represents a renewal (not the initial order).
+     * True if any earlier PAID invoice already references the same order_domains/order_services row.
+     *
+     * @param array $item     Invoice item row (must contain invoice_id and ref_id)
+     * @param int   $itemType 1 for domain, 2 for service
+     * @return bool
+     */
+    private function isRenewalInvoiceItem($item, $itemType)
+    {
+        if (empty($item['ref_id']) || empty($item['invoice_id'])) {
+            return false;
+        }
+
+        $earlier = $this->db
+            ->select('ii.id')
+            ->from('invoice_items ii')
+            ->join('invoices inv', 'ii.invoice_id = inv.id')
+            ->where('ii.ref_id', intval($item['ref_id']))
+            ->where('ii.item_type', intval($itemType))
+            ->where('ii.invoice_id <', intval($item['invoice_id']))
+            ->where('inv.pay_status', 'PAID')
+            ->limit(1)
+            ->get()
+            ->row_array();
+
+        return !empty($earlier);
     }
 
     /**
@@ -611,8 +654,11 @@ class Provisioning_model extends CI_Model
             return array('success' => false, 'action' => 'none', 'error' => 'Service order not found: ' . $item['ref_id']);
         }
 
-        // Check if this is a renewal (has billing_period_start/end)
-        $isRenewal = !empty($item['billing_period_start']) && !empty($item['billing_period_end']);
+        // A renewal invoice is any one paid AFTER an earlier paid invoice for the same
+        // order_services.id. billing_period_start/end can't be used here — they're set
+        // on initial recurring-service invoices too, so that check would mis-route new
+        // orders into renewService and skip account creation.
+        $isRenewal = $this->isRenewalInvoiceItem($item, 2);
 
         if ($isRenewal) {
             // Renewal - unsuspend if suspended, update dates
@@ -764,6 +810,66 @@ class Provisioning_model extends CI_Model
 
         log_message('info', 'Service renewed: #' . $service['id'] . ', Actions: ' . implode(', ', $actions));
         return array('success' => true, 'action' => 'renew', 'actions' => $actions, 'error' => null);
+    }
+
+    /**
+     * Suspend a hosting account via the appropriate module API and flip local state.
+     *
+     * On success: order_services.status=3 (Suspended), suspension_date=today, suspension_reason=$reason.
+     * On failure: local state is NOT changed, so the next cron run will retry.
+     *
+     * @param array  $service order_services row
+     * @param string $reason  human-readable reason recorded locally and sent to the panel
+     * @return array {success: bool, action: 'suspend', module: string, error: string|null}
+     */
+    function suspendService($service, $reason = 'Suspended for non-payment')
+    {
+        log_message('info', 'Provisioning: Suspending service #' . $service['id'] . ' — ' . $reason);
+
+        $serverInfo = $this->getServerInfoForService($service['product_service_id']);
+        if (empty($serverInfo) || empty($serverInfo['hostname'])) {
+            return array('success' => false, 'action' => 'suspend', 'error' => 'Server not configured');
+        }
+
+        $moduleName = $this->getServerModuleName($serverInfo);
+
+        if ($moduleName === 'cpanel') {
+            if (empty($service['cp_username'])) {
+                return array('success' => false, 'action' => 'suspend', 'module' => $moduleName, 'error' => 'No cPanel username');
+            }
+            $result = whm_suspend_account($serverInfo, $service['cp_username'], $reason);
+        } elseif ($moduleName === 'plesk') {
+            if (empty($service['hosting_domain'])) {
+                return array('success' => false, 'action' => 'suspend', 'module' => $moduleName, 'error' => 'No hosting domain for Plesk');
+            }
+            $result = plesk_suspend_account($serverInfo, $service['hosting_domain'], $reason);
+        } elseif ($moduleName === 'directadmin') {
+            if (empty($service['cp_username'])) {
+                return array('success' => false, 'action' => 'suspend', 'module' => $moduleName, 'error' => 'No DirectAdmin username');
+            }
+            $result = da_suspend_account($serverInfo, $service['cp_username'], $reason);
+        } else {
+            // No-module services have no remote account — flip local state only
+            $this->db->where('id', $service['id'])->update('order_services', array(
+                'status' => 3,
+                'suspension_date' => date('Y-m-d'),
+                'suspension_reason' => $reason
+            ));
+            return array('success' => true, 'action' => 'suspend', 'module' => 'none', 'error' => null);
+        }
+
+        if (!empty($result['success'])) {
+            $this->db->where('id', $service['id'])->update('order_services', array(
+                'status' => 3,
+                'suspension_date' => date('Y-m-d'),
+                'suspension_reason' => $reason
+            ));
+            log_message('info', 'Service #' . $service['id'] . ' suspended via ' . $moduleName);
+            return array('success' => true, 'action' => 'suspend', 'module' => $moduleName, 'error' => null);
+        }
+
+        log_message('error', 'Suspend failed for service #' . $service['id'] . ' via ' . $moduleName . ': ' . ($result['error'] ?? 'unknown'));
+        return array('success' => false, 'action' => 'suspend', 'module' => $moduleName, 'error' => $result['error'] ?? 'unknown');
     }
 
     /**

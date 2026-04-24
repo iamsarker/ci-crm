@@ -285,10 +285,11 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 2. `provisionPaidServices($invoiceId)` called
 3. Loops through `invoice_items` with `ref_id`
 4. Determines type: domain (`item_type=1`) or service (`item_type=2`)
-5. For domains: checks `order_type` (1=register, 2=transfer, 3=dns_only) and if renewal
-6. For services: checks if new (create account) or renewal (unsuspend if suspended)
-7. Calls appropriate API (registrar or server module: cPanel/Plesk/DirectAdmin)
-8. Updates order status, logs result to `provisioning_logs`
+5. **Renewal detection** (`Provisioning_model::isRenewalInvoiceItem()`): an item is a renewal if any earlier PAID invoice already references the same `ref_id`. This is unambiguous and doesn't rely on `domain_order_id` / `is_synced` / status flags (which can be missing or stale).
+6. For domains: if renewal → `renewDomain()`; else dispatch by `order_type` (1=register, 2=transfer, 3=dns_only, 4=already-registered import → local-only)
+7. For services: if renewal → `renewService()` (unsuspend if suspended, extend dates); else `createHostingAccount()`
+8. Calls appropriate API (registrar or server module: cPanel/Plesk/DirectAdmin)
+9. Updates order status, logs result to `provisioning_logs`
 
 **Domain Renewal - Registrar Expiry Check:**
 Before calling the registrar renew API, `renewDomain()` fetches the domain's current expiry from the registrar via `registrar_get_domain_expiry()`. If the registrar expiry is already `>=` the expected new expiry date, the domain was renewed manually at the registrar — the API call is skipped and local records are synced to match. This prevents double-renewal charges. The check applies to all code paths: initial provisioning, full retry, and single-item retry.
@@ -349,6 +350,41 @@ Before calling the registrar renew API, `renewDomain()` fetches the domain's cur
 | Service without linked domain | 1 service-only invoice |
 
 **Renewal Invoice Days Before:** 15 days (configurable via `RENEWAL_DAYS_BEFORE` constant)
+
+### Service Suspension Cronjob
+
+Suspends hosting accounts whose invoice is overdue. Runs as part of `/cronjobs/run` alongside renewal invoice generation; also callable standalone at `/cronjobs/suspendOverdueServices?key=SECRET`.
+
+**Key Files:**
+- `src/modules/cronjobs/controllers/Cronjobs.php` — `suspendOverdueServices()`, `sendServiceSuspendedEmail()`
+- `src/models/Cronjob_model.php` — `getServicesOverdueForSuspension($days)`
+- `src/models/Provisioning_model.php` — `suspendService($service, $reason)` (public)
+
+**Configuration (sys_cnf, AUTOMATION group):**
+| Key | Default | Purpose |
+|-----|---------|---------|
+| `suspension_days_after_due` | 7 (fallback in code) | Days past invoice `due_date` before suspending |
+| `cron_enabled` | 1 | Set 0 to globally disable the suspension pass |
+
+**Candidate criteria (all must match):**
+- `order_services.status = 1` (Active), `is_synced = 1`, `cp_username` not empty, `deleted_on IS NULL`
+- Service's server module is `cpanel`, `plesk`, or `directadmin` (no-module services flip local state only, no API call)
+- At least one `invoices` row where `status = 1`, `pay_status = 'DUE'`, and `due_date + N days <= today`, joined via `invoice_items.ref_id = order_services.id AND item_type = 2`
+- Only `pay_status = 'DUE'` triggers suspension — `PARTIAL` is excluded
+- Combined invoices: only the service line is acted on; the domain line on the same overdue invoice is untouched
+
+**Flow:**
+1. Read `suspension_days_after_due` from `sys_cnf`
+2. `getServicesOverdueForSuspension($days)` returns candidates sorted by `service_id ASC, due_date ASC`
+3. Dedupe by `service_id` — oldest overdue invoice per service wins as the "trigger" invoice
+4. `Provisioning_model::suspendService()` calls the appropriate module helper (`whm_suspend_account` / `plesk_suspend_account` / `da_suspend_account`)
+5. On success: `order_services.status = 3`, `suspension_date = today`, `suspension_reason = 'Invoice #<no> overdue by <N> days'`
+6. Email customer using the `dunning_suspended` template (id=4, DUNNING category)
+7. On failure: local state is NOT changed → next cron run retries
+
+**Email placeholders supported** (the `dunning_suspended` template uses a subset; extras are harmless): `{client_name}`, `{invoice_no}`, `{amount_due}`, `{currency}`, `{currency_symbol}`, `{due_date}`, `{days_overdue}`, `{invoice_url}`, `{service_name}`, `{hosting_domain}`, `{site_name}`, `{company_name}`, `{site_url}`.
+
+**Idempotency:** once `status = 3`, the candidate query (which requires `status = 1`) skips the service on subsequent runs.
 
 ### Admin Order Management
 

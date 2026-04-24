@@ -104,11 +104,15 @@ class Cronjobs extends WHMAZ_Controller
 		$renewalResult = $this->generateRenewalInvoices();
 		$output['renewal_invoices'] = $renewalResult;
 
-		// 2. Future: Process dunning rules
+		// 2. Suspend Overdue Hosting Services
+		$suspensionResult = $this->suspendOverdueServices();
+		$output['suspensions'] = $suspensionResult;
+
+		// 3. Future: Process dunning rules
 		// $dunningResult = $this->processDunning();
 		// $output['dunning'] = $dunningResult;
 
-		// 3. Future: Expire overdue services
+		// 4. Future: Expire overdue services
 		// $expiryResult = $this->expireOverdueServices();
 		// $output['expiry'] = $expiryResult;
 
@@ -127,6 +131,14 @@ class Cronjobs extends WHMAZ_Controller
 			echo "  Emails sent: {$renewalResult['emails_sent']}\n";
 			if (!empty($renewalResult['errors'])) {
 				echo "  Errors: " . count($renewalResult['errors']) . "\n";
+			}
+			echo "\nSuspensions:\n";
+			echo "  Services checked: {$suspensionResult['services_checked']}\n";
+			echo "  Suspended: {$suspensionResult['suspended']}\n";
+			echo "  Failed: {$suspensionResult['failed']}\n";
+			echo "  Emails sent: {$suspensionResult['emails_sent']}\n";
+			if (!empty($suspensionResult['errors'])) {
+				echo "  Errors: " . count($suspensionResult['errors']) . "\n";
 			}
 		} else {
 			header('Content-Type: application/json');
@@ -367,6 +379,163 @@ class Cronjobs extends WHMAZ_Controller
 
 		} catch (Exception $e) {
 			log_message('error', 'sendRenewalInvoiceEmail error: ' . $e->getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * Suspend hosting services whose DUE invoice is overdue by at least
+	 * sys_cnf.suspension_days_after_due days. Sends a notification email
+	 * on successful suspension using the dunning_suspended template.
+	 *
+	 * URL: /cronjobs/suspendOverdueServices?key=YOUR_SECRET_KEY
+	 *
+	 * @return array result counters
+	 */
+	function suspendOverdueServices()
+	{
+		// Security check
+		if (!$this->validateCronAccess()) {
+			$this->denyAccess();
+		}
+
+		$result = array(
+			'services_checked' => 0,
+			'suspended' => 0,
+			'failed' => 0,
+			'emails_sent' => 0,
+			'errors' => array()
+		);
+
+		// Honor the global cron toggle
+		if ((int)$this->Cronjob_model->getSysConfig('cron_enabled', 1) !== 1) {
+			log_message('info', 'suspendOverdueServices skipped: cron_enabled=0');
+			return $result;
+		}
+
+		$daysAfterDue = intval($this->Cronjob_model->getSysConfig('suspension_days_after_due', 7));
+		if ($daysAfterDue < 1) {
+			$daysAfterDue = 7;
+		}
+
+		$this->load->model('Provisioning_model');
+
+		$appSettings = $this->Cronjob_model->getAppSettings();
+		$candidates = $this->Cronjob_model->getServicesOverdueForSuspension($daysAfterDue);
+
+		// Dedupe by service_id — one suspension per service per run, using the oldest
+		// invoice (first row per service_id, since the query sorts by due_date ASC) as
+		// the triggering invoice referenced in logs and the customer email.
+		$processedServiceIds = array();
+
+		foreach ($candidates as $row) {
+			$serviceId = (int)$row['service_id'];
+			if (isset($processedServiceIds[$serviceId])) {
+				continue;
+			}
+			$processedServiceIds[$serviceId] = true;
+			$result['services_checked']++;
+
+			// Load the full order_services row for the helper
+			$service = $this->db->where('id', $serviceId)->get('order_services')->row_array();
+			if (empty($service)) {
+				$result['errors'][] = "Service #{$serviceId}: not found during suspension";
+				continue;
+			}
+
+			$reason = 'Invoice #' . $row['invoice_no'] . ' overdue by ' . $row['days_overdue'] . ' days';
+
+			$suspendResult = $this->Provisioning_model->suspendService($service, $reason);
+
+			if (!empty($suspendResult['success'])) {
+				$result['suspended']++;
+				log_message('info', "Service #{$serviceId} suspended ({$suspendResult['module']}) — invoice #{$row['invoice_no']}");
+
+				if ($this->sendServiceSuspendedEmail($row, $appSettings)) {
+					$result['emails_sent']++;
+				}
+			} else {
+				$result['failed']++;
+				$result['errors'][] = "Service #{$serviceId}: " . ($suspendResult['error'] ?? 'unknown error');
+			}
+		}
+
+		// Optional run log; table may not exist on older installs
+		try {
+			$this->Cronjob_model->logCronjobExecution(
+				'service_suspensions',
+				empty($result['errors']) ? 'success' : 'partial',
+				json_encode($result),
+				$result['suspended']
+			);
+		} catch (Exception $e) {
+			// ignore
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Send the dunning_suspended email to a customer whose service was just suspended.
+	 *
+	 * @param array $row         row from getServicesOverdueForSuspension (customer + invoice + service)
+	 * @param array $appSettings app_settings row
+	 * @return bool
+	 */
+	private function sendServiceSuspendedEmail($row, $appSettings)
+	{
+		try {
+			$template = $this->Cronjob_model->getEmailTemplate('dunning_suspended');
+			if (empty($template)) {
+				log_message('error', 'Email template "dunning_suspended" not found');
+				return false;
+			}
+
+			if (empty($row['customer_email'])) {
+				return false;
+			}
+
+			$customerName = trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+			if (empty($customerName)) {
+				$customerName = $row['company_name_customer'] ?? 'Customer';
+			}
+
+			$invoiceUrl = base_url() . "billing/view_invoice/{$row['invoice_uuid']}";
+			$currencySymbol = !empty($row['currency_symbol']) ? $row['currency_symbol'] : ($row['currency_code'] ?? '');
+
+			$placeholders = array(
+				'{client_name}'   => $customerName,
+				'{invoice_no}'    => $row['invoice_no'],
+				'{amount_due}'    => number_format((float)$row['total'], 2),
+				'{currency}'      => $row['currency_code'] ?? '',
+				'{currency_symbol}' => $currencySymbol,
+				'{due_date}'      => date('F j, Y', strtotime($row['due_date'])),
+				'{days_overdue}'  => (int)$row['days_overdue'],
+				'{invoice_url}'   => $invoiceUrl,
+				'{service_name}'  => $row['product_name'] ?? 'Hosting Service',
+				'{hosting_domain}' => $row['hosting_domain'] ?? '',
+				'{site_name}'     => $appSettings['company_name'] ?? 'Our Company',
+				'{site_url}'      => base_url(),
+				'{company_name}'  => $appSettings['company_name'] ?? 'Our Company'
+			);
+
+			$subject = strtr($template['subject'], $placeholders);
+			$body = strtr($template['body'], $placeholders);
+
+			$fromEmail = $appSettings['smtp_user'] ?? $appSettings['site_email'] ?? 'noreply@example.com';
+			$fromName = $appSettings['company_name'] ?? 'Billing System';
+
+			$sent = sendHtmlEmail($row['customer_email'], $subject, $body, $fromEmail, $fromName);
+
+			if ($sent) {
+				log_message('info', "Suspension email sent to {$row['customer_email']} for invoice #{$row['invoice_no']}");
+			} else {
+				log_message('error', "Failed to send suspension email to {$row['customer_email']}");
+			}
+
+			return (bool)$sent;
+		} catch (Exception $e) {
+			log_message('error', 'sendServiceSuspendedEmail error: ' . $e->getMessage());
 			return false;
 		}
 	}

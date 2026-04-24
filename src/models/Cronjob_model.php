@@ -482,6 +482,59 @@ class Cronjob_model extends CI_Model
 	}
 
 	/**
+	 * Get hosting services that should be suspended due to overdue invoices.
+	 *
+	 * A service is a candidate when it is still Active, has been successfully provisioned
+	 * on a real control panel, and has at least one unpaid invoice whose due_date was at
+	 * least $daysAfterDue days ago.
+	 *
+	 * Returned rows may contain multiple entries per service (one per qualifying invoice).
+	 * The caller should dedupe by service_id and treat the first (oldest) row as the
+	 * triggering invoice.
+	 *
+	 * @param int $daysAfterDue How many days past due_date before suspension
+	 * @return array
+	 */
+	function getServicesOverdueForSuspension($daysAfterDue)
+	{
+		$daysAfterDue = max(0, intval($daysAfterDue));
+
+		$sql = "SELECT os.id AS service_id,
+					os.company_id, os.order_id, os.product_service_id,
+					os.cp_username, os.hosting_domain,
+					sm.module_name,
+					ps.product_name,
+					c.email AS customer_email,
+					c.first_name, c.last_name,
+					c.name AS company_name_customer,
+					i.id AS invoice_id,
+					i.invoice_uuid, i.invoice_no, i.total, i.due_date,
+					i.currency_code, i.currency_id,
+					cu.symbol AS currency_symbol,
+					DATEDIFF(CURDATE(), i.due_date) AS days_overdue
+				FROM order_services os
+				JOIN invoice_items ii ON ii.ref_id = os.id AND ii.item_type = 2
+				JOIN invoices i ON ii.invoice_id = i.id
+				JOIN product_services ps ON os.product_service_id = ps.id
+				JOIN servers s ON ps.server_id = s.id
+				JOIN server_modules sm ON s.product_service_module_id = sm.id
+				JOIN companies c ON os.company_id = c.id
+				LEFT JOIN currencies cu ON i.currency_id = cu.id
+				WHERE os.status = 1
+				  AND os.is_synced = 1
+				  AND os.cp_username IS NOT NULL
+				  AND os.cp_username != ''
+				  AND os.deleted_on IS NULL
+				  AND i.status = 1
+				  AND i.pay_status = 'DUE'
+				  AND DATE_ADD(i.due_date, INTERVAL ? DAY) <= CURDATE()
+				  AND LOWER(sm.module_name) IN ('cpanel', 'plesk', 'directadmin')
+				ORDER BY os.id ASC, i.due_date ASC";
+
+		return $this->db->query($sql, array($daysAfterDue))->result_array();
+	}
+
+	/**
 	 * Get email template by key
 	 *
 	 * @param string $templateKey Template key

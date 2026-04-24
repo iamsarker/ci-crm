@@ -813,6 +813,10 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 | Domain Renewal | Renew domain, update expiry | ResellerClub/Resell.biz API |
 | New Hosting | Create hosting account | Server module API (cPanel/Plesk/DirectAdmin) |
 | Hosting Renewal | Unsuspend if suspended, update dates | Server module API (if suspended) |
+| Hosting Suspension (overdue) | Suspend account after N days overdue (`sys_cnf.suspension_days_after_due`) | Server module suspend API |
+
+**Renewal Detection (`Provisioning_model::isRenewalInvoiceItem()`):**
+An invoice item is treated as a renewal if any earlier PAID invoice references the same `ref_id`. This replaces the older domain_order_id / billing_period heuristics, which could mis-route a renewal payment into a re-registration when the registrar order ID was missing or the domain status had flipped to Expired/Grace.
 
 **Supported Server Modules:**
 | Module | Helper File | API Type |
@@ -837,6 +841,15 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 **Provisioning Entry Points:**
 - `Payment_model::processSuccessfulPayment()` → `Invoice_model::provisionPaidServices()`
 - `Invoice_model::updateInvoiceStatus()` (admin mark as paid) → `provisionPaidServices()`
+
+**Background Cronjobs** (entry point: `/cronjobs/run?key=SECRET`):
+
+| Job | Purpose | Key sys_cnf keys |
+|-----|---------|------------------|
+| `generateRenewalInvoices` | Creates renewal invoices 15 days before `next_renewal_date` (combined when domain + linked service share the renewal date) | `cron_enabled` |
+| `suspendOverdueServices` | Suspends hosting services via cPanel/Plesk/DirectAdmin when their `DUE` invoice is past due by N days; emails the customer via the `dunning_suspended` template | `cron_enabled`, `suspension_days_after_due` (default 7) |
+
+Each job is also individually callable (`/cronjobs/generateRenewalInvoices`, `/cronjobs/suspendOverdueServices`). Suspension is scoped to hosting only — domain items on the same overdue invoice are not affected.
 
 #### 7.3 Promo Code / Coupon System
 

@@ -121,6 +121,16 @@ This is the first stable release of WHMAZ, a comprehensive domain hosting manage
 - API credentials management
 - Server status monitoring
 
+#### Automated Suspension for Overdue Payments
+- Cronjob automatically suspends hosting accounts when the invoice is overdue by a configurable number of days (`sys_cnf.suspension_days_after_due`, default 7)
+- Suspends via the correct control-panel API (cPanel / Plesk / DirectAdmin) based on the service's server module
+- Scoped to `pay_status = 'DUE'` invoices only — partial payments are excluded
+- Combined invoices (domain + hosting on one invoice) only affect the hosting line; the linked domain is untouched
+- Customer notification email sent on suspension using the `dunning_suspended` template
+- Local status flips to Suspended with suspension date and reason recorded; reversed automatically on payment via existing renewal/unsuspend flow
+- Idempotent: already-suspended services are skipped on subsequent runs
+- Honors the global `cron_enabled` toggle
+
 ---
 
 ### Auto-Provisioning System
