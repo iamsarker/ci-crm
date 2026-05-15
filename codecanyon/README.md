@@ -197,8 +197,6 @@ Built on the robust CodeIgniter 3.x framework with HMVC architecture, WHMAZ offe
 ![Invoice Management](screenshots/invoice-management.png)
 *Invoice generation and payment tracking*
 
-> **Note:** Create a `screenshots/` folder and add your actual screenshots
-
 ---
 
 ## 🎮 Live Demo

@@ -5,6 +5,8 @@
 **Last Updated:** February 18, 2026
 **Product:** WHMAZ - Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System
 
+> **New install?** This guide covers usage only. For installation, server requirements, and initial configuration, see **[INSTALLATION.md](INSTALLATION.md)**.
+
 ---
 
 ## Table of Contents
@@ -112,9 +114,6 @@ WHMAZ consists of two main portals:
    - Purpose: Business management and administration
    - Features: Complete system control and configuration
 
-![System Architecture Diagram](screenshots/architecture.png)
-*[Screenshot Placeholder: System architecture diagram showing dual portal structure]*
-
 ---
 
 ## Quick Start Guide
@@ -182,7 +181,6 @@ https://yourdomain.com/auth/login
 - "Register" link for new customers
 
 ![Customer Login Page](screenshots/customer-login.png)
-*[Screenshot Placeholder: Customer portal login page]*
 
 ### Admin Portal Access
 
@@ -201,7 +199,6 @@ https://yourdomain.com/whmazadmin/authenticate/login
 If Google reCAPTCHA is configured in the admin General Settings, the admin login page will display a reCAPTCHA checkbox to prevent automated brute force attacks. Complete the "I'm not a robot" verification before clicking Sign In.
 
 ![Admin Login Page](screenshots/admin-login.png)
-*[Screenshot Placeholder: Admin portal login page]*
 
 ### Security Features
 
@@ -305,7 +302,6 @@ After first login, immediately:
    - Click verification link to activate account
 
 ![Registration Form](screenshots/customer-registration.png)
-*[Screenshot Placeholder: Customer registration form]*
 
 ### Email Verification
 
@@ -356,7 +352,6 @@ Each stat card features:
 - Refresh buttons for real-time updates
 
 ![Customer Dashboard](screenshots/customer-dashboard.png)
-*[Screenshot Placeholder: Customer dashboard with welcome banner and stat cards]*
 
 ### Navigation Menu
 
@@ -416,7 +411,6 @@ Each stat card features:
    - Setup fee (if applicable)
 
 ![Package List](screenshots/package-browse.png)
-*[Screenshot Placeholder: Available packages with features and pricing]*
 
 ### Placing an Order
 
@@ -485,7 +479,6 @@ A modal will appear asking for your domain information. Choose one of three opti
 - Proceed to checkout and payment
 
 ![Order Checkout](screenshots/order-checkout.png)
-*[Screenshot Placeholder: Order checkout page with linked hosting and domain]*
 
 ### Shopping Cart Features
 
@@ -532,7 +525,6 @@ A modal will appear asking for your domain information. Choose one of three opti
    - **Support:** Open ticket for this service
 
 ![Service Management](screenshots/service-details.png)
-*[Screenshot Placeholder: Service details page with actions]*
 
 ### Hosting Usage Sync (Real-Time)
 
@@ -592,7 +584,6 @@ For hosting services with a control panel (cPanel, Plesk, or DirectAdmin), you c
    - Different extensions offered (.com, .net, .org, etc.)
 
 ![Domain Search](screenshots/domain-search.png)
-*[Screenshot Placeholder: Domain search results page]*
 
 ### Registering a Domain
 
@@ -628,7 +619,6 @@ For hosting services with a control panel (cPanel, Plesk, or DirectAdmin), you c
 - **Auto-Renew:** Enable/disable automatic renewal
 
 ![Domain Management](screenshots/domain-list.png)
-*[Screenshot Placeholder: Domain list with management options]*
 
 ### Domain Transfer
 
@@ -683,7 +673,6 @@ There are two ways to transfer a domain:
    - Status (Paid, Unpaid, Cancelled)
 
 ![Invoice List](screenshots/invoice-list.png)
-*[Screenshot Placeholder: Invoice list page with filters]*
 
 ### Invoice Details
 
@@ -712,7 +701,6 @@ There are two ways to transfer a domain:
   - Transaction ID
 
 ![Invoice Details](screenshots/invoice-details.png)
-*[Screenshot Placeholder: Invoice details page]*
 
 ### Downloading Invoices
 
@@ -764,7 +752,6 @@ Available payment methods (configured by administrator):
    - Service activated/renewed
 
 ![Payment Page](screenshots/payment-page.png)
-*[Screenshot Placeholder: Payment page with payment method selection]*
 
 ### Payment History
 
@@ -843,7 +830,6 @@ Available payment methods (configured by administrator):
    - Support team notified
 
 ![Create Ticket](screenshots/create-ticket.png)
-*[Screenshot Placeholder: Create support ticket form with modern design]*
 
 ### Managing Tickets
 
@@ -864,7 +850,6 @@ Available payment methods (configured by administrator):
 - Reopen ticket (if issue persists)
 
 ![Ticket List](screenshots/ticket-list.png)
-*[Screenshot Placeholder: Support ticket list]*
 
 ### Replying to Tickets
 
@@ -946,7 +931,6 @@ The Knowledge Base is publicly accessible without login, making it easy for visi
    - Active category highlighted in sidebar
 
 ![Knowledge Base](screenshots/knowledge-base.png)
-*[Screenshot Placeholder: Knowledge base categories and popular articles]*
 
 ### Searching for Articles
 
@@ -1110,7 +1094,6 @@ The Contact Us page allows visitors to send messages to the appropriate departme
 - Use a valid email address for replies
 
 ![Contact Us Page](screenshots/contact-us.png)
-*[Screenshot Placeholder: Contact Us form with department selection]*
 
 ---
 
@@ -1129,7 +1112,6 @@ The admin dashboard provides comprehensive business insights:
 - **Open Tickets:** Support tickets requiring attention
 
 ![Admin Dashboard](screenshots/admin-dashboard.png)
-*[Screenshot Placeholder: Admin dashboard with metrics and charts]*
 
 ### Dashboard Widgets
 
@@ -1201,7 +1183,6 @@ The admin dashboard provides comprehensive business insights:
    - Export to CSV/Excel
 
 ![Customer List](screenshots/admin-customer-list.png)
-*[Screenshot Placeholder: Customer management with DataTables pagination]*
 
 ### Customer Details
 
@@ -1313,7 +1294,6 @@ The admin dashboard provides comprehensive business insights:
    - Actions
 
 ![Order List](screenshots/admin-order-list.png)
-*[Screenshot Placeholder: Order management list with filters and search]*
 
 ### Creating an Order (Manual)
 
@@ -1521,7 +1501,6 @@ The Order Management page allows administrators to view and modify existing orde
    - Order (display order)
 
 ![Package List](screenshots/admin-package-list.png)
-*[Screenshot Placeholder: Package management list]*
 
 ### Creating a Package
 
@@ -2104,7 +2083,6 @@ The Dunning tab includes a visual workflow preview card that shows all active ru
    - Status
 
 ![Domain Pricing List](screenshots/admin-domain-pricing.png)
-*[Screenshot Placeholder: Domain pricing management with SSP pagination]*
 
 ### Adding Domain Pricing
 
@@ -2189,7 +2167,6 @@ The Dunning tab includes a visual workflow preview card that shows all active ru
    - Actions
 
 ![Invoice List](screenshots/admin-invoice-list.png)
-*[Screenshot Placeholder: Invoice management list]*
 
 ### Creating Manual Invoice
 
@@ -2314,7 +2291,6 @@ The Dunning tab includes a visual workflow preview card that shows all active ru
    - Status (Success, Pending, Failed, Refunded)
 
 ![Transaction History](screenshots/admin-transactions.png)
-*[Screenshot Placeholder: Transaction history list]*
 
 ### Payment Methods
 
@@ -2460,7 +2436,6 @@ When a promo code is used:
    - Actions
 
 ![Ticket List](screenshots/admin-ticket-list.png)
-*[Screenshot Placeholder: Support ticket management with filters]*
 
 ### Viewing and Replying to Tickets
 
@@ -2602,7 +2577,6 @@ When a promo code is used:
    - Customers can find via search or category browsing
 
 ![Article Editor](screenshots/admin-kb-editor.png)
-*[Screenshot Placeholder: Knowledge base article editor]*
 
 ### Managing Categories
 

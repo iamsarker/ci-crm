@@ -596,7 +596,6 @@ class Cronjob_model extends CI_Model
 	 */
 	function logCronjobExecution($jobType, $status, $details = '', $itemsProcessed = 0)
 	{
-		// Check if cron_jobs table exists and has the right structure
 		$this->db->insert('cron_jobs', array(
 			'job_type' => $jobType,
 			'status' => $status,

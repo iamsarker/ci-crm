@@ -1,93 +1,103 @@
-# Contributing to CodeIgniter
+# Contributing & Feedback
 
-CodeIgniter is a community driven project and accepts contributions of code and documentation from the community. These contributions are made in the form of Issues or [Pull Requests](http://help.github.com/send-pull-requests/) on the [CodeIgniter repository](https://github.com/bcit-ci/CodeIgniter) on GitHub.
+Thank you for purchasing **WHMAZ - Web Host Manager A to Z solutions**.
 
-Issues are a quick way to point out a bug. If you find a bug or documentation error in CodeIgniter then please check a few things first:
+WHMAZ is a **commercial product distributed under the CodeCanyon license**. It is not an open-source project and does not accept community pull requests. However, we value your feedback and want to make the product better with every release.
 
-1. There is not already an open Issue
-2. The issue has already been fixed (check the develop branch, or look for closed Issues)
-3. Is it something really obvious that you can fix yourself?
+---
 
-Reporting issues is helpful but an even better approach is to send a Pull Request, which is done by "Forking" the main repository and committing to your own copy. This will require you to use the version control system called Git.
+## How to Get Help
 
-## Guidelines
+If something isn't working the way you expect, please check these resources first:
 
-Before we look into how, here are the guidelines. If your Pull Requests fail
-to pass these guidelines it will be declined and you will need to re-submit
-when you’ve made the changes. This might sound a bit tough, but it is required
-for us to maintain quality of the code-base.
+1. **[INSTALLATION.md](INSTALLATION.md)** — full install guide, server requirements, and common troubleshooting
+2. **[USER_GUIDE.md](USER_GUIDE.md)** — admin and client portal walkthroughs
+3. **[CHANGELOG.md](CHANGELOG.md)** — complete feature list and version history
 
-### PHP Style
+Most questions are answered in those documents.
 
-All code must meet the [Style Guide](https://codeigniter.com/user_guide/general/styleguide.html), which is
-essentially the [Allman indent style](https://en.wikipedia.org/wiki/Indent_style#Allman_style), underscores and readable operators. This makes certain that all code is the same format as the existing code and means it will be as readable as possible.
+---
 
-### Documentation
+## Reporting a Bug
 
-If you change anything that requires a change to documentation then you will need to add it. New classes, methods, parameters, changing default values, etc are all things that will require a change to documentation. The change-log must also be updated for every change. Also PHPDoc blocks must be maintained.
+If you find a reproducible bug, please report it to support with:
 
-### Compatibility
+- **WHMAZ version** (shown in the admin footer, also in `codecanyon/README.md`)
+- **PHP version** (`php -v`)
+- **MySQL / MariaDB version**
+- **Web server** (Apache / Nginx / LiteSpeed) and OS
+- **Steps to reproduce** — the shortest sequence of actions that triggers the bug
+- **Expected vs. actual behavior**
+- **Relevant log entries** from `src/logs/log-YYYY-MM-DD.php` (redact any secrets before sharing)
+- Screenshots where relevant
 
-CodeIgniter recommends PHP 5.4 or newer to be used, but it should be
-compatible with PHP 5.2.4 so all code supplied must stick to this
-requirement. If PHP 5.3 (and above) functions or features are used then
-there must be a fallback for PHP 5.2.4.
+**Support email:** support@whmaz.com
 
-### Branching
+Please **do not** post bug reports to the CodeCanyon item comments for anything beyond a quick question — comments are public and you'll get a faster, private response by email.
 
-CodeIgniter uses the [Git-Flow](http://nvie.com/posts/a-successful-git-branching-model/) branching model which requires all pull requests to be sent to the "develop" branch. This is
-where the next planned version will be developed. The "master" branch will always contain the latest stable version and is kept clean so a "hotfix" (e.g: an emergency security patch) can be applied to master to create a new version, without worrying about other features holding it up. For this reason all commits need to be made to "develop" and any sent to "master" will be closed automatically. If you have multiple changes to submit, please place all changes into their own branch on your fork.
+---
 
-One thing at a time: A pull request should only contain one change. That does not mean only one commit, but one change - however many commits it took. The reason for this is that if you change X and Y but send a pull request for both at the same time, we might really want X but disagree with Y, meaning we cannot merge the request. Using the Git-Flow branching model you can create new branches for both of these features and send two requests.
+## Reporting a Security Vulnerability
 
-### Signing
+Security issues are handled privately and with priority. **Do not** post them on CodeCanyon comments or public forums.
 
-You must sign your work, certifying that you either wrote the work or otherwise have the right to pass it on to an open source project. git makes this trivial as you merely have to use `--signoff` on your commits to your CodeIgniter fork.
+**Security email:** security@whmaz.com
 
-`git commit --signoff`
+Please include the same environment details as a bug report, plus a proof-of-concept where safe to do so. We acknowledge reports within 24 hours (business days).
 
-or simply
+---
 
-`git commit -s`
+## Requesting a Feature
 
-This will sign your commits with the information setup in your git config, e.g.
+Feature requests are welcome and feed directly into our roadmap. Email **support@whmaz.com** with:
 
-`Signed-off-by: John Q Public <john.public@example.com>`
+- A clear description of the feature
+- The problem it solves (the "why")
+- Any references to how competing products implement it, if relevant
 
-If you are using [Tower](http://www.git-tower.com/) there is a "Sign-Off" checkbox in the commit window. You could even alias git commit to use the `-s` flag so you don’t have to think about it.
+Feature requests that align with the product roadmap may appear in future updates. Urgent or custom requirements specific to your business can be quoted as paid custom development.
 
-By signing your work in this manner, you certify to a "Developer's Certificate of Origin". The current version of this certificate is in the `DCO.txt` file in the root of this repository.
+---
 
-## How-to Guide
+## Update Policy
 
-There are two ways to make changes, the easy way and the hard way. Either way you will need to [create a GitHub account](https://github.com/signup/free).
+- **Updates:** Free for 6 months from date of purchase (as per CodeCanyon standard terms). Extensions can be purchased on CodeCanyon.
+- **Support period:** 6 months included, extendable on CodeCanyon.
+- Critical security patches are backported for active versions.
 
-Easy way GitHub allows in-line editing of files for making simple typo changes and quick-fixes. This is not the best way as you are unable to test the code works. If you do this you could be introducing syntax errors, etc, but for a Git-phobic user this is good for a quick-fix.
+See **[CHANGELOG.md](CHANGELOG.md)** for the full release history.
 
-Hard way The best way to contribute is to "clone" your fork of CodeIgniter to your development area. That sounds like some jargon, but "forking" on GitHub means "making a copy of that repo to your account" and "cloning" means "copying that code to your environment so you can work on it".
+---
 
-1. [Set up Git](https://help.github.com/en/articles/set-up-git) (Windows, Mac & Linux)
-2. Go to the [CodeIgniter repo](https://github.com/bcit-ci/CodeIgniter)
-3. [Fork it](https://help.github.com/en/articles/fork-a-repo)
-4. [Clone](https://help.github.com/en/articles/fetching-a-remote#clone) your forked CodeIgniter repo: git@github.com:<your-name>/CodeIgniter.git.
-5. Checkout the "develop" branch. At this point you are ready to start making changes.
-6. Fix existing bugs on the Issue tracker after taking a look to see nobody else is working on them.
-7. [Commit](https://help.github.com/en/articles/adding-a-file-to-a-repository-using-the-command-line) the files
-8. [Push](https://help.github.com/en/articles/pushing-to-a-remote) your develop branch to your fork
-9. [Send a pull request](https://help.github.com/en/articles/creating-a-pull-request)
+## What This Product Is Not
 
-The Reactor Engineers will now be alerted about the change and at least one of the team will respond. If your change fails to meet the guidelines it will be bounced, or feedback will be provided to help you improve it.
+To set correct expectations:
 
-Once the Reactor Engineer handling your pull request is happy with it they will merge it into develop and your patch will be part of the next release.
+- WHMAZ is **not an open-source project**. You may not redistribute the source code, publish forks publicly, or host it for third parties outside the terms of your license.
+- Pull requests submitted to any WHMAZ repository will **not** be merged.
+- Custom modifications you make for your own deployment are encouraged and permitted under the CodeCanyon license — see `license.txt` for the full terms.
 
-### Keeping your fork up-to-date
+---
 
-Unlike systems like Subversion, Git can have multiple remotes. A remote is the name for a URL of a Git repository. By default your fork will have a remote named "origin" which points to your fork, but you can add another remote named "codeigniter" which points to `git://github.com/bcit-ci/CodeIgniter.git`. This is a read-only remote but you can pull from this develop branch to update your own.
+## License Summary
 
-If you are using command-line you can do the following:
+| License | Use Case |
+|---|---|
+| **Regular License** | For a single end product where end users are not charged (one website / deployment). |
+| **Extended License** | For a single end product where end users can be charged (SaaS / multi-tenant). |
 
-1. `git remote add codeigniter git://github.com/bcit-ci/CodeIgniter.git`
-2. `git pull codeigniter develop`
-3. `git push origin develop`
+See **license.txt** in the root of the package for the complete license text.
 
-Now your fork is up to date. This should be done regularly, or before you send a pull request at least.
+---
+
+## Contact
+
+- **Product support:** support@whmaz.com
+- **Security reports:** security@whmaz.com
+- **Sales / licensing:** sales@whmaz.com
+
+Response time: within 48 hours (business days) for support, within 24 hours for security reports.
+
+---
+
+**Thank you for using WHMAZ.**

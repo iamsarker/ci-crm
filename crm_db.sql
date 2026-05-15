@@ -580,8 +580,13 @@ INSERT INTO `countries` (`id`, `country_code`, `country_name`, `dial_code`, `cur
 
 CREATE TABLE `cron_jobs` (
   `id` bigint(20) NOT NULL,
-  `job_name` varchar(150) NOT NULL,
-  `execute_dt` datetime NOT NULL
+  `job_name` varchar(150) DEFAULT NULL,
+  `job_type` varchar(100) DEFAULT NULL,
+  `status` varchar(20) DEFAULT NULL,
+  `details` text DEFAULT NULL,
+  `items_processed` int(11) NOT NULL DEFAULT 0,
+  `executed_on` datetime DEFAULT NULL,
+  `execute_dt` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -2042,7 +2047,8 @@ ALTER TABLE `countries`
 -- Indexes for table `cron_jobs`
 --
 ALTER TABLE `cron_jobs`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_cron_jobs_job_type_executed_on` (`job_type`, `executed_on`);
 
 --
 -- Indexes for table `cron_schedules`
