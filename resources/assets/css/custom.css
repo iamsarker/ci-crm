@@ -53,8 +53,11 @@
 	height: 75px;
 }
 
-select.fontawesome {
+select.fontawesome,
+select.fontawesome option {
 	font-family: 'Font Awesome 5 Free', 'Roboto', 'Helvetica Neue', 'sans-serif';
+	/* FA5 Free solid glyphs only render at weight 900 */
+	font-weight: 900;
 }
 
 .selected-li{
@@ -3339,6 +3342,68 @@ h6 i {
         top: 15px;
         right: 15px;
     }
+
+    /* Domain search card: tighter padding on mobile */
+    .domain-search-header,
+    .domain-pricing-header,
+    .domain-suggestions-header {
+        padding: 15px 18px;
+    }
+
+    .domain-search-body,
+    .domain-pricing-body,
+    .domain-suggestions-body {
+        padding: 18px;
+    }
+
+    /* Search input: keep prefix + field on one row, push button full-width below */
+    .domain-search-input-group {
+        flex-wrap: wrap;
+    }
+
+    .domain-search-input-group .form-control {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .domain-search-input-group .btn-search {
+        flex: 1 1 100%;
+        justify-content: center;
+        padding: 12px 15px;
+        border-top: 1px solid #e1e8f0;
+    }
+
+    /* reCAPTCHA: prevent the fixed 302px widget from clipping */
+    .g-recaptcha {
+        transform: scale(0.88);
+        transform-origin: left top;
+    }
+
+    /* Result cards: stack icon above text and center on mobile */
+    .domain-available,
+    .domain-unavailable {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+        padding: 18px;
+    }
+
+    .domain-available .result-icon,
+    .domain-unavailable .result-icon {
+        width: 50px;
+        height: 50px;
+    }
+
+    .domain-available .result-icon i,
+    .domain-unavailable .result-icon i {
+        font-size: 24px;
+    }
+
+    .domain-available .result-price {
+        flex-direction: column;
+        gap: 10px;
+    }
 }
 
 /* ==========================================================================
@@ -4918,6 +4983,27 @@ h6 i {
 	font-weight: 900;
 	color: #28a745;
 	margin-right: 10px;
+}
+
+/* Transfer page: mobile tweaks */
+@media (max-width: 768px) {
+	.transfer-step {
+		gap: 12px;
+	}
+
+	.transfer-price-box .price-info {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.transfer-price-box .price-value {
+		font-size: 20px;
+	}
+
+	/* Add spacing when the two info columns stack */
+	.transfer-checklist {
+		margin-bottom: 20px;
+	}
 }
 
 /* ============================================

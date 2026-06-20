@@ -199,8 +199,20 @@
                                 <label class="payment-label"><i class="fa fa-wallet mg-r-5"></i>Payment Gateway</label>
                                 <select class="form-select payment-select fontawesome" ng-model="payment_gateway">
                                     <option value="0">-- Select Payment Method --</option>
-                                    <?php foreach ($payment_gateway_list as $item): ?>
-                                        <option value="<?= $item['id'] ?>">&#x<?= $item['icon_fa_unicode'] ?> <?= htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8') ?></option>
+                                    <?php foreach ($payment_gateway_list as $item):
+                                        // Use configured icon, else fall back by gateway type (FA5 Free solid glyphs)
+                                        $gwIcon = !empty($item['icon_fa_unicode']) ? $item['icon_fa_unicode'] : '';
+                                        if ($gwIcon === '') {
+                                            switch ($item['gateway_type']) {
+                                                case 'manual':        $gwIcon = 'f53a'; break; // money-bill-wave
+                                                case 'online_wallet': $gwIcon = 'f555'; break; // wallet
+                                                case 'bank_transfer': $gwIcon = 'f19c'; break; // university
+                                                case 'online_card':
+                                                default:              $gwIcon = 'f09d'; break; // credit-card
+                                            }
+                                        }
+                                    ?>
+                                        <option value="<?= $item['id'] ?>">&#x<?= htmlspecialchars($gwIcon, ENT_QUOTES, 'UTF-8') ?>&nbsp;&nbsp;<?= htmlspecialchars($item['name'], ENT_QUOTES, 'UTF-8') ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
