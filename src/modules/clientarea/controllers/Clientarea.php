@@ -17,7 +17,11 @@ class Clientarea extends WHMAZ_Controller {
 	}
 
 	public function index() {
-		$this->load->view('clientarea_index');
+		$this->load->model('Subscription_model');
+		$this->load->model('Software_model');
+		$data['subscription']    = $this->Subscription_model->get_active_subscription_for_company(getCompanyId());
+		$data['current_release'] = $this->Software_model->getCurrentRelease();
+		$this->load->view('clientarea_index', $data);
 	}
 
 	public function services() {

@@ -515,6 +515,13 @@ $config['csrf_exclude_uris'] = array(
 	'billing/pay/sslcommerz_cancel',
 	'billing/pay/sslcommerz_fail',
 	'webhook/sslcommerz',
+	// SaaS subscription checkout/upgrade (authenticated JSON/form posts)
+	'subscription/subscribe',
+	'subscription/upgrade',
+	// Self-hosted license phone-home + updater (external, key-authenticated)
+	'license/verify',
+	'license/latest',
+	'license/download',
 	// Client area domain AJAX endpoints (authenticated, session-based)
 	'clientarea/get_transfer_lock',
 	'clientarea/toggle_transfer_lock',

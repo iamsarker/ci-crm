@@ -63,6 +63,9 @@ class Provisioning_model extends CI_Model
             } elseif ($item['item_type'] == 2) {
                 // Service/Hosting
                 $result = $this->provisionService($item);
+            } elseif ($item['item_type'] == 3) {
+                // WHMAZ SaaS license
+                $result = $this->provisionLicense($item);
             } else {
                 $result = array('success' => false, 'error' => 'Unknown item type: ' . $item['item_type']);
             }
@@ -638,6 +641,33 @@ class Provisioning_model extends CI_Model
     // =========================================
     // SERVICE/HOSTING PROVISIONING
     // =========================================
+
+    /**
+     * Provision (activate) a WHMAZ SaaS license after payment. No external API:
+     * activation issues a license key locally; renewal extends the dates.
+     *
+     * @param array $item Invoice item data
+     * @return array Result with 'success', 'action', 'error'
+     */
+    function provisionLicense($item)
+    {
+        $license = $this->db->where('id', $item['ref_id'])->get('order_licenses')->row_array();
+
+        if (empty($license)) {
+            return array('success' => false, 'action' => 'none', 'error' => 'License not found: ' . $item['ref_id']);
+        }
+
+        $isRenewal = $this->isRenewalInvoiceItem($item, 3);
+
+        $this->load->model('Orderlicense_model');
+        $result = $this->Orderlicense_model->activateLicense($item['ref_id'], $isRenewal);
+
+        return array(
+            'success' => ! empty($result['success']),
+            'action'  => $isRenewal ? 'renew' : 'activate',
+            'error'   => empty($result['success']) ? (isset($result['message']) ? $result['message'] : 'Activation failed') : '',
+        );
+    }
 
     /**
      * Provision a service (create or unsuspend hosting account)

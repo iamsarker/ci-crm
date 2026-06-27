@@ -108,11 +108,15 @@ class Cronjobs extends WHMAZ_Controller
 		$suspensionResult = $this->suspendOverdueServices();
 		$output['suspensions'] = $suspensionResult;
 
-		// 3. Future: Process dunning rules
+		// 3. Soft-suspend Overdue SaaS Licenses
+		$licenseSuspensionResult = $this->suspendOverdueLicenses();
+		$output['license_suspensions'] = $licenseSuspensionResult;
+
+		// 4. Future: Process dunning rules
 		// $dunningResult = $this->processDunning();
 		// $output['dunning'] = $dunningResult;
 
-		// 4. Future: Expire overdue services
+		// 5. Future: Expire overdue services
 		// $expiryResult = $this->expireOverdueServices();
 		// $output['expiry'] = $expiryResult;
 
@@ -139,6 +143,14 @@ class Cronjobs extends WHMAZ_Controller
 			echo "  Emails sent: {$suspensionResult['emails_sent']}\n";
 			if (!empty($suspensionResult['errors'])) {
 				echo "  Errors: " . count($suspensionResult['errors']) . "\n";
+			}
+			echo "\nLicense Suspensions:\n";
+			echo "  Licenses checked: {$licenseSuspensionResult['licenses_checked']}\n";
+			echo "  Suspended: {$licenseSuspensionResult['suspended']}\n";
+			echo "  Failed: {$licenseSuspensionResult['failed']}\n";
+			echo "  Emails sent: {$licenseSuspensionResult['emails_sent']}\n";
+			if (!empty($licenseSuspensionResult['errors'])) {
+				echo "  Errors: " . count($licenseSuspensionResult['errors']) . "\n";
 			}
 		} else {
 			header('Content-Type: application/json');
@@ -536,6 +548,160 @@ class Cronjobs extends WHMAZ_Controller
 			return (bool)$sent;
 		} catch (Exception $e) {
 			log_message('error', 'sendServiceSuspendedEmail error: ' . $e->getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * Soft-suspend WHMAZ SaaS licenses whose invoice is overdue.
+	 *
+	 * Self-hosted: we can't touch the customer's server, so this only flips
+	 * order_licenses.status to suspended. Enforcement happens when the install
+	 * phones home to license/verify and gets back status='suspended'.
+	 * Runs as part of run(); also callable standalone at
+	 * /cronjobs/suspendOverdueLicenses?key=SECRET
+	 *
+	 * @return array
+	 */
+	function suspendOverdueLicenses()
+	{
+		// Security check
+		if (!$this->validateCronAccess()) {
+			$this->denyAccess();
+		}
+
+		$result = array(
+			'licenses_checked' => 0,
+			'suspended' => 0,
+			'failed' => 0,
+			'emails_sent' => 0,
+			'errors' => array()
+		);
+
+		// Honor the global cron toggle
+		if ((int)$this->Cronjob_model->getSysConfig('cron_enabled', 1) !== 1) {
+			log_message('info', 'suspendOverdueLicenses skipped: cron_enabled=0');
+			return $result;
+		}
+
+		// Dedicated license grace period (independent of hosting suspension)
+		$daysAfterDue = intval($this->Cronjob_model->getSysConfig('license_suspension_days_after_due', 7));
+		if ($daysAfterDue < 1) {
+			$daysAfterDue = 7;
+		}
+
+		$this->load->model('Orderlicense_model');
+
+		$appSettings = $this->Cronjob_model->getAppSettings();
+		$candidates = $this->Cronjob_model->getLicensesOverdueForSuspension($daysAfterDue);
+
+		// Dedupe by license_id — one suspension per license per run, oldest overdue
+		// invoice (first row, query sorts due_date ASC) is the trigger row.
+		$processedLicenseIds = array();
+
+		foreach ($candidates as $row) {
+			$licenseId = (int)$row['license_id'];
+			if (isset($processedLicenseIds[$licenseId])) {
+				continue;
+			}
+			$processedLicenseIds[$licenseId] = true;
+			$result['licenses_checked']++;
+
+			$reason = 'Invoice #' . $row['invoice_no'] . ' overdue by ' . $row['days_overdue'] . ' days';
+
+			$suspendResult = $this->Orderlicense_model->suspendLicense($licenseId, $reason);
+
+			if (!empty($suspendResult['success'])) {
+				$result['suspended']++;
+				log_message('info', "License #{$licenseId} soft-suspended — invoice #{$row['invoice_no']}");
+
+				if ($this->sendLicenseSuspendedEmail($row, $appSettings)) {
+					$result['emails_sent']++;
+				}
+			} else {
+				$result['failed']++;
+				$result['errors'][] = "License #{$licenseId}: " . ($suspendResult['message'] ?? 'unknown error');
+			}
+		}
+
+		// Optional run log; table may not exist on older installs
+		try {
+			$this->Cronjob_model->logCronjobExecution(
+				'license_suspensions',
+				empty($result['errors']) ? 'success' : 'partial',
+				json_encode($result),
+				$result['suspended']
+			);
+		} catch (Exception $e) {
+			// ignore
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Send the dunning_suspended email to a customer whose license was just
+	 * soft-suspended. Reuses the same template as hosting suspension; the
+	 * plan name maps to {service_name} and the install domain to {hosting_domain}.
+	 *
+	 * @param array $row         row from getLicensesOverdueForSuspension
+	 * @param array $appSettings app_settings row
+	 * @return bool
+	 */
+	private function sendLicenseSuspendedEmail($row, $appSettings)
+	{
+		try {
+			$template = $this->Cronjob_model->getEmailTemplate('dunning_suspended');
+			if (empty($template)) {
+				log_message('error', 'Email template "dunning_suspended" not found');
+				return false;
+			}
+
+			if (empty($row['customer_email'])) {
+				return false;
+			}
+
+			$customerName = trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+			if (empty($customerName)) {
+				$customerName = $row['company_name_customer'] ?? 'Customer';
+			}
+
+			$invoiceUrl = base_url() . "billing/view_invoice/{$row['invoice_uuid']}";
+			$currencySymbol = !empty($row['currency_symbol']) ? $row['currency_symbol'] : ($row['currency_code'] ?? '');
+
+			$placeholders = array(
+				'{client_name}'   => $customerName,
+				'{invoice_no}'    => $row['invoice_no'],
+				'{amount_due}'    => number_format((float)$row['total'], 2),
+				'{currency}'      => $row['currency_code'] ?? '',
+				'{currency_symbol}' => $currencySymbol,
+				'{due_date}'      => date('F j, Y', strtotime($row['due_date'])),
+				'{days_overdue}'  => (int)$row['days_overdue'],
+				'{invoice_url}'   => $invoiceUrl,
+				'{service_name}'  => $row['plan_name'] ?? 'WHMAZ License',
+				'{hosting_domain}' => $row['license_domain'] ?? '',
+				'{site_name}'     => $appSettings['company_name'] ?? 'Our Company',
+				'{site_url}'      => base_url(),
+				'{company_name}'  => $appSettings['company_name'] ?? 'Our Company'
+			);
+
+			$subject = strtr($template['subject'], $placeholders);
+			$body = strtr($template['body'], $placeholders);
+
+			$fromEmail = $appSettings['smtp_user'] ?? $appSettings['site_email'] ?? 'noreply@example.com';
+			$fromName = $appSettings['company_name'] ?? 'Billing System';
+
+			$sent = sendHtmlEmail($row['customer_email'], $subject, $body, $fromEmail, $fromName);
+
+			if ($sent) {
+				log_message('info', "License suspension email sent to {$row['customer_email']} for invoice #{$row['invoice_no']}");
+			} else {
+				log_message('error', "Failed to send license suspension email to {$row['customer_email']}");
+			}
+
+			return (bool)$sent;
+		} catch (Exception $e) {
+			log_message('error', 'sendLicenseSuspendedEmail error: ' . $e->getMessage());
 			return false;
 		}
 	}

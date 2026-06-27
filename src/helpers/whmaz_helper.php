@@ -373,6 +373,35 @@
 		return !empty($data) ? $data[0] : null;
 	}
 
+	/**
+	 * Stream a (potentially large) file to the browser as a download and exit.
+	 * Uses readfile() rather than loading the whole file into memory, so it is
+	 * safe for big release ZIPs. Caller is responsible for authorization.
+	 *
+	 * @param string $path         absolute path to an existing file
+	 * @param string $downloadName filename shown to the client
+	 */
+	function stream_file_download($path, $downloadName){
+		if (empty($path) || !is_file($path)) {
+			show_404();
+			return;
+		}
+		// Drop any buffered output so it doesn't corrupt the binary stream.
+		while (ob_get_level() > 0) {
+			ob_end_clean();
+		}
+		header('Content-Description: File Transfer');
+		header('Content-Type: application/zip');
+		header('Content-Disposition: attachment; filename="' . basename($downloadName) . '"');
+		header('Content-Transfer-Encoding: binary');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate');
+		header('Pragma: public');
+		header('Content-Length: ' . filesize($path));
+		readfile($path);
+		exit;
+	}
+
 	function buildSuccessResponse($data, $msg){
 		$resp["code"] = 200;
 		$resp["msg"] = $msg;

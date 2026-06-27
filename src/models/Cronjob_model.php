@@ -535,6 +535,48 @@ class Cronjob_model extends CI_Model
 	}
 
 	/**
+	 * Get active licenses whose invoice is overdue by >= $daysAfterDue days.
+	 *
+	 * Self-hosted: there's no server module to join — suspension is soft (status
+	 * only), enforced when the install phones home. Mirrors
+	 * getServicesOverdueForSuspension() otherwise. Sorted so the oldest overdue
+	 * invoice per license is the trigger row.
+	 *
+	 * @param int $daysAfterDue
+	 * @return array
+	 */
+	function getLicensesOverdueForSuspension($daysAfterDue)
+	{
+		$daysAfterDue = max(0, intval($daysAfterDue));
+
+		$sql = "SELECT ol.id AS license_id,
+					ol.company_id, ol.order_id, ol.plan_id, ol.license_domain,
+					p.plan_key, p.name AS plan_name,
+					c.email AS customer_email,
+					c.first_name, c.last_name,
+					c.name AS company_name_customer,
+					i.id AS invoice_id,
+					i.invoice_uuid, i.invoice_no, i.total, i.due_date,
+					i.currency_code, i.currency_id,
+					cu.symbol AS currency_symbol,
+					DATEDIFF(CURDATE(), i.due_date) AS days_overdue
+				FROM order_licenses ol
+				JOIN invoice_items ii ON ii.ref_id = ol.id AND ii.item_type = 3
+				JOIN invoices i ON ii.invoice_id = i.id
+				JOIN plans p ON ol.plan_id = p.id
+				JOIN companies c ON ol.company_id = c.id
+				LEFT JOIN currencies cu ON i.currency_id = cu.id
+				WHERE ol.status = 1
+				  AND ol.deleted_on IS NULL
+				  AND i.status = 1
+				  AND i.pay_status = 'DUE'
+				  AND DATE_ADD(i.due_date, INTERVAL ? DAY) <= CURDATE()
+				ORDER BY ol.id ASC, i.due_date ASC";
+
+		return $this->db->query($sql, array($daysAfterDue))->result_array();
+	}
+
+	/**
 	 * Get email template by key
 	 *
 	 * @param string $templateKey Template key

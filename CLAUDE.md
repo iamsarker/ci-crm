@@ -386,6 +386,20 @@ Suspends hosting accounts whose invoice is overdue. Runs as part of `/cronjobs/r
 
 **Idempotency:** once `status = 3`, the candidate query (which requires `status = 1`) skips the service on subsequent runs.
 
+## SaaS Subscription Plans & Self-Hosted Licensing
+
+WHMAZ itself is sold as a **self-hosted SaaS** in three tiers (Basic / Pro / Max). The marketing site (`whmaz.com/pricing.php`) only renders the pricing table; **everything else — payment, subscription, suspension, termination, upgrade, software delivery — runs in ci-crm.**
+
+Key facts to know at a glance:
+
+- "account" = `companies.id`; a "subscription" = an `order_licenses` row (`plan_id` → `plans`), its own product line separate from `order_services` (hosting) and `order_domains` (domains).
+- Self-hosted ⇒ suspension/termination are **soft** (status flip); enforced when the install phones home to `license/verify`.
+- Tables: `plans`, `plan_features`, `order_licenses`, `software_releases`. `invoice_items.item_type`: 1=domain, 2=service, **3=license**.
+- Single source of truth for pricing/feature keys: `src/config/plans.php`. Entitlement gating: `entitlement_can()` / `entitlement_value()` (autoloaded helper) backed by `src/libraries/Entitlement.php`.
+- One ZIP serves all 3 plans (plan-agnostic); differences enforced at runtime via the license feature map.
+
+**Full documentation:** `docs/SAAS_LICENSING.md`
+
 ### Admin Order Management
 
 **Order Management Page:**
@@ -710,7 +724,9 @@ Settings
 ├── Domain Pricing
 ├── [divider]
 ├── Email Template
-└── Dynamic Pages
+├── Dynamic Pages
+├── [divider]
+└── Software Releases
 ```
 
 **Billing** dropdown contains:
