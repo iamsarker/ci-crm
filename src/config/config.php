@@ -495,6 +495,7 @@ $config['csrf_exclude_uris'] = array(
 	'cart/addToCartAjax/.*',
 	'cart/addDomainToCart',
 	'cart/addHostingToCart',
+	'cart/addSoftwareToCart',
 	'cart/linkDomainToHosting',
 	'cart/linkHostingToDomain',
 	'cart/getHostingPackages',

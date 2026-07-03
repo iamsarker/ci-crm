@@ -13,6 +13,19 @@ class Cart extends WHMAZ_Controller
 		$this->load->model('Appsetting_model');
 		$this->load->model('PaymentGateway_model');
 		$this->load->model('Promocode_model');
+		$this->load->model('Orderlicense_model');
+		$this->load->model('Plan_model');
+	}
+
+	/**
+	 * Customer software catalog — browse plans like hosting, add to cart.
+	 */
+	public function software()
+	{
+		$data['products']      = $this->Plan_model->getCatalogForCustomer(getCurrencyId());
+		$data['currency_code'] = getCurrencyCode();
+		$data['cart_count']    = getCartCount();
+		$this->load->view('cart_software', $data);
 	}
 
 	public function view()
@@ -354,6 +367,18 @@ class Cart extends WHMAZ_Controller
 			}
 
 			$refId = $this->Order_model->saveOrderDomain($item);
+
+		} elseif ($row['item_type'] == 3) {
+			// Software license item -> order_licenses (activated on payment).
+			// The base $item fields all map cleanly onto order_licenses columns.
+			$item['plan_id'] = !empty($row['product_service_id']) ? (int) $row['product_service_id'] : 0;
+			$item['billing_cycle_id'] = $row['billing_cycle_id'];
+			$item['currency_id'] = $row['currency_id'];
+			$item['currency_code'] = $row['currency_code'];
+			$item['status'] = 0; // 0=pending until paid
+			$item['is_synced'] = 0; // activateLicense() sets 1 on payment
+
+			$refId = $this->Orderlicense_model->saveLicense($item);
 
 		} else {
 			// Hosting/Service item
@@ -908,6 +933,62 @@ class Cart extends WHMAZ_Controller
 			));
 		} else {
 			echo json_encode(buildFailedResponse("Failed to add hosting to cart"));
+		}
+	}
+
+	/**
+	 * Add a software plan/product to the cart (item_type=3, standalone item).
+	 * POST: software_pricing_id
+	 */
+	public function addSoftwareToCart()
+	{
+		$this->processRestCall();
+		$postData = $this->input->post();
+
+		$pricingId = !empty($postData['software_pricing_id']) ? intval($postData['software_pricing_id']) : 0;
+		if ($pricingId <= 0) {
+			echo json_encode(buildFailedResponse("Invalid software plan selected"));
+			return;
+		}
+
+		$itemPrice = $this->Cart_model->getCartSoftwarePrice($pricingId);
+		if (empty($itemPrice)) {
+			echo json_encode(buildFailedResponse("Software plan not found"));
+			return;
+		}
+
+		$amount = (float) $itemPrice['item_price'];
+
+		$cartArr = array(
+			'customer_session_id'        => getCustomerSessionId(),
+			'user_id'                    => getCustomerId(),
+			'parent_cart_id'             => null, // standalone parent
+			'item_type'                  => 3, // license/software
+			'product_service_id'         => !empty($itemPrice['product_id']) ? $itemPrice['product_id'] : 0, // plan_id
+			'product_service_pricing_id' => $pricingId, // software_pricing.id
+			'note'                       => !empty($itemPrice['product_name']) ? $itemPrice['product_name'] : 'Software',
+			'hosting_domain'             => null,
+			'hosting_domain_type'        => 0,
+			'domain_action'              => null,
+			'sub_total'                  => $amount,
+			'billing_cycle_id'           => $itemPrice['billing_cycle_id'],
+			'billing_cycle'              => $itemPrice['cycle_name'],
+			'currency_id'                => $itemPrice['currency_id'],
+			'currency_code'              => getCurrencyCode(),
+			'tax'                        => 0,
+			'vat'                        => 0,
+			'quantity'                   => 1,
+			'total'                      => $amount,
+			'inserted_on'                => getDateTime(),
+			'inserted_by'                => getCustomerId(),
+		);
+
+		$cartId = $this->Cart_model->saveCart($cartArr);
+
+		if ($cartId) {
+			echo json_encode(buildSuccessResponse(array('cart_id' => $cartId), "Software added to cart."));
+		} else {
+			echo json_encode(buildFailedResponse("Failed to add software to cart"));
 		}
 	}
 

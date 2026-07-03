@@ -42,142 +42,14 @@ class Orderlicense_model extends CI_Model {
 	// ─── Checkout ──────────────────────────────────────────────────────────
 
 	/**
-	 * Create a new license subscription (dedicated checkout).
-	 *
-	 * Expected $params:
-	 *   company_id, user_id, plan_key, billing_cycle ('monthly'|'annual'),
-	 *   payment_gateway_id, currency_id (optional), currency_code (optional),
-	 *   instructions (optional)
-	 *
-	 * @return array {success, message, order_id, license_id, invoice_id,
-	 *                invoice_uuid, invoice_no, total}
+	 * @deprecated Software plans are now purchased through the cart like hosting
+	 * (Cart::addSoftwareToCart -> Cart::checkoutSubmit, item_type=3). The dedicated
+	 * checkout is retired; license order rows are created by Cart::_processCartItem
+	 * via saveLicense(). Kept as a guard so any stale caller fails cleanly.
 	 */
 	function createSubscription($params)
 	{
-		$companyId = isset($params['company_id']) ? (int) $params['company_id'] : 0;
-		$userId    = isset($params['user_id']) ? (int) $params['user_id'] : 0;
-		$planKey   = isset($params['plan_key']) ? $params['plan_key'] : '';
-		$cycle     = isset($params['billing_cycle']) ? $params['billing_cycle'] : 'monthly';
-
-		if ($companyId <= 0) {
-			return $this->_fail('Invalid company.');
-		}
-
-		$plan = $this->Plan_model->get_by_key($planKey);
-		if (empty($plan) || empty($plan['is_active'])) {
-			return $this->_fail('Selected plan is not available.');
-		}
-
-		$cycleRow = $this->_billingCycle($cycle);
-		if (empty($cycleRow)) {
-			return $this->_fail('Invalid billing cycle.');
-		}
-		$cycleDays = (int) $cycleRow['cycle_days'];
-
-		$price       = $this->_priceFor($plan, $cycle);
-		$currencyId  = isset($params['currency_id']) ? (int) $params['currency_id'] : 0;
-		$currencyCode = isset($params['currency_code']) ? $params['currency_code'] : $plan['currency'];
-
-		// ── order ──
-		$order = array(
-			'order_uuid'         => gen_uuid(),
-			'order_no'           => $this->Order_model->generateNumber('ORDER'),
-			'company_id'         => $companyId,
-			'currency_id'        => $currencyId,
-			'currency_code'      => $currencyCode,
-			'order_date'         => getDateAddDay(0),
-			'amount'             => $price,
-			'vat_amount'         => 0,
-			'tax_amount'         => 0,
-			'total_amount'       => $price,
-			'payment_gateway_id' => isset($params['payment_gateway_id']) ? (int) $params['payment_gateway_id'] : 0,
-			'remarks'            => 'WHMAZ ' . $plan['name'] . ' plan (' . $cycle . ')',
-			'instructions'       => isset($params['instructions']) ? $params['instructions'] : '',
-			'inserted_on'        => getDateTime(),
-			'inserted_by'        => $userId,
-		);
-		$orderId = $this->Order_model->saveOrder($order);
-		if ($orderId <= 0) {
-			return $this->_fail('Could not create order.');
-		}
-
-		// ── invoice ──
-		$invoiceUuid = gen_uuid();
-		$invoiceNo   = $this->Order_model->generateNumber('INVOICE');
-		$invoice = array(
-			'invoice_uuid' => $invoiceUuid,
-			'company_id'   => $companyId,
-			'order_id'     => $orderId,
-			'currency_id'  => $currencyId,
-			'currency_code'=> $currencyCode,
-			'invoice_no'   => $invoiceNo,
-			'sub_total'    => $price,
-			'tax'          => 0,
-			'vat'          => 0,
-			'discount'     => 0,
-			'total'        => $price,
-			'order_date'   => getDateAddDay(0),
-			'due_date'     => getDateAddDay(0),
-			'status'       => 1,
-			'pay_status'   => 'DUE',
-			'inserted_on'  => getDateTime(),
-			'inserted_by'  => $userId,
-		);
-		$invoiceId = $this->Order_model->saveInvoice($invoice);
-
-		// ── license (pending until paid) ──
-		$license = array(
-			'order_id'          => $orderId,
-			'company_id'        => $companyId,
-			'plan_id'           => (int) $plan['id'],
-			'billing_cycle_id'  => (int) $cycleRow['id'],
-			'currency_id'       => $currencyId,
-			'currency_code'     => $currencyCode,
-			'first_pay_amount'  => $price,
-			'recurring_amount'  => $price,
-			'auto_renew'        => 1,
-			'reg_date'          => getDateAddDay(0),
-			'exp_date'          => getDateAddDay($cycleDays),
-			'due_date'          => getDateAddDay(0),
-			'next_renewal_date' => getDateAddDay($cycleDays),
-			'is_synced'         => 0,
-			'status'            => self::STATUS_PENDING,
-			'inserted_on'       => getDateTime(),
-			'inserted_by'       => $userId,
-		);
-		$licenseId = $this->saveLicense($license);
-
-		// ── invoice item (item_type=3 -> ref_id = order_licenses.id) ──
-		$this->Order_model->saveInvoiceItem(array(
-			'invoice_id'           => $invoiceId,
-			'item'                 => 'WHMAZ ' . $plan['name'] . ' Plan',
-			'item_desc'            => 'WHMAZ ' . $plan['name'] . ' plan - ' . $cycleRow['cycle_name'],
-			'item_type'            => self::ITEM_TYPE_LICENSE,
-			'ref_id'               => $licenseId,
-			'billing_cycle_id'     => (int) $cycleRow['id'],
-			'quantity'             => 1,
-			'unit_price'           => $price,
-			'discount'             => 0,
-			'sub_total'            => $price,
-			'tax'                  => 0,
-			'vat'                  => 0,
-			'total'                => $price,
-			'billing_period_start' => getDateAddDay(0),
-			'billing_period_end'   => $cycleDays > 0 ? getDateAddDay($cycleDays) : null,
-			'inserted_on'          => getDateTime(),
-			'inserted_by'          => $userId,
-		));
-
-		return array(
-			'success'      => true,
-			'message'      => 'Subscription created.',
-			'order_id'     => $orderId,
-			'license_id'   => $licenseId,
-			'invoice_id'   => $invoiceId,
-			'invoice_uuid' => $invoiceUuid,
-			'invoice_no'   => $invoiceNo,
-			'total'        => $price,
-		);
+		return $this->_fail('Software plans are now purchased via the cart.');
 	}
 
 	// ─── Upgrade / downgrade ────────────────────────────────────────────────
@@ -224,10 +96,15 @@ class Orderlicense_model extends CI_Model {
 			$cycleId = (int) $license['billing_cycle_id'];
 		}
 
+		// New recurring amount from software_pricing (product x license currency x
+		// cycle). Fall back to the current amount if that combo isn't priced.
+		$priceRow  = $this->Plan_model->getPrice((int) $plan['id'], (int) $license['currency_id'], $cycleId);
+		$recurring = !empty($priceRow) ? (float) $priceRow['recurring_amount'] : (float) $license['recurring_amount'];
+
 		$update = array(
 			'plan_id'          => (int) $plan['id'],
 			'billing_cycle_id' => $cycleId,
-			'recurring_amount' => $this->_priceFor($plan, $cycle),
+			'recurring_amount' => $recurring,
 			'remarks'          => 'Plan changed ' . ($oldPlanKey ?: '?') . ' -> ' . $plan['plan_key'],
 			'updated_by'       => (int) $userId,
 		);
@@ -464,13 +341,6 @@ class Orderlicense_model extends CI_Model {
 	}
 
 	// ─── internals ──────────────────────────────────────────────────────────
-
-	private function _priceFor($plan, $cycle)
-	{
-		return ($cycle === 'annual')
-			? (float) $plan['price_annual']
-			: (float) $plan['price_monthly'];
-	}
 
 	/** Map 'monthly'|'annual' to a billing_cycle row. */
 	private function _billingCycle($cycle)

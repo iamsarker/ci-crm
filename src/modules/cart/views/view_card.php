@@ -85,6 +85,8 @@
                                                 <?php if (!empty($dp['domain_action'])): ?>
                                                 <br><small class="text-muted"><?= ucfirst($dp['domain_action']) ?></small>
                                                 <?php endif; ?>
+                                            <?php elseif ($dp['item_type'] == 3): ?>
+                                                <span class="badge badge-type badge-software"><i class="fa fa-cube mg-r-5"></i>Software</span>
                                             <?php else: ?>
                                                 <span class="badge badge-type badge-hosting"><i class="fa fa-server mg-r-5"></i>Hosting</span>
                                             <?php endif; ?>

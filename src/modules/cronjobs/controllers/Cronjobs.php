@@ -288,6 +288,36 @@ class Cronjobs extends WHMAZ_Controller
 			}
 		}
 
+		// ========== PROCESS EXPIRING SOFTWARE LICENSES ==========
+		$result['licenses_processed'] = 0;
+		$expiringLicenses = $this->Cronjob_model->getExpiringLicenses(self::RENEWAL_DAYS_BEFORE);
+
+		foreach ($expiringLicenses as $license) {
+			$result['licenses_processed']++;
+
+			$invoiceResult = $this->Cronjob_model->createLicenseRenewalInvoice($license);
+
+			if ($invoiceResult['success']) {
+				$result['invoices_created']++;
+
+				$emailSent = $this->sendRenewalInvoiceEmail(
+					$license,
+					$invoiceResult['invoice'],
+					'license',
+					$appSettings
+				);
+
+				if ($emailSent) {
+					$result['emails_sent']++;
+				}
+
+				log_message('info', "Renewal invoice #{$invoiceResult['invoice']['invoice_no']} created for license #{$license['id']} ({$license['product_name']})");
+			} else {
+				$result['errors'][] = "License #{$license['id']}: {$invoiceResult['error']}";
+				log_message('error', "Failed to create renewal invoice for license #{$license['id']}: {$invoiceResult['error']}");
+			}
+		}
+
 		// Log cronjob execution (optional - if table exists)
 		try {
 			$this->Cronjob_model->logCronjobExecution(
@@ -341,6 +371,8 @@ class Cronjobs extends WHMAZ_Controller
 				if (!empty($item['hosting_domain'])) {
 					$itemDescription .= " ({$item['hosting_domain']})";
 				}
+			} elseif ($type === 'license') {
+				$itemDescription = ($item['product_name'] ?? 'Software') . ' (Software License)';
 			} else {
 				$itemDescription = "Domain: " . ($item['domain'] ?? '');
 			}

@@ -386,17 +386,22 @@ Suspends hosting accounts whose invoice is overdue. Runs as part of `/cronjobs/r
 
 **Idempotency:** once `status = 3`, the candidate query (which requires `status = 1`) skips the service on subsequent runs.
 
-## SaaS Subscription Plans & Self-Hosted Licensing
+## Software Selling & Self-Hosted Licensing
 
-WHMAZ itself is sold as a **self-hosted SaaS** in three tiers (Basic / Pro / Max). The marketing site (`whmaz.com/pricing.php`) only renders the pricing table; **everything else — payment, subscription, suspension, termination, upgrade, software delivery — runs in ci-crm.**
+ci-crm sells **software products** (the WHMAZ app, add-on modules, or any downloadable software). Admin creates products with per-currency × per-billing-cycle pricing; customers **browse and buy them through the cart** like hosting/domains. Delivery is a downloadable ZIP; the installed software **phones home** to enforce its license.
+
+> **Note:** originally three fixed tiers (Basic/Pro/Max) via a dedicated subscription checkout — now a **generic catalog purchased through the cart**. The physical table is still `plans` (kept to avoid breaking the `order_licenses` FK / `Plan_model` / entitlements), but a row is a **software product**.
 
 Key facts to know at a glance:
 
-- "account" = `companies.id`; a "subscription" = an `order_licenses` row (`plan_id` → `plans`), its own product line separate from `order_services` (hosting) and `order_domains` (domains).
+- "account" = `companies.id`; a customer's purchase = an `order_licenses` row (`plan_id` → `plans`), its own line separate from `order_services` (hosting) and `order_domains` (domains).
 - Self-hosted ⇒ suspension/termination are **soft** (status flip); enforced when the install phones home to `license/verify`.
-- Tables: `plans`, `plan_features`, `order_licenses`, `software_releases`. `invoice_items.item_type`: 1=domain, 2=service, **3=license**.
-- Single source of truth for pricing/feature keys: `src/config/plans.php`. Entitlement gating: `entitlement_can()` / `entitlement_value()` (autoloaded helper) backed by `src/libraries/Entitlement.php`.
-- One ZIP serves all 3 plans (plan-agnostic); differences enforced at runtime via the license feature map.
+- Tables: `plans` (product catalog), **`software_pricing`** (currency × cycle), `plan_features`, `order_licenses`, `software_releases` (`product_id`-scoped). `invoice_items.item_type` / `add_to_carts.item_type`: 1=domain, 2=service, **3=license/software**.
+- Admin: **Settings → Software Products** (`whmazadmin/softwareproduct`) — CRUD + pricing grid + features. Releases: **Settings → Software Releases** (`whmazadmin/software`).
+- Customer: **`cart/software`** browse → **`cart/addSoftwareToCart`** (item_type=3) → shared `cart/checkoutSubmit` → pay → `provisionLicense()` → `activateLicense()` issues the key. "Software" dropdown in the customer header.
+- Entitlement gating: `entitlement_can()` / `entitlement_value()` (autoloaded) backed by `src/libraries/Entitlement.php`; feature keys are admin-defined per product (`plan_features`), universal flags in `src/config/plans.php`.
+- License **renewal** and **overdue-suspension** run inside `/cronjobs/run` (`getExpiringLicenses`/`createLicenseRenewalInvoice`; `getLicensesOverdueForSuspension` + `suspendOverdueLicenses`).
+- Schema: fresh = `plans_subscription_schema.sql` + `software_releases_schema.sql`; existing-install upgrade = `software_catalog_migration.sql`.
 
 **Full documentation:** `docs/SAAS_LICENSING.md`
 

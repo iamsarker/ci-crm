@@ -121,6 +121,25 @@ class Cart_model extends CI_Model
 		return !empty($data) ? $data[0] : array();
 	}
 
+	/**
+	 * Software plan pricing for the cart (item_type=3). Mirrors getCartServicePrice.
+	 * item_price = first_pay_amount (what the first invoice bills).
+	 */
+	function getCartSoftwarePrice($id)
+	{
+		$id = (int) $id;
+
+		$sql = "SELECT sp.first_pay_amount AS item_price, sp.first_pay_amount, sp.recurring_amount,
+					sp.currency_id, sp.product_id, p.name AS product_name,
+					bc.id AS billing_cycle_id, bc.cycle_name
+				FROM software_pricing sp
+				JOIN plans p ON sp.product_id = p.id
+				JOIN billing_cycle bc ON sp.billing_cycle_id = bc.id
+				WHERE sp.id=? AND sp.status=1 AND p.is_active=1";
+		$data = $this->db->query($sql, array($id))->result_array();
+		return !empty($data) ? $data[0] : array();
+	}
+
 	function getCartDomainPrice($id)
 	{
 		// SQL Injection Fix: Cast to integer and use parameterized query

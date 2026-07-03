@@ -59,6 +59,47 @@ class Cronjob_model extends CI_Model
 	}
 
 	/**
+	 * Get software licenses expiring within specified days that need renewal
+	 * invoices. Excludes perpetual (cycle_days=0), already-invoiced renewals,
+	 * and non-active/non-auto-renew licenses.
+	 *
+	 * @param int $daysBeforeExpiry
+	 * @return array List of expiring licenses (item_type=3)
+	 */
+	function getExpiringLicenses($daysBeforeExpiry = 15)
+	{
+		$targetDate = date('Y-m-d', strtotime("+{$daysBeforeExpiry} days"));
+		$today = date('Y-m-d');
+
+		$sql = "SELECT ol.*,
+					c.name as company_name, c.email as company_email,
+					c.first_name, c.last_name,
+					p.name as product_name,
+					bc.cycle_key, bc.cycle_name, bc.cycle_days
+				FROM order_licenses ol
+				JOIN companies c ON ol.company_id = c.id
+				JOIN plans p ON ol.plan_id = p.id
+				JOIN billing_cycle bc ON ol.billing_cycle_id = bc.id
+				WHERE ol.status = 1
+				AND ol.next_renewal_date <= ?
+				AND ol.next_renewal_date >= ?
+				AND bc.cycle_days > 0
+				AND ol.auto_renew = 1
+				AND ol.deleted_on IS NULL
+				AND NOT EXISTS (
+					SELECT 1 FROM invoice_items ii
+					JOIN invoices i ON ii.invoice_id = i.id
+					WHERE ii.ref_id = ol.id
+					AND ii.item_type = 3
+					AND i.status = 1
+					AND ii.billing_period_start = ol.next_renewal_date
+				)
+				ORDER BY ol.next_renewal_date ASC";
+
+		return $this->db->query($sql, array($targetDate, $today))->result_array();
+	}
+
+	/**
 	 * Get domains expiring within specified days that need renewal invoices
 	 * Excludes: already invoiced renewals, inactive domains
 	 *
@@ -354,6 +395,94 @@ class Cronjob_model extends CI_Model
 		} catch (Exception $e) {
 			$this->db->trans_rollback();
 			log_message('error', 'createServiceRenewalInvoice error: ' . $e->getMessage());
+			return array('success' => false, 'error' => $e->getMessage());
+		}
+	}
+
+	/**
+	 * Create renewal invoice for a software license (item_type=3). When paid,
+	 * provisioning detects it as a renewal and extends the license via
+	 * Orderlicense_model::activateLicense(isRenewal=true).
+	 *
+	 * @param array $license Data from getExpiringLicenses()
+	 * @return array Invoice data with success status
+	 */
+	function createLicenseRenewalInvoice($license)
+	{
+		$this->db->trans_start();
+
+		try {
+			$billingPeriodStart = $license['next_renewal_date'];
+			$billingPeriodEnd = date('Y-m-d', strtotime($billingPeriodStart . " +{$license['cycle_days']} days"));
+			$renewalAmount = floatval($license['recurring_amount']);
+
+			$invoiceDueDate = date('Y-m-d', strtotime($billingPeriodStart . " +7 days"));
+
+			$invoice = array(
+				'invoice_uuid' => gen_uuid(),
+				'company_id' => $license['company_id'],
+				'order_id' => $license['order_id'],
+				'currency_id' => $license['currency_id'],
+				'currency_code' => $license['currency_code'],
+				'invoice_no' => $this->generateNumber('INVOICE'),
+				'sub_total' => $renewalAmount,
+				'tax' => 0.00,
+				'vat' => 0.00,
+				'total' => $renewalAmount,
+				'order_date' => date('Y-m-d'),
+				'due_date' => $invoiceDueDate,
+				'status' => 1,
+				'pay_status' => 'DUE',
+				'remarks' => 'Auto-generated license renewal invoice',
+				'inserted_on' => date('Y-m-d H:i:s'),
+				'inserted_by' => 0
+			);
+
+			$this->db->insert('invoices', $invoice);
+			$invoiceId = $this->db->insert_id();
+
+			$itemDesc = "Renewal - {$license['product_name']}";
+			$itemDesc .= " - {$license['cycle_name']}";
+			$itemDesc .= " ({$billingPeriodStart} to {$billingPeriodEnd})";
+
+			$invoiceItem = array(
+				'invoice_id' => $invoiceId,
+				'item' => 'Software Renewal',
+				'item_desc' => $itemDesc,
+				'item_type' => 3, // 3 = license/software
+				'ref_id' => $license['id'],
+				'billing_cycle_id' => $license['billing_cycle_id'],
+				'quantity' => 1,
+				'unit_price' => $renewalAmount,
+				'discount' => 0.00,
+				'sub_total' => $renewalAmount,
+				'tax' => 0.00,
+				'vat' => 0.00,
+				'total' => $renewalAmount,
+				'billing_period_start' => $billingPeriodStart,
+				'billing_period_end' => $billingPeriodEnd,
+				'inserted_on' => date('Y-m-d H:i:s'),
+				'inserted_by' => 0
+			);
+
+			$this->db->insert('invoice_items', $invoiceItem);
+
+			$this->db->trans_complete();
+
+			if ($this->db->trans_status() === FALSE) {
+				return array('success' => false, 'error' => 'Database transaction failed');
+			}
+
+			$invoice['id'] = $invoiceId;
+			return array(
+				'success' => true,
+				'invoice' => $invoice,
+				'license' => $license
+			);
+
+		} catch (Exception $e) {
+			$this->db->trans_rollback();
+			log_message('error', 'createLicenseRenewalInvoice error: ' . $e->getMessage());
 			return array('success' => false, 'error' => $e->getMessage());
 		}
 	}

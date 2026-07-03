@@ -139,6 +139,65 @@ class Plan_model extends CI_Model {
 		return $plan;
 	}
 
+	/**
+	 * Customer-facing catalog: active products that have at least one price in the
+	 * given currency. Each product carries a 'prices' array (one per billing cycle
+	 * offered) and its merged 'features' map. Ordered by sort_order.
+	 *
+	 * @param  int $currencyId
+	 * @return array[]
+	 */
+	function getCatalogForCustomer($currencyId)
+	{
+		$currencyId = (int) $currencyId;
+
+		$plans = $this->db->where('is_active', 1)
+			->order_by('sort_order', 'ASC')->order_by('id', 'ASC')
+			->get($this->table)->result_array();
+		if (empty($plans)) {
+			return array();
+		}
+		$ids = array_map('intval', array_column($plans, 'id'));
+
+		// Prices for this currency, one row per (product, cycle).
+		$priceRows = $this->db
+			->select('sp.id AS pricing_id, sp.product_id, sp.first_pay_amount, sp.recurring_amount,
+					  sp.billing_cycle_id, bc.cycle_name, bc.cycle_key, bc.sl')
+			->from('software_pricing sp')
+			->join('billing_cycle bc', 'sp.billing_cycle_id = bc.id')
+			->where('sp.status', 1)
+			->where('sp.currency_id', $currencyId)
+			->where_in('sp.product_id', $ids)
+			->order_by('bc.sl', 'ASC')
+			->get()->result_array();
+
+		$pricesByProduct = array();
+		foreach ($priceRows as $r) {
+			$pricesByProduct[(int) $r['product_id']][] = $r;
+		}
+
+		// Features for all products in one query.
+		$featureRows = $this->db->where_in('plan_id', $ids)
+			->get($this->features_table)->result_array();
+		$featByPlan = array();
+		foreach ($featureRows as $fr) {
+			$featByPlan[(int) $fr['plan_id']][$fr['feature_key']] = $fr['feature_value'];
+		}
+
+		foreach ($plans as &$p) {
+			$p = $this->_castPlan($p);
+			$p['prices']   = isset($pricesByProduct[$p['id']]) ? $pricesByProduct[$p['id']] : array();
+			$stored        = isset($featByPlan[$p['id']]) ? $featByPlan[$p['id']] : array();
+			$p['features'] = $this->_buildFeatureMap($stored);
+		}
+		unset($p);
+
+		// Only surface products that are actually purchasable in this currency.
+		return array_values(array_filter($plans, function ($p) {
+			return !empty($p['prices']);
+		}));
+	}
+
 	// ─── admin: product catalog CRUD ─────────────────────────────────────
 	// A `plans` row is a software product. Pricing lives in `software_pricing`
 	// (per currency x billing cycle), features in `plan_features`.
@@ -231,6 +290,24 @@ class Plan_model extends CI_Model {
 	{
 		$sql = "SELECT id, code, symbol FROM currencies WHERE status=1 ORDER BY id";
 		return $this->db->query($sql)->result_array();
+	}
+
+	/**
+	 * One software_pricing row for a product/currency/cycle, or empty array.
+	 * @return array {id, first_pay_amount, recurring_amount, ...}
+	 */
+	function getPrice($productId, $currencyId, $billingCycleId)
+	{
+		$productId = (int) $productId;
+		if ($productId <= 0) {
+			return array();
+		}
+		return $this->db->get_where('software_pricing', array(
+			'product_id'       => $productId,
+			'currency_id'      => (int) $currencyId,
+			'billing_cycle_id' => (int) $billingCycleId,
+			'status'           => 1,
+		))->row_array() ?: array();
 	}
 
 	/** Pricing matrix for a product: [currency_id][billing_cycle_id] => recurring_amount. */
