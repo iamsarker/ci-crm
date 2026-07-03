@@ -164,4 +164,5 @@
 })();
 </script>
 
+<?php $this->load->view('templates/customer/footer_script'); ?>
 <?php $this->load->view('templates/customer/footer'); ?>
