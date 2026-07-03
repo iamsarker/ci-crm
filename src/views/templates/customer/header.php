@@ -239,6 +239,13 @@
                 </ul>
               </li>
 
+              <!-- Software -->
+              <li class="nav-item">
+                <a href="<?=base_url()?>cart/software" class="nav-link">
+                  <i class="fas fa-cube me-1"></i> Software
+                </a>
+              </li>
+
               <!-- Announcement -->
               <li class="nav-item">
                 <a href="<?=base_url()?>supports/announcements" class="nav-link">
