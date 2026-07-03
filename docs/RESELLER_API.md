@@ -72,6 +72,29 @@ Files (mirror the Promocode admin pattern):
 - `src/controllers/whmazadmin/Apikey.php`, `src/models/Apikey_model.php`,
   `src/views/whmazadmin/apikey_{list,manage}.php`
 
+### Client-portal self-service (reseller customers)
+Reseller customers manage their **own** keys from the client portal — profile
+dropdown → **API Keys** (`clientarea/apikeys`). The menu item and page appear only
+when `isReseller()` (the logged-in company has `is_reseller = 1`).
+
+- **List / regenerate / revoke / re-activate / delete** their own keys (every op is
+  scoped server-side to `getCompanyId()` — a reseller can never touch another
+  company's keys).
+- **Create** is deliberately limited: **name + IP allowlist + expiry only — no scope
+  picker.** Self-created keys are granted the **full reseller scope set** and the
+  standard 5 req/sec cap. Secret shown once.
+- **Creation is hidden/blocked when `reseller_profiles.allow_api = 0`** — the form is
+  replaced by a "contact support" notice and `apikey_create()` rejects the POST;
+  existing keys stay manageable. Matches the request-time `allow_api` enforcement.
+
+Files: methods on `src/modules/clientarea/controllers/Clientarea.php`
+(`apikeys` / `apikey_create` / `apikey_regenerate` / `apikey_revoke` /
+`apikey_activate` / `apikey_delete`, guarded by `_requireReseller()`);
+view `src/modules/clientarea/views/clientarea_apikeys.php`; company-scoped
+methods on `Apikey_model` (`listByCompany` / `getForCompany` / `getCompanyStats` /
+`createForCompany` / `regenerateSecretForCompany` / `setStatusForCompany` /
+`isApiAllowed`); `isReseller()` helper in `src/helpers/whmaz_helper.php`.
+
 ---
 
 ## 3. REST API
@@ -240,6 +263,8 @@ curl -s https://yourdomain.com/api/v1/customers/create \
 | API cart/checkout (reuse storefront) | `src/modules/api/controllers/{ApiCart,ApiCheckout}.php` → `Modules::run('cart/...')`; helpers `API_Controller::actAsCustomer()/delegate()` |
 | Route map (URL → exact class case) | `src/config/routes.php` (`api/v1/<resource>` → `api/Api<Resource>/…`) |
 | Reseller model / admin | `src/models/Reseller_model.php`, `src/controllers/whmazadmin/Reseller.php` |
+| Admin API-key CRUD | `src/controllers/whmazadmin/Apikey.php`, `src/views/whmazadmin/apikey_{list,manage}.php` |
+| Client-portal self-service | `src/modules/clientarea/controllers/Clientarea.php` (`apikeys`/`apikey_*`), `src/modules/clientarea/views/clientarea_apikeys.php`, menu in `src/views/templates/customer/header.php`, `isReseller()` in `src/helpers/whmaz_helper.php` |
 | Public unsuspend wrapper (used by hosting:write) | `src/models/Provisioning_model.php` → `unsuspendService()` |
 
 The API is a thin, authenticated, reseller-scoped layer over existing models
