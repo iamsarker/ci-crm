@@ -1494,4 +1494,91 @@ class Clientarea extends WHMAZ_Controller {
 		log_message('error', 'Namecheap EPP: EPPCode not found in response: ' . substr($response, 0, 500));
 		return array('success' => false, 'msg' => 'EPP code not found in Namecheap response. Please ensure Transfer Lock is disabled first.');
 	}
+
+	// ─── Reseller API Keys (self-service) ────────────────────
+	// Only reseller companies (companies.is_reseller=1) may manage keys. Every
+	// operation is scoped to the caller's own company; resellers cannot pick
+	// scopes — keys are granted the full reseller scope set.
+
+	/** Guard: reseller-only. Redirects non-resellers away. Loads Apikey_model. */
+	private function _requireReseller() {
+		if (!isReseller()) {
+			$this->session->set_flashdata('alert_error', 'API access is available to reseller accounts only.');
+			redirect('/clientarea', 'refresh');
+			exit;
+		}
+		$this->load->model('Apikey_model');
+	}
+
+	/** GET: list the reseller's API keys + create form. */
+	public function apikeys() {
+		$this->_requireReseller();
+		$data['keys']      = $this->Apikey_model->listByCompany(getCompanyId());
+		$data['stats']     = $this->Apikey_model->getCompanyStats(getCompanyId());
+		$data['allow_api'] = $this->Apikey_model->isApiAllowed(getCompanyId());
+		$this->load->view('clientarea_apikeys', $data);
+	}
+
+	/** POST: create a new key (full reseller scope; no scope picker). */
+	public function apikey_create() {
+		$this->_requireReseller();
+		if (!$this->input->post()) { redirect('/clientarea/apikeys', 'refresh'); return; }
+
+		// Creation is disabled when the admin has turned off API access.
+		if (!$this->Apikey_model->isApiAllowed(getCompanyId())) {
+			$this->session->set_flashdata('alert_error', 'API access is disabled for your account. Please contact support.');
+			redirect('/clientarea/apikeys', 'refresh');
+			return;
+		}
+
+		$name = trim($this->input->post('name'));
+		if ($name === '') {
+			$this->session->set_flashdata('alert_error', 'Please enter a name for the key.');
+			redirect('/clientarea/apikeys', 'refresh');
+			return;
+		}
+		$ipWhitelist = trim($this->input->post('ip_whitelist'));
+		$expiresAt   = $this->input->post('expires_at') ?: null;
+
+		$cred = $this->Apikey_model->createForCompany(getCompanyId(), $name, $ipWhitelist, $expiresAt, getCustomerId());
+		if (!empty($cred)) {
+			$this->session->set_flashdata('new_api_credential', array(
+				'key_id' => $cred['key_id'], 'secret' => $cred['secret'], 'name' => $name,
+			));
+			$this->session->set_flashdata('alert_success', 'API key created. Copy the secret now — it is shown only once.');
+		} else {
+			$this->session->set_flashdata('alert_error', 'Failed to create API key. Please try again.');
+		}
+		redirect('/clientarea/apikeys', 'refresh');
+	}
+
+	/** Rotate a key's secret (shown once). */
+	public function apikey_regenerate($encId = '') {
+		$this->_requireReseller();
+		$id  = safe_decode($encId);
+		$key = $this->Apikey_model->getForCompany($id, getCompanyId());
+		if (!empty($key)) {
+			$secret = $this->Apikey_model->regenerateSecretForCompany($id, getCompanyId(), getCustomerId());
+			if ($secret) {
+				$this->session->set_flashdata('new_api_credential', array(
+					'key_id' => $key['key_id'], 'secret' => $secret, 'name' => $key['name'],
+				));
+				$this->session->set_flashdata('alert_success', 'Secret regenerated. Copy it now — it is shown only once.');
+			}
+		} else {
+			$this->session->set_flashdata('alert_error', 'API key not found.');
+		}
+		redirect('/clientarea/apikeys', 'refresh');
+	}
+
+	public function apikey_revoke($encId = '')   { $this->_apikeySetStatus($encId, 2, 'API key revoked.'); }
+	public function apikey_activate($encId = '') { $this->_apikeySetStatus($encId, 1, 'API key re-activated.'); }
+	public function apikey_delete($encId = '')   { $this->_apikeySetStatus($encId, 0, 'API key deleted.'); }
+
+	private function _apikeySetStatus($encId, $status, $msg) {
+		$this->_requireReseller();
+		$ok = $this->Apikey_model->setStatusForCompany(safe_decode($encId), getCompanyId(), $status, getCustomerId());
+		$this->session->set_flashdata($ok ? 'alert_success' : 'alert_error', $ok ? $msg : 'API key not found.');
+		redirect('/clientarea/apikeys', 'refresh');
+	}
 }

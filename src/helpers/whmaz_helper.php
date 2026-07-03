@@ -92,6 +92,27 @@
     	return ( !empty($user['id']) && $user['id']>0 ) ? true : false;
     }
 
+    /**
+     * True if the logged-in customer's company is a reseller (companies.is_reseller=1).
+     * Request-cached so the header/menu can call it cheaply; works for existing
+     * sessions (no re-login needed) since it reads the live companies row.
+     */
+    function isReseller(){
+    	$ci = & get_instance();
+    	$companyId = (int) getCompanyId();
+    	if ($companyId <= 0) return false;
+
+    	static $cache = array();
+    	if (array_key_exists($companyId, $cache)) return $cache[$companyId];
+
+    	$row = $ci->db->query(
+    		"SELECT is_reseller FROM companies WHERE id = ? AND status = 1 LIMIT 1",
+    		array($companyId)
+    	)->row_array();
+    	$cache[$companyId] = (!empty($row) && (int) $row['is_reseller'] === 1);
+    	return $cache[$companyId];
+    }
+
 	function isAdminLoggedIn(){
 		$ci = & get_instance();
 		$admin = $ci->session->userdata("ADMIN");

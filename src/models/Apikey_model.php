@@ -325,4 +325,104 @@ class Apikey_model extends CI_Model {
 				ORDER BY c.name";
 		return $this->db->query($sql)->result_array();
 	}
+
+	// ─── Customer/reseller self-service (company-scoped) ─────
+	// These power the client-portal API Keys page. Every operation is bound to
+	// the caller's own company_id (never a posted id) and audits to their user.
+
+	/**
+	 * Whether a reseller company is allowed to create/use API keys
+	 * (reseller_profiles.allow_api). Mirrors the request-time check in
+	 * authenticate(): needs an active profile row with allow_api = 1.
+	 */
+	function isApiAllowed($companyId) {
+		$row = $this->db->query(
+			"SELECT allow_api FROM reseller_profiles WHERE company_id = ? AND status = 1 LIMIT 1",
+			array(intval($companyId))
+		)->row_array();
+		return (!empty($row) && (int) $row['allow_api'] === 1);
+	}
+
+	/** All of a company's keys (active + revoked, not deleted). */
+	function listByCompany($companyId) {
+		return $this->db->query(
+			"SELECT * FROM {$this->table} WHERE company_id = ? AND status IN (1,2) ORDER BY id DESC",
+			array(intval($companyId))
+		)->result_array();
+	}
+
+	/** Fetch one key only if it belongs to the given company. */
+	function getForCompany($id, $companyId) {
+		$rows = $this->db->query(
+			"SELECT * FROM {$this->table} WHERE id = ? AND company_id = ? AND status IN (1,2) LIMIT 1",
+			array(intval($id), intval($companyId))
+		)->result_array();
+		return !empty($rows) ? $rows[0] : array();
+	}
+
+	function getCompanyStats($companyId) {
+		$row = $this->db->query(
+			"SELECT SUM(CASE WHEN status IN (1,2) THEN 1 ELSE 0 END) AS total,
+			        SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS active,
+			        SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) AS revoked
+			 FROM {$this->table} WHERE company_id = ?",
+			array(intval($companyId))
+		)->row_array();
+		return array(
+			'total'   => !empty($row) ? intval($row['total']) : 0,
+			'active'  => !empty($row) ? intval($row['active']) : 0,
+			'revoked' => !empty($row) ? intval($row['revoked']) : 0,
+		);
+	}
+
+	/**
+	 * Create a key for a company. Resellers do NOT choose scopes — the key is
+	 * granted the full reseller scope set. Returns {id, key_id, secret} (secret
+	 * shown once) or null on failure.
+	 */
+	function createForCompany($companyId, $name, $ipWhitelist, $expiresAt, $userId) {
+		$cred = $this->generateCredentials();
+		$ok = $this->db->insert($this->table, array(
+			'company_id'     => intval($companyId),
+			'name'           => $name,
+			'key_id'         => $cred['key_id'],
+			'secret_hash'    => $cred['secret_hash'],
+			'secret_preview' => $cred['secret_preview'],
+			'scopes'         => json_encode(self::availableScopes()),   // full reseller access
+			'ip_whitelist'   => $ipWhitelist,
+			'rate_limit'     => 0,                                       // 5 req/sec hard cap applies platform-wide
+			'status'         => 1,
+			'expires_at'     => $expiresAt ?: null,
+			'inserted_on'    => getDateTime(),
+			'inserted_by'    => intval($userId),
+		));
+		if (!$ok) return null;
+		return array('id' => $this->db->insert_id(), 'key_id' => $cred['key_id'], 'secret' => $cred['secret']);
+	}
+
+	/** Rotate the secret for a company-owned key. Returns new secret or null. */
+	function regenerateSecretForCompany($id, $companyId, $userId) {
+		if (empty($this->getForCompany($id, $companyId))) return null;
+		$cred = $this->generateCredentials();
+		$this->db->where('id', intval($id))->where('company_id', intval($companyId));
+		$this->db->update($this->table, array(
+			'secret_hash'    => $cred['secret_hash'],
+			'secret_preview' => $cred['secret_preview'],
+			'updated_on'     => getDateTime(),
+			'updated_by'     => intval($userId),
+		));
+		return $cred['secret'];
+	}
+
+	/** Set status (1=active, 2=revoked, 0=deleted) on a company-owned key. */
+	function setStatusForCompany($id, $companyId, $status, $userId) {
+		if (empty($this->getForCompany($id, $companyId))) return false;
+		$this->db->where('id', intval($id))->where('company_id', intval($companyId));
+		$this->db->update($this->table, array(
+			'status'     => intval($status),
+			'updated_on' => getDateTime(),
+			'updated_by' => intval($userId),
+		));
+		return true;
+	}
 }

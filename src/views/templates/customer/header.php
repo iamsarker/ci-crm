@@ -134,12 +134,6 @@
           <div class="collapse navbar-collapse" id="clientNavbar">
             <?php if( isLoggedin() ){?>
             <ul class="navbar-nav me-auto">
-              <!-- Home -->
-              <li class="nav-item">
-                <a href="<?=base_url()?>clientarea" class="nav-link">
-                  <i class="fas fa-home me-1"></i> Home
-                </a>
-              </li>
 
               <!-- Services Dropdown -->
               <li class="nav-item dropdown">
@@ -298,6 +292,9 @@
                   <img src="<?=base_url()?>resources/assets/img/default.jpg" class="rounded-circle mb-2" alt="" class="customer-avatar-md">
                   <h6 class="mb-0"><?=htmlspecialchars($user['first_name'].' '.$user['last_name'])?></h6>
                 </li>
+                <?php if( isReseller() ){ ?>
+                <li><a class="dropdown-item" href="<?=base_url()?>clientarea/apikeys"><i class="fas fa-code me-2"></i>API Keys</a></li>
+                <?php } ?>
                 <li><a class="dropdown-item" href="<?=base_url()?>clientarea/changePassword"><i class="fas fa-key me-2"></i>Change Password</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item text-danger" href="<?=base_url()?>auth/logout"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</a></li>
