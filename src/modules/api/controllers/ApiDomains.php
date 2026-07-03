@@ -35,26 +35,58 @@ class ApiDomains extends API_Controller
 			$this->fail(503, 'No default domain registrar configured.', 'registrar_unavailable');
 		}
 
-		$platform = strtolower($registrar['platform']);
-		if ($platform !== 'namecheap') {
-			// Availability lookup is only implemented for Namecheap today.
-			$this->fail(501, 'Availability check is not supported for the configured registrar (' . $registrar['platform'] . ').', 'not_implemented');
-		}
-
-		$result = namecheap_check_domain($registrar, $domain);
-		if (empty($result['success'])) {
-			$this->fail(502, !empty($result['error']) ? $result['error'] : 'Registrar lookup failed.', 'registrar_error');
-		}
-
 		$parts      = explode('.', $domain);
-		$ext        = '.' . implode('.', array_slice($parts, 1));
+		$sld        = $parts[0];
+		$extension  = count($parts) > 1 ? end($parts) : 'com';   // last label (mirrors storefront)
 		$currencyId = intval($this->param('currency_id')) ?: 1;
-		$price      = $this->_priceFor($this->Cart_model->getDomPricing(), $ext, $currencyId);
+		$price      = $this->_priceFor($this->Cart_model->getDomPricing(), '.' . $extension, $currencyId);
+
+		$platform  = strtolower($registrar['platform']);
+		$available = false;
+		$premium   = false;
+
+		if ($platform === 'namecheap') {
+			$result = namecheap_check_domain($registrar, $domain);
+			if (empty($result['success'])) {
+				$this->fail(502, !empty($result['error']) ? $result['error'] : 'Registrar lookup failed.', 'registrar_error');
+			}
+			$available = !empty($result['available']);
+			$premium   = !empty($result['premium']);
+		} else {
+			// STARGATE / ResellerClub / Resell.biz — httpapi.com-style check.
+			// Uses domain_api_get() (WHMAZ/1.0 User-Agent + 403/429 retry), the
+			// same hardened path as the rest of the registrar integration.
+			if (empty($registrar['domain_check_api'])) {
+				$this->fail(503, 'Domain check API is not configured for the registrar.', 'registrar_unavailable');
+			}
+			$url = $registrar['domain_check_api']
+				. 'auth-userid=' . rawurlencode($registrar['auth_userid'])
+				. '&api-key=' . rawurlencode($registrar['auth_apikey'])
+				. '&domain-name=' . rawurlencode($sld)
+				. '&tlds=' . rawurlencode($extension);
+
+			$resp = domain_api_get($url);
+			if (empty($resp['success']) || !is_array($resp['data']) || empty($resp['data'])) {
+				// A 403/empty here is usually the server IP not being whitelisted
+				// at the registrar (ResellerClub/Resell.biz API → Allowed IPs).
+				$code = !empty($resp['http_code']) ? $resp['http_code'] : 0;
+				$this->fail(502,
+					'No usable response from the domain registrar (HTTP ' . $code . '). '
+					. 'Ensure this server\'s outbound IP is whitelisted in the registrar API settings.',
+					'registrar_error');
+			}
+			foreach ($resp['data'] as $dName => $info) {
+				if (!is_array($info)) continue;
+				$available = isset($info['status']) && $info['status'] === 'available';
+				$premium   = isset($info['classkey']) && stripos($info['classkey'], 'premium') !== false;
+				break;   // single domain queried → first row is ours
+			}
+		}
 
 		$this->ok(array(
 			'domain'         => $domain,
-			'available'      => !empty($result['available']),
-			'premium'        => !empty($result['premium']),
+			'available'      => $available,
+			'premium'        => $premium,
 			'registrar'      => $registrar['platform'],
 			'price'          => !empty($price['price']) ? (float) $price['price'] : null,
 			'dom_pricing_id' => !empty($price['id']) ? intval($price['id']) : 0,  // -> cart/add_domain
@@ -105,7 +137,8 @@ class ApiDomains extends API_Controller
 					. '&api-key=' . $registrar['auth_apikey']
 					. '&keyword=' . rawurlencode($sld)
 					. '&tld-only=' . rawurlencode($extension);
-				$list = $this->curlGetJson($url);
+				$r = domain_api_get($url);   // WHMAZ/1.0 UA + 403/429 retry
+				$list = (!empty($r['success']) && is_array($r['data'])) ? $r['data'] : null;
 				if (is_array($list)) {
 					foreach ($list as $domainName => $info) {
 						if (isset($info['status']) && $info['status'] === 'available') {
