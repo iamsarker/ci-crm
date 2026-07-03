@@ -56,6 +56,9 @@ $config['plan_universal_features'] = array(
     'knowledge_base',
     'multi_currency',
     'payment_gateways',
+    'tax_management',
+    'credit_system',
+    'service_package_management',
 );
 
 /*
@@ -74,4 +77,42 @@ $config['plan_boolean_features'] = array(
     'branding_removal',
     'dedicated_account_manager',
     'sla_guarantee',
+    'domain_registration_transfers',
+    'dns_management',
+    'software_license_selling',
+    'reseller_management',
+    'api_expose_for_third_party',
+);
+
+/*
+ | Human-friendly display labels for feature keys (customer plan cards). Any key
+ | not listed falls back to a humanized form of the key (see feature_label()).
+ | Keeps DNS/API-style acronyms readable instead of "Dns Management".
+ */
+$config['plan_feature_labels'] = array(
+    // Universal
+    'billing_automation'             => 'Automated invoicing',
+    'customer_portal'                => 'Customer self-service portal',
+    'server_provisioning'            => 'Server provisioning (cPanel, Plesk, DirectAdmin)',
+    'domain_management'              => 'Domain management',
+    'support_tickets'                => 'Support ticket system',
+    'knowledge_base'                 => 'Knowledge base',
+    'multi_currency'                 => 'Multi-currency',
+    'payment_gateways'               => 'Multiple payment gateways',
+    'tax_management'                 => 'Tax management',
+    'credit_system'                  => 'Credit system',
+    'service_package_management'     => 'Service & package management',
+    // Differentiated
+    'support_response_hours'         => 'Support response (hours)',
+    'priority_support'               => 'Priority support',
+    'advanced_modules'               => 'Advanced modules',
+    'automatic_updates'              => 'Automatic updates',
+    'branding_removal'               => 'Branding removal',
+    'domain_registration_transfers'  => 'Domain registration & transfers',
+    'dns_management'                 => 'DNS management',
+    'software_license_selling'       => 'Software license selling',
+    'reseller_management'            => 'Reseller management',
+    'api_expose_for_third_party'     => 'Third-party API access',
+    'dedicated_account_manager'      => 'Dedicated account manager',
+    'sla_guarantee'                  => 'SLA guarantee',
 );

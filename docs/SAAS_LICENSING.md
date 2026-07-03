@@ -55,22 +55,26 @@ Config now holds **entitlement logic only** — pricing and the product list are
 | `plan_default_key` | Most-restrictive fallback when a company has no active license |
 | `plan_universal_features` | TRUE for ALL products, **never gated or stored** |
 | `plan_numeric_features` | Cast to int (e.g. `support_response_hours`) |
-| `plan_boolean_features` | Cast to bool |
+| `plan_boolean_features` | Documentation of the known boolean keys (casting itself defaults to bool for any non-numeric key) |
+| `plan_feature_labels` | Feature key → human display label for the customer cards |
 
-**Universal features** (always true, not stored in `plan_features`): `billing_automation`, `customer_portal`, `server_provisioning`, `domain_management`, `support_tickets`, `knowledge_base`, `multi_currency`, `payment_gateways`.
+**Universal features** (always true, not stored in `plan_features`): `billing_automation`, `customer_portal`, `server_provisioning`, `domain_management`, `support_tickets`, `knowledge_base`, `multi_currency`, `payment_gateways`, `tax_management`, `credit_system`, `service_package_management`.
 
-**Differentiated features are admin-defined per product** in the Software Product editor (key/value → `plan_features`). Example keys: `support_response_hours` (numeric), `priority_support`, `advanced_modules`, `automatic_updates`, `branding_removal`, `dedicated_account_manager`, `sla_guarantee` (booleans, `1`/`0`).
+**Differentiated features are admin-defined per product** in the Software Product editor (key/value → `plan_features`). Known keys: `support_response_hours` (numeric), `priority_support`, `advanced_modules`, `automatic_updates`, `branding_removal`, `domain_registration_transfers`, `dns_management`, `software_license_selling`, `reseller_management`, `api_expose_for_third_party`, `dedicated_account_manager`, `sla_guarantee` (booleans, `1`/`0`). A key set to `0` (or omitted) simply doesn't render on that tier's card.
+
+**Feature labels:** the customer plan cards render each feature via `feature_label($key)` — it looks up `plan_feature_labels` in this config and falls back to a humanized key. Add an entry here to get "DNS management" / "Third-party API access" instead of "Dns Management".
 
 ---
 
 ## Entitlements
 
 - **Library** `src/libraries/Entitlement.php`: `can($companyId, $flag)`, `value($companyId, $flag)`, `all($companyId)`, `plan_key($companyId)`. Universal flags short-circuit to TRUE; resolves the company's active product, defaults to `plan_default_key`. Per-request cache.
-- **Helper** `src/helpers/entitlement_helper.php` (autoloaded): `entitlement_can()`, `entitlement_value()`, `entitlement_plan_key()`.
+- **Helper** `src/helpers/entitlement_helper.php` (autoloaded): `entitlement_can()`, `entitlement_value()`, `entitlement_plan_key()`, and `feature_label($key)` (display label lookup).
 
 ```php
 if (entitlement_can($companyId, 'branding_removal')) { /* hide branding */ }
 $sla = entitlement_value($companyId, 'support_response_hours');
+echo feature_label('dns_management'); // "DNS management"
 ```
 
 ---
@@ -101,6 +105,8 @@ $sla = entitlement_value($companyId, 'support_response_hours');
 The manage form has: **details** (name, auto-slug key, **family group** for upgrade tiers, tagline, HTML description, popular flag, active toggle, sort order), a **pricing grid** (currency rows × billing-cycle columns; one price per cell → stored as both `first_pay_amount` and `recurring_amount`; use the **One-Time** cycle for a perpetual license), an **entitlement features** repeater (key/value → `plan_features`), and a **linked release** dropdown. The family group field offers a datalist of existing families — assign the same value to products that should be upgrade tiers of each other.
 
 Releases are uploaded under **Settings → Software Releases** and can be tagged to a product or left global.
+
+**Reference seed:** `whmaz_plans_seed.sql` creates the canonical 3-tier WHMAZ family (Basic / Pro / Max, `family_group = 'whmaz'`) with USD monthly + yearly pricing and the full differentiated feature matrix — a working example of a family catalog. Idempotent; resolves currency/cycle ids by key. Run it, then re-export `crm_db.sql` and upload a global release ZIP.
 
 ---
 

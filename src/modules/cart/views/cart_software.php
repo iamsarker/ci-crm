@@ -78,7 +78,7 @@
                         <ul class="list-unstyled mb-3">
                             <?php foreach ($p['features'] as $fkey => $fval):
                                 if ($fval === false || $fval === 0 || $fval === '0') continue;
-                                $label = ucwords(str_replace('_', ' ', $fkey));
+                                $label = feature_label($fkey);
                             ?>
                             <li class="mb-1">
                                 <i class="fa fa-check text-success mg-r-5"></i>

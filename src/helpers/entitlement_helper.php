@@ -72,3 +72,24 @@ if ( ! function_exists('entitlement_plan_key')) {
 		return _entitlement()->plan_key($company_id);
 	}
 }
+
+if ( ! function_exists('feature_label')) {
+	/**
+	 * Human-friendly display label for a feature key. Uses the map in
+	 * config/plans.php; falls back to a humanized form of the key.
+	 *
+	 * @param  string $key
+	 * @return string
+	 */
+	function feature_label($key)
+	{
+		$CI =& get_instance();
+		$CI->config->load('plans', TRUE, TRUE);
+		$labels = (array) $CI->config->item('plan_feature_labels', 'plans');
+
+		if (isset($labels[$key])) {
+			return $labels[$key];
+		}
+		return ucwords(str_replace('_', ' ', (string) $key));
+	}
+}
