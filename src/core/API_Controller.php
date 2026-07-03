@@ -79,14 +79,14 @@ class API_Controller extends MX_Controller
 		// Hard per-key throttle: max N requests per second (applies to every key).
 		if (self::RATE_LIMIT_PER_SECOND > 0
 			&& $this->Apikey_model->countRequestsThisSecond($this->api_key['id']) >= self::RATE_LIMIT_PER_SECOND) {
-			$this->output->set_header('Retry-After: 1');
+			header('Retry-After: 1');
 			$this->fail(429, 'Rate limit exceeded: max ' . self::RATE_LIMIT_PER_SECOND . ' requests per second.', 'rate_limited');
 		}
 
 		// Optional per-key rate limit (requests per minute; 0 = unlimited).
 		$limit = intval($result['key']['rate_limit']);
 		if ($limit > 0 && $this->Apikey_model->countRecentRequests($this->api_key['id'], 60) >= $limit) {
-			$this->output->set_header('Retry-After: 60');
+			header('Retry-After: 60');
 			$this->fail(429, 'Rate limit exceeded. Try again shortly.', 'rate_limited');
 		}
 
@@ -217,10 +217,13 @@ class API_Controller extends MX_Controller
 			}
 		} catch (Exception $e) { /* ignore */ }
 
-		$this->output
-			->set_status_header($httpCode)
-			->set_content_type('application/json', 'utf-8')
-			->set_output(json_encode($payload));
+		// Emit directly (not via the Output class): we exit here to stop further
+		// processing, and CI only flushes Output during its end-of-request
+		// _display(), which exit skips — so set_output()+exit would send an empty
+		// body. set_status_header() and header()/echo write immediately.
+		$this->output->set_status_header($httpCode);
+		header('Content-Type: application/json; charset=utf-8');
+		echo json_encode($payload);
 		exit;
 	}
 
