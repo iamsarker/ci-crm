@@ -22,6 +22,8 @@ class Cart extends WHMAZ_Controller
 	 */
 	public function software()
 	{
+		// License gate: this install may only offer software if licensed to sell it.
+		require_feature('software_license_selling', '');
 		$data['products']      = $this->Plan_model->getCatalogForCustomer(getCurrencyId());
 		$data['currency_code'] = getCurrencyCode();
 		$data['cart_count']    = getCartCount();
@@ -943,6 +945,13 @@ class Cart extends WHMAZ_Controller
 	public function addSoftwareToCart()
 	{
 		$this->processRestCall();
+
+		// License gate (JSON endpoint): block if this install can't sell software.
+		if ( ! feature_enabled('software_license_selling')) {
+			echo json_encode(buildFailedResponse("Software purchasing is not available."));
+			return;
+		}
+
 		$postData = $this->input->post();
 
 		$pricingId = !empty($postData['software_pricing_id']) ? intval($postData['software_pricing_id']) : 0;

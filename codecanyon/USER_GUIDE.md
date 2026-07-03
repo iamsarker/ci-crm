@@ -54,6 +54,7 @@
 - [Payment Gateway Setup](#payment-gateway-setup)
 - [Domain Registrar Integration](#domain-registrar-integration)
 - [Automation & Cron Jobs](#automation--cron-jobs)
+- [Software Selling & Licensing](#software-selling--licensing)
 - [Customization Options](#customization-options)
 
 ### Part 5: Troubleshooting & FAQ
@@ -3377,6 +3378,93 @@ tail -f /var/log/syslog | grep CRON
 - View logs in `application/logs/` directory
 - Look for cron execution entries
 - Verify no errors
+
+---
+
+## Software Selling & Licensing
+
+WHMAZ can sell **downloadable software products** (the WHMAZ app itself, add-on modules, or any software you distribute) alongside hosting and domains. Customers browse and buy them through the same cart; delivery is a downloadable ZIP, and the installed copy **phones home** to enforce its license. This lets you ship **one source version** that unlocks different features depending on the tier a customer purchased.
+
+**Two sides to the system:**
+
+| Role | Who | What it does |
+|------|-----|--------------|
+| **Vendor (master)** | You, running WHMAZ to sell software | Creates products, issues license keys, answers license checks. Never gated. |
+| **Customer (client)** | A buyer who installed a copy | Enters a license key; the install runs at the tier they paid for. |
+
+### Selling Software Products
+
+Go to **Admin Portal → Settings → Software Products** (`whmazadmin/softwareproduct`).
+
+1. **Create a product** – Click "Add". Enter a name (the slug/key is generated automatically), an optional tagline and rich description, a "popular" flag, and a sort order.
+2. **Set a family group** – Products that are upgrade tiers of the same software (e.g. Basic / Pro / Max) share a **Family Group**. Customers can upgrade or downgrade only within the same family. Leave it blank for a standalone product.
+3. **Enter pricing** – Fill the pricing grid (a cell per currency × billing cycle). Use the **One-Time** cycle for a perpetual license.
+4. **Define features** – In the entitlement features list, add key/value rows (e.g. `priority_support = 1`, `support_response_hours = 48`). These are the differences between tiers and are exactly what the customer's install unlocks. A feature set to `0` or omitted stays locked on that tier.
+5. **Link a release** – Optionally attach the download build (see below).
+
+### Software Releases
+
+Go to **Admin Portal → Settings → Software Releases** (`whmazadmin/software`).
+
+1. **Upload a ZIP** – Upload the installable build. It is stored privately and never exposed by direct URL.
+2. **Set current** – Mark the build customers download. A release can be tagged to a specific product or left global.
+3. **One build, many tiers** – Because the same source enforces every tier, you normally ship a single current build; the license decides what unlocks.
+
+> **Note:** Large uploads may require raising `upload_max_filesize` and `post_max_size` in `php.ini`. The software storage folder must be writable by the web server.
+
+### Buying & Downloading Software (Customer)
+
+Customers use the **Software** menu in the customer portal:
+
+- **Buy Software** – Browse product cards, pick a billing cycle, and add to cart. Checkout and payment work exactly like hosting/domains. On payment, a license key is issued automatically.
+- **My Software** – Lists every license the customer owns, with its key, tier, next renewal, and status. Each license has a **Download** button (resolves the correct build for that product) and an **Upgrade** option (same-family, prorated).
+
+License **renewals** and **overdue suspension** happen automatically through the daily cron job, just like hosting.
+
+### Self-Hosted Licensing (how enforcement works)
+
+Because customers install the software on their own servers, WHMAZ cannot remotely control it. Instead, the installed copy **calls home** to your WHMAZ site to check its license:
+
+1. On a schedule (and daily via cron), the install sends its license key to your server's `license/verify` endpoint.
+2. Your server replies with the license status and the tier's feature list.
+3. The install caches that answer and unlocks features accordingly. If the license is suspended, expired, or terminated, premium features lock down to the baseline.
+
+**Resilience:** the answer is cached, so a brief outage on your side does not break customer installs — the last known-good result is honored for up to 7 days before features degrade.
+
+> **Important:** the customer has the source code, so a determined user could remove the check. For real protection, encode the license client file with a tool such as IonCube or SourceGuardian before distributing your build. This is the same approach commercial products like WHMCS use.
+
+### Entering Your License Key
+
+A customer supplies their license key during installation. In the **Installer → Step 5 (Site Settings)** there is a **Software License** section:
+
+1. **License Key** – Paste the key received at purchase (format `WHMAZ-XXXXX-XXXXX-XXXXX-XXXXX`).
+2. **License Server URL** – The address of the vendor's WHMAZ site that issued the key (e.g. `https://vendor-crm.example.com`).
+3. **Verify** – Click to confirm the key against the vendor before finishing. Installation can proceed without it, but tier features stay locked until a valid key is saved.
+4. **Master server checkbox** – The vendor ticks "This is the master / vendor server" on their own WHMAZ install so it is never gated. Customers leave it unticked.
+
+These values are written to the site's `.env` file (`LICENSE_KEY`, `LICENSE_SERVER_URL`, `IS_LICENSE_MASTER`) and can be edited there later.
+
+### Feature Availability by Tier
+
+Features you define on each product are unlocked on the customer's install according to the tier they bought. For example:
+
+| Feature | Effect when unlocked |
+|---------|----------------------|
+| **Branding removal** | Hides the "Maintain by WHMAZ" attribution in the customer's portal footer. |
+| **Software license selling** | Enables the Software Products / Releases admin menus and the customer "Buy Software" storefront. |
+| **Domain registration & transfers** | Enables the Domain Register / Domain Pricing admin menus and registrar configuration. |
+
+The vendor's own (master) install always runs with every feature available. On a customer install, a suspended or expired license drops back to baseline features until the outstanding invoice is paid.
+
+### License Troubleshooting
+
+| Symptom | Cause / Fix |
+|---------|-------------|
+| Tier features locked after install | No valid key saved. Re-run the license step or set `LICENSE_KEY` and `LICENSE_SERVER_URL` in `.env`. |
+| License shows "suspended" | An invoice is overdue. Pay it; the next license check restores access. |
+| License shows "expired" | Renew the license (renewal invoices are generated automatically before the due date). |
+| "Unable to verify license" | The install cannot reach the vendor server. Confirm `LICENSE_SERVER_URL` is correct and reachable. Cached access is honored for up to 7 days. |
+| Vendor's own panel is gated | Set `IS_LICENSE_MASTER=true` in the vendor install's `.env`. |
 
 ---
 

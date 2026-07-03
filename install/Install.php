@@ -535,7 +535,7 @@ class Install
     /**
      * Create .env file
      */
-    public function createEnvFile()
+    public function createEnvFile($license = [])
     {
         $db = $this->getDbCredentials();
         if (!$db) {
@@ -558,11 +558,77 @@ class Install
         $content = preg_replace('/^DB_USERNAME=.*$/m', 'DB_USERNAME=' . $db['username'], $content);
         $content = preg_replace('/^DB_PASSWORD=.*$/m', 'DB_PASSWORD=' . $db['password'], $content);
 
+        // Software license (self-hosted phone-home). A master/vendor install is
+        // never gated; a client install stores its key + the vendor server URL.
+        $isMaster  = !empty($license['is_master']);
+        $key       = $isMaster ? '' : trim($license['license_key'] ?? '');
+        $serverUrl = $isMaster ? '' : rtrim(trim($license['license_server_url'] ?? ''), '/');
+
+        $content = preg_replace('/^IS_LICENSE_MASTER=.*$/m', 'IS_LICENSE_MASTER=' . ($isMaster ? 'true' : 'false'), $content);
+        $content = preg_replace('/^LICENSE_KEY=.*$/m', 'LICENSE_KEY=' . $key, $content);
+        $content = preg_replace('/^LICENSE_SERVER_URL=.*$/m', 'LICENSE_SERVER_URL=' . $serverUrl, $content);
+
         if (file_put_contents($envFile, $content) === false) {
             throw new Exception("Failed to create .env file. Check file permissions.");
         }
 
         return true;
+    }
+
+    /**
+     * Verify a license key against the vendor's license server during install.
+     * Best-effort: used by the wizard's "Verify" button so the customer can
+     * confirm their key before finishing. Never blocks installation.
+     *
+     * @param string $key       License key (WHMAZ-XXXXX-...)
+     * @param string $serverUrl Vendor CRM base URL
+     * @return array {success, status, plan_key, message}
+     */
+    public function verifyLicenseKey($key, $serverUrl)
+    {
+        $key = trim($key);
+        $serverUrl = rtrim(trim($serverUrl), '/');
+
+        if ($key === '' || $serverUrl === '') {
+            return ['success' => false, 'message' => 'License key and server URL are required.'];
+        }
+        if (!preg_match('#^https?://#i', $serverUrl)) {
+            return ['success' => false, 'message' => 'Server URL must start with http:// or https://'];
+        }
+
+        $ch = curl_init($serverUrl . '/license/verify');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => http_build_query([
+                'license_key' => $key,
+                'domain'      => $this->detectSiteUrl(),
+            ]),
+            CURLOPT_TIMEOUT        => 10,
+            CURLOPT_CONNECTTIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_USERAGENT      => 'WHMAZ-License-Client/1.0',
+        ]);
+        $body = curl_exec($ch);
+        $err  = curl_error($ch);
+        curl_close($ch);
+
+        if ($body === false || $body === '') {
+            return ['success' => false, 'message' => 'Could not reach the license server. ' . $err];
+        }
+
+        $data = json_decode($body, true);
+        if (!is_array($data) || !array_key_exists('valid', $data)) {
+            return ['success' => false, 'message' => 'Unexpected response from the license server.'];
+        }
+
+        return [
+            'success'  => (bool) $data['valid'],
+            'status'   => $data['status'] ?? 'invalid',
+            'plan_key' => $data['plan_key'] ?? null,
+            'message'  => $data['message'] ?? ($data['valid'] ? 'License is valid.' : 'License is not valid.'),
+        ];
     }
 
     /**

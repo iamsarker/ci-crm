@@ -23,14 +23,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     // CSRF validation for all POST requests except AJAX
-    if (!in_array($action, ['test_db', 'import_sql', 'delete_install'])) {
+    if (!in_array($action, ['test_db', 'import_sql', 'delete_install', 'verify_license'])) {
         if (!$installer->validateCsrf($_POST['csrf_token'] ?? '')) {
             die('Invalid CSRF token. Please refresh the page and try again.');
         }
     }
 
     // Handle AJAX actions
-    if (in_array($action, ['test_db', 'import_sql', 'delete_install'])) {
+    if (in_array($action, ['test_db', 'import_sql', 'delete_install', 'verify_license'])) {
         header('Content-Type: application/json');
 
         // CSRF validation for AJAX
@@ -83,6 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'message' => $e->getMessage()
                     ]);
                 }
+                exit;
+
+            case 'verify_license':
+                $result = $installer->verifyLicenseKey(
+                    $_POST['license_key'] ?? '',
+                    $_POST['license_server_url'] ?? ''
+                );
+                echo json_encode($result);
                 exit;
 
             case 'delete_install':
@@ -229,8 +237,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if (empty($errors)) {
                     try {
-                        // Create .env file
-                        $installer->createEnvFile();
+                        // Create .env file (with software-license settings)
+                        $installer->createEnvFile([
+                            'is_master'          => !empty($_POST['is_license_master']),
+                            'license_key'        => $_POST['license_key'] ?? '',
+                            'license_server_url' => $_POST['license_server_url'] ?? '',
+                        ]);
 
                         // Update site settings
                         $installer->updateSiteSettings($siteName, $siteUrl);

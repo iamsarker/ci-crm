@@ -180,6 +180,53 @@ The installed software calls these endpoints. All are CSRF-excluded.
 
 ---
 
+## License Client — enforcement inside the sold product (`License_client`)
+
+`license/verify` is only the **server** half. The **client** half — `src/libraries/License_client.php` — ships *inside the product* and is what makes **one source version** enforce different tiers. Every install runs the same code; the license decides what unlocks.
+
+**Install roles (from `.env`):**
+
+| Role | `.env` | Behaviour |
+|------|--------|-----------|
+| **Master** | `IS_LICENSE_MASTER=true` | The vendor CRM that *sells* licenses. Never phones home; `Entitlement` resolves per-company from the local DB (legacy). |
+| **Client** | `LICENSE_KEY=…` + `LICENSE_SERVER_URL=…` | A purchased copy. Phones home to `{LICENSE_SERVER_URL}/license/verify`; the **whole install** runs under the one tier it paid for. |
+| **Unconfigured** | none set | Legacy local-DB behaviour — enforcement is dormant until a key is written. |
+
+**How it resolves:** `Entitlement::_featuresFor()` / `plan_key()` call `license_client->is_managed_client()`. On a client install they ignore `company_id` and return the **cached remote feature map** (the same map `license/verify` returns). An invalid / suspended / expired license degrades to baseline (universal features only).
+
+**Caching & resilience:** the verdict is cached at `uploadedfiles/license/state.json` (deny-all `.htaccess`, git-ignored). Re-verified at most every `CHECK_INTERVAL_HOURS` (12h) on read; if the server is unreachable the last-good verdict is served for `GRACE_DAYS` (7), then degrades to invalid. `/cronjobs/run` force-refreshes the cache each day (client installs only). The client never throws.
+
+**Entering the key:** the installer's **step 5** (Site Settings) has a *Software License* section — license key + vendor server URL, a **Verify** button (`install/index.php` `verify_license` AJAX → `Install::verifyLicenseKey()`), and a "this is the master server" checkbox. `Install::createEnvFile()` writes `IS_LICENSE_MASTER` / `LICENSE_KEY` / `LICENSE_SERVER_URL` into `.env`.
+
+**Helpers:** `license_client()` (library accessor) and `license_state()` (display-friendly verdict) in `entitlement_helper.php`.
+
+> **Self-hosted caveat:** the customer has the source, so this check is removable. Encode `License_client.php` (IonCube / SourceGuardian) for real teeth — same model WHMCS uses.
+
+### Feature gates — enforcing the tier in the product
+
+Two gate primitives (in `entitlement_helper.php`), both autoloaded:
+
+| Call | Scope | Use for |
+|------|-------|---------|
+| `feature_enabled($key)` → bool | **install-level** — "is THIS install licensed for X?" | Gating product capabilities in the self-hosted model. Client install → licensed tier; master/unconfigured → TRUE (full). Invalid/suspended client → FALSE. |
+| `feature_value($key, $default)` → int | install-level numeric | e.g. `support_response_hours` from the tier |
+| `require_feature($key, $redirect_uri)` | controller guard | Flash + redirect when a gated page is hit directly |
+| `entitlement_can($companyId, $key)` | **per-customer-company** (legacy multi-tenant) | Kept for the old SaaS model; **not** the right call for self-hosted gating |
+
+> Why install-level and not `entitlement_can()`: on the vendor's own **master** CRM no company owns a license, so `entitlement_can()` would (correctly for SaaS, wrongly here) resolve to the most-restrictive default and gate the vendor's own panel. `feature_enabled()` returns TRUE for master/unconfigured, gates only real client installs.
+
+**Wired call sites:**
+
+| Feature key | Where enforced |
+|-------------|----------------|
+| `branding_removal` | Client footer "Maintain by WHMAZ" attribution hidden (`templates/customer/footer.php`) |
+| `software_license_selling` | Admin menu (Software Products/Releases), `Softwareproduct` + `Software` controller guards, customer `Cart::software()` + `addSoftwareToCart()` (JSON), "Buy Software" nav (`templates/customer/header.php`) |
+| `domain_registration_transfers` | Admin menu (Domain Register/Pricing), `Domain_register` controller guard |
+
+**Not gated in code (deliberately):** `priority_support`, `support_response_hours`, `dedicated_account_manager`, `sla_guarantee` are **service-level** promises (the vendor's support to the client), shown on the pricing cards only — nothing to enforce in the product. `dns_management`, `reseller_management`, `api_expose_for_third_party`, `advanced_modules`, `automatic_updates` are gateable but need subsystem-specific guards; add them with the same `feature_enabled()` / `require_feature()` pattern at those call sites.
+
+---
+
 ## Renewal Invoice Cron (software licenses)
 
 Runs as part of `/cronjobs/run` inside `generateRenewalInvoices()` (alongside domains/services); the daily job needs no extra wiring.

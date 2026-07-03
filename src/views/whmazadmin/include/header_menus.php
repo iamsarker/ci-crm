@@ -102,12 +102,16 @@
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_category/index"><i class="fas fa-folder me-2"></i>Service Categories</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_group/index"><i class="fas fa-object-group me-2"></i>Service Groups</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_product/index"><i class="fas fa-hdd me-2"></i>Hosting Packages</a></li>
+                        <?php if (feature_enabled('domain_registration_transfers')): ?>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/domain_register/index"><i class="fas fa-globe me-2"></i>Domain Register</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/domain_pricing/index"><i class="fas fa-tags me-2"></i>Domain Pricing</a></li>
+                        <?php endif; ?>
+                        <?php if (feature_enabled('software_license_selling')): ?>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/softwareproduct/index"><i class="fas fa-cube me-2"></i>Software Products</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/software"><i class="fas fa-cube me-2"></i>Software Releases</a></li>
+                        <?php endif; ?>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/email_template/index"><i class="fas fa-envelope me-2"></i>Email Template</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/page/index"><i class="fas fa-file-code me-2"></i>Dynamic Pages</a></li>

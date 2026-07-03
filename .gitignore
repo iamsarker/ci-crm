@@ -39,3 +39,4 @@ src/sessions/
 *.sublime-project
 /tests/tests/
 /tests/results/
+uploadedfiles/license/state.json

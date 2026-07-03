@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 03, 2026 at 03:23 AM
+-- Generation Time: Jul 03, 2026 at 08:50 AM
 -- Server version: 10.11.18-MariaDB-cll-lve
 -- PHP Version: 8.3.31
 
@@ -1051,8 +1051,8 @@ CREATE TABLE `gen_numbers` (
 --
 
 INSERT INTO `gen_numbers` (`id`, `no_type`, `last_no`) VALUES
-(1, 'ORDER', 2037),
-(2, 'INVOICE', 1547);
+(1, 'ORDER', 2038),
+(2, 'INVOICE', 1548);
 
 -- --------------------------------------------------------
 
@@ -1918,7 +1918,10 @@ CREATE TABLE `plans` (
 --
 
 INSERT INTO `plans` (`id`, `plan_key`, `family_group`, `name`, `tagline`, `description`, `current_release_id`, `is_popular`, `sort_order`, `is_active`, `paddle_product_id`, `paddle_price_monthly_id`, `paddle_price_annual_id`, `created_at`, `updated_at`) VALUES
-(5, 'tong_bari_product', NULL, 'TongBari Product', 'TEST, Product, TongBari', 'Test description', NULL, 1, 1, 1, NULL, NULL, NULL, '2026-07-03 08:12:23', '2026-07-03 08:14:35');
+(5, 'tong_bari_product', NULL, 'TongBari Product', 'TEST, Product, TongBari', 'Test description', NULL, 1, 1, 1, NULL, NULL, NULL, '2026-07-03 08:12:23', '2026-07-03 08:14:35'),
+(8, 'whmaz-basic', 'whmaz', 'Basic', 'For new & small hosts', NULL, NULL, 0, 1, 1, NULL, NULL, NULL, '2026-07-03 08:30:55', '2026-07-03 08:30:55'),
+(9, 'whmaz-pro', 'whmaz', 'Pro', 'For growing hosts', NULL, NULL, 1, 2, 1, NULL, NULL, NULL, '2026-07-03 08:30:55', '2026-07-03 08:30:55'),
+(10, 'whmaz-max', 'whmaz', 'Max', 'For established hosts', NULL, NULL, 0, 3, 1, NULL, NULL, NULL, '2026-07-03 08:30:55', '2026-07-03 08:30:55');
 
 -- --------------------------------------------------------
 
@@ -1939,7 +1942,37 @@ CREATE TABLE `plan_features` (
 
 INSERT INTO `plan_features` (`id`, `plan_id`, `feature_key`, `feature_value`) VALUES
 (24, 5, 'support_response_hours', '1'),
-(25, 5, 'Reseller_Management', '1');
+(25, 5, 'Reseller_Management', '1'),
+(26, 8, 'support_response_hours', '72'),
+(27, 8, 'priority_support', '0'),
+(28, 8, 'advanced_modules', '0'),
+(29, 8, 'automatic_updates', '0'),
+(30, 8, 'branding_removal', '0'),
+(31, 8, 'domain_registration_transfers', '1'),
+(32, 8, 'dns_management', '1'),
+(33, 8, 'software_license_selling', '0'),
+(34, 8, 'reseller_management', '0'),
+(35, 8, 'api_expose_for_third_party', '0'),
+(36, 9, 'support_response_hours', '48'),
+(37, 9, 'priority_support', '1'),
+(38, 9, 'advanced_modules', '1'),
+(39, 9, 'automatic_updates', '1'),
+(40, 9, 'branding_removal', '1'),
+(41, 9, 'domain_registration_transfers', '1'),
+(42, 9, 'dns_management', '1'),
+(43, 9, 'software_license_selling', '1'),
+(44, 9, 'reseller_management', '0'),
+(45, 9, 'api_expose_for_third_party', '0'),
+(46, 10, 'support_response_hours', '24'),
+(47, 10, 'priority_support', '1'),
+(48, 10, 'advanced_modules', '1'),
+(49, 10, 'automatic_updates', '1'),
+(50, 10, 'branding_removal', '1'),
+(51, 10, 'domain_registration_transfers', '1'),
+(52, 10, 'dns_management', '1'),
+(53, 10, 'software_license_selling', '1'),
+(54, 10, 'reseller_management', '1'),
+(55, 10, 'api_expose_for_third_party', '1');
 
 -- --------------------------------------------------------
 
@@ -2364,7 +2397,13 @@ INSERT INTO `software_pricing` (`id`, `product_id`, `currency_id`, `billing_cycl
 (1, 5, 1, 1, 10.00, 10.00, 1, '2026-07-03 08:12:23', 1, '2026-07-03 13:14:36', 1, NULL, NULL),
 (2, 5, 1, 4, 110.00, 110.00, 1, '2026-07-03 08:12:23', 1, '2026-07-03 13:14:36', 1, NULL, NULL),
 (3, 5, 2, 1, 3500.00, 3500.00, 1, '2026-07-03 08:12:23', 1, '2026-07-03 13:14:36', 1, NULL, NULL),
-(4, 5, 2, 4, 36000.00, 36000.00, 1, '2026-07-03 08:12:23', 1, '2026-07-03 13:14:36', 1, NULL, NULL);
+(4, 5, 2, 4, 36000.00, 36000.00, 1, '2026-07-03 08:12:23', 1, '2026-07-03 13:14:36', 1, NULL, NULL),
+(11, 8, 1, 1, 11.95, 11.95, 1, '2026-07-03 08:31:18', NULL, '2026-07-03 13:31:18', NULL, NULL, NULL),
+(12, 8, 1, 4, 131.95, 131.95, 1, '2026-07-03 08:31:18', NULL, '2026-07-03 13:31:18', NULL, NULL, NULL),
+(13, 9, 1, 1, 16.95, 16.95, 1, '2026-07-03 08:31:18', NULL, '2026-07-03 13:31:18', NULL, NULL, NULL),
+(14, 9, 1, 4, 191.95, 191.95, 1, '2026-07-03 08:31:18', NULL, '2026-07-03 13:31:18', NULL, NULL, NULL),
+(15, 10, 1, 1, 25.95, 25.95, 1, '2026-07-03 08:31:18', NULL, '2026-07-03 13:31:18', NULL, NULL, NULL),
+(16, 10, 1, 4, 291.49, 291.49, 1, '2026-07-03 08:31:18', NULL, '2026-07-03 13:31:18', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -3315,13 +3354,13 @@ ALTER TABLE `gen_numbers`
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=566;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=567;
 
 --
 -- AUTO_INCREMENT for table `invoice_items`
 --
 ALTER TABLE `invoice_items`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=584;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=585;
 
 --
 -- AUTO_INCREMENT for table `invoice_txn`
@@ -3363,7 +3402,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=739;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=740;
 
 --
 -- AUTO_INCREMENT for table `order_domains`
@@ -3375,7 +3414,7 @@ ALTER TABLE `order_domains`
 -- AUTO_INCREMENT for table `order_licenses`
 --
 ALTER TABLE `order_licenses`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `order_services`
@@ -3423,13 +3462,13 @@ ALTER TABLE `pending_executions`
 -- AUTO_INCREMENT for table `plans`
 --
 ALTER TABLE `plans`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `plan_features`
 --
 ALTER TABLE `plan_features`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT for table `product_services`
@@ -3483,7 +3522,7 @@ ALTER TABLE `promo_code_usage`
 -- AUTO_INCREMENT for table `provisioning_logs`
 --
 ALTER TABLE `provisioning_logs`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `servers`
@@ -3501,13 +3540,13 @@ ALTER TABLE `server_modules`
 -- AUTO_INCREMENT for table `software_pricing`
 --
 ALTER TABLE `software_pricing`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `software_releases`
 --
 ALTER TABLE `software_releases`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `sys_cnf`

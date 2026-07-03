@@ -11,7 +11,9 @@
           </nav>
         </div>
         <strong>&copy; 2014-<?=date("Y")?> WHMAZ v1.0.0</strong>
+        <?php if ( ! feature_enabled('branding_removal')): ?>
         <span class="ms-2">Maintain by <a href="https://whmaz.com/" target="_blank">WHMAZ</a></span>
+        <?php endif; ?>
       </footer>
 
     </div><!-- /.app-wrapper -->

@@ -403,6 +403,7 @@ Key facts to know at a glance:
 - Entitlement gating: `entitlement_can()` / `entitlement_value()` (autoloaded) backed by `src/libraries/Entitlement.php`; feature keys are admin-defined per product (`plan_features`), universal flags + `plan_feature_labels` (key→display-label map, used by `feature_label()` on the cards) in `src/config/plans.php`.
 - Reference seed: `whmaz_plans_seed.sql` = the 3-tier WHMAZ family (Basic/Pro/Max, `family_group='whmaz'`) with pricing + full feature matrix.
 - License **renewal** and **overdue-suspension** run inside `/cronjobs/run` (`getExpiringLicenses`/`createLicenseRenewalInvoice`; `getLicensesOverdueForSuspension` + `suspendOverdueLicenses`).
+- License **client** (enforcement half, ships inside the sold product): `src/libraries/License_client.php` phones home to the vendor's `license/verify`, caches the tier's feature map (`uploadedfiles/license/state.json`), and `Entitlement` gates from it on **client** installs. Roles set in `.env`: `IS_LICENSE_MASTER=true` (vendor, never gated) vs `LICENSE_KEY`+`LICENSE_SERVER_URL` (client). One source version enforces all tiers; installer step 5 collects the key. Encode the file (IonCube) for real teeth.
 - Schema: `crm_db.sql` is canonical; incremental migrations `software_catalog_migration.sql` + `software_family_upgrade_migration.sql`.
 
 **Full documentation:** `docs/SAAS_LICENSING.md`

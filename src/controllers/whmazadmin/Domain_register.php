@@ -9,6 +9,8 @@ class Domain_register extends WHMAZADMIN_Controller {
 		if (!$this->isLogin()) {
 			redirect('/whmazadmin/authenticate/login', 'refresh');
 		}
+		// License gate: domain registrar configuration requires the domain feature.
+		require_feature('domain_registration_transfers', 'whmazadmin/dashboard');
 	}
 
 	public function index()

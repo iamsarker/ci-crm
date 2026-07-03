@@ -171,7 +171,9 @@
                 </a>
                 <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="<?=base_url()?>subscription"><i class="fas fa-list me-2"></i>My Software</a></li>
+                  <?php if (feature_enabled('software_license_selling')): ?>
                   <li><a class="dropdown-item" href="<?=base_url()?>cart/software"><i class="fas fa-shopping-cart me-2"></i>Buy Software</a></li>
+                  <?php endif; ?>
                 </ul>
               </li>
 
@@ -240,11 +242,13 @@
               </li>
 
               <!-- Software -->
+              <?php if (feature_enabled('software_license_selling')): ?>
               <li class="nav-item">
                 <a href="<?=base_url()?>cart/software" class="nav-link">
                   <i class="fas fa-cube me-1"></i> Software
                 </a>
               </li>
+              <?php endif; ?>
 
               <!-- Announcement -->
               <li class="nav-item">

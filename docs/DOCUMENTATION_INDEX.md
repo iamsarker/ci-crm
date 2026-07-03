@@ -31,7 +31,8 @@ ci-crm/
 │   ├── PHP82_UPGRADE_AND_TROUBLESHOOTING.md  # PHP 8.2+ guide
 │   ├── WHMCS_FEATURE_COMPARISON.md  # Feature comparison
 │   ├── AUTO_INSTALLER.md          # Auto-installer documentation
-│   └── PRICING_MECHANISM.md       # Package pricing mechanism
+│   ├── PRICING_MECHANISM.md       # Package pricing mechanism
+│   └── SAAS_LICENSING.md          # Software selling & self-hosted licensing
 │
 └── codecanyon/                    # CodeCanyon Buyer Documentation
     ├── README.md                  # Product overview
@@ -197,6 +198,21 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ---
 
+### 9. [SAAS_LICENSING.md](SAAS_LICENSING.md)
+**Purpose:** Selling downloadable software products and enforcing self-hosted licenses
+**Best for:** Understanding the software catalog, license lifecycle, and phone-home enforcement
+
+**Contents:**
+- Software product catalog (`plans` + `software_pricing` + `plan_features`), family upgrade tiers
+- Cart purchase flow (`item_type=3`), license activation and renewal cron
+- Customer "My Software" (downloads + prorated upgrades)
+- Phone-home server endpoints (`license/verify`, `latest`, `download`)
+- **License client** (`License_client` library): master vs client installs, `.env` roles, cache/grace
+- **Feature gates**: `feature_enabled()` / `require_feature()` install-level primitives and wired call sites
+- Installer license-key step
+
+---
+
 ## Common Tasks & Where to Find Help
 
 ### Adding a New Admin Feature
@@ -267,10 +283,19 @@ CI-CRM is a complete business management system designed for hosting and service
 
 ## Version Information
 
-- **Documentation Version:** 1.6
-- **Last Updated:** 2026-01-31
+- **Documentation Version:** 1.7
+- **Last Updated:** 2026-07-03
 - **Project Status:** Active Development
 - **Maintained By:** TongBari (https://tongbari.com/)
+
+### Recent Updates (v1.7 - 2026-07-03)
+- Added software product catalog + self-hosted licensing (see [SAAS_LICENSING.md](SAAS_LICENSING.md))
+- Added **license client** (`src/libraries/License_client.php`): purchased installs phone home to the vendor's `license/verify`, cache the tier's feature map (`uploadedfiles/license/state.json`), and enforce it locally — one source version serves all tiers
+- Install roles in `.env`: `IS_LICENSE_MASTER` (vendor, never gated) vs `LICENSE_KEY` + `LICENSE_SERVER_URL` (client)
+- `Entitlement` is now license-aware on client installs; added install-level gate helpers `feature_enabled()` / `feature_value()` / `require_feature()` in `entitlement_helper.php`
+- Wired feature gates: branding removal (footer), software-selling storefront + admin menus/controllers, domain registrar admin menu/controller
+- Installer **Step 5** now collects and verifies the license key
+- Daily cron (`/cronjobs/run`) refreshes the install's own license
 
 ### Recent Updates (v1.6 - 2026-01-31)
 - Added `sendHtmlEmail()` raw SMTP helper function in `whmaz_helper.php` (bypasses CI3 email library line-length wrapping issue)
@@ -325,6 +350,7 @@ CI-CRM is a complete business management system designed for hosting and service
 - [Portal Structure Guide](PORTAL_STRUCTURE_GUIDE.md)
 - [Coding Standards](CODING_STANDARDS_AND_PATTERNS.md)
 - [Security Improvements](SECURITY_IMPROVEMENTS.md)
+- [Software Selling & Self-Hosted Licensing](SAAS_LICENSING.md)
 
 **CodeCanyon Documentation (../codecanyon/):**
 - [README](../codecanyon/README.md)

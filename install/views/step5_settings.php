@@ -88,6 +88,48 @@ $detectedUrl = $installer->detectSiteUrl();
         </div>
     </div>
 
+    <h4 class="section-title"><i class="fas fa-key"></i> Software License</h4>
+
+    <div class="alert alert-warning">
+        <i class="fas fa-info-circle"></i>
+        <div>
+            Enter the license key you received when you purchased WHMAZ. The
+            install verifies it against the vendor and unlocks your tier's
+            features. You can proceed without it, but tier features stay locked
+            until a valid key is saved.
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="checkbox-inline">
+            <input type="checkbox" id="is_license_master" name="is_license_master" value="1">
+            This is the master / vendor server (skip license key)
+        </label>
+        <p class="form-text">Only tick this on the CRM that <strong>sells</strong> licenses. Client installs leave it unchecked.</p>
+    </div>
+
+    <div id="licenseFields">
+        <div class="form-group">
+            <label for="license_key">License Key</label>
+            <input type="text" class="form-control" id="license_key" name="license_key"
+                   placeholder="WHMAZ-XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off">
+        </div>
+
+        <div class="form-group">
+            <label for="license_server_url">License Server URL</label>
+            <input type="url" class="form-control" id="license_server_url" name="license_server_url"
+                   placeholder="https://vendor-crm.example.com">
+            <p class="form-text">The vendor CRM that issued your key (include http:// or https://).</p>
+        </div>
+
+        <div class="form-group">
+            <button type="button" class="btn btn-secondary" id="verifyLicenseBtn">
+                <i class="fas fa-sync"></i> Verify License
+            </button>
+            <span id="licenseResult" style="margin-left: 10px;"></span>
+        </div>
+    </div>
+
     <div class="btn-group">
         <a href="index.php?step=4" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Back
@@ -171,5 +213,49 @@ document.getElementById('settingsForm').addEventListener('submit', function(e) {
         alert('Passwords do not match.');
         return;
     }
+});
+
+// ─── Software license ─────────────────────────────────────────────────────
+const masterCheckbox = document.getElementById('is_license_master');
+const licenseFields = document.getElementById('licenseFields');
+const verifyBtn = document.getElementById('verifyLicenseBtn');
+const licenseResult = document.getElementById('licenseResult');
+
+masterCheckbox.addEventListener('change', function() {
+    licenseFields.style.display = this.checked ? 'none' : 'block';
+});
+
+verifyBtn.addEventListener('click', function() {
+    const key = document.getElementById('license_key').value.trim();
+    const url = document.getElementById('license_server_url').value.trim();
+
+    if (!key || !url) {
+        licenseResult.innerHTML = '<span style="color:#c0392b;">Enter both the license key and server URL.</span>';
+        return;
+    }
+
+    verifyBtn.disabled = true;
+    licenseResult.innerHTML = '<span style="color:#555;"><i class="fas fa-spinner fa-spin"></i> Verifying…</span>';
+
+    const body = new URLSearchParams();
+    body.append('action', 'verify_license');
+    body.append('csrf_token', '<?= $csrfToken ?>');
+    body.append('license_key', key);
+    body.append('license_server_url', url);
+
+    fetch('index.php', { method: 'POST', body: body })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const tier = data.plan_key ? ' (' + data.plan_key + ')' : '';
+                licenseResult.innerHTML = '<span style="color:#27ae60;"><i class="fas fa-check-circle"></i> ' + (data.message || 'Valid') + tier + '</span>';
+            } else {
+                licenseResult.innerHTML = '<span style="color:#c0392b;"><i class="fas fa-times-circle"></i> ' + (data.message || 'Invalid license') + '</span>';
+            }
+        })
+        .catch(() => {
+            licenseResult.innerHTML = '<span style="color:#c0392b;">Verification request failed.</span>';
+        })
+        .finally(() => { verifyBtn.disabled = false; });
 });
 </script>

@@ -37,6 +37,9 @@ class Entitlement {
 		$this->CI->config->load('plans', TRUE, TRUE);
 		$this->CI->load->model('Plan_model');
 		$this->CI->load->model('Subscription_model');
+		if ( ! isset($this->CI->license_client)) {
+			$this->CI->load->library('license_client');
+		}
 	}
 
 	/**
@@ -91,6 +94,13 @@ class Entitlement {
 	 */
 	public function plan_key($company_id)
 	{
+		// Client install: the tier in force is whatever the vendor's license
+		// server reports for this install's key — company_id is irrelevant.
+		if ($this->CI->license_client->is_managed_client()) {
+			$key = $this->CI->license_client->is_valid() ? $this->CI->license_client->plan_key() : null;
+			return $key ?: (string) $this->CI->config->item('plan_default_key', 'plans');
+		}
+
 		$key = $this->CI->Subscription_model->get_active_plan_key_for_company($company_id);
 		return $key ?: (string) $this->CI->config->item('plan_default_key', 'plans');
 	}
@@ -99,6 +109,18 @@ class Entitlement {
 
 	private function _featuresFor($company_id)
 	{
+		// Client install: features come from the cached phone-home verdict.
+		// An invalid/suspended/expired license degrades to baseline (no
+		// differentiated features) — universal flags still short-circuit TRUE.
+		if ($this->CI->license_client->is_managed_client()) {
+			if ( ! array_key_exists('__remote', $this->cache)) {
+				$this->cache['__remote'] = $this->CI->license_client->is_valid()
+					? $this->CI->license_client->features()
+					: array();
+			}
+			return $this->cache['__remote'];
+		}
+
 		$company_id = (int) $company_id;
 
 		if ( ! isset($this->cache[$company_id])) {

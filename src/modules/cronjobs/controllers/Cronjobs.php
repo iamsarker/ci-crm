@@ -100,6 +100,18 @@ class Cronjobs extends WHMAZ_Controller
 		$output = array();
 		$output['start_time'] = date('Y-m-d H:i:s');
 
+		// 0. Refresh this install's own software license (client installs only).
+		//    Master/unconfigured installs skip the phone-home entirely.
+		$this->load->library('license_client');
+		if ($this->license_client->is_managed_client()) {
+			$this->license_client->verify(true);
+			$output['license_refresh'] = array(
+				'status'   => $this->license_client->status(),
+				'plan_key' => $this->license_client->plan_key(),
+				'valid'    => $this->license_client->is_valid(),
+			);
+		}
+
 		// 1. Generate Renewal Invoices
 		$renewalResult = $this->generateRenewalInvoices();
 		$output['renewal_invoices'] = $renewalResult;

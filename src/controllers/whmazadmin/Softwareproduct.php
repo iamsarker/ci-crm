@@ -28,6 +28,8 @@ class Softwareproduct extends WHMAZADMIN_Controller {
 		if (!$this->isLogin()) {
 			redirect('/whmazadmin/authenticate/login', 'refresh');
 		}
+		// License gate: only installs licensed to sell software may manage the catalog.
+		require_feature('software_license_selling', 'whmazadmin/dashboard');
 	}
 
 	public function index()
