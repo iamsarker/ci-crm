@@ -20,13 +20,6 @@
             </div>
         </div>
 
-        <?php if ($this->session->flashdata('success')): ?>
-            <div class="alert alert-success"><?= html_escape($this->session->flashdata('success')) ?></div>
-        <?php endif; ?>
-        <?php if ($this->session->flashdata('error')): ?>
-            <div class="alert alert-danger"><?= html_escape($this->session->flashdata('error')) ?></div>
-        <?php endif; ?>
-
         <div class="manage-form-card">
 
             <!-- Upload new release -->
@@ -37,8 +30,9 @@
                 </div>
                 <div class="card-body">
                     <p class="text-muted">
-                        One ZIP serves all plans (Basic / Pro / Max). Customers with an active
-                        license download the release marked <strong>Current</strong>; plan
+                        Upload the installable ZIP for a software product. Tag it to a product
+                        (or leave <strong>Global</strong> to serve any product). Customers with an
+                        active license download the release linked on their product; plan
                         differences are enforced at runtime via the license check.
                     </p>
                     <form action="<?=base_url()?>whmazadmin/software/upload" method="post" enctype="multipart/form-data">
@@ -48,7 +42,16 @@
                                 <label class="form-label">Version <span class="text-danger">*</span></label>
                                 <input type="text" name="version" class="form-control" placeholder="e.g. 1.4.0" required>
                             </div>
-                            <div class="col-md-8 mb-3">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Product</label>
+                                <select name="product_id" class="form-select">
+                                    <option value="">Global (all products)</option>
+                                    <?php foreach (($products ?? array()) as $prod): ?>
+                                    <option value="<?= intval($prod['id']) ?>"><?= htmlspecialchars($prod['name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Software ZIP <span class="text-danger">*</span></label>
                                 <input type="file" name="software_zip" class="form-control" accept=".zip" required>
                             </div>
@@ -126,4 +129,5 @@
     </div>
 </div>
 
+<?php $this->load->view('whmazadmin/include/footer_script'); ?>
 <?php $this->load->view('whmazadmin/include/footer'); ?>

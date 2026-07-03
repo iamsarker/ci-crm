@@ -22,14 +22,21 @@ class Software_model extends CI_Model {
 		$this->load->database();
 	}
 
-	/** All active releases, newest first. */
-	function getReleases()
+	/**
+	 * Active releases, newest first. Pass a product id to get that product's
+	 * releases plus any global (product_id IS NULL) releases; null returns all.
+	 */
+	function getReleases($productId = null)
 	{
-		return $this->db
-			->where('status', 1)
-			->order_by('id', 'DESC')
-			->get($this->table)
-			->result_array();
+		$this->db->where('status', 1);
+		if ($productId !== null) {
+			$productId = (int) $productId;
+			$this->db->group_start()
+				->where('product_id', $productId)
+				->or_where('product_id IS NULL', null, false)
+				->group_end();
+		}
+		return $this->db->order_by('id', 'DESC')->get($this->table)->result_array();
 	}
 
 	function getRelease($id)

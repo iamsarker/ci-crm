@@ -23,6 +23,7 @@ class Software extends WHMAZADMIN_Controller {
 	{
 		parent::__construct();
 		$this->load->model('Software_model');
+		$this->load->model('Plan_model');
 		if (!$this->isLogin()) {
 			redirect('/whmazadmin/authenticate/login', 'refresh');
 		}
@@ -32,6 +33,7 @@ class Software extends WHMAZADMIN_Controller {
 	{
 		$data['releases'] = $this->Software_model->getReleases();
 		$data['current']  = $this->Software_model->getCurrentRelease();
+		$data['products'] = $this->Plan_model->getAllForList();
 		$this->load->view('whmazadmin/software_manage', $data);
 	}
 
@@ -40,13 +42,13 @@ class Software extends WHMAZADMIN_Controller {
 		$this->form_validation->set_rules('version', 'Version', 'required|trim');
 
 		if ($this->form_validation->run() == false) {
-			$this->session->set_flashdata('error', 'Version is required.');
+			$this->session->set_flashdata('admin_error', 'Version is required.');
 			redirect('/whmazadmin/software', 'refresh');
 			return;
 		}
 
 		if (empty($_FILES['software_zip']['name']) || $_FILES['software_zip']['size'] <= 0) {
-			$this->session->set_flashdata('error', 'Please choose a ZIP file to upload.');
+			$this->session->set_flashdata('admin_error', 'Please choose a ZIP file to upload.');
 			redirect('/whmazadmin/software', 'refresh');
 			return;
 		}
@@ -55,7 +57,7 @@ class Software extends WHMAZADMIN_Controller {
 		$originalName = $_FILES['software_zip']['name'];
 		$ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 		if ($ext !== 'zip') {
-			$this->session->set_flashdata('error', 'Only .zip files are allowed.');
+			$this->session->set_flashdata('admin_error', 'Only .zip files are allowed.');
 			redirect('/whmazadmin/software', 'refresh');
 			return;
 		}
@@ -73,7 +75,7 @@ class Software extends WHMAZADMIN_Controller {
 		$this->upload->initialize($config);
 
 		if (!$this->upload->do_upload('software_zip')) {
-			$this->session->set_flashdata('error', 'Upload failed: ' . $this->upload->display_errors('', ''));
+			$this->session->set_flashdata('admin_error', 'Upload failed: ' . $this->upload->display_errors('', ''));
 			redirect('/whmazadmin/software', 'refresh');
 			return;
 		}
@@ -81,7 +83,9 @@ class Software extends WHMAZADMIN_Controller {
 		$uploadData = $this->upload->data();
 
 		$makeCurrent = $this->input->post('is_current') !== null; // checkbox
+		$productId   = (int) $this->input->post('product_id');
 		$id = $this->Software_model->saveRelease(array(
+			'product_id'    => $productId > 0 ? $productId : null,
 			'version'       => trim($this->input->post('version')),
 			'file_name'     => $uploadData['file_name'],
 			'original_name' => $originalName,
@@ -91,21 +95,21 @@ class Software extends WHMAZADMIN_Controller {
 			'uploaded_on'   => date('Y-m-d H:i:s'),
 		), $makeCurrent);
 
-		$this->session->set_flashdata('success', $id > 0 ? 'Release uploaded successfully.' : 'Could not save the release.');
+		$this->session->set_flashdata('admin_success', $id > 0 ? 'Release uploaded successfully.' : 'Could not save the release.');
 		redirect('/whmazadmin/software', 'refresh');
 	}
 
 	public function set_current($id)
 	{
 		$this->Software_model->setCurrent($id);
-		$this->session->set_flashdata('success', 'Current release updated.');
+		$this->session->set_flashdata('admin_success', 'Current release updated.');
 		redirect('/whmazadmin/software', 'refresh');
 	}
 
 	public function delete_records($id)
 	{
 		$this->Software_model->softDelete($id);
-		$this->session->set_flashdata('success', 'Release removed.');
+		$this->session->set_flashdata('admin_success', 'Release removed.');
 		redirect('/whmazadmin/software', 'refresh');
 	}
 

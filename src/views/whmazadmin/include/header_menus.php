@@ -106,10 +106,11 @@
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/domain_register/index"><i class="fas fa-globe me-2"></i>Domain Register</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/domain_pricing/index"><i class="fas fa-tags me-2"></i>Domain Pricing</a></li>
                         <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/softwareproduct/index"><i class="fas fa-cube me-2"></i>Software Products</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/software"><i class="fas fa-cube me-2"></i>Software Releases</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/email_template/index"><i class="fas fa-envelope me-2"></i>Email Template</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/page/index"><i class="fas fa-file-code me-2"></i>Dynamic Pages</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/software"><i class="fas fa-cube me-2"></i>Software Releases</a></li>
                     </ul>
                 </li>
             </ul>
