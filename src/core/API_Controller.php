@@ -264,29 +264,43 @@ class API_Controller extends MX_Controller
 	// ─── Storefront cart/checkout reuse (ApiCart / ApiCheckout) ─────────────
 
 	/**
-	 * Establish a CUSTOMER session for the acting company so the storefront
+	 * Establish a CUSTOMER session for the acting customer so the storefront
 	 * cart/checkout code (which reads getCustomerId()/getCompanyId()/currency
-	 * from the session) runs unchanged on this stateless request. The acting
-	 * company defaults to the reseller itself, else an owned sub-customer.
+	 * from the session) runs unchanged on this stateless request.
+	 *
+	 * The `customer_id` param is a **users.id** (API-only convention; matches
+	 * /me.reseller.customer_id and /customers[].customer_id). It must belong to
+	 * a company within this reseller's scope (the reseller or a sub-customer).
+	 * Omit it to act as the reseller's own owner user.
 	 */
 	protected function actAsCustomer()
 	{
-		$companyId = intval($this->param('customer_id')) ?: $this->company_id;
-		if (!$this->ownsCompany($companyId)) {
-			$this->fail(403, 'customer_id is not within your account scope.', 'forbidden');
-		}
+		$userId = intval($this->param('customer_id'));
 
-		// The cart is owned by the customer's login user (owner preferred).
-		$owner = $this->db->query(
-			"SELECT id FROM users WHERE company_id = ? AND status = 1 ORDER BY user_type ASC, id ASC LIMIT 1",
-			array($companyId)
-		)->row_array();
-		if (empty($owner)) {
-			$this->fail(409, 'This customer has no login user to own a cart.', 'no_customer_user');
+		if ($userId > 0) {
+			// customer_id == users.id — resolve its company and check scope.
+			$u = $this->db->query(
+				"SELECT id, company_id FROM users WHERE id = ? AND status = 1 LIMIT 1",
+				array($userId)
+			)->row_array();
+			if (empty($u) || !$this->ownsCompany($u['company_id'])) {
+				$this->fail(403, 'customer_id is not within your account scope.', 'forbidden');
+			}
+			$actUserId = intval($u['id']);
+		} else {
+			// Default: the reseller's own owner login user.
+			$owner = $this->db->query(
+				"SELECT id FROM users WHERE company_id = ? AND status = 1 ORDER BY user_type ASC, id ASC LIMIT 1",
+				array($this->company_id)
+			)->row_array();
+			if (empty($owner)) {
+				$this->fail(409, 'Your account has no login user to own a cart.', 'no_customer_user');
+			}
+			$actUserId = intval($owner['id']);
 		}
 
 		$this->load->model('Auth_model');
-		$userData = $this->Auth_model->getUserSessionData($owner['id']);
+		$userData = $this->Auth_model->getUserSessionData($actUserId);
 		if (empty($userData)) {
 			$this->fail(500, 'Could not establish customer context.', 'server_error');
 		}
@@ -301,7 +315,7 @@ class API_Controller extends MX_Controller
 				$this->session->set_userdata('currency_code', $cur['code']);
 			}
 		}
-		return $companyId;
+		return $actUserId;
 	}
 
 	/**

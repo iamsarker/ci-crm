@@ -24,7 +24,9 @@ class ApiCustomers extends API_Controller
 		list($limit, $offset, $page) = $this->pagination();
 
 		$rows = $this->db->query(
-			"SELECT id, name, email, mobile, phone, city, country, status, inserted_on
+			"SELECT id, name, email, mobile, phone, city, country, status, inserted_on,
+			        (SELECT u.id FROM users u WHERE u.company_id = companies.id AND u.status = 1
+			         ORDER BY u.user_type ASC, u.id ASC LIMIT 1) AS owner_user_id
 			 FROM companies
 			 WHERE parent_company_id = ? AND status = 1
 			 ORDER BY id DESC LIMIT ?, ?",
@@ -46,7 +48,10 @@ class ApiCustomers extends API_Controller
 	{
 		$this->requireScope('customers:read');
 		$row = $this->db->query(
-			"SELECT * FROM companies WHERE id = ? AND parent_company_id = ? AND status = 1 LIMIT 1",
+			"SELECT companies.*,
+			        (SELECT u.id FROM users u WHERE u.company_id = companies.id AND u.status = 1
+			         ORDER BY u.user_type ASC, u.id ASC LIMIT 1) AS owner_user_id
+			 FROM companies WHERE id = ? AND parent_company_id = ? AND status = 1 LIMIT 1",
 			array(intval($id), $this->company_id)
 		)->row_array();
 
@@ -120,12 +125,15 @@ class ApiCustomers extends API_Controller
 			'inserted_on' => $now,
 			'inserted_by' => 0,
 		));
+		$userId = intval($this->db->insert_id());
 
 		$this->ok(array(
 			'customer' => array(
-				'id'       => $companyId,
-				'name'     => $name,
-				'email'    => $email,
+				'id'          => $companyId,
+				'company_id'  => $companyId,
+				'customer_id' => $userId,   // users.id → pass to /cart & /checkout
+				'name'        => $name,
+				'email'       => $email,
 				'parent_company_id' => $this->company_id,
 			),
 			'login' => array(
@@ -138,7 +146,9 @@ class ApiCustomers extends API_Controller
 	private function shapeCustomer($row)
 	{
 		return array(
-			'id'          => intval($row['id']),
+			'id'          => intval($row['id']),                          // companies.id
+			'company_id'  => intval($row['id']),                          // companies.id (alias)
+			'customer_id' => !empty($row['owner_user_id']) ? intval($row['owner_user_id']) : null, // users.id → pass to /cart & /checkout
 			'name'        => $row['name'],
 			'email'       => $row['email'],
 			'mobile'      => $row['mobile'] ?? null,

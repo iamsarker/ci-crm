@@ -173,13 +173,19 @@ Keys may **also** carry an optional per-minute cap (`api_keys.rate_limit`,
 ### Placing an order (cart → checkout)
 Order placement **reuses the exact storefront cart/checkout code** — it is not
 re-implemented in the API. Each call establishes a customer session for the acting
-company (the reseller or an owned sub-customer via `customer_id`), then delegates
-to the storefront `cart` controller / `checkoutSubmit()` via `Modules::run()`.
+customer, then delegates to the storefront `cart` controller / `checkoutSubmit()`
+via `Modules::run()`.
 
-The cart persists in `add_to_carts` keyed by the customer's user_id, so add → link
-→ checkout compose across separate stateless requests targeting the same
-`customer_id`. Request bodies mirror the storefront endpoints. Get the pricing ids
-from `/products/hosting` (`product_service_pricing_id`), `/products/software`
+**`customer_id` is a `users.id`** (API-only convention). Get it from
+`/me` → `reseller.customer_id` (to act as yourself) or from `/customers` →
+`customer_id` (to act for a sub-customer). Omit it to default to your own owner
+user. It must resolve to a company within your scope. (`company_id` is also
+returned everywhere for reference, but the cart/checkout param is `customer_id`.)
+
+The cart persists in `add_to_carts` keyed by that user id, so add → link → checkout
+compose across separate stateless requests targeting the same `customer_id`.
+Request bodies mirror the storefront endpoints. Get the pricing ids from
+`/products/hosting` (`product_service_pricing_id`), `/products/software`
 (`software_pricing_id`) and `/domains/check` or `/domains/suggest` (`dom_pricing_id`).
 
 **Nothing is provisioned at checkout** — items are created pending / `DUE`. Pay and

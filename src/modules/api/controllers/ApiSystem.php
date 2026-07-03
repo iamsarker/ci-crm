@@ -38,6 +38,13 @@ class ApiSystem extends API_Controller
 			array($this->company_id)
 		)->row_array();
 
+		// The login user that owns the reseller's cart — the same one
+		// actAsCustomer() resolves for /cart/* and /checkout (owner preferred).
+		$owner = $this->db->query(
+			"SELECT id FROM users WHERE company_id = ? AND status = 1 ORDER BY user_type ASC, id ASC LIMIT 1",
+			array($this->company_id)
+		)->row_array();
+
 		$this->ok(array(
 			'key' => array(
 				'name'         => $this->api_key['name'],
@@ -47,7 +54,8 @@ class ApiSystem extends API_Controller
 				'expires_at'   => $this->api_key['expires_at'],
 			),
 			'reseller' => array(
-				'company_id'     => intval($this->company_id),
+				'company_id'     => intval($this->company_id),                    // companies.id
+				'customer_id'    => !empty($owner) ? intval($owner['id']) : null, // users.id (the cart owner)
 				'name'           => $company['name'] ?? null,
 				'email'          => $company['email'] ?? null,
 				'discount_type'  => $company['discount_type'] ?? null,
