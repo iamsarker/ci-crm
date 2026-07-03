@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 03, 2026 at 12:47 AM
+-- Generation Time: Jul 03, 2026 at 03:23 AM
 -- Server version: 10.11.18-MariaDB-cll-lve
 -- PHP Version: 8.3.31
 
@@ -92,7 +92,8 @@ INSERT INTO `admin_logins` (`id`, `admin_id`, `login_time`, `session_val`, `term
 (13, 1, '2026-03-25 02:12:46', '0', '::1', NULL, 1),
 (14, 1, '2026-05-10 08:49:39', '0', '31.183.178.77', NULL, 1),
 (15, 1, '2026-06-27 06:24:36', '0', '103.159.72.16', NULL, 1),
-(16, 1, '2026-07-03 07:21:56', '0', '::1', NULL, 1);
+(16, 1, '2026-07-03 07:21:56', '0', '::1', NULL, 1),
+(17, 1, '2026-07-03 09:59:53', '0', '::1', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1050,8 +1051,8 @@ CREATE TABLE `gen_numbers` (
 --
 
 INSERT INTO `gen_numbers` (`id`, `no_type`, `last_no`) VALUES
-(1, 'ORDER', 2035),
-(2, 'INVOICE', 1544);
+(1, 'ORDER', 2037),
+(2, 'INVOICE', 1547);
 
 -- --------------------------------------------------------
 
@@ -1095,7 +1096,8 @@ CREATE TABLE `invoices` (
 
 INSERT INTO `invoices` (`id`, `invoice_uuid`, `company_id`, `order_id`, `currency_id`, `currency_code`, `invoice_no`, `sub_total`, `tax`, `vat`, `discount`, `coupon_code`, `total`, `due_date`, `order_date`, `cancel_date`, `refund_date`, `remarks`, `status`, `pay_status`, `need_api_call`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (561, '49af90f2-d430-4e60-b6b4-1704bcae8cfd', 1, 735, 1, 'USD', '1543', 12.95, 0.00, 0.00, 0.00, NULL, 12.95, '2026-03-07', '2026-03-07', NULL, NULL, NULL, 1, 'DUE', 0, '2026-03-07 02:39:39', 1, '2026-03-07 09:48:56', NULL, NULL, NULL),
-(562, '60cb4a18-97a8-44c3-9290-e84362a21267', 1, 736, 1, 'USD', '1544', 13.25, 0.00, 0.00, 2.00, 'XE983SVP', 11.25, '2026-03-17', '2026-03-17', NULL, NULL, NULL, 1, 'DUE', 0, '2026-03-17 15:42:37', 1, '2026-03-17 14:42:37', NULL, NULL, NULL);
+(562, '60cb4a18-97a8-44c3-9290-e84362a21267', 1, 736, 1, 'USD', '1544', 13.25, 0.00, 0.00, 2.00, 'XE983SVP', 11.25, '2026-03-17', '2026-03-17', NULL, NULL, NULL, 1, 'DUE', 0, '2026-03-17 15:42:37', 1, '2026-03-17 14:42:37', NULL, NULL, NULL),
+(565, 'e05eeee6-d48c-4d2c-af42-502cebeceb15', 1, 738, 1, 'USD', '1547', 10.00, 0.00, 0.00, 0.00, '', 10.00, '2026-07-03', '2026-07-03', NULL, NULL, NULL, 1, 'PAID', 0, '2026-07-03 09:58:35', 1, '2026-07-03 15:04:49', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1133,7 +1135,8 @@ CREATE TABLE `invoice_items` (
 
 INSERT INTO `invoice_items` (`id`, `invoice_id`, `item`, `item_desc`, `item_type`, `ref_id`, `billing_cycle_id`, `note`, `quantity`, `unit_price`, `discount`, `sub_total`, `tax`, `vat`, `total`, `billing_period_start`, `billing_period_end`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
 (579, 561, 'Register: testing-ecomz.xyz', 'Register: testing-ecomz.xyz - testing-ecomz.xyz', 1, 731, 1, NULL, 1, 12.95, 0.00, 12.95, 0.00, 0.00, 12.95, '2026-03-07', '2026-04-06', '2026-03-07 02:39:39', 1, '2026-03-07 08:39:39', NULL),
-(580, 562, 'Register: testingsarkerdom.net', 'Register: testingsarkerdom.net - testingsarkerdom.net', 1, 732, 1, NULL, 1, 13.25, 0.00, 13.25, 0.00, 0.00, 13.25, '2026-03-17', '2026-04-16', '2026-03-17 15:42:38', 1, '2026-03-17 14:42:39', NULL);
+(580, 562, 'Register: testingsarkerdom.net', 'Register: testingsarkerdom.net - testingsarkerdom.net', 1, 732, 1, NULL, 1, 13.25, 0.00, 13.25, 0.00, 0.00, 13.25, '2026-03-17', '2026-04-16', '2026-03-17 15:42:38', 1, '2026-03-17 14:42:39', NULL),
+(583, 565, 'TongBari Product', 'TongBari Product', 3, 2, 1, NULL, 1, 10.00, 0.00, 10.00, 0.00, 0.00, 10.00, '2026-07-03', '2026-08-02', '2026-07-03 09:58:36', 1, '2026-07-03 07:58:37', NULL);
 
 -- --------------------------------------------------------
 
@@ -1167,7 +1170,8 @@ CREATE TABLE `invoice_txn` (
 --
 
 INSERT INTO `invoice_txn` (`id`, `invoice_id`, `payment_gateway_id`, `payment_transaction_id`, `transaction_id`, `txn_date`, `amount`, `currency_code`, `type`, `status`, `remarks`, `attachments`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
-(10, 561, 2, 9, 'pi_3T8GPXQ1EoHKEhCU0sqybXnR', '2026-03-07', 12.95, 'USD', 'payment', 1, 'Payment via Stripe', NULL, '2026-03-07 02:40:43', 1, NULL, NULL, NULL, NULL);
+(10, 561, 2, 9, 'pi_3T8GPXQ1EoHKEhCU0sqybXnR', '2026-03-07', 12.95, 'USD', 'payment', 1, 'Payment via Stripe', NULL, '2026-03-07 02:40:43', 1, NULL, NULL, NULL, NULL),
+(11, 565, 6, 10, '2607031404382PrrxBHgpewcu8W', '2026-07-03', 10.00, 'USD', 'payment', 1, 'Payment via Sslcommerz', NULL, '2026-07-03 10:05:08', 1, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1398,7 +1402,8 @@ CREATE TABLE `orders` (
 
 INSERT INTO `orders` (`id`, `order_uuid`, `order_no`, `company_id`, `currency_id`, `currency_code`, `order_date`, `amount`, `vat_amount`, `tax_amount`, `coupon_code`, `coupon_amount`, `discount_amount`, `total_amount`, `payment_gateway_id`, `remarks`, `status`, `instructions`, `has_notification`, `need_api_call`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (735, '8b10d04a-e485-498a-baaf-88d5c493c4a7', 2034, 1, 1, 'USD', '2026-03-07', 12.95, 0.00, 0.00, '', 0.00, 0.00, 12.95, 7, '', 1, '', 0, 0, '2026-03-07 02:39:39', 1, '2026-03-07 08:40:43', NULL, NULL, NULL),
-(736, '213c0861-b953-428a-9fd0-0a9da7a2092b', 2035, 1, 1, 'USD', '2026-03-17', 13.25, 0.00, 0.00, 'XE983SVP', 2.00, 2.00, 11.25, 7, '', 1, '', 0, 0, '2026-03-17 15:42:36', 1, '2026-03-17 14:42:35', NULL, NULL, NULL);
+(736, '213c0861-b953-428a-9fd0-0a9da7a2092b', 2035, 1, 1, 'USD', '2026-03-17', 13.25, 0.00, 0.00, 'XE983SVP', 2.00, 2.00, 11.25, 7, '', 1, '', 0, 0, '2026-03-17 15:42:36', 1, '2026-03-17 14:42:35', NULL, NULL, NULL),
+(738, '5697819b-f2b9-4395-a619-56ca2b9320d0', 2037, 1, 1, 'USD', '2026-07-03', 10.00, 0.00, 0.00, '', 0.00, 0.00, 10.00, 7, '', 1, '', 0, 0, '2026-07-03 09:58:34', 1, '2026-07-03 07:58:35', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1481,6 +1486,9 @@ CREATE TABLE `order_licenses` (
   `order_id` bigint(20) NOT NULL,
   `company_id` bigint(20) NOT NULL,
   `plan_id` bigint(20) UNSIGNED NOT NULL,
+  `pending_plan_id` bigint(20) UNSIGNED DEFAULT NULL COMMENT 'Target product for a paid-pending plan change',
+  `pending_billing_cycle_id` int(11) DEFAULT NULL COMMENT 'Target billing cycle for a paid-pending plan change',
+  `pending_invoice_id` bigint(20) DEFAULT NULL COMMENT 'Proration invoice whose payment applies the pending plan change',
   `billing_cycle_id` int(11) NOT NULL,
   `currency_id` int(11) NOT NULL DEFAULT 0,
   `currency_code` varchar(3) DEFAULT NULL,
@@ -1510,6 +1518,13 @@ CREATE TABLE `order_licenses` (
   `deleted_on` datetime DEFAULT NULL,
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `order_licenses`
+--
+
+INSERT INTO `order_licenses` (`id`, `order_id`, `company_id`, `plan_id`, `pending_plan_id`, `pending_billing_cycle_id`, `pending_invoice_id`, `billing_cycle_id`, `currency_id`, `currency_code`, `first_pay_amount`, `recurring_amount`, `license_key`, `paddle_subscription_id`, `auto_renew`, `reg_date`, `exp_date`, `due_date`, `next_renewal_date`, `suspension_date`, `suspension_reason`, `termination_date`, `is_synced`, `last_sync_dt`, `license_domain`, `last_check_in`, `last_check_ip`, `status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(2, 738, 1, 5, NULL, NULL, NULL, 1, 1, 'USD', 10.00, 10.00, 'WHMAZ-7C3CC-D5171-63422-B187C', NULL, 1, '2026-07-03', '2026-08-02', '2026-07-10', '2026-08-02', NULL, NULL, NULL, 1, '2026-07-03 10:04:51', NULL, NULL, NULL, 1, '', '2026-07-03 09:58:36', 1, '2026-07-03 08:04:51', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1775,7 +1790,7 @@ INSERT INTO `payment_gateway` (`id`, `name`, `gateway_code`, `gateway_type`, `ic
 (3, 'PayPal', 'paypal', 'online_wallet', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,JPY,CHF,HKD,SGD,SEK,DKK,PLN,NOK,CZK,ILS,MXN,BRL,PHP,TWD,THB,MYR', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'PayPal', 'Pay securely using your PayPal account or card.', 2, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (4, 'Razorpay', 'razorpay', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'INR', 0.00, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'Razorpay', 'Pay with UPI, Cards, Netbanking, or Wallets via Razorpay.', 3, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (5, 'Paystack', 'paystack', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NGN,GHS,ZAR,KES', 0.00, 0.00, 'both', 100.00, 1.50, 'merchant', NULL, 'Paystack', 'Pay with card or bank transfer via Paystack.', 4, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
-(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', 'http://localhost/webhook/sslcommerz', 1, 'titum5d71b6d6edd13', 'titum5d71b6d6edd13@ssl', NULL, '{\r\n    \"store_id\": \"titum5d71b6d6edd13\",\r\n    \"store_password\": \"titum5d71b6d6edd13@ssl\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD,BDT', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, 'http://localhost/webhook/sslcommerz', '', NULL, '', 0, '2026-02-13 10:28:21', NULL, '2026-02-26 23:37:58', 1),
+(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', 'http://localhost/webhook/sslcommerz', 1, 'titum5d71b6d6edd13', 'titum5d71b6d6edd13@ssl', NULL, '{\r\n    \"store_id\": \"titum5d71b6d6edd13\",\r\n    \"store_password\": \"titum5d71b6d6edd13@ssl\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD,BDT', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, 'http://localhost/webhook/sslcommerz', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-07-03 15:03:13', 1),
 (7, 'Bank Transfer', 'bank_transfer', 'bank_transfer', NULL, 'OFFLINE', '', '', '', 0, '', '', NULL, NULL, 'TEST Bank PLC', 'WHMAZ', '1234567890123', '1234567', '12345678', '1234567', 'USD,EUR,GBP,BDT,INR', 0.10, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Bank Transfer', 'Transfer funds directly to our bank account. Order will be processed after payment confirmation.', 10, 'http://localhost/webhook/bank_transfer', '', NULL, 'Please share the TXN number after payment', 1, '2026-02-13 10:28:21', NULL, '2026-02-14 08:56:29', 1);
 
 -- --------------------------------------------------------
@@ -1854,7 +1869,8 @@ CREATE TABLE `payment_transactions` (
 --
 
 INSERT INTO `payment_transactions` (`id`, `transaction_uuid`, `invoice_id`, `payment_gateway_id`, `gateway_code`, `gateway_transaction_id`, `gateway_payment_id`, `gateway_order_id`, `gateway_subscription_id`, `amount`, `fee_amount`, `net_amount`, `currency_code`, `exchange_rate`, `txn_type`, `status`, `failure_reason`, `payment_method`, `card_brand`, `card_last4`, `card_exp_month`, `card_exp_year`, `bank_name`, `wallet_name`, `payer_email`, `payer_name`, `payer_phone`, `gateway_response`, `webhook_payload`, `ip_address`, `user_agent`, `metadata`, `initiated_at`, `completed_at`, `refunded_at`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(9, '8f659de9-e9d7-4aec-b1ff-ad8349328fab', 561, 2, 'stripe', 'pi_3T8GPXQ1EoHKEhCU0sqybXnR', NULL, 'pi_3T8GPXQ1EoHKEhCU0sqybXnR', NULL, 12.95, 0.00, 12.95, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, 'visa', '4242', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"id\":\"pi_3T8GPXQ1EoHKEhCU0sqybXnR\",\"object\":\"payment_intent\",\"amount\":1295,\"amount_capturable\":0,\"amount_details\":{\"tip\":[]},\"amount_received\":1295,\"application\":null,\"application_fee_amount\":null,\"automatic_payment_methods\":{\"allow_redirects\":\"always\",\"enabled\":true},\"canceled_at\":null,\"cancellation_reason\":null,\"capture_method\":\"automatic\",\"client_secret\":\"pi_3T8GPXQ1EoHKEhCU0sqybXnR_secret_mkA45tMnsQBq89M9ruatYmQco\",\"confirmation_method\":\"automatic\",\"created\":1772872835,\"currency\":\"usd\",\"customer\":null,\"customer_account\":null,\"description\":null,\"excluded_payment_method_types\":null,\"invoice\":null,\"last_payment_error\":null,\"latest_charge\":{\"id\":\"ch_3T8GPXQ1EoHKEhCU0Y7wFiT1\",\"object\":\"charge\",\"amount\":1295,\"amount_captured\":1295,\"amount_refunded\":0,\"application\":null,\"application_fee\":null,\"application_fee_amount\":null,\"balance_transaction\":\"txn_3T8GPXQ1EoHKEhCU0AmaUpDF\",\"billing_details\":{\"address\":{\"city\":null,\"country\":null,\"line1\":null,\"line2\":null,\"postal_code\":\"90254\",\"state\":null},\"email\":null,\"name\":null,\"phone\":null,\"tax_id\":null},\"calculated_statement_descriptor\":\"Stripe\",\"captured\":true,\"created\":1772872835,\"currency\":\"usd\",\"customer\":null,\"description\":null,\"destination\":null,\"dispute\":null,\"disputed\":false,\"failure_balance_transaction\":null,\"failure_code\":null,\"failure_message\":null,\"fraud_details\":[],\"invoice\":null,\"livemode\":false,\"metadata\":{\"invoice_id\":\"561\",\"invoice_uuid\":\"49af90f2-d430-4e60-b6b4-1704bcae8cfd\",\"transaction_id\":\"9\"},\"on_behalf_of\":null,\"order\":null,\"outcome\":{\"advice_code\":null,\"network_advice_code\":null,\"network_decline_code\":null,\"network_status\":\"approved_by_network\",\"reason\":null,\"risk_level\":\"normal\",\"risk_score\":23,\"seller_message\":\"Payment complete.\",\"type\":\"authorized\"},\"paid\":true,\"payment_intent\":\"pi_3T8GPXQ1EoHKEhCU0sqybXnR\",\"payment_method\":\"pm_1T8GPXQ1EoHKEhCURJDPwzBx\",\"payment_method_details\":{\"card\":{\"amount_authorized\":1295,\"authorization_code\":\"502000\",\"brand\":\"visa\",\"checks\":{\"address_line1_check\":null,\"address_postal_code_check\":\"pass\",\"cvc_check\":\"pass\"},\"country\":\"US\",\"exp_month\":6,\"exp_year\":2028,\"extended_authorization\":{\"status\":\"disabled\"},\"fingerprint\":\"M0ZBagDykUho10VO\",\"funding\":\"credit\",\"incremental_authorization\":{\"status\":\"unavailable\"},\"installments\":null,\"last4\":\"4242\",\"mandate\":null,\"multicapture\":{\"status\":\"unavailable\"},\"network\":\"visa\",\"network_token\":{\"used\":false},\"network_transaction_id\":\"774890669710368\",\"overcapture\":{\"maximum_amount_capturable\":1295,\"status\":\"unavailable\"},\"regulated_status\":\"unregulated\",\"three_d_secure\":null,\"wallet\":null},\"type\":\"card\"},\"radar_options\":[],\"receipt_email\":null,\"receipt_number\":null,\"receipt_url\":\"https:\\/\\/pay.stripe.com\\/receipts\\/payment\\/CAcaFwoVYWNjdF8xVDBaN3ZRMUVvSEtFaENVKIXJr80GMgbavnGW7i06LBaQPm0p8yrH97np-xg4xeVlHjiPR3w1zRAPMLkz-hHYr3z0sr8I-EDdTXXv\",\"refunded\":false,\"review\":null,\"shipping\":null,\"source\":null,\"source_transfer\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null},\"livemode\":false,\"metadata\":{\"invoice_id\":\"561\",\"invoice_uuid\":\"49af90f2-d430-4e60-b6b4-1704bcae8cfd\",\"transaction_id\":\"9\"},\"next_action\":null,\"on_behalf_of\":null,\"payment_method\":\"pm_1T8GPXQ1EoHKEhCURJDPwzBx\",\"payment_method_configuration_details\":{\"id\":\"pmc_1T0Z8RQ1EoHKEhCUitfkyb1e\",\"parent\":null},\"payment_method_options\":{\"card\":{\"installments\":null,\"mandate_options\":null,\"network\":null,\"request_three_d_secure\":\"automatic\"},\"link\":{\"persistent_token\":null}},\"payment_method_types\":[\"card\",\"link\"],\"processing\":null,\"receipt_email\":null,\"review\":null,\"setup_future_usage\":null,\"shipping\":null,\"source\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null}', NULL, '103.159.72.16', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '{\"invoice_no\":\"1543\",\"company_id\":\"1\"}', '2026-03-07 02:40:34', '2026-03-07 02:40:37', NULL, '2026-03-07 02:40:34', 1, '2026-03-07 02:40:37', NULL);
+(9, '8f659de9-e9d7-4aec-b1ff-ad8349328fab', 561, 2, 'stripe', 'pi_3T8GPXQ1EoHKEhCU0sqybXnR', NULL, 'pi_3T8GPXQ1EoHKEhCU0sqybXnR', NULL, 12.95, 0.00, 12.95, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, 'visa', '4242', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"id\":\"pi_3T8GPXQ1EoHKEhCU0sqybXnR\",\"object\":\"payment_intent\",\"amount\":1295,\"amount_capturable\":0,\"amount_details\":{\"tip\":[]},\"amount_received\":1295,\"application\":null,\"application_fee_amount\":null,\"automatic_payment_methods\":{\"allow_redirects\":\"always\",\"enabled\":true},\"canceled_at\":null,\"cancellation_reason\":null,\"capture_method\":\"automatic\",\"client_secret\":\"pi_3T8GPXQ1EoHKEhCU0sqybXnR_secret_mkA45tMnsQBq89M9ruatYmQco\",\"confirmation_method\":\"automatic\",\"created\":1772872835,\"currency\":\"usd\",\"customer\":null,\"customer_account\":null,\"description\":null,\"excluded_payment_method_types\":null,\"invoice\":null,\"last_payment_error\":null,\"latest_charge\":{\"id\":\"ch_3T8GPXQ1EoHKEhCU0Y7wFiT1\",\"object\":\"charge\",\"amount\":1295,\"amount_captured\":1295,\"amount_refunded\":0,\"application\":null,\"application_fee\":null,\"application_fee_amount\":null,\"balance_transaction\":\"txn_3T8GPXQ1EoHKEhCU0AmaUpDF\",\"billing_details\":{\"address\":{\"city\":null,\"country\":null,\"line1\":null,\"line2\":null,\"postal_code\":\"90254\",\"state\":null},\"email\":null,\"name\":null,\"phone\":null,\"tax_id\":null},\"calculated_statement_descriptor\":\"Stripe\",\"captured\":true,\"created\":1772872835,\"currency\":\"usd\",\"customer\":null,\"description\":null,\"destination\":null,\"dispute\":null,\"disputed\":false,\"failure_balance_transaction\":null,\"failure_code\":null,\"failure_message\":null,\"fraud_details\":[],\"invoice\":null,\"livemode\":false,\"metadata\":{\"invoice_id\":\"561\",\"invoice_uuid\":\"49af90f2-d430-4e60-b6b4-1704bcae8cfd\",\"transaction_id\":\"9\"},\"on_behalf_of\":null,\"order\":null,\"outcome\":{\"advice_code\":null,\"network_advice_code\":null,\"network_decline_code\":null,\"network_status\":\"approved_by_network\",\"reason\":null,\"risk_level\":\"normal\",\"risk_score\":23,\"seller_message\":\"Payment complete.\",\"type\":\"authorized\"},\"paid\":true,\"payment_intent\":\"pi_3T8GPXQ1EoHKEhCU0sqybXnR\",\"payment_method\":\"pm_1T8GPXQ1EoHKEhCURJDPwzBx\",\"payment_method_details\":{\"card\":{\"amount_authorized\":1295,\"authorization_code\":\"502000\",\"brand\":\"visa\",\"checks\":{\"address_line1_check\":null,\"address_postal_code_check\":\"pass\",\"cvc_check\":\"pass\"},\"country\":\"US\",\"exp_month\":6,\"exp_year\":2028,\"extended_authorization\":{\"status\":\"disabled\"},\"fingerprint\":\"M0ZBagDykUho10VO\",\"funding\":\"credit\",\"incremental_authorization\":{\"status\":\"unavailable\"},\"installments\":null,\"last4\":\"4242\",\"mandate\":null,\"multicapture\":{\"status\":\"unavailable\"},\"network\":\"visa\",\"network_token\":{\"used\":false},\"network_transaction_id\":\"774890669710368\",\"overcapture\":{\"maximum_amount_capturable\":1295,\"status\":\"unavailable\"},\"regulated_status\":\"unregulated\",\"three_d_secure\":null,\"wallet\":null},\"type\":\"card\"},\"radar_options\":[],\"receipt_email\":null,\"receipt_number\":null,\"receipt_url\":\"https:\\/\\/pay.stripe.com\\/receipts\\/payment\\/CAcaFwoVYWNjdF8xVDBaN3ZRMUVvSEtFaENVKIXJr80GMgbavnGW7i06LBaQPm0p8yrH97np-xg4xeVlHjiPR3w1zRAPMLkz-hHYr3z0sr8I-EDdTXXv\",\"refunded\":false,\"review\":null,\"shipping\":null,\"source\":null,\"source_transfer\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null},\"livemode\":false,\"metadata\":{\"invoice_id\":\"561\",\"invoice_uuid\":\"49af90f2-d430-4e60-b6b4-1704bcae8cfd\",\"transaction_id\":\"9\"},\"next_action\":null,\"on_behalf_of\":null,\"payment_method\":\"pm_1T8GPXQ1EoHKEhCURJDPwzBx\",\"payment_method_configuration_details\":{\"id\":\"pmc_1T0Z8RQ1EoHKEhCUitfkyb1e\",\"parent\":null},\"payment_method_options\":{\"card\":{\"installments\":null,\"mandate_options\":null,\"network\":null,\"request_three_d_secure\":\"automatic\"},\"link\":{\"persistent_token\":null}},\"payment_method_types\":[\"card\",\"link\"],\"processing\":null,\"receipt_email\":null,\"review\":null,\"setup_future_usage\":null,\"shipping\":null,\"source\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null}', NULL, '103.159.72.16', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '{\"invoice_no\":\"1543\",\"company_id\":\"1\"}', '2026-03-07 02:40:34', '2026-03-07 02:40:37', NULL, '2026-03-07 02:40:34', 1, '2026-03-07 02:40:37', NULL),
+(10, 'f841da8d-deae-4fb2-8a74-b06331ed455b', 565, 6, 'sslcommerz', '2607031404382PrrxBHgpewcu8W', NULL, 'EF932EAE35B0D5DED35309E371873486', NULL, 10.00, 0.00, 10.00, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"status\":\"VALID\",\"tran_date\":\"2026-07-03 14:04:25\",\"tran_id\":\"f841da8d-deae-4fb2-8a74-b06331ed455b\",\"val_id\":\"260703140438MRhWc3khFLkgUc4\",\"amount\":\"831.85\",\"store_amount\":\"811.05\",\"currency\":\"BDT\",\"bank_tran_id\":\"2607031404382PrrxBHgpewcu8W\",\"card_type\":\"BKASH-BKash\",\"card_no\":\"\",\"card_issuer\":\"BKash Mobile Banking\",\"card_brand\":\"MOBILEBANKING\",\"card_category\":\"MOBILE\",\"card_sub_brand\":\"\",\"card_issuer_country\":\"Bangladesh\",\"card_issuer_country_code\":\"BD\",\"currency_type\":\"USD\",\"currency_amount\":\"10.00\",\"currency_rate\":\"83.1850\",\"base_fair\":\"0.00\",\"value_a\":\"f841da8d-deae-4fb2-8a74-b06331ed455b\",\"value_b\":\"e05eeee6-d48c-4d2c-af42-502cebeceb15\",\"value_c\":\"8cf2304fedc88591cbdfad1078f4167f2026e77aa2e32056ef63bd9287d3b518\",\"value_d\":\"\",\"emi_instalment\":\"0\",\"emi_amount\":\"0.00\",\"emi_description\":\"\",\"emi_issuer\":\"BKash Mobile Banking\",\"account_details\":\"\",\"risk_title\":\"Safe\",\"risk_level\":\"0\",\"discount_percentage\":\"0\",\"discount_amount\":\"0.00\",\"discount_remarks\":\"\",\"APIConnect\":\"DONE\",\"validated_on\":\"2026-07-03 14:04:46\",\"gw_version\":\"\",\"offer_avail\":1,\"card_ref_id\":\"dc1da4f52669828139e81ef5eb0f48a5a99ea054a131e00a562887d455417dd914\",\"isTokeizeSuccess\":0,\"campaign_code\":\"\"}', NULL, '::1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36', '{\"invoice_no\":\"1547\",\"company_id\":\"1\",\"user_id\":\"1\",\"payment_token\":\"8cf2304fedc88591cbdfad1078f4167f2026e77aa2e32056ef63bd9287d3b518\"}', '2026-07-03 10:04:23', '2026-07-03 10:04:47', NULL, '2026-07-03 10:04:23', 1, '2026-07-03 10:04:47', NULL);
 
 -- --------------------------------------------------------
 
@@ -1882,6 +1898,7 @@ CREATE TABLE `pending_executions` (
 CREATE TABLE `plans` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `plan_key` varchar(32) NOT NULL,
+  `family_group` varchar(64) DEFAULT NULL COMMENT 'Products sharing this value are upgrade tiers of one software',
   `name` varchar(60) NOT NULL,
   `tagline` varchar(150) DEFAULT NULL,
   `description` text DEFAULT NULL COMMENT 'Full product description (HTML)',
@@ -1896,6 +1913,13 @@ CREATE TABLE `plans` (
   `updated_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `plans`
+--
+
+INSERT INTO `plans` (`id`, `plan_key`, `family_group`, `name`, `tagline`, `description`, `current_release_id`, `is_popular`, `sort_order`, `is_active`, `paddle_product_id`, `paddle_price_monthly_id`, `paddle_price_annual_id`, `created_at`, `updated_at`) VALUES
+(5, 'tong_bari_product', NULL, 'TongBari Product', 'TEST, Product, TongBari', 'Test description', NULL, 1, 1, 1, NULL, NULL, NULL, '2026-07-03 08:12:23', '2026-07-03 08:14:35');
+
 -- --------------------------------------------------------
 
 --
@@ -1908,6 +1932,14 @@ CREATE TABLE `plan_features` (
   `feature_key` varchar(64) NOT NULL,
   `feature_value` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `plan_features`
+--
+
+INSERT INTO `plan_features` (`id`, `plan_id`, `feature_key`, `feature_value`) VALUES
+(24, 5, 'support_response_hours', '1'),
+(25, 5, 'Reseller_Management', '1');
 
 -- --------------------------------------------------------
 
@@ -2226,7 +2258,8 @@ CREATE TABLE `provisioning_logs` (
 --
 
 INSERT INTO `provisioning_logs` (`id`, `invoice_id`, `invoice_item_id`, `item_type`, `ref_id`, `action`, `success`, `error_message`, `response_data`, `retry_count`, `inserted_on`, `updated_on`) VALUES
-(8, 561, 579, 1, 731, 'register', 1, NULL, '{\"success\":true,\"action\":\"register\",\"order_id\":\"1106489\",\"error\":null}', 0, '2026-03-07 02:40:43', '2026-03-07 08:40:43');
+(8, 561, 579, 1, 731, 'register', 1, NULL, '{\"success\":true,\"action\":\"register\",\"order_id\":\"1106489\",\"error\":null}', 0, '2026-03-07 02:40:43', '2026-03-07 08:40:43'),
+(11, 565, 583, 3, 2, 'activate', 1, '', '{\"success\":true,\"action\":\"activate\",\"error\":\"\"}', 0, '2026-07-03 10:04:52', '2026-07-03 08:04:52');
 
 -- --------------------------------------------------------
 
@@ -2323,6 +2356,16 @@ CREATE TABLE `software_pricing` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `software_pricing`
+--
+
+INSERT INTO `software_pricing` (`id`, `product_id`, `currency_id`, `billing_cycle_id`, `first_pay_amount`, `recurring_amount`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 5, 1, 1, 10.00, 10.00, 1, '2026-07-03 08:12:23', 1, '2026-07-03 13:14:36', 1, NULL, NULL),
+(2, 5, 1, 4, 110.00, 110.00, 1, '2026-07-03 08:12:23', 1, '2026-07-03 13:14:36', 1, NULL, NULL),
+(3, 5, 2, 1, 3500.00, 3500.00, 1, '2026-07-03 08:12:23', 1, '2026-07-03 13:14:36', 1, NULL, NULL),
+(4, 5, 2, 4, 36000.00, 36000.00, 1, '2026-07-03 08:12:23', 1, '2026-07-03 13:14:36', 1, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -2343,6 +2386,13 @@ CREATE TABLE `software_releases` (
   `uploaded_on` datetime DEFAULT NULL,
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `software_releases`
+--
+
+INSERT INTO `software_releases` (`id`, `product_id`, `version`, `file_name`, `original_name`, `file_size`, `changelog`, `is_current`, `status`, `uploaded_by`, `uploaded_on`, `updated_on`) VALUES
+(1, 5, '1.0.0', 'whmaz_df6369186de334a985618ba65202079e.zip', 'jquery-dist-3.6.3.zip', 483328, 'first release', 1, 1, 1, '2026-07-03 08:19:17', '2026-07-03 06:19:18');
 
 -- --------------------------------------------------------
 
@@ -2623,7 +2673,8 @@ INSERT INTO `user_logins` (`id`, `user_id`, `login_time`, `session_val`, `termin
 (8, 1, '2026-03-17 15:36:59', '0', '::1', NULL, 1),
 (9, 1, '2026-03-25 02:01:42', '0', '::1', NULL, 1),
 (10, 1, '2026-06-13 11:31:16', '0', '103.159.72.16', NULL, 1),
-(11, 1, '2026-06-27 06:23:00', '0', '103.159.72.16', NULL, 1);
+(11, 1, '2026-06-27 06:23:00', '0', '103.159.72.16', NULL, 1),
+(12, 1, '2026-07-03 09:58:05', '0', '::1', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -2969,7 +3020,8 @@ ALTER TABLE `pending_executions`
 --
 ALTER TABLE `plans`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_plans_plan_key` (`plan_key`);
+  ADD UNIQUE KEY `uq_plans_plan_key` (`plan_key`),
+  ADD KEY `idx_plans_family_group` (`family_group`);
 
 --
 -- Indexes for table `plan_features`
@@ -3125,13 +3177,13 @@ ALTER TABLE `webhook_logs`
 -- AUTO_INCREMENT for table `add_to_carts`
 --
 ALTER TABLE `add_to_carts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `admin_logins`
 --
 ALTER TABLE `admin_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `admin_roles`
@@ -3263,19 +3315,19 @@ ALTER TABLE `gen_numbers`
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=563;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=566;
 
 --
 -- AUTO_INCREMENT for table `invoice_items`
 --
 ALTER TABLE `invoice_items`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=581;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=584;
 
 --
 -- AUTO_INCREMENT for table `invoice_txn`
 --
 ALTER TABLE `invoice_txn`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `kbs`
@@ -3311,7 +3363,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=737;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=739;
 
 --
 -- AUTO_INCREMENT for table `order_domains`
@@ -3323,7 +3375,7 @@ ALTER TABLE `order_domains`
 -- AUTO_INCREMENT for table `order_licenses`
 --
 ALTER TABLE `order_licenses`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `order_services`
@@ -3359,7 +3411,7 @@ ALTER TABLE `payment_refunds`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `pending_executions`
@@ -3371,13 +3423,13 @@ ALTER TABLE `pending_executions`
 -- AUTO_INCREMENT for table `plans`
 --
 ALTER TABLE `plans`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `plan_features`
 --
 ALTER TABLE `plan_features`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `product_services`
@@ -3431,7 +3483,7 @@ ALTER TABLE `promo_code_usage`
 -- AUTO_INCREMENT for table `provisioning_logs`
 --
 ALTER TABLE `provisioning_logs`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `servers`
@@ -3449,13 +3501,13 @@ ALTER TABLE `server_modules`
 -- AUTO_INCREMENT for table `software_pricing`
 --
 ALTER TABLE `software_pricing`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `software_releases`
 --
 ALTER TABLE `software_releases`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `sys_cnf`
@@ -3491,7 +3543,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_logins`
 --
 ALTER TABLE `user_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `webhook_logs`

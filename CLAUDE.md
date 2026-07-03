@@ -396,12 +396,13 @@ Key facts to know at a glance:
 
 - "account" = `companies.id`; a customer's purchase = an `order_licenses` row (`plan_id` → `plans`), its own line separate from `order_services` (hosting) and `order_domains` (domains).
 - Self-hosted ⇒ suspension/termination are **soft** (status flip); enforced when the install phones home to `license/verify`.
-- Tables: `plans` (product catalog), **`software_pricing`** (currency × cycle), `plan_features`, `order_licenses`, `software_releases` (`product_id`-scoped). `invoice_items.item_type` / `add_to_carts.item_type`: 1=domain, 2=service, **3=license/software**.
-- Admin: **Settings → Software Products** (`whmazadmin/softwareproduct`) — CRUD + pricing grid + features. Releases: **Settings → Software Releases** (`whmazadmin/software`).
-- Customer: **`cart/software`** browse → **`cart/addSoftwareToCart`** (item_type=3) → shared `cart/checkoutSubmit` → pay → `provisionLicense()` → `activateLicense()` issues the key. "Software" dropdown in the customer header.
+- Tables: `plans` (product catalog; `family_group` groups upgrade tiers), **`software_pricing`** (currency × cycle), `plan_features`, `order_licenses` (`pending_plan_id`/`pending_invoice_id` = plan change awaiting its proration invoice), `software_releases` (`product_id`-scoped). `invoice_items.item_type` / `add_to_carts.item_type`: 1=domain, 2=service, **3=license/software**.
+- Admin: **Settings → Software Products** (`whmazadmin/softwareproduct`) — CRUD + pricing grid + features + **family group**. Releases: **Settings → Software Releases** (`whmazadmin/software`).
+- Customer buy: **`cart/software`** browse → **`cart/addSoftwareToCart`** (item_type=3) → shared `cart/checkoutSubmit` → pay → `provisionLicense()` → `activateLicense()` issues the key.
+- Customer manage: **`subscription`** = "My Software" (all licenses; per-license download + upgrade). `subscription/download/{license_id}` resolves the release **per product** (`getReleaseForProduct`). `subscription/upgrade/{id}` → same-family, same-cycle options with a **prorated** invoice that applies the switch on payment (downgrades apply immediately). "Software" nav (guest + logged-in).
 - Entitlement gating: `entitlement_can()` / `entitlement_value()` (autoloaded) backed by `src/libraries/Entitlement.php`; feature keys are admin-defined per product (`plan_features`), universal flags in `src/config/plans.php`.
 - License **renewal** and **overdue-suspension** run inside `/cronjobs/run` (`getExpiringLicenses`/`createLicenseRenewalInvoice`; `getLicensesOverdueForSuspension` + `suspendOverdueLicenses`).
-- Schema: fresh = `plans_subscription_schema.sql` + `software_releases_schema.sql`; existing-install upgrade = `software_catalog_migration.sql`.
+- Schema: `crm_db.sql` is canonical; incremental migrations `software_catalog_migration.sql` + `software_family_upgrade_migration.sql`.
 
 **Full documentation:** `docs/SAAS_LICENSING.md`
 

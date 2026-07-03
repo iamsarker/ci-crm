@@ -65,6 +65,20 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group">
+										<label class="form-label" for="family_group"><i class="fa fa-layer-group"></i> Family Group <small class="text-muted">(for upgrades)</small></label>
+										<input name="family_group" type="text" class="form-control" id="family_group" list="familyList" placeholder="e.g. whmaz-app" value="<?= htmlspecialchars($detail['family_group'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
+										<datalist id="familyList">
+											<?php foreach (($families ?? array()) as $fam): ?>
+											<option value="<?= htmlspecialchars($fam, ENT_QUOTES, 'UTF-8') ?>"></option>
+											<?php endforeach; ?>
+										</datalist>
+										<small class="text-muted">Products with the same family are offered as upgrade/downgrade tiers of each other. Leave blank for a standalone product.</small>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
 										<label class="form-label" for="tagline"><i class="fa fa-quote-left"></i> Tagline</label>
 										<input name="tagline" type="text" class="form-control" id="tagline" placeholder="Short one-liner" value="<?= htmlspecialchars($detail['tagline'] ?? '', ENT_QUOTES, 'UTF-8') ?>"/>
 									</div>

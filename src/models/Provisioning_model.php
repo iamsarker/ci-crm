@@ -657,9 +657,20 @@ class Provisioning_model extends CI_Model
             return array('success' => false, 'action' => 'none', 'error' => 'License not found: ' . $item['ref_id']);
         }
 
-        $isRenewal = $this->isRenewalInvoiceItem($item, 3);
-
         $this->load->model('Orderlicense_model');
+
+        // Prorated upgrade: this invoice's payment applies a pending plan change
+        // (not a renewal or new activation).
+        if (!empty($license['pending_invoice_id']) && (int) $license['pending_invoice_id'] === (int) $item['invoice_id']) {
+            $result = $this->Orderlicense_model->applyPendingPlanChange($item['ref_id']);
+            return array(
+                'success' => ! empty($result['success']),
+                'action'  => 'upgrade',
+                'error'   => empty($result['success']) ? (isset($result['message']) ? $result['message'] : 'Upgrade failed') : '',
+            );
+        }
+
+        $isRenewal = $this->isRenewalInvoiceItem($item, 3);
         $result = $this->Orderlicense_model->activateLicense($item['ref_id'], $isRenewal);
 
         return array(

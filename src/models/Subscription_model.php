@@ -91,4 +91,58 @@ class Subscription_model extends CI_Model {
 
 		return $row ? $row : array();
 	}
+
+	/**
+	 * All of a company's licenses (any status) for the "My Software" screen,
+	 * with plan name, family, and billing cycle. Newest first.
+	 *
+	 * @param  int $company_id
+	 * @return array[]
+	 */
+	function get_licenses_for_company($company_id)
+	{
+		$company_id = (int) $company_id;
+		if ($company_id <= 0) {
+			return array();
+		}
+
+		return $this->db
+			->select('ol.*, p.plan_key, p.name AS plan_name, p.family_group, bc.cycle_name')
+			->from($this->table . ' ol')
+			->join('plans p', 'p.id = ol.plan_id', 'inner')
+			->join('billing_cycle bc', 'bc.id = ol.billing_cycle_id', 'left')
+			->where('ol.company_id', $company_id)
+			->where('ol.deleted_on IS NULL', NULL, FALSE)
+			->order_by('ol.status = 1', 'DESC', FALSE)
+			->order_by('ol.id', 'DESC')
+			->get()
+			->result_array();
+	}
+
+	/**
+	 * A single license scoped to a company (ownership check). Empty if not owned.
+	 *
+	 * @param  int $license_id
+	 * @param  int $company_id
+	 * @return array
+	 */
+	function get_company_license($license_id, $company_id)
+	{
+		$license_id = (int) $license_id;
+		$company_id = (int) $company_id;
+		if ($license_id <= 0 || $company_id <= 0) {
+			return array();
+		}
+
+		return $this->db
+			->select('ol.*, p.plan_key, p.name AS plan_name, p.family_group, bc.cycle_name')
+			->from($this->table . ' ol')
+			->join('plans p', 'p.id = ol.plan_id', 'inner')
+			->join('billing_cycle bc', 'bc.id = ol.billing_cycle_id', 'left')
+			->where('ol.id', $license_id)
+			->where('ol.company_id', $company_id)
+			->where('ol.deleted_on IS NULL', NULL, FALSE)
+			->get()
+			->row_array() ?: array();
+	}
 }

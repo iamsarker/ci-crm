@@ -33,22 +33,15 @@
         <div class="card mg-t-20" style="border:0;border-radius:10px;color:#fff;background:linear-gradient(135deg,#0168fa 0%,#6f42c1 100%);">
             <div class="card-body d-flex flex-wrap justify-content-between align-items-center">
                 <div>
-                    <h5 class="mg-b-5"><i class="fa fa-cube mg-r-8"></i> WHMAZ Software</h5>
+                    <h5 class="mg-b-5"><i class="fa fa-cube mg-r-8"></i> My Software</h5>
                     <p class="mg-b-0" style="opacity:.9;">
-                        Your <strong><?= htmlspecialchars($subscription['plan_name'], ENT_QUOTES, 'UTF-8') ?></strong> plan is active.
-                        <?php if (!empty($current_release)): ?>
-                            Latest version: <strong><?= htmlspecialchars($current_release['version'], ENT_QUOTES, 'UTF-8') ?></strong>.
-                        <?php endif; ?>
+                        You have active software. Download the latest builds and manage your licenses.
                     </p>
                 </div>
                 <div class="mg-t-10 mg-md-t-0">
-                    <?php if (!empty($current_release)): ?>
-                        <a href="<?=base_url()?>subscription/download" class="btn btn-light btn-welcome">
-                            <i class="fa fa-download mg-r-5"></i> Download Software
-                        </a>
-                    <?php else: ?>
-                        <span class="btn btn-light disabled">No release available yet</span>
-                    <?php endif; ?>
+                    <a href="<?=base_url()?>subscription" class="btn btn-light btn-welcome">
+                        <i class="fa fa-cube mg-r-5"></i> My Software
+                    </a>
                 </div>
             </div>
         </div>

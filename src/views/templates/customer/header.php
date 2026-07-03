@@ -170,8 +170,8 @@
                   <i class="fas fa-cube me-1"></i> Software
                 </a>
                 <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="<?=base_url()?>subscription"><i class="fas fa-list me-2"></i>My Software</a></li>
                   <li><a class="dropdown-item" href="<?=base_url()?>cart/software"><i class="fas fa-shopping-cart me-2"></i>Buy Software</a></li>
-                  <li><a class="dropdown-item" href="<?=base_url()?>subscription/download"><i class="fas fa-download me-2"></i>Download Software</a></li>
                 </ul>
               </li>
 

@@ -24,19 +24,24 @@ ci-crm sells **software products** (the WHMAZ app tiers, add-on modules, or any 
 
 | Table | Purpose |
 |-------|---------|
-| `plans` | Software product catalog: `plan_key` UNIQUE (slug), `name`, `tagline`, `description` (HTML), `current_release_id`, `is_popular`, `sort_order`, `is_active`, `paddle_*` (nullable). **No price columns** — pricing is in `software_pricing`. |
+| `plans` | Software product catalog: `plan_key` UNIQUE (slug), `family_group` (upgrade tier grouping), `name`, `tagline`, `description` (HTML), `current_release_id`, `is_popular`, `sort_order`, `is_active`, `paddle_*` (nullable). **No price columns** — pricing is in `software_pricing`. |
 | `software_pricing` | Per product × currency × billing cycle. `first_pay_amount` (first invoice) + `recurring_amount` (renewals); `UNIQUE(product_id, currency_id, billing_cycle_id)`; FK → `plans` ON DELETE CASCADE. Mirrors `product_service_pricing`. |
 | `plan_features` | Differentiated entitlement flags per product. `feature_value` stores '1'/'0' or numbers as strings; `UNIQUE(plan_id, feature_key)`; FK → `plans` ON DELETE CASCADE |
-| `order_licenses` | A customer's purchased product line. Lifecycle mirrors `order_services`; adds `license_key`, `paddle_subscription_id`, `license_domain`, `last_check_in`, `last_check_ip`; FK → `plans` |
+| `order_licenses` | A customer's purchased product line. Lifecycle mirrors `order_services`; adds `license_key`, `paddle_subscription_id`, `license_domain`, `last_check_in`, `last_check_ip`, and the `pending_plan_id` / `pending_billing_cycle_id` / `pending_invoice_id` trio (a plan change awaiting its proration invoice); FK → `plans` |
 | `software_releases` | The installable ZIPs. `product_id` scopes a release to a product (NULL = global); `is_current` flags the download |
 
 `invoice_items.item_type`: **1 = domain, 2 = service, 3 = license/software**. `add_to_carts.item_type` uses the same convention (`3` = software; `product_service_id` holds the `plan_id`, `product_service_pricing_id` holds the `software_pricing.id`).
 
 ### Schema & migrations
 
-- **Fresh install** (idempotent, what the project ships): `plans_subscription_schema.sql`, `software_releases_schema.sql`
-- **Upgrade an existing install** from the old fixed-tier schema: `software_catalog_migration.sql` (adds `software_pricing`, `plans.description`/`current_release_id`, `software_releases.product_id`; drops the old price columns; resets the seeded Basic/Pro/Max demo products — guarded so it won't delete a product that already has a purchase).
-- The old CI `dbforge` migrations (`src/migrations/2026062712*`, `2026062713*`) still describe the original fixed-tier schema and are **superseded** by the SQL above. CI migrations are disabled (`migration_enabled = FALSE`); the `.sql` files are the apply path.
+- The **canonical schema is `crm_db.sql`** (the full export). Incremental changes ship as standalone idempotent migration `.sql` files that are run against an existing DB, after which `crm_db.sql` is re-exported:
+  - `software_catalog_migration.sql` — fixed tiers → generic catalog (adds `software_pricing`, `plans.description`/`current_release_id`, `software_releases.product_id`; drops old price columns; resets seeded demo tiers).
+  - `software_family_upgrade_migration.sql` — adds `plans.family_group` and the `order_licenses.pending_*` columns for family-scoped prorated upgrades.
+- The old CI `dbforge` migrations (`src/migrations/2026062712*`, `2026062713*`) describe the original fixed-tier schema and are **superseded**. CI migrations are disabled (`migration_enabled = FALSE`); the `.sql` files are the apply path.
+
+### Product families
+
+Products sharing a non-empty `plans.family_group` are **upgrade tiers of the same software** (e.g. Basic/Pro/Max all `family_group = 'whmaz-app'`). A customer can only switch a license between products in its own family, on the same currency and billing cycle. A blank `family_group` means a standalone product with no upgrade path.
 
 ---
 
@@ -74,11 +79,11 @@ $sla = entitlement_value($companyId, 'support_response_hours');
 
 | Model | Role |
 |-------|------|
-| `Plan_model` | Read: `get_active_plans()`, `get_by_key()`, `getCatalogForCustomer($currencyId)` (products + per-currency prices + features). Admin write: `saveProduct()`, `savePricingMatrix()`, `saveFeatures()`, `getPricingMatrix()`, `getStoredFeatures()`, `getPrice()`, `deleteProduct()`, `toggleActive()` |
+| `Plan_model` | Read: `get_active_plans()`, `get_by_key()`, `getCatalogForCustomer($currencyId)`, `getFamilyProducts($family, $currencyId, $cycleId, $excludeId)` (same-family upgrade options), `getAllFamilies()`. Admin write: `saveProduct()`, `savePricingMatrix()`, `saveFeatures()`, `getPricingMatrix()`, `getStoredFeatures()`, `getPrice()`, `deleteProduct()`, `toggleActive()` |
 | `Cart_model` | `getCartSoftwarePrice($pricingId)` (software line pricing); generic cart save/list already handle item_type=3 |
-| `Subscription_model` | Read-only resolver: `get_active_plan_key_for_company()`, `get_active_subscription_for_company()` (queries `order_licenses`) |
-| `Orderlicense_model` | Lifecycle: `saveLicense()`, `changePlan()` (upgrade, prices from `software_pricing`), `activateLicense()`, `suspendLicense()`/`unsuspendLicense()`/`terminateLicense()` (soft), `validateLicense()` (phone-home), `getLicenseByKey()`. `createSubscription()` is **retired** (cart is the checkout path). |
-| `Software_model` | Release CRUD + `getReleases($productId=null)`, `getCurrentRelease()`, `filePath()`, `storageDir()` |
+| `Subscription_model` | Read resolver: `get_active_plan_key_for_company()`, `get_active_subscription_for_company()`, `get_licenses_for_company()` (all licenses for My Software), `get_company_license($id, $companyId)` (ownership-scoped) |
+| `Orderlicense_model` | Lifecycle: `saveLicense()`, `changePlan()` (prices from `software_pricing`), `setPendingPlanChange()` / `applyPendingPlanChange()` (prorated upgrade, applied on payment), `activateLicense()`, `suspendLicense()`/`unsuspendLicense()`/`terminateLicense()` (soft), `validateLicense()` (phone-home), `getLicenseByKey()`. `createSubscription()` is **retired** (cart is the checkout path). |
+| `Software_model` | Release CRUD + `getReleases($productId=null)`, `getReleaseForProduct($productId)` (per-product download resolution), `getCurrentRelease()`, `filePath()`, `storageDir()` |
 
 ---
 
@@ -93,7 +98,7 @@ $sla = entitlement_value($companyId, 'support_response_hours');
 | Toggle active | `whmazadmin/softwareproduct/toggle_active/{id}` |
 | Delete | `whmazadmin/softwareproduct/delete_records/{id}` (blocked if a customer owns it) |
 
-The manage form has: **details** (name, auto-slug key, tagline, HTML description, popular flag, active toggle, sort order), a **pricing grid** (currency rows × billing-cycle columns; one price per cell → stored as both `first_pay_amount` and `recurring_amount`; use the **One-Time** cycle for a perpetual license), an **entitlement features** repeater (key/value → `plan_features`), and a **linked release** dropdown.
+The manage form has: **details** (name, auto-slug key, **family group** for upgrade tiers, tagline, HTML description, popular flag, active toggle, sort order), a **pricing grid** (currency rows × billing-cycle columns; one price per cell → stored as both `first_pay_amount` and `recurring_amount`; use the **One-Time** cycle for a perpetual license), an **entitlement features** repeater (key/value → `plan_features`), and a **linked release** dropdown. The family group field offers a datalist of existing families — assign the same value to products that should be upgrade tiers of each other.
 
 Releases are uploaded under **Settings → Software Releases** and can be tagged to a product or left global.
 
@@ -109,7 +114,7 @@ Software is purchased through the **same cart as hosting/domains**.
 | `cart/addSoftwareToCart` | POST (JSON) | Adds an `add_to_carts` row (`item_type=3`, `product_service_id`=plan_id, `product_service_pricing_id`=software_pricing.id). CSRF-excluded. |
 | `cart/checkoutSubmit` | POST | Shared checkout — builds order + invoice; `Cart::_processCartItem()` has an `item_type==3` branch that creates the `order_licenses` row (pending) via `Orderlicense_model::saveLicense()` and the `item_type=3` invoice item |
 
-Navigation: a **Software** dropdown in the customer header (`Buy Software` → `cart/software`, `Download Software` → `subscription/download`). The cart view (`view_card.php`) shows a **Software** badge for these lines.
+Navigation (guest **and** logged-in): a **Software** entry in the customer header (`Buy Software` → `cart/software`, `My Software` → `subscription`). The cart view (`view_card.php`) shows a **Software** badge for these lines.
 
 On payment, the existing provisioning path activates the license:
 
@@ -120,7 +125,27 @@ provisionPaidServices(invoiceId)
       → Orderlicense_model::activateLicense()   issues license_key, status = 1
 ```
 
-Renewal detection is unambiguous: `provisionLicense()` treats the item as a renewal if an earlier PAID invoice already references the same `order_licenses.id`, and calls `activateLicense(isRenewal=true)` to extend dates while keeping the key.
+`provisionLicense()` routes each paid `item_type=3` line three ways:
+- **Upgrade** — the license's `pending_invoice_id` matches this invoice → `applyPendingPlanChange()` (switch plan, keep dates/key).
+- **Renewal** — an earlier PAID invoice references the same license → `activateLicense(isRenewal=true)` (extend dates, keep key).
+- **New activation** — otherwise → `activateLicense()` (issue key, set dates).
+
+---
+
+## Customer — My Software, Downloads & Upgrades (`subscription` module)
+
+A company can own **multiple** licenses; each is an independent `order_licenses` row with its own key.
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `subscription` | GET | **My Software** (`subscription_index.php`) — every license with product, price/cycle, key, next renewal, status, and per-license Download / Upgrade actions |
+| `subscription/download/{license_id}` | GET | License-gated download. Verifies **ownership + active status**, then resolves the release via `Software_model::getReleaseForProduct()`: product's `current_release_id` → product-scoped `is_current` → global `is_current`. No id → the sole active license, else redirects to My Software. |
+| `subscription/upgrade/{license_id}` | GET | Same-family upgrade/downgrade options (same currency + cycle), each showing the **prorated charge** for the days remaining until renewal |
+| `subscription/do_upgrade` | POST | Applies the change (form POST + CSRF): upgrade → prorated DUE invoice + `setPendingPlanChange()`, redirect to `billing/pay`; downgrade/same-price → `changePlan()` immediately |
+
+**Prorated upgrade lifecycle:** `do_upgrade` computes `(new_recurring − old_recurring) × remaining_days / cycle_days`. If positive, it creates a DUE proration invoice (`item_type=3`, ref = license) and records the target on the license (`pending_plan_id` + `pending_invoice_id`); the plan switch happens only when that invoice is paid (see `provisionLicense` above). Non-positive (downgrade / same price) applies immediately with the new price billed from the next renewal — no invoice.
+
+The `clientarea` dashboard shows a **My Software** card linking to `subscription` when the company has an active license.
 
 ---
 
@@ -178,25 +203,26 @@ Runs as part of `/cronjobs/run`; also standalone at `/cronjobs/suspendOverdueLic
 
   | Channel | Endpoint | Gate |
   |---------|----------|------|
-  | Customer (browser) | `subscription/download` | Logged in + active license |
+  | Customer (browser) | `subscription/download/{license_id}` | Ownership + active license; resolves the release for **that** product |
   | Installer / updater | `license/download` + `license/latest` | `license_key`; suspended/expired/terminated refused |
   | Admin | `whmazadmin/software/download/{id}` | Admin session |
 
-- **Client dashboard**: `clientarea/index` shows a "Download Software" card only when the company has an active license.
+- **Per-product resolution**: the customer download picks the release for the license's product (`getReleaseForProduct()`) — not a single global "current" build — so a company owning several products downloads the correct ZIP for each.
+- **Client dashboard**: `clientarea/index` shows a **My Software** card (linking to `subscription`) when the company has an active license.
 
 ---
 
 ## Operational notes
 
-- **Apply schema first**: fresh installs run the two `*_schema.sql` files; existing installs run `software_catalog_migration.sql`.
+- **Apply schema first**: `crm_db.sql` is canonical; incremental changes ship as migration `.sql` files (`software_catalog_migration.sql`, `software_family_upgrade_migration.sql`) run against an existing DB, after which `crm_db.sql` is re-exported.
 - **Large ZIP uploads**: raise `upload_max_filesize` and `post_max_size` in `php.ini` (the code sets no CI size cap, but PHP's limits still apply).
-- **CSRF**: `cart/addSoftwareToCart` (and the other cart JSON endpoints), `license/verify`, `license/latest`, `license/download` are in `csrf_exclude_uris` (`src/config/config.php`). `subscription/subscribe`/`upgrade` remain excluded but `subscribe` is retired.
+- **CSRF**: `cart/addSoftwareToCart` (and the other cart JSON endpoints), `license/verify`, `license/latest`, `license/download` are in `csrf_exclude_uris` (`src/config/config.php`). `subscription/do_upgrade` is a normal form POST with a CSRF token (not excluded).
 
 ---
 
 ## Pending follow-ups
 
-- **Upgrade** is immediate — no proration invoice; the new price bills from the next renewal. (`Orderlicense_model::changePlan()` exists; there is no customer upgrade UI yet.)
+- **Cross-cycle upgrades** aren't offered — upgrade options are restricted to the license's current billing cycle to keep proration simple.
 - `license/verify` **records but does not hard-reject domain mismatches** (lenient, to allow legitimate server migrations).
 - `paddle_*` columns exist but Paddle (Merchant of Record) wiring is not implemented yet.
-- The retired `subscription` module endpoints (`subscribe`, `plans`, `upgrade`) are dormant; `download` is still used. Consider removing `subscribe`/`plans` once the cart flow is confirmed in production.
+- The retired `subscription/plans` endpoint is dormant; consider removing it once the cart flow is confirmed in production.

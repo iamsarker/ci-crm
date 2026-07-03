@@ -73,9 +73,12 @@ class Softwareproduct extends WHMAZADMIN_Controller {
 
 				$releaseId = (int) $this->input->post('current_release_id');
 
+				$familyGroup = trim($this->input->post('family_group'));
+
 				$form_data = array(
 					'id'                 => $id,
 					'plan_key'           => $planKey,
+					'family_group'       => $familyGroup !== '' ? $familyGroup : null,
 					'name'               => $this->input->post('name'),
 					'tagline'            => $this->input->post('tagline'),
 					'description'        => $this->input->post('description'),
@@ -127,6 +130,7 @@ class Softwareproduct extends WHMAZADMIN_Controller {
 
 		$data['billing_cycles'] = $this->Plan_model->getBillingCycles();
 		$data['currencies']     = $this->Plan_model->getCurrencies();
+		$data['families']       = $this->Plan_model->getAllFamilies();
 		$data['pricing_matrix'] = $productId ? $this->Plan_model->getPricingMatrix($productId) : array();
 		$data['features']       = $productId ? $this->Plan_model->getStoredFeatures($productId) : array();
 		$data['releases']       = $this->Software_model->getReleases($productId);

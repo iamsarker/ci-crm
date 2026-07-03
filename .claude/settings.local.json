@@ -13,7 +13,8 @@
       "Bash(wc:*)",
       "Bash(xargs:*)",
       "Bash(curl -s \"http://localhost/ci-crm/cart/software\" -o /tmp/claude-1000/-opt-lampp-htdocs-ci-crm/35f723a1-9ccb-4b0b-81a6-2d1fda1b8e9b/scratchpad/sw.html)",
-      "Bash(curl -s -o /dev/null -w \"swtest route now 404: %{http_code}\\\\n\" \"http://localhost/ci-crm/swtest/run?key=e2e-sw-9f3a\")"
+      "Bash(curl -s -o /dev/null -w \"swtest route now 404: %{http_code}\\\\n\" \"http://localhost/ci-crm/swtest/run?key=e2e-sw-9f3a\")",
+      "Bash(curl -s -o /dev/null -w \"swtest2 route now: %{http_code}\\\\n\" \"http://localhost/ci-crm/swtest2/run?key=e2e-up-7b2c\")"
     ]
   },
   "effortLevel": "high"

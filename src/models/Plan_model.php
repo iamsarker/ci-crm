@@ -212,6 +212,41 @@ class Plan_model extends CI_Model {
 		return $this->db->get_where($this->table, array('id' => $id))->row_array() ?: array();
 	}
 
+	/**
+	 * Same-family upgrade/downgrade options for a license: active products sharing
+	 * the family that have a price in the given currency AND billing cycle,
+	 * excluding the current product. Ordered cheapest first.
+	 *
+	 * @return array[] {id, plan_key, name, tagline, pricing_id, first_pay_amount, recurring_amount}
+	 */
+	function getFamilyProducts($familyGroup, $currencyId, $billingCycleId, $excludeProductId = 0)
+	{
+		$familyGroup = trim((string) $familyGroup);
+		if ($familyGroup === '') {
+			return array();
+		}
+		$sql = "SELECT p.id, p.plan_key, p.name, p.tagline,
+					sp.id AS pricing_id, sp.first_pay_amount, sp.recurring_amount
+				FROM plans p
+				JOIN software_pricing sp
+					ON sp.product_id = p.id AND sp.currency_id = ? AND sp.billing_cycle_id = ? AND sp.status = 1
+				WHERE p.is_active = 1 AND p.family_group = ? AND p.id <> ?
+				ORDER BY sp.recurring_amount ASC";
+		return $this->db->query($sql, array((int) $currencyId, (int) $billingCycleId, $familyGroup, (int) $excludeProductId))
+			->result_array();
+	}
+
+	/** Distinct non-empty family_group values (admin datalist). */
+	function getAllFamilies()
+	{
+		$rows = $this->db->select('family_group')->distinct()
+			->where('family_group IS NOT NULL', NULL, FALSE)
+			->where('family_group <>', '')
+			->order_by('family_group', 'ASC')
+			->get($this->table)->result_array();
+		return array_column($rows, 'family_group');
+	}
+
 	/** All products for the admin list (newest first), with a price snapshot. */
 	function getAllForList()
 	{

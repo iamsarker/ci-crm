@@ -119,6 +119,56 @@ class Orderlicense_model extends CI_Model {
 		);
 	}
 
+	// ─── Prorated upgrade (change takes effect once its invoice is paid) ─────
+
+	/**
+	 * Record a pending plan change on a license. The switch is applied only when
+	 * the matching proration invoice is paid (see applyPendingPlanChange, called
+	 * from provisioning). Same billing cycle is assumed (cycle_id kept).
+	 */
+	function setPendingPlanChange($licenseId, $planId, $cycleId, $invoiceId)
+	{
+		$this->db->where('id', (int) $licenseId)->update($this->table, array(
+			'pending_plan_id'          => (int) $planId,
+			'pending_billing_cycle_id' => (int) $cycleId,
+			'pending_invoice_id'       => (int) $invoiceId,
+		));
+	}
+
+	/**
+	 * Apply a previously-recorded pending plan change (called when its proration
+	 * invoice is paid). Switches plan_id + recurring_amount via changePlan and
+	 * clears the pending fields. Dates and license_key are untouched.
+	 *
+	 * @return array {success, message, old_plan_key, new_plan_key}
+	 */
+	function applyPendingPlanChange($licenseId)
+	{
+		$licenseId = (int) $licenseId;
+		$license = $this->getLicense($licenseId);
+		if (empty($license) || empty($license['pending_plan_id'])) {
+			return $this->_fail('No pending plan change.');
+		}
+
+		$plan = $this->db->select('plan_key')
+			->get_where('plans', array('id' => (int) $license['pending_plan_id']))->row();
+		if (empty($plan)) {
+			return $this->_fail('Pending plan not found.');
+		}
+
+		// changePlan keeps the current cycle when null; recomputes recurring.
+		$result = $this->changePlan($licenseId, $plan->plan_key, null, 0);
+
+		$this->db->where('id', $licenseId)->update($this->table, array(
+			'pending_plan_id'          => null,
+			'pending_billing_cycle_id' => null,
+			'pending_invoice_id'       => null,
+			'status'                   => self::STATUS_ACTIVE,
+		));
+
+		return $result;
+	}
+
 	// ─── Activation (called on payment, from provisioning) ───────────────────
 
 	/**

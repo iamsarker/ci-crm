@@ -2,16 +2,17 @@
 defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
- * Subscription
+ * Subscription (customer)
  * -------------------------------------------------------------------------
- * Dedicated checkout for the WHMAZ SaaS plans (separate from the hosting/domain
- * cart). Creates the order + order_licenses + invoice and hands back the invoice
- * UUID so the client redirects to the existing payment page (billing/pay).
- * Plan upgrade/downgrade switches the plan on the active license.
+ * "My Software" for the client area: lists the company's licenses, streams the
+ * correct download per license, and handles same-family plan upgrades (a
+ * prorated difference invoice that applies the switch once paid).
  *
- *   POST subscription/subscribe   plan_key, billing_cycle, payment_gateway
- *   POST subscription/upgrade     plan_key[, billing_cycle]
- *   GET  subscription/plans       active plans (JSON, for the upgrade UI)
+ *   GET  subscription                       My Software list
+ *   GET  subscription/download[/{id}]       license-gated download (per product)
+ *   GET  subscription/upgrade/{id}          upgrade options for a license
+ *   POST subscription/do_upgrade            create proration invoice / apply
+ *   GET  subscription/plans                 active plans (JSON)
  *
  * @see src/models/Orderlicense_model.php
  * @see src/models/Subscription_model.php
@@ -28,34 +29,217 @@ class Subscription extends WHMAZ_Controller
 		$this->load->model('Software_model');
 	}
 
+	/** "My Software" — all of the company's licenses. */
+	public function index()
+	{
+		if (!$this->isLogin()) {
+			redirect('/auth/login?redirect-url=' . base_url() . 'subscription', 'refresh');
+			return;
+		}
+
+		$data['licenses'] = $this->Subscription_model->get_licenses_for_company(getCompanyId());
+		$this->load->view('subscription_index', $data);
+	}
+
 	/**
-	 * License-gated software download for the logged-in customer. Streams the
-	 * current release only if the company has an active license. The stored file
-	 * path is never exposed.
+	 * License-gated software download. With an id, streams that license's product
+	 * release (after an ownership + active check). Without an id, streams the sole
+	 * active license or falls back to the My Software list.
 	 */
-	public function download()
+	public function download($licenseId = null)
 	{
 		if (!$this->isLogin()) {
 			redirect('/auth/login', 'refresh');
 			return;
 		}
+		$companyId = getCompanyId();
 
-		$subscription = $this->Subscription_model->get_active_subscription_for_company(getCompanyId());
-		if (empty($subscription)) {
-			$this->session->set_flashdata('error', 'An active subscription is required to download the software.');
-			redirect('/clientarea', 'refresh');
+		if (empty($licenseId)) {
+			$active = array_filter($this->Subscription_model->get_licenses_for_company($companyId), function ($l) {
+				return (int) $l['status'] === 1;
+			});
+			if (count($active) === 1) {
+				$licenseId = reset($active)['id'];
+			} else {
+				redirect('/subscription', 'refresh');
+				return;
+			}
+		}
+
+		$license = $this->Subscription_model->get_company_license((int) $licenseId, $companyId);
+		if (empty($license)) {
+			$this->session->set_flashdata('alert_error', 'Software not found.');
+			redirect('/subscription', 'refresh');
+			return;
+		}
+		if ((int) $license['status'] !== 1) {
+			$this->session->set_flashdata('alert_error', 'This license is not active. Please clear any outstanding invoice.');
+			redirect('/subscription', 'refresh');
 			return;
 		}
 
-		$release = $this->Software_model->getCurrentRelease();
+		$release = $this->Software_model->getReleaseForProduct((int) $license['plan_id']);
 		$path = $this->Software_model->filePath($release);
 		if (empty($path)) {
-			$this->session->set_flashdata('error', 'No software release is available yet. Please check back shortly.');
-			redirect('/clientarea', 'refresh');
+			$this->session->set_flashdata('alert_error', 'No download is available for this product yet. Please check back shortly.');
+			redirect('/subscription', 'refresh');
 			return;
 		}
 
-		stream_file_download($path, 'whmaz-' . $release['version'] . '.zip');
+		$slug = preg_replace('/[^a-z0-9\-]+/', '-', strtolower($license['plan_key']));
+		stream_file_download($path, $slug . '-' . $release['version'] . '.zip');
+	}
+
+	/** Show same-family upgrade/downgrade options for a license. */
+	public function upgrade($licenseId = null)
+	{
+		if (!$this->isLogin()) {
+			redirect('/auth/login', 'refresh');
+			return;
+		}
+		$companyId = getCompanyId();
+
+		$license = $this->Subscription_model->get_company_license((int) $licenseId, $companyId);
+		if (empty($license) || (int) $license['status'] !== 1) {
+			$this->session->set_flashdata('alert_error', 'License not available for changes.');
+			redirect('/subscription', 'refresh');
+			return;
+		}
+		if (empty($license['family_group'])) {
+			$this->session->set_flashdata('alert_error', 'This product has no upgrade options.');
+			redirect('/subscription', 'refresh');
+			return;
+		}
+
+		$options = $this->Plan_model->getFamilyProducts(
+			$license['family_group'], (int) $license['currency_id'], (int) $license['billing_cycle_id'], (int) $license['plan_id']
+		);
+
+		// Attach a prorated charge to each option (positive = payable now).
+		$remaining = $this->_remainingDays($license['next_renewal_date']);
+		$cycleDays = $this->_cycleDays((int) $license['billing_cycle_id']);
+		foreach ($options as &$opt) {
+			$diff = (float) $opt['recurring_amount'] - (float) $license['recurring_amount'];
+			$opt['proration'] = ($diff > 0 && $cycleDays > 0)
+				? round($diff * ($remaining / $cycleDays), 2) : 0.0;
+			$opt['is_upgrade'] = $diff > 0;
+		}
+		unset($opt);
+
+		$data['license']       = $license;
+		$data['options']       = $options;
+		$data['remaining_days'] = $remaining;
+		$data['currency_code'] = !empty($license['currency_code']) ? $license['currency_code'] : getCurrencyCode();
+		$this->load->view('subscription_upgrade', $data);
+	}
+
+	/**
+	 * Apply a plan change. Upgrades (positive proration) create a DUE invoice and
+	 * mark the change pending until it's paid; same-price/downgrades apply now.
+	 * POST: license_id, pricing_id
+	 */
+	public function do_upgrade()
+	{
+		if (!$this->isLogin()) {
+			redirect('/auth/login', 'refresh');
+			return;
+		}
+		$userId    = getCustomerId();
+		$companyId = getCompanyId();
+
+		$licenseId = (int) $this->input->post('license_id');
+		$pricingId = (int) $this->input->post('pricing_id');
+
+		$license = $this->Subscription_model->get_company_license($licenseId, $companyId);
+		if (empty($license) || (int) $license['status'] !== 1) {
+			$this->session->set_flashdata('alert_error', 'License not available for changes.');
+			redirect('/subscription', 'refresh');
+			return;
+		}
+		if (!empty($license['pending_invoice_id'])) {
+			$this->session->set_flashdata('alert_error', 'A plan change is already pending payment for this license.');
+			redirect('/subscription', 'refresh');
+			return;
+		}
+
+		// Target must be a priced, active, same-family product on the same currency/cycle.
+		$target = $this->db->query(
+			"SELECT sp.id AS pricing_id, sp.recurring_amount, p.id AS plan_id, p.plan_key, p.name, p.family_group
+			 FROM software_pricing sp JOIN plans p ON sp.product_id = p.id
+			 WHERE sp.id = ? AND sp.status = 1 AND p.is_active = 1
+			   AND sp.currency_id = ? AND sp.billing_cycle_id = ?",
+			array($pricingId, (int) $license['currency_id'], (int) $license['billing_cycle_id'])
+		)->row_array();
+
+		if (empty($target)
+			|| (int) $target['plan_id'] === (int) $license['plan_id']
+			|| empty($license['family_group'])
+			|| $target['family_group'] !== $license['family_group']) {
+			$this->session->set_flashdata('alert_error', 'Invalid plan selection.');
+			redirect('/subscription/upgrade/' . $licenseId, 'refresh');
+			return;
+		}
+
+		$remaining = $this->_remainingDays($license['next_renewal_date']);
+		$cycleDays = $this->_cycleDays((int) $license['billing_cycle_id']);
+		$diff      = (float) $target['recurring_amount'] - (float) $license['recurring_amount'];
+		$proration = ($diff > 0 && $cycleDays > 0) ? round($diff * ($remaining / $cycleDays), 2) : 0.0;
+
+		// Same price or downgrade: apply immediately, no invoice.
+		if ($proration <= 0) {
+			$this->Orderlicense_model->changePlan($licenseId, $target['plan_key'], null, $userId);
+			$this->session->set_flashdata('alert_success', 'Your plan has been changed to ' . $target['name'] . '.');
+			redirect('/subscription', 'refresh');
+			return;
+		}
+
+		// Upgrade: prorated DUE invoice; the switch applies once it's paid.
+		$currencyCode = !empty($license['currency_code']) ? $license['currency_code'] : getCurrencyCode();
+		$invoiceUuid  = gen_uuid();
+		$invoiceId = $this->Order_model->saveInvoice(array(
+			'invoice_uuid'  => $invoiceUuid,
+			'company_id'    => $companyId,
+			'order_id'      => (int) $license['order_id'],
+			'currency_id'   => (int) $license['currency_id'],
+			'currency_code' => $currencyCode,
+			'invoice_no'    => $this->Order_model->generateNumber('INVOICE'),
+			'sub_total'     => $proration,
+			'tax'           => 0,
+			'vat'           => 0,
+			'discount'      => 0,
+			'total'         => $proration,
+			'order_date'    => getDateAddDay(0),
+			'due_date'      => getDateAddDay(0),
+			'status'        => 1,
+			'pay_status'    => 'DUE',
+			'remarks'       => 'Prorated plan upgrade: ' . $license['plan_name'] . ' -> ' . $target['name'],
+			'inserted_on'   => getDateTime(),
+			'inserted_by'   => $userId,
+		));
+
+		$this->Order_model->saveInvoiceItem(array(
+			'invoice_id'           => $invoiceId,
+			'item'                 => 'Plan Upgrade',
+			'item_desc'            => 'Upgrade ' . $license['plan_name'] . ' -> ' . $target['name'] . ' (prorated for ' . $remaining . ' days)',
+			'item_type'            => 3,
+			'ref_id'               => $licenseId,
+			'billing_cycle_id'     => (int) $license['billing_cycle_id'],
+			'quantity'             => 1,
+			'unit_price'           => $proration,
+			'discount'             => 0,
+			'sub_total'            => $proration,
+			'tax'                  => 0,
+			'vat'                  => 0,
+			'total'                => $proration,
+			'billing_period_start' => getDateAddDay(0),
+			'billing_period_end'   => $license['next_renewal_date'],
+			'inserted_on'          => getDateTime(),
+			'inserted_by'          => $userId,
+		));
+
+		$this->Orderlicense_model->setPendingPlanChange($licenseId, (int) $target['plan_id'], (int) $license['billing_cycle_id'], $invoiceId);
+
+		redirect('/billing/pay/invoice/' . $invoiceUuid, 'refresh');
 	}
 
 	/** Active plans with merged feature maps (JSON). */
@@ -64,101 +248,20 @@ class Subscription extends WHMAZ_Controller
 		echo json_encode(buildSuccessResponse($this->Plan_model->get_active_plans(), 'OK'));
 	}
 
-	/**
-	 * Create a new plan subscription and return the invoice for payment redirect.
-	 */
-	public function subscribe()
+	// ─── helpers ─────────────────────────────────────────────────────────
+
+	private function _remainingDays($nextRenewalDate)
 	{
-		$userId    = getCustomerId();
-		$companyId = getCompanyId();
-
-		if ($userId <= 0 || $companyId <= 0) {
-			echo json_encode(array('code' => 401, 'msg' => 'Please login first to subscribe!', 'data' => null));
-			return;
+		if (empty($nextRenewalDate)) {
+			return 0;
 		}
-
-		$planKey = $this->input->post('plan_key');
-		$cycle   = $this->input->post('billing_cycle');
-		$gateway = $this->input->post('payment_gateway');
-		$cycle   = ($cycle === 'annual') ? 'annual' : 'monthly';
-
-		if (empty($planKey)) {
-			echo json_encode(buildFailedResponse('Please choose a plan.'));
-			return;
-		}
-
-		$result = $this->Orderlicense_model->createSubscription(array(
-			'company_id'         => $companyId,
-			'user_id'            => $userId,
-			'currency_id'        => getCurrencyId(),
-			'currency_code'      => getCurrencyCode(),
-			'plan_key'           => $planKey,
-			'billing_cycle'      => $cycle,
-			'payment_gateway_id' => $gateway,
-			'instructions'       => $this->input->post('instructions'),
-		));
-
-		if (empty($result['success'])) {
-			echo json_encode(buildFailedResponse($result['message']));
-			return;
-		}
-
-		echo json_encode(buildSuccessResponse(array(
-			'invoice_id'   => $result['invoice_id'],
-			'invoice_uuid' => $result['invoice_uuid'],
-			'invoice_no'   => $result['invoice_no'],
-			'total'        => $result['total'],
-		), 'Subscription created. Redirecting to payment...'));
+		$days = (int) floor((strtotime($nextRenewalDate) - strtotime(getDateAddDay(0))) / 86400);
+		return $days > 0 ? $days : 0;
 	}
 
-	/**
-	 * Upgrade/downgrade the company's active plan. Takes effect immediately;
-	 * the new price is billed from the next renewal.
-	 */
-	public function upgrade()
+	private function _cycleDays($billingCycleId)
 	{
-		$userId    = getCustomerId();
-		$companyId = getCompanyId();
-
-		if ($userId <= 0 || $companyId <= 0) {
-			echo json_encode(array('code' => 401, 'msg' => 'Please login first!', 'data' => null));
-			return;
-		}
-
-		$planKey = $this->input->post('plan_key');
-		$cycle   = $this->input->post('billing_cycle'); // optional
-		if (!empty($cycle)) {
-			$cycle = ($cycle === 'annual') ? 'annual' : 'monthly';
-		} else {
-			$cycle = null;
-		}
-
-		if (empty($planKey)) {
-			echo json_encode(buildFailedResponse('Please choose a plan.'));
-			return;
-		}
-
-		$current = $this->Subscription_model->get_active_subscription_for_company($companyId);
-		if (empty($current)) {
-			echo json_encode(buildFailedResponse('No active subscription to change.'));
-			return;
-		}
-
-		if ($current['plan_key'] === $planKey && empty($cycle)) {
-			echo json_encode(buildFailedResponse('You are already on this plan.'));
-			return;
-		}
-
-		$result = $this->Orderlicense_model->changePlan($current['id'], $planKey, $cycle, $userId);
-
-		if (empty($result['success'])) {
-			echo json_encode(buildFailedResponse($result['message']));
-			return;
-		}
-
-		echo json_encode(buildSuccessResponse(array(
-			'old_plan_key' => $result['old_plan_key'],
-			'new_plan_key' => $result['new_plan_key'],
-		), 'Your plan has been updated.'));
+		$row = $this->db->select('cycle_days')->get_where('billing_cycle', array('id' => (int) $billingCycleId))->row();
+		return ($row && (int) $row->cycle_days > 0) ? (int) $row->cycle_days : 30;
 	}
 }

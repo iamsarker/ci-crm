@@ -48,6 +48,45 @@ class Software_model extends CI_Model {
 		return $this->db->get_where($this->table, array('id' => $id, 'status' => 1))->row_array() ?: array();
 	}
 
+	/**
+	 * Resolve the release a customer should download for a given product:
+	 *   1. the product's explicitly linked release (`plans.current_release_id`)
+	 *   2. else the newest product-scoped current release (`product_id` = product)
+	 *   3. else the newest global current release (`product_id IS NULL`)
+	 * Returns an empty array if nothing is available.
+	 *
+	 * @param  int $productId  plans.id
+	 * @return array
+	 */
+	function getReleaseForProduct($productId)
+	{
+		$productId = (int) $productId;
+		if ($productId <= 0) {
+			return array();
+		}
+
+		// 1) explicit link on the product
+		$linkedId = (int) ($this->db->select('current_release_id')
+			->get_where('plans', array('id' => $productId))->row()->current_release_id ?? 0);
+		if ($linkedId > 0) {
+			$rel = $this->db->get_where($this->table, array('id' => $linkedId, 'status' => 1))->row_array();
+			if (!empty($rel)) {
+				return $rel;
+			}
+		}
+
+		// 2) newest product-scoped current release
+		$rel = $this->db->where('product_id', $productId)->where('is_current', 1)->where('status', 1)
+			->order_by('id', 'DESC')->limit(1)->get($this->table)->row_array();
+		if (!empty($rel)) {
+			return $rel;
+		}
+
+		// 3) newest global current release
+		return $this->db->where('product_id IS NULL', NULL, FALSE)->where('is_current', 1)->where('status', 1)
+			->order_by('id', 'DESC')->limit(1)->get($this->table)->row_array() ?: array();
+	}
+
 	/** The release customers download (is_current=1), or empty array. */
 	function getCurrentRelease()
 	{
