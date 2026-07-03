@@ -301,6 +301,8 @@ INSERT INTO `billing_cycle` (`id`, `cycle_key`, `cycle_name`, `cycle_days`, `sl`
 
 CREATE TABLE `companies` (
   `id` bigint(20) NOT NULL,
+  `parent_company_id` bigint(20) NOT NULL DEFAULT 0,
+  `is_reseller` tinyint(4) NOT NULL DEFAULT 0,
   `name` varchar(150) NOT NULL,
   `mobile` varchar(16) DEFAULT NULL,
   `phone` varchar(16) DEFAULT NULL,
@@ -333,6 +335,95 @@ CREATE TABLE `companies` (
 
 INSERT INTO `companies` (`id`, `name`, `mobile`, `phone`, `email`, `address`, `city`, `state`, `zip_code`, `first_name`, `last_name`, `country`, `registrar_customer_id`, `kam_id`, `kam_name`, `lead_id`, `opportunity_id`, `quotation_id`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (1, 'Demo Client', '+94788888888', '+94788888888', 'client@whmaz.com', '201 Shanti Villa, Silk house Street', 'KANDY', 'KANDY', '20000', 'A. L', 'Perera', 'Sri Lanka', 'NC_4c37fc5fb1d2c4873ce6b69c6ff87772', 0, '', NULL, NULL, NULL, 1, '2014-02-21 15:11:42', 1, '2026-03-18 14:57:40', 1, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reseller_profiles`
+-- Per-reseller config: discount applied to the reseller's orders, tracked
+-- credit balance, and whether the reseller may use the third-party API.
+--
+
+CREATE TABLE `reseller_profiles` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `company_id` bigint(20) NOT NULL,
+  `status` tinyint(4) NOT NULL DEFAULT 1,
+  `discount_type` varchar(20) NOT NULL DEFAULT 'percent',
+  `discount_value` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `credit_balance` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `currency_id` int(11) DEFAULT NULL,
+  `allow_api` tinyint(4) NOT NULL DEFAULT 1,
+  `notes` text DEFAULT NULL,
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` datetime DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `deleted_on` datetime DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_reseller_company` (`company_id`),
+  KEY `idx_reseller_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `api_keys`
+-- Third-party REST API credentials. key_id is the public identifier;
+-- secret is stored only as password_hash() in secret_hash. scopes is a JSON
+-- array of granted scope strings. status: 1=active, 2=revoked, 0=deleted.
+--
+
+CREATE TABLE `api_keys` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `company_id` bigint(20) NOT NULL,
+  `name` varchar(150) NOT NULL,
+  `key_id` varchar(48) NOT NULL,
+  `secret_hash` varchar(255) NOT NULL,
+  `secret_preview` varchar(16) DEFAULT NULL,
+  `scopes` text DEFAULT NULL,
+  `ip_whitelist` text DEFAULT NULL,
+  `rate_limit` int(11) NOT NULL DEFAULT 0,
+  `status` tinyint(4) NOT NULL DEFAULT 1,
+  `expires_at` datetime DEFAULT NULL,
+  `last_used_at` datetime DEFAULT NULL,
+  `last_used_ip` varchar(45) DEFAULT NULL,
+  `request_count` bigint(20) NOT NULL DEFAULT 0,
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` datetime DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `deleted_on` datetime DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_api_key_id` (`key_id`),
+  KEY `idx_api_keys_company` (`company_id`),
+  KEY `idx_api_keys_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `api_request_logs`
+-- Per-request audit trail for the third-party API; also the window source
+-- for per-key rate limiting.
+--
+
+CREATE TABLE `api_request_logs` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `api_key_id` bigint(20) NOT NULL,
+  `company_id` bigint(20) NOT NULL,
+  `method` varchar(10) DEFAULT NULL,
+  `endpoint` varchar(255) DEFAULT NULL,
+  `ip` varchar(45) DEFAULT NULL,
+  `status_code` int(11) DEFAULT NULL,
+  `response_time_ms` int(11) DEFAULT NULL,
+  `created_on` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_api_logs_key` (`api_key_id`),
+  KEY `idx_api_logs_company` (`company_id`),
+  KEY `idx_api_logs_created` (`created_on`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 

@@ -99,6 +99,9 @@
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/paymentgateway/index"><i class="fas fa-credit-card me-2"></i>Payment Gateways</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/promocode/index"><i class="fas fa-tags me-2"></i>Promo Codes</a></li>
                         <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/reseller/index"><i class="fas fa-user-tie me-2"></i>Reseller Management</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/apikey/index"><i class="fas fa-key me-2"></i>API Keys</a></li>
+                        <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_category/index"><i class="fas fa-folder me-2"></i>Service Categories</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_group/index"><i class="fas fa-object-group me-2"></i>Service Groups</a></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_product/index"><i class="fas fa-hdd me-2"></i>Hosting Packages</a></li>

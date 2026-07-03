@@ -914,6 +914,30 @@ class Provisioning_model extends CI_Model
     }
 
     /**
+     * Public: unsuspend a hosting account and, on success, restore local
+     * Active status. Mirrors suspendService() so callers outside the renewal
+     * path (e.g. the third-party API) can lift a suspension directly.
+     *
+     * @param array  $service order_services row (needs id, product_service_id, cp_username/hosting_domain)
+     * @return array {success: bool, action: 'unsuspend', error: string|null}
+     */
+    function unsuspendService($service)
+    {
+        $result = $this->unsuspendHostingAccount($service);
+
+        if (!empty($result['success'])) {
+            $this->db->where('id', $service['id'])->update('order_services', array(
+                'status' => 1,
+                'suspension_date' => null,
+                'suspension_reason' => null
+            ));
+            return array('success' => true, 'action' => 'unsuspend', 'error' => null);
+        }
+
+        return array('success' => false, 'action' => 'unsuspend', 'error' => $result['error'] ?? 'unknown');
+    }
+
+    /**
      * Unsuspend a hosting account via the appropriate module API
      */
     private function unsuspendHostingAccount($service)

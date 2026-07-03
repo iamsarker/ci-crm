@@ -523,6 +523,8 @@ $config['csrf_exclude_uris'] = array(
 	'license/verify',
 	'license/latest',
 	'license/download',
+	// Third-party REST API (stateless, API-key authenticated — no session/CSRF)
+	'api/v1/.*',
 	// Client area domain AJAX endpoints (authenticated, session-based)
 	'clientarea/get_transfer_lock',
 	'clientarea/toggle_transfer_lock',

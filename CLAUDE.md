@@ -408,6 +408,23 @@ Key facts to know at a glance:
 
 **Full documentation:** `docs/SAAS_LICENSING.md`
 
+## Reseller Management & Third-Party REST API
+
+Two connected features (the CRM's first account hierarchy + a public REST API).
+
+Key facts at a glance:
+
+- **Reseller = a `companies` row with `is_reseller=1`** that owns sub-customers (`companies.parent_company_id = reseller's company id`) and one `reseller_profiles` row (`discount_type`/`discount_value` applied to its orders, `credit_balance` informational, `allow_api` gates API keys). This is the first hierarchy on the previously-flat `companies` table.
+- **API auth = key + secret**, stateless. `api_keys.key_id` (public, header `X-Api-Key`) + secret (`X-Api-Secret`, or `Authorization: Bearer key_id:secret`) whose `password_hash()` is in `secret_hash` — the secret is shown **once** at creation/regenerate. Per-key `scopes` (JSON), `ip_whitelist` (blank=any, supports CIDR), `rate_limit` (req/min), `expires_at`, `status` (1=active,2=revoked,0=deleted). `api_request_logs` = audit + rate-limit window.
+- **New tables:** `reseller_profiles`, `api_keys`, `api_request_logs`; **views** `reseller_view`, `api_key_view`. Migration `reseller_api_migration.sql` (+ `src/migrations/20260703120000_create_reseller_api.php`); `crm_db.sql`/`crm_db_views.sql` carry them for fresh installs.
+- **Admin:** Settings → **Reseller Management** (`whmazadmin/reseller`) and **API Keys** (`whmazadmin/apikey`) — mirror the Promocode CRUD pattern (list/manage/delete_records/ssp_list_api).
+- **REST API:** module `src/modules/api/`, routed **`/api/v1/...`** (routes.php maps `api/v1/(.+)` → `api/$1`; CSRF-excluded via `api/v1/.*`). Base `src/core/API_Controller.php` (autoloaded from core by MX) does auth, scope enforcement (`requireScope`), reseller scoping (`scopedCompanyIds` = reseller + sub-customers), request logging, rate limiting, and the JSON envelope (`{success, data}` / `{success, error:{code,message}}`).
+- **Resource controllers** (all reseller-scoped; every API controller is `Api`-prefixed, and routes.php maps each `/api/v1/<resource>` URL to the exact class case): `ApiSystem` (ping/me), `ApiCustomers` (list/get/create), `ApiProducts` (software/hosting/currencies/cycles, incl. pricing ids), `ApiDomains` (check/suggest/transfer_price/list/get), `ApiHosting` (list/get + suspend/unsuspend/terminate), `ApiOrder` (list/get), `ApiInvoices` (list/get + pay), `ApiLicenses` (list/get/verify + activate/suspend/unsuspend/terminate).
+- **Order placement reuses the storefront cart/checkout code verbatim** — not re-implemented. `ApiCart` (`/api/v1/cart/*`: add_domain/add_hosting/add_software/link_*/delete/view) and `ApiCheckout` (`/api/v1/checkout`) bootstrap a CUSTOMER session for the acting company (`API_Controller::actAsCustomer()`) then `Modules::run('cart/...')` / `cart/checkoutSubmit`. The cart lives in `add_to_carts` keyed by the customer's user_id, so calls compose across stateless requests. Nothing provisions until `POST /invoices/pay/{uuid}`. **Note:** every API controller is `Api`-prefixed (ApiCart, ApiDomains, …) — partly because the storefront controller is already `class Cart` (a same-name class would clash when `Modules::run` loads it), and kept consistent across the module. Each `/api/v1/<resource>` URL is mapped in routes.php to the exact class case (no lowercase catch-all).
+- The read endpoints are a **thin authenticated layer over existing models** (`Order_model`, `Provisioning_model`, `Invoice_model`, `Orderlicense_model`, `Company_model`, `Plan_model`, `Common_model`, `Cart_model`). `Apikey_model` is the single source of truth for scopes + `authenticate()`. Added public `Provisioning_model::unsuspendService()` for `hosting:write`.
+
+**Full documentation:** `docs/RESELLER_API.md`
+
 ### Admin Order Management
 
 **Order Management Page:**
@@ -723,6 +740,9 @@ Settings
 ├── [divider]
 ├── Payment Gateways
 ├── Promo Codes
+├── [divider]
+├── Reseller Management
+├── API Keys
 ├── [divider]
 ├── Service Categories
 ├── Service Groups

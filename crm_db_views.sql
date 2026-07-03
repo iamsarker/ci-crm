@@ -111,3 +111,34 @@ FROM `pages` p
 		 LEFT JOIN `admin_users` u1 ON p.inserted_by = u1.id
 		 LEFT JOIN `admin_users` u2 ON p.updated_by = u2.id
 WHERE p.status = 1;
+
+
+-- reseller_view: reseller_profiles joined with company info + live counts.
+-- Backs the admin Reseller Management DataTable (server-side).
+
+CREATE OR REPLACE VIEW `reseller_view` AS
+SELECT
+	rp.id, rp.company_id, rp.status, rp.discount_type, rp.discount_value,
+	rp.credit_balance, rp.currency_id, rp.allow_api,
+	rp.inserted_on, rp.updated_on,
+	c.name AS company_name, c.email AS company_email, c.mobile AS company_mobile,
+	cur.code AS currency_code,
+	(SELECT COUNT(*) FROM companies sc WHERE sc.parent_company_id = rp.company_id AND sc.status = 1) AS sub_customer_count,
+	(SELECT COUNT(*) FROM api_keys ak WHERE ak.company_id = rp.company_id AND ak.status = 1) AS active_api_keys
+FROM reseller_profiles rp
+JOIN companies c ON c.id = rp.company_id
+LEFT JOIN currencies cur ON cur.id = rp.currency_id;
+
+
+-- api_key_view: api_keys joined with the owning company name.
+-- Backs the admin API Keys DataTable (server-side). Never exposes secret_hash.
+
+CREATE OR REPLACE VIEW `api_key_view` AS
+SELECT
+	ak.id, ak.company_id, ak.name, ak.key_id, ak.secret_preview, ak.scopes,
+	ak.ip_whitelist, ak.rate_limit, ak.status, ak.expires_at,
+	ak.last_used_at, ak.last_used_ip, ak.request_count,
+	ak.inserted_on, ak.updated_on,
+	c.name AS company_name, c.is_reseller
+FROM api_keys ak
+JOIN companies c ON c.id = ak.company_id;

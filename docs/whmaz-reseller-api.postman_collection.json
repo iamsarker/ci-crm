@@ -1,0 +1,613 @@
+{
+  "info": {
+    "name": "WHMAZ Reseller REST API (v1)",
+    "_postman_id": "b6b2e9a1-4c8f-47e2-9c1a-whmazapi0001",
+    "description": "Third-party REST API for WHMAZ CRM resellers.\n\n## Auth\nEvery request sends two headers:\n- `X-Api-Key: {{api_key}}`\n- `X-Api-Secret: {{api_secret}}`\n(or `Authorization: Bearer <key_id>:<secret>`).\n\nCreate a key under **Admin → Settings → API Keys**; the secret is shown once.\n\n## Setup\nEdit the collection variables: `base_url` (e.g. `https://yourdomain.com/api/v1`), `api_key`, `api_secret`, and the sample ids.\n\n## Placing an order\nOrder placement reuses the storefront cart/checkout code. Build a cart (`/cart/add_*`, `/cart/link_*`), then `POST /checkout`, then `POST /invoices/pay/{uuid}` to pay + provision. Pricing ids come from `/products/hosting` (`product_service_pricing_id`), `/products/software` (`software_pricing_id`) and `/domains/check` or `/domains/suggest` (`dom_pricing_id`). Pass `customer_id` to act for a sub-customer (omit to act as the reseller).\n\nResponse envelope: `{ \"success\": true, \"data\": {...} }` or `{ \"success\": false, \"error\": { \"code\": \"...\", \"message\": \"...\" } }`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "https://yourdomain.com/api/v1" },
+    { "key": "api_key", "value": "wk_replace_me" },
+    { "key": "api_secret", "value": "ws_replace_me" },
+    { "key": "customer_id", "value": "1" },
+    { "key": "domain_id", "value": "1" },
+    { "key": "service_id", "value": "1" },
+    { "key": "order_id", "value": "1" },
+    { "key": "invoice_uuid", "value": "00000000-0000-0000-0000-000000000000" },
+    { "key": "license_id", "value": "1" },
+    { "key": "currency_id", "value": "1" },
+    { "key": "product_service_pricing_id", "value": "1" },
+    { "key": "software_pricing_id", "value": "1" },
+    { "key": "dom_pricing_id", "value": "1" },
+    { "key": "parent_cart_id", "value": "1" },
+    { "key": "cart_item_id", "value": "1" },
+    { "key": "payment_gateway", "value": "0" }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Ping (auth + health)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/ping", "host": ["{{base_url}}"], "path": ["ping"] }
+          }
+        },
+        {
+          "name": "Me (key + reseller info)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/me", "host": ["{{base_url}}"], "path": ["me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "List sub-customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/customers?page=1&per_page=25",
+              "host": ["{{base_url}}"],
+              "path": ["customers"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get sub-customer",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/customers/view/{{customer_id}}", "host": ["{{base_url}}"], "path": ["customers", "view", "{{customer_id}}"] }
+          }
+        },
+        {
+          "name": "Create sub-customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Ltd\",\n  \"email\": \"owner@acme.test\",\n  \"first_name\": \"Jane\",\n  \"last_name\": \"Doe\",\n  \"mobile\": \"+10000000000\",\n  \"city\": \"Metropolis\",\n  \"country\": \"United States\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/customers/create", "host": ["{{base_url}}"], "path": ["customers", "create"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products (catalog)",
+      "item": [
+        {
+          "name": "Software products + pricing",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/products/software", "host": ["{{base_url}}"], "path": ["products", "software"] }
+          }
+        },
+        {
+          "name": "Hosting packages + pricing",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/products/hosting", "host": ["{{base_url}}"], "path": ["products", "hosting"] }
+          }
+        },
+        {
+          "name": "Currencies",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/products/currencies", "host": ["{{base_url}}"], "path": ["products", "currencies"] }
+          }
+        },
+        {
+          "name": "Billing cycles",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/products/cycles", "host": ["{{base_url}}"], "path": ["products", "cycles"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Domains",
+      "item": [
+        {
+          "name": "Check availability",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/domains/check?domain=example.com&currency_id={{currency_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["domains", "check"],
+              "query": [
+                { "key": "domain", "value": "example.com" },
+                { "key": "currency_id", "value": "{{currency_id}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Suggestions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/domains/suggest?keyword=example&currency_id={{currency_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["domains", "suggest"],
+              "query": [
+                { "key": "keyword", "value": "example" },
+                { "key": "currency_id", "value": "{{currency_id}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Transfer price",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/domains/transfer_price?domain=example.com&currency_id={{currency_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["domains", "transfer_price"],
+              "query": [
+                { "key": "domain", "value": "example.com" },
+                { "key": "currency_id", "value": "{{currency_id}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List domains",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/domains?page=1&per_page=25",
+              "host": ["{{base_url}}"],
+              "path": ["domains"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get domain",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/domains/view/{{domain_id}}", "host": ["{{base_url}}"], "path": ["domains", "view", "{{domain_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Hosting",
+      "item": [
+        {
+          "name": "List services",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/hosting?page=1&per_page=25",
+              "host": ["{{base_url}}"],
+              "path": ["hosting"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get service",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/hosting/view/{{service_id}}", "host": ["{{base_url}}"], "path": ["hosting", "view", "{{service_id}}"] }
+          }
+        },
+        {
+          "name": "Suspend service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Non-payment\"\n}" },
+            "url": { "raw": "{{base_url}}/hosting/suspend/{{service_id}}", "host": ["{{base_url}}"], "path": ["hosting", "suspend", "{{service_id}}"] }
+          }
+        },
+        {
+          "name": "Unsuspend service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/hosting/unsuspend/{{service_id}}", "host": ["{{base_url}}"], "path": ["hosting", "unsuspend", "{{service_id}}"] }
+          }
+        },
+        {
+          "name": "Terminate service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Customer request\"\n}" },
+            "url": { "raw": "{{base_url}}/hosting/terminate/{{service_id}}", "host": ["{{base_url}}"], "path": ["hosting", "terminate", "{{service_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cart",
+      "item": [
+        {
+          "name": "View cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cart?customer_id={{customer_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["cart"],
+              "query": [ { "key": "customer_id", "value": "{{customer_id}}" } ]
+            }
+          }
+        },
+        {
+          "name": "Add hosting to cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"currency_id\": {{currency_id}},\n  \"product_service_pricing_id\": {{product_service_pricing_id}},\n  \"quantity\": 1\n}" },
+            "url": { "raw": "{{base_url}}/cart/add_hosting", "host": ["{{base_url}}"], "path": ["cart", "add_hosting"] }
+          }
+        },
+        {
+          "name": "Add domain to cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"currency_id\": {{currency_id}},\n  \"domain_action\": \"register\",\n  \"domain_name\": \"example.com\",\n  \"dom_pricing_id\": {{dom_pricing_id}},\n  \"epp_code\": \"\"\n}" },
+            "url": { "raw": "{{base_url}}/cart/add_domain", "host": ["{{base_url}}"], "path": ["cart", "add_domain"] }
+          }
+        },
+        {
+          "name": "Add software to cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"currency_id\": {{currency_id}},\n  \"software_pricing_id\": {{software_pricing_id}}\n}" },
+            "url": { "raw": "{{base_url}}/cart/add_software", "host": ["{{base_url}}"], "path": ["cart", "add_software"] }
+          }
+        },
+        {
+          "name": "Link domain to hosting",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"currency_id\": {{currency_id}},\n  \"parent_cart_id\": {{parent_cart_id}},\n  \"domain_action\": \"register\",\n  \"domain_name\": \"example.com\",\n  \"dom_pricing_id\": {{dom_pricing_id}},\n  \"epp_code\": \"\"\n}" },
+            "url": { "raw": "{{base_url}}/cart/link_domain_to_hosting", "host": ["{{base_url}}"], "path": ["cart", "link_domain_to_hosting"] }
+          }
+        },
+        {
+          "name": "Link hosting to domain",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"currency_id\": {{currency_id}},\n  \"parent_cart_id\": {{parent_cart_id}},\n  \"product_service_pricing_id\": {{product_service_pricing_id}},\n  \"quantity\": 1\n}" },
+            "url": { "raw": "{{base_url}}/cart/link_hosting_to_domain", "host": ["{{base_url}}"], "path": ["cart", "link_hosting_to_domain"] }
+          }
+        },
+        {
+          "name": "Delete cart item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": {{customer_id}}\n}" },
+            "url": { "raw": "{{base_url}}/cart/delete/{{cart_item_id}}", "host": ["{{base_url}}"], "path": ["cart", "delete", "{{cart_item_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Checkout",
+      "item": [
+        {
+          "name": "Place order (checkout)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"customer_id\": {{customer_id}},\n  \"currency_id\": {{currency_id}},\n  \"payment_gateway\": {{payment_gateway}},\n  \"instructions\": \"\"\n}" },
+            "url": { "raw": "{{base_url}}/checkout", "host": ["{{base_url}}"], "path": ["checkout"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "List orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders?page=1&per_page=25",
+              "host": ["{{base_url}}"],
+              "path": ["orders"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get order (+ items)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/orders/view/{{order_id}}", "host": ["{{base_url}}"], "path": ["orders", "view", "{{order_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Invoices",
+      "item": [
+        {
+          "name": "List invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/invoices?page=1&per_page=25",
+              "host": ["{{base_url}}"],
+              "path": ["invoices"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get invoice (+ items)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/invoices/view/{{invoice_uuid}}", "host": ["{{base_url}}"], "path": ["invoices", "view", "{{invoice_uuid}}"] }
+          }
+        },
+        {
+          "name": "Mark invoice paid (-> provision)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/invoices/pay/{{invoice_uuid}}", "host": ["{{base_url}}"], "path": ["invoices", "pay", "{{invoice_uuid}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Licenses",
+      "item": [
+        {
+          "name": "List licenses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/licenses?page=1&per_page=25",
+              "host": ["{{base_url}}"],
+              "path": ["licenses"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "25" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get license",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/licenses/view/{{license_id}}", "host": ["{{base_url}}"], "path": ["licenses", "view", "{{license_id}}"] }
+          }
+        },
+        {
+          "name": "Verify license key",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"license_key\": \"WHMAZ-XXXXX-XXXXX-XXXXX\",\n  \"domain\": \"customer-install.com\"\n}" },
+            "url": { "raw": "{{base_url}}/licenses/verify", "host": ["{{base_url}}"], "path": ["licenses", "verify"] }
+          }
+        },
+        {
+          "name": "Activate / (re)issue license",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/licenses/activate/{{license_id}}", "host": ["{{base_url}}"], "path": ["licenses", "activate", "{{license_id}}"] }
+          }
+        },
+        {
+          "name": "Suspend license",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Non-payment\"\n}" },
+            "url": { "raw": "{{base_url}}/licenses/suspend/{{license_id}}", "host": ["{{base_url}}"], "path": ["licenses", "suspend", "{{license_id}}"] }
+          }
+        },
+        {
+          "name": "Unsuspend license",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" }
+            ],
+            "url": { "raw": "{{base_url}}/licenses/unsuspend/{{license_id}}", "host": ["{{base_url}}"], "path": ["licenses", "unsuspend", "{{license_id}}"] }
+          }
+        },
+        {
+          "name": "Terminate license",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{api_key}}" },
+              { "key": "X-Api-Secret", "value": "{{api_secret}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Customer request\"\n}" },
+            "url": { "raw": "{{base_url}}/licenses/terminate/{{license_id}}", "host": ["{{base_url}}"], "path": ["licenses", "terminate", "{{license_id}}"] }
+          }
+        }
+      ]
+    }
+  ]
+}
