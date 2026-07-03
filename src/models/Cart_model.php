@@ -201,21 +201,20 @@ class Cart_model extends CI_Model
 		$customerId = (int)getCustomerId();
 		$customerSessionId = (int)getCustomerSessionId();
 
-		// First delete children
-		$this->db->where('parent_cart_id', $cartId);
-		$this->db->where_group_start();
-		$this->db->where('user_id', $customerId);
-		$this->db->or_where('customer_session_id', $customerSessionId);
-		$this->db->where_group_end();
-		$this->db->delete('add_to_carts');
+		// Raw parameterized deletes scoped to the owner (user_id OR session).
+		// This CI build's query builder has no where_group_start/where_group_end,
+		// so the OR group is written inline instead of via the builder.
+		$owner = '(user_id = ? OR customer_session_id = ?)';
 
-		// Then delete parent
-		$this->db->where('id', $cartId);
-		$this->db->where_group_start();
-		$this->db->where('user_id', $customerId);
-		$this->db->or_where('customer_session_id', $customerSessionId);
-		$this->db->where_group_end();
-		$this->db->delete('add_to_carts');
+		// First delete children, then the parent item.
+		$this->db->query(
+			"DELETE FROM add_to_carts WHERE parent_cart_id = ? AND {$owner}",
+			array($cartId, $customerId, $customerSessionId)
+		);
+		$this->db->query(
+			"DELETE FROM add_to_carts WHERE id = ? AND {$owner}",
+			array($cartId, $customerId, $customerSessionId)
+		);
 
 		return true;
 	}
