@@ -3,9 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Mar 17, 2026 at 09:30 AM
--- Server version: 10.11.15-MariaDB-cll-lve
--- PHP Version: 8.3.30
+-- Generation Time: Jul 03, 2026 at 12:47 AM
+-- Server version: 10.11.18-MariaDB-cll-lve
+-- PHP Version: 8.3.31
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -71,6 +71,28 @@ CREATE TABLE `admin_logins` (
   `device_info` text DEFAULT NULL,
   `active` tinyint(4) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `admin_logins`
+--
+
+INSERT INTO `admin_logins` (`id`, `admin_id`, `login_time`, `session_val`, `terminal`, `device_info`, `active`) VALUES
+(1, 1, '2026-03-07 00:10:08', '0', '103.159.72.16', NULL, 1),
+(2, 1, '2026-03-07 00:11:05', '0', '103.159.72.16', NULL, 1),
+(3, 1, '2026-03-07 02:27:04', '0', '103.159.72.16', NULL, 1),
+(4, 1, '2026-03-07 11:44:15', '0', '::1', NULL, 1),
+(5, 1, '2026-03-14 06:44:15', '0', '::1', NULL, 1),
+(6, 1, '2026-03-15 15:03:26', '0', '::1', NULL, 1),
+(7, 1, '2026-03-17 05:06:01', '0', '::1', NULL, 1),
+(8, 1, '2026-03-17 07:41:14', '0', '::1', NULL, 1),
+(9, 1, '2026-03-17 14:41:22', '0', '::1', NULL, 1),
+(10, 1, '2026-03-17 15:32:00', '0', '::1', NULL, 1),
+(11, 1, '2026-03-18 14:43:37', '0', '::1', NULL, 1),
+(12, 1, '2026-03-19 03:31:00', '0', '103.159.72.16', NULL, 1),
+(13, 1, '2026-03-25 02:12:46', '0', '::1', NULL, 1),
+(14, 1, '2026-05-10 08:49:39', '0', '31.183.178.77', NULL, 1),
+(15, 1, '2026-06-27 06:24:36', '0', '103.159.72.16', NULL, 1),
+(16, 1, '2026-07-03 07:21:56', '0', '::1', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -188,6 +210,13 @@ CREATE TABLE `announcements` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `announcements`
+--
+
+INSERT INTO `announcements` (`id`, `title`, `slug`, `description`, `is_published`, `publish_date`, `tags`, `status`, `total_view`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 'test announcement', 'test-announcement', '<p>test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement <strong>jashdk</strong> jksadnkfs. </p><p><br></p><p>test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk jksadnkfs. test announcement jashdk.</p><p><br></p><p><br></p><p><br></p>', 1, '2026-01-23', 'test, testtag', 1, 0, '2026-01-23 15:34:28', NULL, '2026-01-23 15:34:28', 1, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -230,7 +259,7 @@ CREATE TABLE `app_settings` (
 --
 
 INSERT INTO `app_settings` (`id`, `site_name`, `site_desc`, `admin_url`, `favicon`, `logo`, `bin_tax`, `company_name`, `company_address`, `zip_code`, `city`, `state`, `country`, `license_auth`, `license_hash`, `email`, `fax`, `phone`, `smtp_host`, `smtp_port`, `smtp_username`, `smtp_authkey`, `captcha_site_key`, `captcha_secret_key`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'WHMAZ', 'Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System', 'https://demo.whmaz.com/whmazadmin/authenticate/login', 'favicon_ea001f05de00bfe79ffb1864114d868e.ico', 'logo_c741480362e311d793820fd49d7b6e33.png', '', 'WHMAZ', 'Colombo', '98765', '', '', '', NULL, NULL, 'support@demo.com', '2345', '12345', 'mail.demo.com', '587', 'support@demo.com', '123456789', '6Lej8lUsAAAAAASMAoMFwiMIvx1_Qkh8pKVLJ6Qo', '6Lej8lUsAAAAAEVPLbN0Yyqyb8_Zoiqtlu0s9bOw', NULL, NULL, '2026-03-07 06:33:36', 1);
+(1, 'WHMAZ', 'Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System', 'https://demo.whmaz.com/whmazadmin/authenticate/login', 'favicon_ea001f05de00bfe79ffb1864114d868e.ico', 'logo_c741480362e311d793820fd49d7b6e33.png', '', 'WHMAZ', 'Colombo', '98765', '', '', '', NULL, NULL, 'support@whmaz.com', '2345', '12345', 'mail.whmaz.com', '587', 'support@whmaz.com', 'q=VP[k2BUPhS', '6Lej8lUsAAAAAASMAoMFwiMIvx1_Qkh8pKVLJ6Qo', '6Lej8lUsAAAAAEVPLbN0Yyqyb8_Zoiqtlu0s9bOw', NULL, NULL, '2026-03-17 14:57:33', 1);
 
 -- --------------------------------------------------------
 
@@ -296,6 +325,13 @@ CREATE TABLE `companies` (
   `deleted_on` datetime DEFAULT NULL,
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `companies`
+--
+
+INSERT INTO `companies` (`id`, `name`, `mobile`, `phone`, `email`, `address`, `city`, `state`, `zip_code`, `first_name`, `last_name`, `country`, `registrar_customer_id`, `kam_id`, `kam_name`, `lead_id`, `opportunity_id`, `quotation_id`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 'Demo Client', '+94788888888', '+94788888888', 'client@whmaz.com', '201 Shanti Villa, Silk house Street', 'KANDY', 'KANDY', '20000', 'A. L', 'Perera', 'Sri Lanka', 'NC_4c37fc5fb1d2c4873ce6b69c6ff87772', 0, '', NULL, NULL, NULL, 1, '2014-02-21 15:11:42', 1, '2026-03-18 14:57:40', 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -593,30 +629,30 @@ CREATE TABLE `cron_jobs` (
 -- Dumping data for table `cron_jobs`
 --
 
-INSERT INTO `cron_jobs` (`id`, `job_name`, `execute_dt`) VALUES
-(1, 'Invoicegenerator', '2024-11-05 22:59:30'),
-(2, 'Invoicegenerator', '2024-11-05 23:09:21'),
-(3, 'Invoicegenerator', '2024-11-05 23:10:39'),
-(4, 'Invoicegenerator', '2024-11-16 21:22:49'),
-(5, 'Invoicegenerator', '2024-11-16 21:29:47'),
-(6, 'Invoicegenerator', '2024-11-16 22:20:04'),
-(7, 'Invoicegenerator', '2024-11-16 22:27:06'),
-(8, 'Invoicegenerator', '2024-11-16 22:30:03'),
-(9, 'Invoicegenerator', '2024-11-16 22:30:40'),
-(10, 'Invoicegenerator', '2024-11-16 22:31:45'),
-(11, 'Invoicegenerator', '2024-11-16 22:35:33'),
-(12, 'Invoicegenerator', '2024-11-16 22:38:05'),
-(13, 'Invoicegenerator', '2024-11-16 22:42:10'),
-(14, 'Invoicegenerator', '2024-11-16 22:44:23'),
-(15, 'Invoicegenerator', '2024-11-16 22:47:34'),
-(16, 'Invoicegenerator', '2024-11-16 22:49:43'),
-(17, 'Invoicegenerator', '2024-11-16 22:51:26'),
-(18, 'Invoicegenerator', '2024-11-16 23:18:32'),
-(19, 'Invoicegenerator', '2024-11-16 23:20:28'),
-(20, 'Invoicegenerator', '2024-11-16 23:20:47'),
-(21, 'Invoicegenerator', '2024-11-16 23:21:28'),
-(22, 'Invoicegenerator', '2024-11-21 21:12:22'),
-(23, 'Invoicegenerator', '2024-11-21 21:17:03');
+INSERT INTO `cron_jobs` (`id`, `job_name`, `job_type`, `status`, `details`, `items_processed`, `executed_on`, `execute_dt`) VALUES
+(1, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-05 22:59:30'),
+(2, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-05 23:09:21'),
+(3, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-05 23:10:39'),
+(4, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 21:22:49'),
+(5, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 21:29:47'),
+(6, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:20:04'),
+(7, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:27:06'),
+(8, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:30:03'),
+(9, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:30:40'),
+(10, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:31:45'),
+(11, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:35:33'),
+(12, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:38:05'),
+(13, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:42:10'),
+(14, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:44:23'),
+(15, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:47:34'),
+(16, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:49:43'),
+(17, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 22:51:26'),
+(18, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 23:18:32'),
+(19, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 23:20:28'),
+(20, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 23:20:47'),
+(21, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-16 23:21:28'),
+(22, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-21 21:12:22'),
+(23, 'Invoicegenerator', NULL, NULL, NULL, 0, NULL, '2024-11-21 21:17:03');
 
 -- --------------------------------------------------------
 
@@ -744,6 +780,30 @@ CREATE TABLE `dom_pricing` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `dom_pricing`
+--
+
+INSERT INTO `dom_pricing` (`id`, `dom_extension_id`, `currency_id`, `reg_period`, `price`, `transfer`, `renewal`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 1, 1, 1, 12.99, 12.99, 12.99, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:45', NULL, NULL, NULL),
+(2, 1, 2, 1, 1550, 1550, 1550, 1, '2020-09-05 08:17:52', NULL, '2026-02-09 07:44:46', 1, NULL, NULL),
+(3, 2, 1, 1, 13.25, 13.25, 13.25, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(4, 2, 2, 1, 1510, 1510, 1510, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(5, 3, 1, 1, 13.85, 13.85, 13.85, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(6, 3, 2, 1, 1580, 1580, 1580, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(7, 4, 1, 1, 20.15, 40.91, 40.91, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(8, 4, 2, 1, 2299, 2299, 2299, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(9, 5, 1, 1, 40.91, 12.99, 12.99, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(10, 5, 2, 1, 4660, 4660, 4660, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(11, 6, 1, 1, 66.39, 66.39, 66.39, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(12, 6, 2, 1, 7560, 7560, 7560, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(13, 7, 1, 1, 19.89, 19.89, 19.89, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(14, 7, 2, 1, 2270, 2270, 2270, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(15, 8, 1, 1, 36.15, 36.15, 36.15, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(16, 8, 2, 1, 4125, 4125, 4125, 1, '2020-09-05 08:17:52', NULL, '2024-08-10 01:54:54', NULL, NULL, NULL),
+(17, 16, 2, 1, 1640, 1640, 1640, 1, '2026-01-25 01:01:34', 1, '2026-01-25 07:03:06', 1, NULL, NULL),
+(18, 16, 1, 1, 12.95, 12.95, 12.95, 1, '2026-01-25 01:02:09', 1, '2026-01-25 01:02:09', NULL, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -856,7 +916,7 @@ INSERT INTO `email_templates` (`id`, `template_key`, `template_name`, `subject`,
 (7, 'invoice_paid', 'Invoice Paid Confirmation', 'Payment Received - Invoice #{invoice_no}', '<p>Dear {client_name},</p><p>Thank you! We have received your payment for invoice <strong>#{invoice_no}</strong>.</p><p><strong>Amount Paid:</strong> {currency} {amount_due}<br><strong>Date:</strong> {invoice_date}</p><p><a href=\"{invoice_url}\">Click here to view your invoice</a></p><p>Thank you for your business.</p><p>Regards,<br>{site_name}</p>', NULL, 'INVOICE', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
 (8, 'order_confirmation', 'Order Confirmation', 'Order Confirmed - #{invoice_no}', '<p>Dear {client_name},</p><p>Thank you for your order! Your order has been received and is being processed.</p><p>You will receive further updates once your order has been reviewed.</p><p>Thank you for choosing {site_name}.</p><p>Regards,<br>{site_name}</p>', NULL, 'ORDER', 1, '2026-01-27 19:52:54', NULL, '2026-02-21 22:39:58', NULL, NULL, NULL),
 (9, 'welcome_email', 'Welcome Email', 'Welcome to {site_name}', '<p>Dear {client_name},</p><p>Welcome to <strong>{site_name}</strong>! Your account has been created successfully.</p><p>You can log in to your client area at: <a href=\"{site_url}\">{site_url}</a></p><p>Thank you for choosing us.</p><p>Regards,<br>{site_name}</p>', NULL, 'AUTH', 1, '2026-01-27 19:52:54', NULL, '2026-01-28 01:52:54', NULL, NULL, NULL),
-(10, 'password_reset', 'Password Reset', 'Password Reset Request - {site_name}', '<p>Dear {client_name},</p><p>We received a request to reset your password for your account at {site_name}.</p><p><a href=\"{reset_link}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;\">Reset Your Password</a></p><p>Or copy and paste this link into your browser:</p><p>{reset_link}</p><p>This link will expire in 1 hour.</p><p>If you did not request this, please ignore this email.</p><p>Regards,<br>{site_name}</p>', '{client_name}, {site_name}, {site_url}, {reset_link}', 'AUTH', 1, '2026-01-27 19:52:54', NULL, '2026-01-29 09:45:21', 1, NULL, NULL),
+(10, 'password_reset', 'Password Reset', 'Password Reset Request - {site_name}', '<p>Dear {client_name},</p><p>We received a request to reset your password for your account at {site_name}.</p><p><a href=\"{reset_link}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;\">Reset Your Password</a></p><p>Or copy and paste this link into your browser:</p><p>{reset_link}</p><p>This link will expire in 1 hour.</p><p>If you did not request this, please ignore this email.</p><p>Regards,<br>{site_name}</p>', '{client_name}, {site_name}, {site_url}, {reset_link}', 'AUTH', 1, '2026-01-27 19:52:54', NULL, '2026-03-24 11:08:19', 1, NULL, NULL),
 (11, 'invoice_payment_confirmation', 'Payment Confirmation', 'Payment Received - Invoice #{invoice_no}', '<p>Dear {client_name},</p>\r\n<p>Thank you for your payment! We have successfully received your payment for Invoice <strong>#{invoice_no}</strong>.</p>\r\n<h3>Payment Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Invoice Number:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{invoice_no}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Amount Paid:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{currency_symbol}{amount}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Payment Method:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{payment_method}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Transaction ID:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{transaction_id}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Payment Date:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{payment_date}</td></tr>\r\n</table>\r\n<p style=\"margin-top: 20px;\">You can view your invoice and payment history by logging into your account.</p>\r\n<p>If you have any questions about this payment, please don\'t hesitate to contact us.</p>\r\n<p>Thank you for your business!</p>\r\n<p>Best Regards,<br>{company_name}</p>', '{client_name}, {invoice_no}, {amount}, {currency_symbol}, {payment_method}, {transaction_id}, {payment_date}, {company_name}', 'INVOICE', 1, '2026-02-21 00:54:23', NULL, '2026-02-21 06:54:23', NULL, NULL, NULL),
 (12, 'admin_payment_notification', 'Admin Payment Notification', 'New Payment Received - Invoice #{invoice_no} - {currency_symbol}{amount}', '<p>A new payment has been received.</p>\r\n<h3>Payment Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Customer:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_name}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Company:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{company_name_customer}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Email:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_email}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Invoice Number:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{invoice_no}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Amount:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{currency_symbol}{amount}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Payment Method:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{payment_method}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Gateway:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{gateway_name}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Transaction ID:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{transaction_id}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Payment Date:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{payment_date}</td></tr>\r\n</table>\r\n<p style=\"margin-top: 20px;\"><a href=\"{admin_invoice_url}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">View Invoice</a></p>', '{client_name}, {company_name_customer}, {client_email}, {invoice_no}, {amount}, {currency_symbol}, {payment_method}, {gateway_name}, {transaction_id}, {payment_date}, {admin_invoice_url}', 'INVOICE', 1, '2026-02-21 00:54:23', NULL, '2026-02-21 06:54:23', NULL, NULL, NULL),
 (13, 'ticket_new_to_department', 'New Ticket - Department Notification', 'New Support Ticket #{ticket_id} - {ticket_subject}', '<p>A new support ticket has been submitted.</p>\r\n<h3>Ticket Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Ticket ID:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{ticket_id}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Subject:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{ticket_subject}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Priority:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{ticket_priority}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Department:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{department_name}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Created:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{ticket_date}</td></tr>\r\n</table>\r\n<h3>Customer Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Name:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_name}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Company:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{company_name_customer}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Email:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_email}</td></tr>\r\n</table>\r\n<h3>Message:</h3>\r\n<div style=\"padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0;\">\r\n{ticket_message}\r\n</div>\r\n<p style=\"margin-top: 20px;\"><a href=\"{admin_ticket_url}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">View & Reply to Ticket</a></p>', '{ticket_id}, {ticket_subject}, {ticket_priority}, {department_name}, {ticket_date}, {client_name}, {company_name_customer}, {client_email}, {ticket_message}, {admin_ticket_url}', 'TICKET', 1, '2026-02-21 16:38:55', 1, '2026-02-21 22:38:55', 1, NULL, NULL),
@@ -889,6 +949,14 @@ CREATE TABLE `expenses` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `expenses`
+--
+
+INSERT INTO `expenses` (`id`, `expense_type_id`, `expense_vendor_id`, `exp_amount`, `paid_amount`, `expense_date`, `attachment`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 1, 2, 100, 100, '2024-08-04', '172270785810_Screenshot_from_2024-07-01_20-33-28.png', 'test', 1, '2024-08-03 19:36:49', 1, '2024-08-03 21:31:04', 1, NULL, NULL),
+(2, 1, 2, 1, 1, '2026-02-13', '686b378044e7c04d1238fb87ee411f97.jpg', 'test', 1, '2026-02-13 02:38:29', 1, '2026-02-13 02:38:32', NULL, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -907,6 +975,14 @@ CREATE TABLE `expense_types` (
   `deleted_on` datetime DEFAULT NULL,
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `expense_types`
+--
+
+INSERT INTO `expense_types` (`id`, `expense_type`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 'VPS Hosting', 'testt', 1, NULL, NULL, '2024-08-03 03:01:16', 1, NULL, NULL),
+(2, 'Domain register - Resell.biz', 'Domain register - Resell.biz', 1, '2024-08-03 09:01:36', 1, '2024-08-03 07:01:36', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -927,6 +1003,36 @@ CREATE TABLE `expense_vendors` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `expense_vendors`
+--
+
+INSERT INTO `expense_vendors` (`id`, `vendor_name`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 'Digital Ocean', NULL, 1, NULL, NULL, '2020-08-22 01:42:20', NULL, NULL, NULL),
+(2, 'Knownhost', 'Hosting provider', 1, '2024-08-03 09:09:54', 1, '2024-08-03 03:10:05', 1, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `expense_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `expense_view` (
+`id` int(11)
+,`expense_type_id` int(11)
+,`expense_vendor_id` int(11)
+,`exp_amount` double
+,`paid_amount` double
+,`expense_date` date
+,`attachment` varchar(255)
+,`remarks` text
+,`status` tinyint(4)
+,`inserted_on` datetime
+,`updated_on` timestamp
+,`expense_type` varchar(255)
+,`vendor_name` varchar(255)
+);
+
 -- --------------------------------------------------------
 
 --
@@ -938,6 +1044,14 @@ CREATE TABLE `gen_numbers` (
   `no_type` varchar(10) NOT NULL,
   `last_no` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `gen_numbers`
+--
+
+INSERT INTO `gen_numbers` (`id`, `no_type`, `last_no`) VALUES
+(1, 'ORDER', 2035),
+(2, 'INVOICE', 1544);
 
 -- --------------------------------------------------------
 
@@ -975,6 +1089,14 @@ CREATE TABLE `invoices` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `invoices`
+--
+
+INSERT INTO `invoices` (`id`, `invoice_uuid`, `company_id`, `order_id`, `currency_id`, `currency_code`, `invoice_no`, `sub_total`, `tax`, `vat`, `discount`, `coupon_code`, `total`, `due_date`, `order_date`, `cancel_date`, `refund_date`, `remarks`, `status`, `pay_status`, `need_api_call`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(561, '49af90f2-d430-4e60-b6b4-1704bcae8cfd', 1, 735, 1, 'USD', '1543', 12.95, 0.00, 0.00, 0.00, NULL, 12.95, '2026-03-07', '2026-03-07', NULL, NULL, NULL, 1, 'DUE', 0, '2026-03-07 02:39:39', 1, '2026-03-07 09:48:56', NULL, NULL, NULL),
+(562, '60cb4a18-97a8-44c3-9290-e84362a21267', 1, 736, 1, 'USD', '1544', 13.25, 0.00, 0.00, 2.00, 'XE983SVP', 11.25, '2026-03-17', '2026-03-17', NULL, NULL, NULL, 1, 'DUE', 0, '2026-03-17 15:42:37', 1, '2026-03-17 14:42:37', NULL, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1005,6 +1127,14 @@ CREATE TABLE `invoice_items` (
   `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `invoice_items`
+--
+
+INSERT INTO `invoice_items` (`id`, `invoice_id`, `item`, `item_desc`, `item_type`, `ref_id`, `billing_cycle_id`, `note`, `quantity`, `unit_price`, `discount`, `sub_total`, `tax`, `vat`, `total`, `billing_period_start`, `billing_period_end`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(579, 561, 'Register: testing-ecomz.xyz', 'Register: testing-ecomz.xyz - testing-ecomz.xyz', 1, 731, 1, NULL, 1, 12.95, 0.00, 12.95, 0.00, 0.00, 12.95, '2026-03-07', '2026-04-06', '2026-03-07 02:39:39', 1, '2026-03-07 08:39:39', NULL),
+(580, 562, 'Register: testingsarkerdom.net', 'Register: testingsarkerdom.net - testingsarkerdom.net', 1, 732, 1, NULL, 1, 13.25, 0.00, 13.25, 0.00, 0.00, 13.25, '2026-03-17', '2026-04-16', '2026-03-17 15:42:38', 1, '2026-03-17 14:42:39', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1031,6 +1161,57 @@ CREATE TABLE `invoice_txn` (
   `deleted_on` datetime DEFAULT NULL,
   `deleted_by` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `invoice_txn`
+--
+
+INSERT INTO `invoice_txn` (`id`, `invoice_id`, `payment_gateway_id`, `payment_transaction_id`, `transaction_id`, `txn_date`, `amount`, `currency_code`, `type`, `status`, `remarks`, `attachments`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(10, 561, 2, 9, 'pi_3T8GPXQ1EoHKEhCU0sqybXnR', '2026-03-07', 12.95, 'USD', 'payment', 1, 'Payment via Stripe', NULL, '2026-03-07 02:40:43', 1, NULL, NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `invoice_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `invoice_view` (
+`id` bigint(20)
+,`invoice_uuid` varchar(40)
+,`company_id` bigint(20)
+,`order_id` bigint(20)
+,`currency_id` int(11)
+,`currency_code` varchar(3)
+,`invoice_no` varchar(20)
+,`sub_total` decimal(15,2)
+,`tax` decimal(15,2)
+,`vat` decimal(15,2)
+,`total` decimal(15,2)
+,`due_date` date
+,`order_date` date
+,`cancel_date` date
+,`refund_date` date
+,`remarks` text
+,`status` tinyint(4)
+,`pay_status` varchar(10)
+,`need_api_call` tinyint(4)
+,`inserted_on` datetime
+,`updated_on` timestamp
+,`company_name` varchar(150)
+,`company_mobile` varchar(16)
+,`company_email` varchar(255)
+,`company_address` varchar(255)
+,`company_city` varchar(100)
+,`company_state` varchar(100)
+,`company_zipcode` varchar(10)
+,`country` varchar(100)
+,`company_phone` varchar(16)
+,`order_uuid` varchar(40)
+,`order_no` bigint(20)
+,`total_paid` decimal(37,2)
+,`balance_due` decimal(38,2)
+,`last_payment_date` date
+);
 
 -- --------------------------------------------------------
 
@@ -1059,6 +1240,24 @@ CREATE TABLE `kbs` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `kbs`
+--
+
+INSERT INTO `kbs` (`id`, `title`, `slug`, `article`, `tags`, `total_view`, `useful`, `upvote`, `downvote`, `sort_order`, `is_hidden`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 'Hello World', 'hello-world', '<p>Hello World. <b>This is knowledge base article</b></p>', 'Hello, World, Hello World', 0, 0, 0, 0, 1, 0, 1, NULL, NULL, '2024-08-04 17:08:26', 1, NULL, NULL),
+(2, 'Test', 'test', '<p>THis is test. <b>This is knowledge base article</b></p>', 'test', 0, 0, 0, 0, 1, 0, 1, NULL, NULL, '2024-08-04 17:08:45', 1, NULL, NULL),
+(3, 'How to register domain', 'how-to-register-domain', '<h2>How to register domain.</h2>', 'asdfasd', 0, 0, 0, 0, 1, 0, 1, '2024-08-04 17:25:40', 1, '2024-08-05 07:06:06', 1, NULL, NULL),
+(4, 'vps server management', 'vps-server-management', '<p>vps-server-management. vps-server-management</p>', '', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:17:22', 1, NULL, NULL, NULL, NULL),
+(5, 'vps server login', 'vps-server-login', '<p>vps server login. vps server login</p>', 'vps', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:18:14', 1, NULL, NULL, NULL, NULL),
+(6, 'How to create Database in CPanel', 'how-to-create-database-in-cpanel', '<p>How to create Database in CPanel</p>', 'cpanel, database', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:20:46', 1, NULL, NULL, NULL, NULL),
+(7, 'How to create database user with password in cpanel', 'how-to-create-database-user-with-password-in-cpanel', '<p>How to create database user with password in cpanel</p>', 'cpanel, database', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:21:45', 1, NULL, NULL, NULL, NULL),
+(8, 'How to allow remote access to cpanel database', 'how-to-allow-remote-access-to-cpanel-database', '<p>How to allow remote access to cpanel database</p>', 'cpanel, database', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:23:17', 1, NULL, NULL, NULL, NULL),
+(9, 'How to change password of cpanel database user', 'how-to-change-password-of-cpanel-database-user', '<p>How to change password of cpanel database user</p>', 'cpanel, database', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:24:07', 1, NULL, NULL, NULL, NULL),
+(10, 'How to create subdomain in cpanel', 'how-to-create-subdomain-in-cpanel', '<p>How to create subdomain in cpanel</p>', 'cpanel, subdomain', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:24:57', 1, NULL, NULL, NULL, NULL),
+(11, 'How to create email account in cpanel', 'how-to-create-email-account-in-cpanel', '<p>How to create email account in cpanel</p>', 'cpanel, email account', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:26:04', 1, NULL, NULL, NULL, NULL),
+(12, 'How to login in email account in cpanel', 'how-to-login-in-email-account-in-cpanel', '<p>How to login in email account in cpanel</p>', 'cpanel, email account', 0, 0, 0, 0, 1, 0, 1, '2026-02-08 01:27:15', 1, NULL, NULL, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1081,6 +1280,16 @@ CREATE TABLE `kb_cats` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `kb_cats`
+--
+
+INSERT INTO `kb_cats` (`id`, `parent_id`, `cat_title`, `slug`, `description`, `is_hidden`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 0, 'Hosting Services', 'hosting-services', 'How to purchase/renew shared hosting. How to purchase/renew reseller hosting.', 0, 1, '2024-08-05 07:02:44', 1, NULL, NULL, NULL, NULL),
+(2, 0, 'Domain Management', 'domain-management', 'How to register domain. How to transfer domain. How to manage domain', 0, 1, '2024-08-05 07:02:44', 1, NULL, NULL, NULL, NULL),
+(3, 0, 'VPS Server', 'vps-server', 'VPS server (Managed & Un-managed)', 0, 1, '2024-08-05 07:02:44', 1, NULL, NULL, NULL, NULL),
+(4, 0, 'Database', 'database', 'Database', 0, 1, '2026-02-08 01:19:24', 1, NULL, NULL, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1092,6 +1301,26 @@ CREATE TABLE `kb_cat_mapping` (
   `kb_id` int(5) NOT NULL,
   `kb_cat_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `kb_cat_mapping`
+--
+
+INSERT INTO `kb_cat_mapping` (`id`, `kb_id`, `kb_cat_id`) VALUES
+(5, 1, 1),
+(6, 1, 2),
+(7, 2, 1),
+(8, 2, 2),
+(12, 3, 2),
+(15, 4, 3),
+(16, 5, 3),
+(17, 6, 4),
+(18, 7, 4),
+(19, 8, 4),
+(20, 9, 4),
+(21, 10, 1),
+(22, 11, 1),
+(23, 12, 1);
 
 -- --------------------------------------------------------
 
@@ -1120,6 +1349,13 @@ CREATE TABLE `migrations` (
   `migration` varchar(255) NOT NULL,
   `batch` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `migrations`
+--
+
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
+(1, '2014_10_12_100000_create_password_resets_table', 1);
 
 -- --------------------------------------------------------
 
@@ -1156,6 +1392,14 @@ CREATE TABLE `orders` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `order_uuid`, `order_no`, `company_id`, `currency_id`, `currency_code`, `order_date`, `amount`, `vat_amount`, `tax_amount`, `coupon_code`, `coupon_amount`, `discount_amount`, `total_amount`, `payment_gateway_id`, `remarks`, `status`, `instructions`, `has_notification`, `need_api_call`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(735, '8b10d04a-e485-498a-baaf-88d5c493c4a7', 2034, 1, 1, 'USD', '2026-03-07', 12.95, 0.00, 0.00, '', 0.00, 0.00, 12.95, 7, '', 1, '', 0, 0, '2026-03-07 02:39:39', 1, '2026-03-07 08:40:43', NULL, NULL, NULL),
+(736, '213c0861-b953-428a-9fd0-0a9da7a2092b', 2035, 1, 1, 'USD', '2026-03-17', 13.25, 0.00, 0.00, 'XE983SVP', 2.00, 2.00, 11.25, 7, '', 1, '', 0, 0, '2026-03-17 15:42:36', 1, '2026-03-17 14:42:35', NULL, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1168,7 +1412,7 @@ CREATE TABLE `order_domains` (
   `company_id` bigint(20) NOT NULL,
   `dom_register_id` int(11) NOT NULL,
   `dom_pricing_id` int(11) NOT NULL,
-  `order_type` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1=reg, 2=transfer, 3=nothing',
+  `order_type` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1=reg, 2=transfer, 3=dns_only, 4=existing',
   `epp_code` varchar(200) DEFAULT NULL,
   `domain` text NOT NULL,
   `linked_service_id` bigint(20) DEFAULT NULL COMMENT 'Links to order_services.id when hosting is purchased with domain',
@@ -1190,7 +1434,7 @@ CREATE TABLE `order_domains` (
   `email_forwarding` tinyint(4) NOT NULL DEFAULT 0,
   `id_protection` tinyint(4) NOT NULL DEFAULT 0,
   `auto_renew` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=auto renew, 0=manual',
-  `transfer_lock` TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1=locked, 0=unlocked',
+  `transfer_lock` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=locked, 0=unlocked',
   `dns_type` varchar(12) NOT NULL DEFAULT 'default_ns' COMMENT 'default_ns, custom_ns, records',
   `ns1` varchar(150) DEFAULT NULL,
   `ns2` varchar(150) DEFAULT NULL,
@@ -1209,6 +1453,55 @@ CREATE TABLE `order_domains` (
   `last_contact_sync` datetime DEFAULT NULL,
   `status` tinyint(4) NOT NULL COMMENT '0=pending reg, 1=active, 2=expired, 3=grace, 4=cancelled, 5=pending transfer, 6=deleted',
   `provisioning_status` varchar(20) DEFAULT 'pending' COMMENT 'pending, in_progress, completed, failed',
+  `remarks` varchar(255) DEFAULT NULL,
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_by` int(11) DEFAULT NULL,
+  `deleted_on` datetime DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `order_domains`
+--
+
+INSERT INTO `order_domains` (`id`, `order_id`, `company_id`, `dom_register_id`, `dom_pricing_id`, `order_type`, `epp_code`, `domain`, `linked_service_id`, `first_pay_amount`, `recurring_amount`, `reg_date`, `reg_period`, `exp_date`, `due_date`, `next_renewal_date`, `suspension_date`, `suspension_reason`, `termination_date`, `is_synced`, `last_sync_dt`, `domain_cust_id`, `domain_order_id`, `dns_management`, `email_forwarding`, `id_protection`, `auto_renew`, `transfer_lock`, `dns_type`, `ns1`, `ns2`, `ns3`, `ns4`, `contact_name`, `contact_company`, `contact_email`, `contact_phone`, `contact_address1`, `contact_address2`, `contact_city`, `contact_state`, `contact_zip`, `contact_country`, `last_contact_sync`, `status`, `provisioning_status`, `remarks`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(731, 735, 1, 2, 18, 1, NULL, 'testing-ecomz.xyz', NULL, 12.95, 12.95, '2026-03-07', 1, '2027-03-07', '2026-03-14', '2027-03-07', NULL, NULL, NULL, 1, '2026-03-07 02:40:43', 0, 1106489, 0, 0, 0, 1, 1, 'default_ns', 'verify-contact-details.namecheap.com', 'failed-whois-verification.namecheap.com', NULL, NULL, 'A. L Perera', '', 'client@whmaz.com', '+94.788888888', '201 Shanti VillaSilkhouse Street', '', 'KANDY', 'KANDY', '20000', 'LK', '2026-06-13 11:31:41', 1, 'pending', '', '2026-03-07 02:39:39', 1, '2026-06-13 16:31:41', NULL, NULL, NULL),
+(732, 736, 1, 2, 3, 1, NULL, 'testingsarkerdom.net', NULL, 13.25, 13.25, '2026-03-17', 1, '2027-03-17', '2026-03-24', '2027-03-17', NULL, NULL, NULL, 1, NULL, NULL, NULL, 0, 0, 0, 1, 1, 'default_ns', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 'pending', '', '2026-03-17 15:42:38', 1, '2026-03-17 14:42:38', NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_licenses`
+--
+
+CREATE TABLE `order_licenses` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `order_id` bigint(20) NOT NULL,
+  `company_id` bigint(20) NOT NULL,
+  `plan_id` bigint(20) UNSIGNED NOT NULL,
+  `billing_cycle_id` int(11) NOT NULL,
+  `currency_id` int(11) NOT NULL DEFAULT 0,
+  `currency_code` varchar(3) DEFAULT NULL,
+  `first_pay_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `recurring_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `license_key` varchar(255) DEFAULT NULL COMMENT 'Issued on activation',
+  `paddle_subscription_id` varchar(100) DEFAULT NULL COMMENT 'Paddle (MoR) subscription id',
+  `auto_renew` tinyint(1) NOT NULL DEFAULT 1,
+  `reg_date` date DEFAULT NULL,
+  `exp_date` date DEFAULT NULL,
+  `due_date` date DEFAULT NULL,
+  `next_renewal_date` date DEFAULT NULL,
+  `suspension_date` date DEFAULT NULL,
+  `suspension_reason` varchar(255) DEFAULT NULL,
+  `termination_date` date DEFAULT NULL,
+  `is_synced` tinyint(4) NOT NULL DEFAULT 1,
+  `last_sync_dt` datetime DEFAULT NULL,
+  `license_domain` varchar(255) DEFAULT NULL COMMENT 'Install domain bound on first phone-home',
+  `last_check_in` datetime DEFAULT NULL COMMENT 'Last successful phone-home',
+  `last_check_ip` varchar(45) DEFAULT NULL COMMENT 'IP of last phone-home',
+  `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0=pending,1=active,2=expired,3=suspended,4=terminated',
   `remarks` varchar(255) DEFAULT NULL,
   `inserted_on` datetime DEFAULT NULL,
   `inserted_by` int(11) DEFAULT NULL,
@@ -1278,6 +1571,50 @@ CREATE TABLE `order_services` (
 -- --------------------------------------------------------
 
 --
+-- Stand-in structure for view `order_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `order_view` (
+`id` bigint(20)
+,`order_uuid` varchar(40)
+,`order_no` bigint(20)
+,`company_id` bigint(20)
+,`currency_id` int(11)
+,`currency_code` varchar(3)
+,`order_date` date
+,`amount` decimal(15,2)
+,`vat_amount` decimal(15,2)
+,`tax_amount` decimal(15,2)
+,`coupon_code` varchar(32)
+,`coupon_amount` decimal(15,2)
+,`discount_amount` decimal(15,2)
+,`total_amount` decimal(15,2)
+,`payment_gateway_id` int(11)
+,`remarks` text
+,`instructions` text
+,`status` tinyint(4)
+,`inserted_on` datetime
+,`updated_on` timestamp
+,`company_name` varchar(150)
+,`company_email` varchar(255)
+,`company_mobile` varchar(16)
+,`company_phone` varchar(16)
+,`company_address` varchar(255)
+,`country` varchar(100)
+,`company_zipcode` varchar(10)
+,`company_city` varchar(100)
+,`company_state` varchar(100)
+,`payment_gateway_name` varchar(100)
+,`payment_gateway_fa_icon` varchar(30)
+,`service_count` bigint(21)
+,`domain_count` bigint(21)
+,`services_recurring_total` decimal(37,2)
+,`domains_recurring_total` decimal(37,2)
+);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `pages`
 --
 
@@ -1301,6 +1638,15 @@ CREATE TABLE `pages` (
   `deleted_by` int(11) DEFAULT NULL,
   `status` tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `pages`
+--
+
+INSERT INTO `pages` (`id`, `page_title`, `page_slug`, `page_content`, `meta_title`, `meta_description`, `meta_keywords`, `is_published`, `is_system`, `sort_order`, `total_view`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`, `status`) VALUES
+(1, 'Terms and Conditions', 'terms-and-conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', '', 1, 1, 1, 46, '2026-02-12 21:24:40', NULL, '2026-02-13 03:35:49', 1, NULL, NULL, 1),
+(2, 'Privacy Policy', 'privacy-policy', '<h2>Privacy Policy</h2><p>Please add your privacy policy here.</p>', 'Privacy Policy', NULL, NULL, 1, 1, 2, 52, '2026-02-12 21:24:40', NULL, NULL, NULL, NULL, NULL, 1),
+(3, 'Refund Policy', 'refund-policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', '', 1, 0, 3, 55, '2026-02-12 21:24:40', NULL, '2026-02-13 03:38:09', 1, NULL, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1349,6 +1695,14 @@ CREATE TABLE `page_history` (
   `changed_by` int(11) DEFAULT NULL,
   `changed_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `page_history`
+--
+
+INSERT INTO `page_history` (`id`, `page_id`, `page_title`, `page_content`, `meta_title`, `meta_description`, `change_type`, `change_note`, `changed_by`, `changed_at`) VALUES
+(1, 1, 'Terms and Conditions', '<h2>Terms and Conditions</h2><p>Please add your terms and conditions here. <strong>updated</strong></p>', 'Terms and Conditions', '', 'updated', '', 1, '2026-02-13 03:35:50'),
+(2, 3, 'Refund Policy', '<h2>Refund Policy</h2><p>Please add your refund policy here.</p>', 'Refund Policy', '', 'updated', '', 1, '2026-02-13 03:38:09');
 
 -- --------------------------------------------------------
 
@@ -1417,7 +1771,7 @@ CREATE TABLE `payment_gateway` (
 
 INSERT INTO `payment_gateway` (`id`, `name`, `gateway_code`, `gateway_type`, `icon_fa_unicode`, `pay_type`, `public_key`, `secret_key`, `webhook_secret`, `is_test_mode`, `test_public_key`, `test_secret_key`, `test_webhook_secret`, `extra_config`, `bank_name`, `account_name`, `account_number`, `routing_number`, `swift_code`, `iban`, `supported_currencies`, `min_amount`, `max_amount`, `fee_type`, `fee_fixed`, `fee_percent`, `fee_bearer`, `logo`, `display_name`, `description`, `sort_order`, `webhook_url`, `merchant_id`, `merchant_pwd`, `instructions`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
 (1, 'Offline Payment', 'manual', 'manual', 'f3d1', 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Manual Payment', 'Pay via bank transfer or other offline methods. Your order will be processed after payment confirmation.', 0, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-02-21 12:22:53', NULL),
-(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', 1, 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Credit/Debit Card', 'Pay securely with your credit or debit card via Stripe.', 1, 'http://localhost/ci-crm/webhook/stripe', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-03-07 08:40:01', 1),
+(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', 1, 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Stripe Card Payment', 'Pay securely with your credit or debit card via Stripe.', 1, 'http://localhost/ci-crm/webhook/stripe', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-03-18 19:44:43', 1),
 (3, 'PayPal', 'paypal', 'online_wallet', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,JPY,CHF,HKD,SGD,SEK,DKK,PLN,NOK,CZK,ILS,MXN,BRL,PHP,TWD,THB,MYR', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'PayPal', 'Pay securely using your PayPal account or card.', 2, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (4, 'Razorpay', 'razorpay', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'INR', 0.00, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'Razorpay', 'Pay with UPI, Cards, Netbanking, or Wallets via Razorpay.', 3, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (5, 'Paystack', 'paystack', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NGN,GHS,ZAR,KES', 0.00, 0.00, 'both', 100.00, 1.50, 'merchant', NULL, 'Paystack', 'Pay with card or bank transfer via Paystack.', 4, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
@@ -1495,6 +1849,13 @@ CREATE TABLE `payment_transactions` (
   `updated_by` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `payment_transactions`
+--
+
+INSERT INTO `payment_transactions` (`id`, `transaction_uuid`, `invoice_id`, `payment_gateway_id`, `gateway_code`, `gateway_transaction_id`, `gateway_payment_id`, `gateway_order_id`, `gateway_subscription_id`, `amount`, `fee_amount`, `net_amount`, `currency_code`, `exchange_rate`, `txn_type`, `status`, `failure_reason`, `payment_method`, `card_brand`, `card_last4`, `card_exp_month`, `card_exp_year`, `bank_name`, `wallet_name`, `payer_email`, `payer_name`, `payer_phone`, `gateway_response`, `webhook_payload`, `ip_address`, `user_agent`, `metadata`, `initiated_at`, `completed_at`, `refunded_at`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(9, '8f659de9-e9d7-4aec-b1ff-ad8349328fab', 561, 2, 'stripe', 'pi_3T8GPXQ1EoHKEhCU0sqybXnR', NULL, 'pi_3T8GPXQ1EoHKEhCU0sqybXnR', NULL, 12.95, 0.00, 12.95, 'USD', 1.000000, 'payment', 'completed', NULL, NULL, 'visa', '4242', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '{\"id\":\"pi_3T8GPXQ1EoHKEhCU0sqybXnR\",\"object\":\"payment_intent\",\"amount\":1295,\"amount_capturable\":0,\"amount_details\":{\"tip\":[]},\"amount_received\":1295,\"application\":null,\"application_fee_amount\":null,\"automatic_payment_methods\":{\"allow_redirects\":\"always\",\"enabled\":true},\"canceled_at\":null,\"cancellation_reason\":null,\"capture_method\":\"automatic\",\"client_secret\":\"pi_3T8GPXQ1EoHKEhCU0sqybXnR_secret_mkA45tMnsQBq89M9ruatYmQco\",\"confirmation_method\":\"automatic\",\"created\":1772872835,\"currency\":\"usd\",\"customer\":null,\"customer_account\":null,\"description\":null,\"excluded_payment_method_types\":null,\"invoice\":null,\"last_payment_error\":null,\"latest_charge\":{\"id\":\"ch_3T8GPXQ1EoHKEhCU0Y7wFiT1\",\"object\":\"charge\",\"amount\":1295,\"amount_captured\":1295,\"amount_refunded\":0,\"application\":null,\"application_fee\":null,\"application_fee_amount\":null,\"balance_transaction\":\"txn_3T8GPXQ1EoHKEhCU0AmaUpDF\",\"billing_details\":{\"address\":{\"city\":null,\"country\":null,\"line1\":null,\"line2\":null,\"postal_code\":\"90254\",\"state\":null},\"email\":null,\"name\":null,\"phone\":null,\"tax_id\":null},\"calculated_statement_descriptor\":\"Stripe\",\"captured\":true,\"created\":1772872835,\"currency\":\"usd\",\"customer\":null,\"description\":null,\"destination\":null,\"dispute\":null,\"disputed\":false,\"failure_balance_transaction\":null,\"failure_code\":null,\"failure_message\":null,\"fraud_details\":[],\"invoice\":null,\"livemode\":false,\"metadata\":{\"invoice_id\":\"561\",\"invoice_uuid\":\"49af90f2-d430-4e60-b6b4-1704bcae8cfd\",\"transaction_id\":\"9\"},\"on_behalf_of\":null,\"order\":null,\"outcome\":{\"advice_code\":null,\"network_advice_code\":null,\"network_decline_code\":null,\"network_status\":\"approved_by_network\",\"reason\":null,\"risk_level\":\"normal\",\"risk_score\":23,\"seller_message\":\"Payment complete.\",\"type\":\"authorized\"},\"paid\":true,\"payment_intent\":\"pi_3T8GPXQ1EoHKEhCU0sqybXnR\",\"payment_method\":\"pm_1T8GPXQ1EoHKEhCURJDPwzBx\",\"payment_method_details\":{\"card\":{\"amount_authorized\":1295,\"authorization_code\":\"502000\",\"brand\":\"visa\",\"checks\":{\"address_line1_check\":null,\"address_postal_code_check\":\"pass\",\"cvc_check\":\"pass\"},\"country\":\"US\",\"exp_month\":6,\"exp_year\":2028,\"extended_authorization\":{\"status\":\"disabled\"},\"fingerprint\":\"M0ZBagDykUho10VO\",\"funding\":\"credit\",\"incremental_authorization\":{\"status\":\"unavailable\"},\"installments\":null,\"last4\":\"4242\",\"mandate\":null,\"multicapture\":{\"status\":\"unavailable\"},\"network\":\"visa\",\"network_token\":{\"used\":false},\"network_transaction_id\":\"774890669710368\",\"overcapture\":{\"maximum_amount_capturable\":1295,\"status\":\"unavailable\"},\"regulated_status\":\"unregulated\",\"three_d_secure\":null,\"wallet\":null},\"type\":\"card\"},\"radar_options\":[],\"receipt_email\":null,\"receipt_number\":null,\"receipt_url\":\"https:\\/\\/pay.stripe.com\\/receipts\\/payment\\/CAcaFwoVYWNjdF8xVDBaN3ZRMUVvSEtFaENVKIXJr80GMgbavnGW7i06LBaQPm0p8yrH97np-xg4xeVlHjiPR3w1zRAPMLkz-hHYr3z0sr8I-EDdTXXv\",\"refunded\":false,\"review\":null,\"shipping\":null,\"source\":null,\"source_transfer\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null},\"livemode\":false,\"metadata\":{\"invoice_id\":\"561\",\"invoice_uuid\":\"49af90f2-d430-4e60-b6b4-1704bcae8cfd\",\"transaction_id\":\"9\"},\"next_action\":null,\"on_behalf_of\":null,\"payment_method\":\"pm_1T8GPXQ1EoHKEhCURJDPwzBx\",\"payment_method_configuration_details\":{\"id\":\"pmc_1T0Z8RQ1EoHKEhCUitfkyb1e\",\"parent\":null},\"payment_method_options\":{\"card\":{\"installments\":null,\"mandate_options\":null,\"network\":null,\"request_three_d_secure\":\"automatic\"},\"link\":{\"persistent_token\":null}},\"payment_method_types\":[\"card\",\"link\"],\"processing\":null,\"receipt_email\":null,\"review\":null,\"setup_future_usage\":null,\"shipping\":null,\"source\":null,\"statement_descriptor\":null,\"statement_descriptor_suffix\":null,\"status\":\"succeeded\",\"transfer_data\":null,\"transfer_group\":null}', NULL, '103.159.72.16', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '{\"invoice_no\":\"1543\",\"company_id\":\"1\"}', '2026-03-07 02:40:34', '2026-03-07 02:40:37', NULL, '2026-03-07 02:40:34', 1, '2026-03-07 02:40:37', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1510,6 +1871,42 @@ CREATE TABLE `pending_executions` (
   `is_completed` tinyint(4) NOT NULL DEFAULT 0,
   `completed_on` datetime DEFAULT NULL,
   `inserted_on` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `plans`
+--
+
+CREATE TABLE `plans` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `plan_key` varchar(32) NOT NULL,
+  `name` varchar(60) NOT NULL,
+  `tagline` varchar(150) DEFAULT NULL,
+  `description` text DEFAULT NULL COMMENT 'Full product description (HTML)',
+  `current_release_id` bigint(20) UNSIGNED DEFAULT NULL COMMENT 'software_releases.id shipped for this product',
+  `is_popular` tinyint(4) NOT NULL DEFAULT 0,
+  `sort_order` int(11) NOT NULL DEFAULT 0,
+  `is_active` tinyint(4) NOT NULL DEFAULT 1,
+  `paddle_product_id` varchar(100) DEFAULT NULL,
+  `paddle_price_monthly_id` varchar(100) DEFAULT NULL,
+  `paddle_price_annual_id` varchar(100) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `plan_features`
+--
+
+CREATE TABLE `plan_features` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `plan_id` bigint(20) UNSIGNED NOT NULL,
+  `feature_key` varchar(64) NOT NULL,
+  `feature_value` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -1538,6 +1935,29 @@ CREATE TABLE `product_services` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `product_services`
+--
+
+INSERT INTO `product_services` (`id`, `product_service_group_id`, `server_id`, `product_service_module_id`, `product_service_type_id`, `product_name`, `product_desc`, `is_hidden`, `pricing_type`, `cp_package`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 1, 1, 2, 1, '1GB_SHARED', '<ul>\r\n<li><strong>whmazc_1GB_SHARED</strong></li>\r\n<li>1.0 GB Disk Space</li>\r\n<li>9.8 GB Bandwidth</li>\r\n<li>5 Addon Domains</li>\r\n<li>5 Parked Domains</li>\r\n<li>Unlimited Subdomains</li>\r\n<li>Unlimited FTP Accounts</li>\r\n<li>Unlimited MySQL Databases</li>\r\n<li>Unlimited Email Accounts</li>\r\n<li>Unlimited Mailing Lists</li>\r\n<li>No Shell</li>\r\n<li>CGI Access</li>\r\n</ul>', 0, 'recurring', 'whmazc_1GB_SHARED', 1, NULL, NULL, '2026-01-27 22:02:15', 1, NULL, NULL),
+(2, 1, 1, 2, 1, '2GB_SHARED', '<ul>\r\n<li><strong>whmazc_2GB_SHARED</strong></li>\r\n<li>2.0 GB Disk Space</li>\r\n<li>19.5 GB Bandwidth</li>\r\n<li>5 Addon Domains</li>\r\n<li>5 Parked Domains</li>\r\n<li>Unlimited Subdomains</li>\r\n<li>Unlimited FTP Accounts</li>\r\n<li>Unlimited MySQL Databases</li>\r\n<li>Unlimited Email Accounts</li>\r\n<li>Unlimited Mailing Lists</li>\r\n<li>No Shell</li>\r\n<li>CGI Access</li>\r\n</ul>', 0, 'recurring', 'whmazc_2GB_SHARED', 1, NULL, NULL, '2026-01-27 22:01:03', 1, NULL, NULL),
+(3, 1, 1, 2, 1, '3GB_SHARED', '<ul>\r\n<li><strong>whmazc_3GB_SHARED</strong></li>\r\n<li>3.0 GB Disk Space</li>\r\n<li>Unlimited Bandwidth</li>\r\n<li>Unlimited Addon Domains</li>\r\n<li>Unlimited Parked Domains</li>\r\n<li>Unlimited Subdomains</li>\r\n<li>Unlimited FTP Accounts</li>\r\n<li>Unlimited MySQL Databases</li>\r\n<li>Unlimited Email Accounts</li>\r\n<li>Unlimited Mailing Lists</li>\r\n<li>No Shell</li>\r\n<li>CGI Access</li>\r\n</ul>', 0, 'recurring', 'whmazc_3GB_SHARED', 1, NULL, NULL, '2026-01-27 22:00:13', 1, NULL, NULL),
+(4, 1, 1, 2, 1, '5GB_SHARED', '<ul>\r\n<li><strong>whmazc_5GB_SHARED</strong></li>\r\n<li>5.0 GB Disk Space</li>\r\n<li>Unlimited Bandwidth</li>\r\n<li>Unlimited Addon Domains</li>\r\n<li>Unlimited Parked Domains</li>\r\n<li>Unlimited Subdomains</li>\r\n<li>Unlimited FTP Accounts</li>\r\n<li>Unlimited MySQL Databases</li>\r\n<li>Unlimited Email Accounts</li>\r\n<li>Unlimited Mailing Lists</li>\r\n<li>No Shell</li>\r\n<li>CGI Access</li>\r\n</ul>', 0, 'recurring', 'whmazc_5GB_SHARED', 1, NULL, NULL, '2026-01-27 21:59:25', 1, NULL, NULL),
+(5, 5, 1, 2, 1, 'Corp_3GB', '<ul>\r\n<li><strong>whmazc_3GB_SHARED</strong></li>\r\n<li>3.0 GB Disk Space</li>\r\n<li>Unlimited Bandwidth</li>\r\n<li>Unlimited Addon Domains</li>\r\n<li>Unlimited Parked Domains</li>\r\n<li>Unlimited Subdomains</li>\r\n<li>Unlimited FTP Accounts</li>\r\n<li>Unlimited MySQL Databases</li>\r\n<li>Unlimited Email Accounts</li>\r\n<li>Unlimited Mailing Lists</li>\r\n<li>No Shell</li>\r\n<li>CGI Access</li>\r\n</ul>', 0, 'recurring', 'whmazc_3GB_SHARED', 1, NULL, NULL, '2026-01-27 21:58:23', 1, NULL, NULL),
+(6, 5, 1, 2, 1, 'Corp_5GB', '<ul>\r\n<li><strong>whmazc_5GB_SHARED</strong></li>\r\n<li>5.0 GB Disk Space</li>\r\n<li>Unlimited Bandwidth</li>\r\n<li>Unlimited Addon Domains</li>\r\n<li>Unlimited Parked Domains</li>\r\n<li>Unlimited Subdomains</li>\r\n<li>Unlimited FTP Accounts</li>\r\n<li>Unlimited MySQL Databases</li>\r\n<li>Unlimited Email Accounts</li>\r\n<li>Unlimited Mailing Lists</li>\r\n<li>No Shell</li>\r\n<li>CGI Access</li>\r\n</ul>', 0, 'recurring', 'whmazc_5GB_SHARED', 1, NULL, NULL, '2026-01-27 21:57:30', 1, NULL, NULL),
+(7, 5, 1, 2, 1, 'Corp_10GB', '<ul>\r\n<li><strong>whmazc_10GB_SHARED</strong></li>\r\n<li>9.8 GB Disk Space</li>\r\n<li>Unlimited Bandwidth</li>\r\n<li>Unlimited Addon Domains</li>\r\n<li>Unlimited Parked Domains</li>\r\n<li>Unlimited Subdomains</li>\r\n<li>Unlimited FTP Accounts</li>\r\n<li>Unlimited MySQL Databases</li>\r\n<li>Unlimited Email Accounts</li>\r\n<li>Unlimited Mailing Lists</li>\r\n<li>No Shell</li>\r\n<li>CGI Access</li>\r\n</ul>', 0, 'recurring', 'whmazc_10GB_SHARED', 1, NULL, NULL, '2026-01-27 21:56:31', 1, NULL, NULL),
+(11, 4, 3, 1, 3, 'uVPS-1', '<strong>200 GB of space</strong><br />\r\nunlimited bandwidth<br />\r\n8 GB RAM (guaranteed)<br />\r\n4 CPU cores<br />\r\nNo control panel<br />\r\n<strong>Full root access</strong><br />\r\nPure SSD, KVM', 0, 'recurring', NULL, 1, NULL, NULL, '2024-08-21 23:48:36', NULL, NULL, NULL),
+(12, 4, 3, 1, 3, 'uVPS-2', '<strong>400 GB of space</strong><br />\r\nunlimited bandwidth<br />\r\n16 GB RAM (guaranteed)<br />\r\n6 CPU cores<br />\r\nNo control panel<br />\r\n<strong>Full root access</strong><br />\r\nPure SSD, KVM', 0, 'recurring', NULL, 1, NULL, NULL, '2024-08-21 23:48:39', NULL, NULL, NULL),
+(13, 4, 3, 1, 3, 'uVPS-3', '<strong>800 GB of space</strong><br />\r\nunlimited bandwidth<br />\r\n30 GB RAM (guaranteed)<br />\r\n8 CPU cores<br />\r\nNo control panel<br />\r\n<strong>Full root access</strong><br />\r\nPure SSD, KVM', 0, 'recurring', NULL, 1, NULL, NULL, '2024-08-21 23:48:42', NULL, NULL, NULL),
+(15, 2, 1, 2, 2, 'Small', '<strong>15GB disk space</strong><br />\r\n150 GB bandwidth per month<br />\r\n10 cPanel Accounts<br />\r\nUpto 50 Website point<br />\r\n<strong>No WHMCS</strong><br />\r\nUnlimited database<br />\r\nUnlimited ftp accounts<br />\r\n<strong>No Shell</strong>', 0, 'recurring', NULL, 1, NULL, NULL, '2022-10-09 10:53:19', NULL, NULL, NULL),
+(16, 2, 1, 2, 2, 'Professional', '<strong>100 GB disk space</strong><br />\r\nUnlimited bandwidth<br />\r\n50 Accounts<br />\r\n<strong>WHMCS</strong><br />\r\n<strong>Shell Access</strong>', 0, 'recurring', NULL, 1, NULL, NULL, '2022-10-09 10:53:19', NULL, NULL, NULL),
+(17, 2, 1, 2, 2, 'Starter', '<strong>50 GB disk space</strong><br />\r\nUnlimited bandwidth<br />\r\n30 Accounts<br />\r\n<strong>WHMCS</strong><br />\r\n<strong>No Shell</strong>', 0, 'recurring', NULL, 1, NULL, NULL, '2022-10-09 10:53:19', NULL, NULL, NULL),
+(18, 2, 1, 2, 2, 'Basic', '<strong>25 GB disk space</strong><br />\r\nUnlimited bandwidth<br />\r\n20 Accounts<br />\r\n<strong>No WHMCS</strong><br />\r\n<strong>No Shell</strong>', 0, 'recurring', NULL, 1, NULL, NULL, '2022-10-09 10:53:19', NULL, NULL, NULL),
+(19, 1, 1, 2, 1, '6GB_SHARED', '<ul>\r\n<li><strong>whmazc_6GB_SHARED</strong></li>\r\n<li>6.0 GB Disk Space</li>\r\n<li>Unlimited Bandwidth</li>\r\n<li>Unlimited Addon Domains</li>\r\n<li>Unlimited Parked Domains</li>\r\n<li>Unlimited Subdomains</li>\r\n<li>Unlimited FTP Accounts</li>\r\n<li>Unlimited MySQL Databases</li>\r\n<li>Unlimited Email Accounts</li>\r\n<li>Unlimited Mailing Lists</li>\r\n<li>No Shell</li>\r\n<li>CGI Access</li>\r\n</ul>', 0, 'recurring', 'whmazc_6GB_SHARED', 1, NULL, NULL, '2026-01-27 21:54:54', 1, NULL, NULL),
+(20, 1, 1, 2, 1, '10GB_SHARED', '<ul>\r\n<li><strong>whmazc_10GB_SHARED</strong></li>\r\n<li>9.8 GB Disk Space</li>\r\n<li>Unlimited Bandwidth</li>\r\n<li>Unlimited Addon Domains</li>\r\n<li>Unlimited Parked Domains</li>\r\n<li>Unlimited Subdomains</li>\r\n<li>Unlimited FTP Accounts</li>\r\n<li>Unlimited MySQL Databases</li>\r\n<li>Unlimited Email Accounts</li>\r\n<li>Unlimited Mailing Lists</li>\r\n<li>No Shell</li>\r\n<li>CGI Access</li>\r\n</ul>', 0, 'recurring', '', 1, NULL, NULL, '2026-03-15 20:49:04', 1, NULL, NULL),
+(21, 5, 3, 1, 6, 'One time Package', 'One time Package', 0, 'onetime', '', 1, '2026-03-15 16:09:51', 1, '2026-03-15 21:18:37', 1, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1558,6 +1978,17 @@ CREATE TABLE `product_service_groups` (
   `deleted_on` datetime DEFAULT NULL,
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product_service_groups`
+--
+
+INSERT INTO `product_service_groups` (`id`, `product_service_type_id`, `group_name`, `group_headline`, `tags`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 1, 'Shared Hosting', 'Find best shared hosting in Asia', 'shared, hosting', 1, NULL, NULL, '2024-08-07 15:42:49', NULL, NULL, NULL),
+(2, 2, 'Reseller Hosting', 'Start your business with us', 'Reseller, Hosting, Reseller Hosting', 1, '2024-08-03 07:02:11', 1, '2024-08-07 15:42:52', NULL, NULL, NULL),
+(3, 3, 'Managed VPS', 'Enlarge your business with us', 'Server,VPS', 1, NULL, NULL, '2024-08-07 15:42:55', NULL, '2024-08-03 05:00:47', 1),
+(4, 3, 'Un-managed VPS', 'Other products', 'Other, products', 1, NULL, NULL, '2024-08-07 15:42:57', NULL, '2024-08-03 05:13:02', 1),
+(5, 1, 'Corporate Hosting', 'Best hosting packages for your business', 'corporate, business, hosting', 1, NULL, NULL, '2024-08-21 23:54:18', 1, '2024-08-03 07:10:43', 1);
 
 -- --------------------------------------------------------
 
@@ -1580,6 +2011,44 @@ CREATE TABLE `product_service_pricing` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `product_service_pricing`
+--
+
+INSERT INTO `product_service_pricing` (`id`, `product_service_id`, `currency_id`, `price`, `billing_cycle_id`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 1, 1, 10.15, 4, 1, '2020-09-05 08:17:52', NULL, '2022-10-09 03:53:33', NULL, NULL, NULL),
+(2, 1, 2, 850, 4, 1, '2020-09-05 08:17:52', NULL, '2022-10-09 03:53:36', NULL, NULL, NULL),
+(3, 2, 1, 20.15, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-22 15:33:07', NULL, NULL, NULL),
+(4, 2, 2, 1700, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-22 15:32:48', NULL, NULL, NULL),
+(5, 3, 1, 25.95, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-22 15:33:52', NULL, NULL, NULL),
+(6, 3, 2, 3200, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-22 15:33:29', NULL, NULL, NULL),
+(7, 4, 1, 32.95, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-22 15:34:57', NULL, NULL, NULL),
+(8, 4, 2, 3999, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-22 15:34:22', NULL, NULL, NULL),
+(9, 5, 1, 37.95, 4, 1, '2020-09-05 08:17:52', NULL, '2022-10-09 03:53:48', NULL, NULL, NULL),
+(10, 5, 2, 4250, 4, 1, '2020-09-05 08:17:52', NULL, '2022-10-09 03:53:51', NULL, NULL, NULL),
+(11, 6, 1, 42.95, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-21 15:30:33', NULL, NULL, NULL),
+(12, 6, 2, 5299, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-21 15:30:50', NULL, NULL, NULL),
+(13, 7, 1, 72.95, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-21 15:29:33', NULL, NULL, NULL),
+(14, 7, 2, 8999, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-21 15:30:12', NULL, NULL, NULL),
+(15, 15, 1, 73, 4, 1, '2020-09-05 08:17:52', NULL, '2024-08-21 23:49:04', NULL, NULL, NULL),
+(16, 15, 2, 6500, 4, 1, '2020-09-05 08:17:52', NULL, '2024-08-21 23:49:07', NULL, NULL, NULL),
+(17, 16, 1, 970, 4, 1, '2020-09-05 08:17:52', NULL, '2024-08-21 23:49:04', NULL, NULL, NULL),
+(18, 16, 2, 85500, 4, 1, '2020-09-05 08:17:52', NULL, '2024-08-21 23:49:07', NULL, NULL, NULL),
+(19, 17, 1, 340, 4, 1, '2020-09-05 08:17:52', NULL, '2024-08-21 23:49:04', NULL, NULL, NULL),
+(20, 17, 2, 30100, 4, 1, '2020-09-05 08:17:52', NULL, '2024-08-21 23:49:07', NULL, NULL, NULL),
+(21, 18, 1, 130, 4, 1, '2020-09-05 08:17:52', NULL, '2024-08-21 23:49:04', NULL, NULL, NULL),
+(22, 18, 2, 11500, 4, 1, '2020-09-05 08:17:52', NULL, '2024-08-21 23:49:07', NULL, NULL, NULL),
+(23, 11, 1, 69.5, 4, 1, '2020-09-05 08:17:52', NULL, '2024-08-21 23:49:04', NULL, NULL, NULL),
+(24, 11, 2, 8800, 4, 1, '2020-09-05 08:17:52', NULL, '2024-08-21 23:49:04', NULL, NULL, NULL),
+(25, 19, 1, 38, 4, 1, '2020-09-05 08:17:52', NULL, '2025-05-03 03:56:53', NULL, NULL, NULL),
+(26, 19, 2, 4788, 4, 1, '2020-09-05 08:17:52', NULL, '2024-11-22 15:34:22', NULL, NULL, NULL),
+(27, 20, 1, 65, 4, 1, '2020-09-05 08:17:52', NULL, '2026-03-15 20:49:05', 1, NULL, NULL),
+(28, 20, 2, 8190, 4, 1, '2020-09-05 08:17:52', NULL, '2026-03-15 20:49:07', 1, NULL, NULL),
+(29, 20, 1, 13, 1, 1, '2026-03-15 15:49:04', 1, '2026-03-15 14:49:03', NULL, NULL, NULL),
+(31, 20, 2, 1651, 1, 1, '2026-03-15 15:49:06', 1, '2026-03-15 14:49:05', NULL, NULL, NULL),
+(37, 21, 1, 10, 5, 1, '2026-03-15 16:18:39', 1, '2026-03-15 15:18:38', NULL, NULL, NULL),
+(38, 21, 2, 1270, 5, 1, '2026-03-15 16:18:39', 1, '2026-03-15 15:18:38', NULL, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1600,6 +2069,44 @@ CREATE TABLE `product_service_types` (
   `deleted_on` datetime DEFAULT NULL,
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product_service_types`
+--
+
+INSERT INTO `product_service_types` (`id`, `servce_type_name`, `key_name`, `remarks`, `sort_order`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 'Shared Hosting', 'SHARED_HOSTING', NULL, 1, 1, '2020-08-20 20:26:51', NULL, '2024-08-07 15:36:09', NULL, NULL, NULL),
+(2, 'Reseller Hosting', 'RESELLER_HOSTING', NULL, 2, 1, '2020-08-20 20:26:51', NULL, '2024-08-07 15:36:15', NULL, NULL, NULL),
+(3, 'Server/VPS', 'SERVER_VPS', NULL, 3, 1, '2020-08-20 20:26:51', NULL, '2024-08-07 15:36:23', NULL, NULL, NULL),
+(4, 'Other', 'OTHER', 'Other', 8, 1, '2020-08-20 20:26:51', NULL, '2024-08-07 15:36:02', 1, NULL, NULL),
+(6, 'Software License', 'SOFTWARE_LICENSE', 'Software License', 4, 1, '2024-08-07 17:44:19', 1, '2024-08-07 15:44:19', NULL, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `product_service_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `product_service_view` (
+`id` int(11)
+,`product_service_group_id` int(11)
+,`server_id` int(11)
+,`product_service_module_id` int(11)
+,`product_service_type_id` int(11)
+,`product_name` varchar(255)
+,`product_desc` text
+,`is_hidden` tinyint(4)
+,`cp_package` varchar(150)
+,`status` tinyint(4)
+,`updated_on` timestamp
+,`group_name` varchar(100)
+,`group_headline` varchar(255)
+,`server_name` varchar(255)
+,`server_hostname` varchar(160)
+,`server_ip` varchar(160)
+,`module_name` varchar(100)
+,`servce_type_name` varchar(150)
+);
 
 -- --------------------------------------------------------
 
@@ -1633,6 +2140,13 @@ CREATE TABLE `promo_codes` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `promo_codes`
+--
+
+INSERT INTO `promo_codes` (`id`, `code`, `description`, `discount_type`, `discount_value`, `currency_id`, `start_date`, `end_date`, `is_lifetime`, `max_uses`, `max_uses_per_customer`, `min_order_amount`, `max_discount_amount`, `applies_to`, `total_used`, `is_active`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 'XE983SVP', 'testing', 'fixed', 2.00, 1, NULL, NULL, 1, 1, 1, 10.00, 0.00, 'all', 1, 1, 1, '2026-03-17 15:36:04', 1, NULL, NULL, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1657,6 +2171,13 @@ CREATE TABLE `promo_code_products` (
   `product_service_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `promo_code_products`
+--
+
+INSERT INTO `promo_code_products` (`id`, `promo_code_id`, `product_service_id`) VALUES
+(1, 1, 16);
+
 -- --------------------------------------------------------
 
 --
@@ -1671,6 +2192,13 @@ CREATE TABLE `promo_code_usage` (
   `discount_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
   `used_on` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `promo_code_usage`
+--
+
+INSERT INTO `promo_code_usage` (`id`, `promo_code_id`, `company_id`, `order_id`, `discount_amount`, `used_on`) VALUES
+(1, 1, 1, 736, 2.00, '2026-03-17 15:42:40');
 
 -- --------------------------------------------------------
 
@@ -1692,6 +2220,13 @@ CREATE TABLE `provisioning_logs` (
   `inserted_on` datetime NOT NULL,
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `provisioning_logs`
+--
+
+INSERT INTO `provisioning_logs` (`id`, `invoice_id`, `invoice_item_id`, `item_type`, `ref_id`, `action`, `success`, `error_message`, `response_data`, `retry_count`, `inserted_on`, `updated_on`) VALUES
+(8, 561, 579, 1, 731, 'register', 1, NULL, '{\"success\":true,\"action\":\"register\",\"order_id\":\"1106489\",\"error\":null}', 0, '2026-03-07 02:40:43', '2026-03-07 08:40:43');
 
 -- --------------------------------------------------------
 
@@ -1731,6 +2266,14 @@ CREATE TABLE `servers` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `servers`
+--
+
+INSERT INTO `servers` (`id`, `name`, `ip_addr`, `hostname`, `dns1`, `dns1_ip`, `dns2`, `dns2_ip`, `dns3`, `dns3_ip`, `dns4`, `dns4_ip`, `max_accounts`, `type`, `product_service_module_id`, `username`, `authpass`, `access_hash`, `port`, `is_secure`, `noc`, `remarks`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
+(1, 'Reseller Server', '170.249.236.236', 'server.resellerdemo.net', 'cp1.resellerdemo.net', '158.106.136.90', 'cp2.resellerdemo.net', '108.160.157.7', 'cp3.resellerdemo.net', '158.106.136.36', 'cp4.resellerdemo.net', '158.106.136.90', NULL, NULL, 2, 'enamingo', NULL, '.', 2087, 1, NULL, 'reseller hosting server', 1, '2024-08-09 16:06:20', 1, '2026-03-17 10:50:31', 1, '2026-02-12 09:19:47', 1),
+(3, 'Demo Server', '102.103.104.105', 'server.demo.com', 'ns1.demo.com', '', 'ns2.demo.com', '', '', '', '', '', NULL, NULL, 2, 'demoserver', NULL, 'demoserverdemoserver12312313', 2087, 1, NULL, 'demoserver', 1, '2026-03-07 00:27:40', 1, '2026-03-17 10:48:46', 1, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1757,6 +2300,49 @@ INSERT INTO `server_modules` (`id`, `module_name`, `remarks`, `status`, `inserte
 (2, 'cPanel', 'cPanel server', 1, '2020-08-20 20:26:51', 1, '2026-03-17 06:20:01', 1),
 (3, 'Plesk', 'Plesk server', 1, '2026-03-17 00:10:15', 1, '2026-03-17 06:20:01', 1),
 (4, 'DirectAdmin', 'DirectAdmin server', 1, '2026-03-17 00:37:25', 1, '2026-03-17 06:32:04', 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `software_pricing`
+--
+
+CREATE TABLE `software_pricing` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `product_id` bigint(20) UNSIGNED NOT NULL COMMENT 'plans.id',
+  `currency_id` int(11) NOT NULL,
+  `billing_cycle_id` int(11) NOT NULL,
+  `first_pay_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `recurring_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `status` tinyint(4) NOT NULL DEFAULT 1,
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_by` int(11) DEFAULT NULL,
+  `deleted_on` datetime DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `software_releases`
+--
+
+CREATE TABLE `software_releases` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `product_id` bigint(20) UNSIGNED DEFAULT NULL COMMENT 'plans.id this release belongs to (NULL = global/legacy)',
+  `version` varchar(40) NOT NULL,
+  `file_name` varchar(255) NOT NULL COMMENT 'Stored (random) filename in uploadedfiles/software',
+  `original_name` varchar(255) DEFAULT NULL COMMENT 'Original uploaded filename',
+  `file_size` bigint(20) DEFAULT NULL COMMENT 'Bytes',
+  `changelog` text DEFAULT NULL,
+  `is_current` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'The release customers download',
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1=active, 0=deleted',
+  `uploaded_by` int(11) DEFAULT NULL,
+  `uploaded_on` datetime DEFAULT NULL,
+  `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -1832,7 +2418,8 @@ INSERT INTO `sys_cnf` (`id`, `cnf_key`, `cnf_val`, `cnf_group`, `created_on`, `u
 (52, 'auto_close_tickets_after', '7', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43'),
 (53, 'notify_customer_ticket_reply', '1', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43'),
 (54, 'ticket_attachments_enabled', '1', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43'),
-(55, 'ticket_max_attachment_size', '5120', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43');
+(55, 'ticket_max_attachment_size', '5120', 'SUPPORT', '2026-02-21 00:05:43', '2026-02-21 00:05:43'),
+(56, 'license_suspension_days_after_due', '7', 'AUTOMATION', '2026-06-27 11:31:42', '2026-06-27 11:31:42');
 
 -- --------------------------------------------------------
 
@@ -1858,6 +2445,23 @@ CREATE TABLE `tickets` (
   `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `tickets`
+--
+
+INSERT INTO `tickets` (`id`, `company_id`, `ticket_dept_id`, `order_service_id`, `order_domain_id`, `title`, `message`, `priority`, `attachment`, `status`, `flag`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(1, 1, 1, 0, 0, 'Test', 'Test', 2, NULL, 1, 4, '2020-09-04 17:20:25', NULL, '2020-09-04 16:02:58', NULL),
+(2, 1, 2, 0, 0, 'asdad', 'asaf adsads', 1, 'test_private_key_tomcat.png', 1, 1, '2020-09-04 17:20:25', NULL, '2020-09-04 16:03:08', NULL),
+(3, 1, 2, 0, 0, 'Top-X Example', '<p>adfsvs s<b>dfd</b>sf</p>', 2, NULL, 1, 1, '2020-09-04 17:20:25', NULL, '2020-09-04 16:27:12', NULL),
+(4, 1, 2, 0, 0, 'Top-X Example Top-X Example', '<p>adfsvs sdfdsf</p>', 2, 'test_private_key_tomcat.png', 1, 1, '2020-09-04 17:20:25', NULL, '2020-09-04 16:03:08', NULL),
+(5, 1, 2, 0, 0, 'Top-X Example Top-X Example', '<p>adfsvs sdfdsf</p>', 2, 'test_private_key_tomcat.png', 1, 4, '2020-09-04 17:20:25', NULL, '2020-09-04 16:03:08', NULL),
+(6, 1, 2, 0, 0, 'Top-X Example Top-X Example', '<p>Top-X Example Top-X Example </p>', 2, '1599200685579_view 0.png', 1, 3, '2020-09-04 17:20:25', NULL, '2020-09-04 16:03:08', NULL),
+(7, 1, 1, 0, 0, 'sdfsfg', '<p>fd d dfgfdgfd dfgdgfdg</p>', 3, NULL, 1, 2, '2022-10-01 12:45:00', 1, '2026-01-23 15:23:34', 1),
+(8, 1, 1, 0, 0, 'ticket security testing. ok now. <script>alert(\"OK\");</script>', '<p>ticket security testing. ok now. <script>alert(\"msg\");</script>', 4, '', 1, 3, '2026-02-11 02:16:00', 1, '2026-02-11 02:28:26', 1),
+(9, 1, 1, 0, 0, 'ticket security testing. ok now. <script>alert(\"attachment\");</script>', '<p>ticket <em><u>security </u></em>testing. <strong>ok now</strong>. &lt;script&gt;alert(\"attachment\");&lt;/script&gt;</p>', 4, '9a8443e219122a09315c2b64a5858a7c.jpg,9949b6b6603b6946583dc3a79eff0f0a.png', 1, 1, '2026-02-11 02:39:00', 1, '2026-02-11 02:39:39', NULL),
+(10, 1, 1, 0, 0, 'testing', '<p>testing <strong><em><u>attachemt</u></em></strong></p>', 4, '1d49f4d037bd624d267f00aaf241f8a7.jpg,f5401f8fa1b30c08a128f1abcb40a6ee.jpg', 1, 1, '2026-02-11 03:25:00', 1, '2026-02-11 03:25:26', NULL),
+(11, 1, 1, 0, 0, 'test', '<p>test</p>', 3, '6f1fd016fa2edada45edd1fad26e17e3.png,f685ce3e44bfae7bfc24e3b5e8430215.jpg', 1, 3, '2026-02-11 04:29:00', 1, '2026-02-11 04:30:35', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -1876,6 +2480,14 @@ CREATE TABLE `ticket_depts` (
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `ticket_depts`
+--
+
+INSERT INTO `ticket_depts` (`id`, `name`, `description`, `email`, `sort_order`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(1, 'Support', 'Technical supports', 'support@whmaz.com', 1, 1, NULL, NULL, '2026-03-07 06:13:14', 1),
+(2, 'Billing', 'Bill payments department.', 'billing@whmaz.com', 2, 1, NULL, NULL, '2024-08-03 03:42:56', 1);
 
 -- --------------------------------------------------------
 
@@ -1897,6 +2509,48 @@ CREATE TABLE `ticket_replies` (
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `updated_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `ticket_replies`
+--
+
+INSERT INTO `ticket_replies` (`id`, `ticket_id`, `company_id`, `admin_id`, `message`, `attachment`, `rating`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(1, 6, 1, 0, 'This is manual inserted', NULL, 0, 1, '2020-09-04 17:20:02', 1, '2024-03-20 15:11:25', NULL),
+(2, 2, 1, 0, '<p><strong>gjhgjh </strong>ihihi</p>', NULL, 0, 1, '2021-03-20 02:35:00', 1, '2024-03-20 15:11:22', NULL),
+(3, 7, 1, 0, '<p>re-structure</p>', NULL, 5, 1, '2024-03-20 16:28:00', 1, '2024-03-20 15:29:41', 1),
+(4, 7, 1, 0, '<p>attachment</p>', NULL, 0, 1, '2024-03-20 16:30:00', 1, '2024-03-20 15:30:33', NULL),
+(5, 7, 1, 0, '<p>attachments sdfsdf</p>', NULL, 0, 1, '2024-03-20 16:36:00', 1, '2024-03-20 15:36:28', NULL),
+(6, 7, 1, 0, '<p>Admin reply testing</p>', '', 0, 1, '2026-01-23 15:23:34', 1, '2026-01-23 15:23:33', NULL),
+(7, 8, 1, 0, '<p>User reply testing 3</p>', '', 0, 1, '2026-02-11 02:28:00', 1, '2026-02-11 02:32:42', NULL),
+(8, 8, 1, 0, '<p><span style=\"color: rgb(60, 72, 88);\">ticket security testing. ok now. &lt;script&gt;alert(\"reply\");&lt;/script&gt;</span></p>', '', 0, 1, '2026-02-11 02:33:00', 1, '2026-02-11 02:33:18', NULL),
+(9, 11, 1, 0, '<p>reply with <strong>attachment</strong></p>', '2a63f893ffaae646631a88657f4b9b4e.jpg', 0, 1, '2026-02-11 04:30:00', 1, '2026-02-11 04:30:35', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `ticket_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `ticket_view` (
+`id` bigint(20)
+,`company_id` bigint(20)
+,`ticket_dept_id` int(11)
+,`order_service_id` bigint(20)
+,`order_domain_id` bigint(20)
+,`title` text
+,`message` text
+,`priority` tinyint(4)
+,`attachment` text
+,`status` tinyint(4)
+,`flag` tinyint(4)
+,`inserted_on` datetime
+,`updated_on` timestamp
+,`company_name` varchar(150)
+,`company_email` varchar(255)
+,`company_mobile` varchar(16)
+,`dept_name` varchar(255)
+,`user_name` varchar(201)
+);
 
 -- --------------------------------------------------------
 
@@ -1931,6 +2585,13 @@ CREATE TABLE `users` (
   `pass_reset_expiry` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `mobile`, `phone`, `designation`, `password`, `verify_hash`, `verify_data`, `otp_code`, `company_id`, `user_type`, `login_try`, `status`, `profile_pic`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`, `pass_reset_key`, `pass_reset_expiry`) VALUES
+(1, 'A. L', 'Perera', 'client@whmaz.com', '+94799999999', '+94799999999', 'Company Owner', '$2y$10$HjX8Hz.af07jH5ACIp4aX.i7umbHLgoPkYXvlK.FFNzh30oaXmYVa', NULL, NULL, NULL, 1, 0, 0, 1, NULL, '2024-08-10 06:05:41', 1, '2026-03-07 06:24:13', NULL, NULL, NULL, NULL, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -1946,6 +2607,23 @@ CREATE TABLE `user_logins` (
   `device_info` text DEFAULT NULL,
   `active` tinyint(4) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_logins`
+--
+
+INSERT INTO `user_logins` (`id`, `user_id`, `login_time`, `session_val`, `terminal`, `device_info`, `active`) VALUES
+(1, 1, '2026-03-07 01:32:40', '0', '103.159.72.16', NULL, 1),
+(2, 1, '2026-03-07 02:39:28', '0', '103.159.72.16', NULL, 1),
+(3, 1, '2026-03-07 02:53:31', '0', '103.159.72.16', NULL, 1),
+(4, 1, '2026-03-07 10:37:58', '0', '::1', NULL, 1),
+(5, 1, '2026-03-07 04:58:29', '0', '103.159.72.16', NULL, 1),
+(6, 1, '2026-03-14 00:08:39', '0', '103.159.72.16', NULL, 1),
+(7, 1, '2026-03-17 14:14:34', '0', '::1', NULL, 1),
+(8, 1, '2026-03-17 15:36:59', '0', '::1', NULL, 1),
+(9, 1, '2026-03-25 02:01:42', '0', '::1', NULL, 1),
+(10, 1, '2026-06-13 11:31:16', '0', '103.159.72.16', NULL, 1),
+(11, 1, '2026-06-27 06:23:00', '0', '103.159.72.16', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -2048,7 +2726,7 @@ ALTER TABLE `countries`
 --
 ALTER TABLE `cron_jobs`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_cron_jobs_job_type_executed_on` (`job_type`, `executed_on`);
+  ADD KEY `idx_cron_jobs_job_type_executed_on` (`job_type`,`executed_on`);
 
 --
 -- Indexes for table `cron_schedules`
@@ -2207,6 +2885,16 @@ ALTER TABLE `order_domains`
   ADD KEY `idx_linked_service` (`linked_service_id`);
 
 --
+-- Indexes for table `order_licenses`
+--
+ALTER TABLE `order_licenses`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_order_licenses_company` (`company_id`),
+  ADD KEY `idx_order_licenses_order` (`order_id`),
+  ADD KEY `idx_order_licenses_plan` (`plan_id`),
+  ADD KEY `idx_order_licenses_status` (`status`);
+
+--
 -- Indexes for table `order_services`
 --
 ALTER TABLE `order_services`
@@ -2275,6 +2963,20 @@ ALTER TABLE `pending_executions`
   ADD KEY `order_id` (`order_id`),
   ADD KEY `invoice_id` (`invoice_id`),
   ADD KEY `is_completed` (`is_completed`);
+
+--
+-- Indexes for table `plans`
+--
+ALTER TABLE `plans`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_plans_plan_key` (`plan_key`);
+
+--
+-- Indexes for table `plan_features`
+--
+ALTER TABLE `plan_features`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_plan_features_plan_feature` (`plan_id`,`feature_key`);
 
 --
 -- Indexes for table `product_services`
@@ -2352,6 +3054,22 @@ ALTER TABLE `server_modules`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `software_pricing`
+--
+ALTER TABLE `software_pricing`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_software_pricing` (`product_id`,`currency_id`,`billing_cycle_id`),
+  ADD KEY `idx_software_pricing_product` (`product_id`);
+
+--
+-- Indexes for table `software_releases`
+--
+ALTER TABLE `software_releases`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_software_releases_current` (`is_current`,`status`),
+  ADD KEY `idx_software_releases_product` (`product_id`);
+
+--
 -- Indexes for table `sys_cnf`
 --
 ALTER TABLE `sys_cnf`
@@ -2407,13 +3125,13 @@ ALTER TABLE `webhook_logs`
 -- AUTO_INCREMENT for table `add_to_carts`
 --
 ALTER TABLE `add_to_carts`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `admin_logins`
 --
 ALTER TABLE `admin_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `admin_roles`
@@ -2443,7 +3161,7 @@ ALTER TABLE `alert_recipients`
 -- AUTO_INCREMENT for table `announcements`
 --
 ALTER TABLE `announcements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `billing_cycle`
@@ -2455,7 +3173,7 @@ ALTER TABLE `billing_cycle`
 -- AUTO_INCREMENT for table `companies`
 --
 ALTER TABLE `companies`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `countries`
@@ -2491,7 +3209,7 @@ ALTER TABLE `dom_extensions`
 -- AUTO_INCREMENT for table `dom_pricing`
 --
 ALTER TABLE `dom_pricing`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `dom_registers`
@@ -2521,103 +3239,109 @@ ALTER TABLE `email_templates`
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `expense_types`
 --
 ALTER TABLE `expense_types`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `expense_vendors`
 --
 ALTER TABLE `expense_vendors`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `gen_numbers`
 --
 ALTER TABLE `gen_numbers`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `invoices`
 --
 ALTER TABLE `invoices`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=563;
 
 --
 -- AUTO_INCREMENT for table `invoice_items`
 --
 ALTER TABLE `invoice_items`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=581;
 
 --
 -- AUTO_INCREMENT for table `invoice_txn`
 --
 ALTER TABLE `invoice_txn`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `kbs`
 --
 ALTER TABLE `kbs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `kb_cats`
 --
 ALTER TABLE `kb_cats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `kb_cat_mapping`
 --
 ALTER TABLE `kb_cat_mapping`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `login_attempts`
 --
 ALTER TABLE `login_attempts`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=43;
 
 --
 -- AUTO_INCREMENT for table `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=737;
 
 --
 -- AUTO_INCREMENT for table `order_domains`
 --
 ALTER TABLE `order_domains`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=733;
+
+--
+-- AUTO_INCREMENT for table `order_licenses`
+--
+ALTER TABLE `order_licenses`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `order_services`
 --
 ALTER TABLE `order_services`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=720;
 
 --
 -- AUTO_INCREMENT for table `pages`
 --
 ALTER TABLE `pages`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `page_history`
 --
 ALTER TABLE `page_history`
-  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `payment_gateway`
@@ -2635,7 +3359,7 @@ ALTER TABLE `payment_refunds`
 -- AUTO_INCREMENT for table `payment_transactions`
 --
 ALTER TABLE `payment_transactions`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `pending_executions`
@@ -2644,34 +3368,46 @@ ALTER TABLE `pending_executions`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `plans`
+--
+ALTER TABLE `plans`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `plan_features`
+--
+ALTER TABLE `plan_features`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+
+--
 -- AUTO_INCREMENT for table `product_services`
 --
 ALTER TABLE `product_services`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `product_service_groups`
 --
 ALTER TABLE `product_service_groups`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `product_service_pricing`
 --
 ALTER TABLE `product_service_pricing`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `product_service_types`
 --
 ALTER TABLE `product_service_types`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `promo_codes`
 --
 ALTER TABLE `promo_codes`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `promo_code_customers`
@@ -2683,25 +3419,25 @@ ALTER TABLE `promo_code_customers`
 -- AUTO_INCREMENT for table `promo_code_products`
 --
 ALTER TABLE `promo_code_products`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `promo_code_usage`
 --
 ALTER TABLE `promo_code_usage`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `provisioning_logs`
 --
 ALTER TABLE `provisioning_logs`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `servers`
 --
 ALTER TABLE `servers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `server_modules`
@@ -2710,40 +3446,52 @@ ALTER TABLE `server_modules`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT for table `software_pricing`
+--
+ALTER TABLE `software_pricing`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `software_releases`
+--
+ALTER TABLE `software_releases`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `sys_cnf`
 --
 ALTER TABLE `sys_cnf`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `tickets`
 --
 ALTER TABLE `tickets`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `ticket_depts`
 --
 ALTER TABLE `ticket_depts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `ticket_replies`
 --
 ALTER TABLE `ticket_replies`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `user_logins`
 --
 ALTER TABLE `user_logins`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `webhook_logs`
@@ -2754,21 +3502,84 @@ ALTER TABLE `webhook_logs`
 -- --------------------------------------------------------
 
 --
+-- Structure for view `expense_view`
+--
+DROP TABLE IF EXISTS `expense_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`whmazc`@`localhost` SQL SECURITY DEFINER VIEW `expense_view`  AS SELECT `e`.`id` AS `id`, `e`.`expense_type_id` AS `expense_type_id`, `e`.`expense_vendor_id` AS `expense_vendor_id`, `e`.`exp_amount` AS `exp_amount`, `e`.`paid_amount` AS `paid_amount`, `e`.`expense_date` AS `expense_date`, `e`.`attachment` AS `attachment`, `e`.`remarks` AS `remarks`, `e`.`status` AS `status`, `e`.`inserted_on` AS `inserted_on`, `e`.`updated_on` AS `updated_on`, `et`.`expense_type` AS `expense_type`, `ev`.`vendor_name` AS `vendor_name` FROM ((`expenses` `e` join `expense_types` `et` on(`e`.`expense_type_id` = `et`.`id`)) join `expense_vendors` `ev` on(`e`.`expense_vendor_id` = `ev`.`id`)) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `invoice_view`
+--
+DROP TABLE IF EXISTS `invoice_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`whmazc`@`localhost` SQL SECURITY DEFINER VIEW `invoice_view`  AS SELECT DISTINCT `i`.`id` AS `id`, `i`.`invoice_uuid` AS `invoice_uuid`, `i`.`company_id` AS `company_id`, `i`.`order_id` AS `order_id`, `i`.`currency_id` AS `currency_id`, `i`.`currency_code` AS `currency_code`, `i`.`invoice_no` AS `invoice_no`, `i`.`sub_total` AS `sub_total`, `i`.`tax` AS `tax`, `i`.`vat` AS `vat`, `i`.`total` AS `total`, `i`.`due_date` AS `due_date`, `i`.`order_date` AS `order_date`, `i`.`cancel_date` AS `cancel_date`, `i`.`refund_date` AS `refund_date`, `i`.`remarks` AS `remarks`, `i`.`status` AS `status`, `i`.`pay_status` AS `pay_status`, `i`.`need_api_call` AS `need_api_call`, `i`.`inserted_on` AS `inserted_on`, `i`.`updated_on` AS `updated_on`, `c`.`name` AS `company_name`, `c`.`mobile` AS `company_mobile`, `c`.`email` AS `company_email`, `c`.`address` AS `company_address`, `c`.`city` AS `company_city`, `c`.`state` AS `company_state`, `c`.`zip_code` AS `company_zipcode`, `c`.`country` AS `country`, `c`.`phone` AS `company_phone`, `o`.`order_uuid` AS `order_uuid`, `o`.`order_no` AS `order_no`, coalesce(`t`.`total_paid`,0) AS `total_paid`, `i`.`total`- coalesce(`t`.`total_paid`,0) AS `balance_due`, `t`.`last_payment_date` AS `last_payment_date` FROM (((`invoices` `i` join `companies` `c` on(`i`.`company_id` = `c`.`id`)) join `orders` `o` on(`i`.`order_id` = `o`.`id`)) left join (select `invoice_txn`.`invoice_id` AS `invoice_id`,sum(case when `invoice_txn`.`type` = 'payment' and `invoice_txn`.`status` = 1 then `invoice_txn`.`amount` when `invoice_txn`.`type` = 'refund' and `invoice_txn`.`status` = 1 then -`invoice_txn`.`amount` when `invoice_txn`.`type` = 'credit' and `invoice_txn`.`status` = 1 then `invoice_txn`.`amount` else 0 end) AS `total_paid`,max(case when `invoice_txn`.`status` = 1 then `invoice_txn`.`txn_date` end) AS `last_payment_date` from `invoice_txn` where `invoice_txn`.`deleted_on` is null group by `invoice_txn`.`invoice_id`) `t` on(`i`.`id` = `t`.`invoice_id`)) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `order_view`
+--
+DROP TABLE IF EXISTS `order_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`whmazc`@`localhost` SQL SECURITY DEFINER VIEW `order_view`  AS SELECT `o`.`id` AS `id`, `o`.`order_uuid` AS `order_uuid`, `o`.`order_no` AS `order_no`, `o`.`company_id` AS `company_id`, `o`.`currency_id` AS `currency_id`, `o`.`currency_code` AS `currency_code`, `o`.`order_date` AS `order_date`, `o`.`amount` AS `amount`, `o`.`vat_amount` AS `vat_amount`, `o`.`tax_amount` AS `tax_amount`, `o`.`coupon_code` AS `coupon_code`, `o`.`coupon_amount` AS `coupon_amount`, `o`.`discount_amount` AS `discount_amount`, `o`.`total_amount` AS `total_amount`, `o`.`payment_gateway_id` AS `payment_gateway_id`, `o`.`remarks` AS `remarks`, `o`.`instructions` AS `instructions`, `o`.`status` AS `status`, `o`.`inserted_on` AS `inserted_on`, `o`.`updated_on` AS `updated_on`, `c`.`name` AS `company_name`, `c`.`email` AS `company_email`, `c`.`mobile` AS `company_mobile`, `c`.`phone` AS `company_phone`, `c`.`address` AS `company_address`, `c`.`country` AS `country`, `c`.`zip_code` AS `company_zipcode`, `c`.`city` AS `company_city`, `c`.`state` AS `company_state`, `p`.`name` AS `payment_gateway_name`, `p`.`icon_fa_unicode` AS `payment_gateway_fa_icon`, coalesce(`sv`.`service_count`,0) AS `service_count`, coalesce(`dm`.`domain_count`,0) AS `domain_count`, coalesce(`sv`.`total_recurring`,0) AS `services_recurring_total`, coalesce(`dm`.`total_recurring`,0) AS `domains_recurring_total` FROM ((((`orders` `o` join `companies` `c` on(`o`.`company_id` = `c`.`id`)) join `payment_gateway` `p` on(`o`.`payment_gateway_id` = `p`.`id`)) left join (select `order_services`.`order_id` AS `order_id`,count(0) AS `service_count`,sum(`order_services`.`recurring_amount`) AS `total_recurring` from `order_services` where `order_services`.`deleted_on` is null group by `order_services`.`order_id`) `sv` on(`o`.`id` = `sv`.`order_id`)) left join (select `order_domains`.`order_id` AS `order_id`,count(0) AS `domain_count`,sum(`order_domains`.`recurring_amount`) AS `total_recurring` from `order_domains` where `order_domains`.`deleted_on` is null group by `order_domains`.`order_id`) `dm` on(`o`.`id` = `dm`.`order_id`)) ;
+
+-- --------------------------------------------------------
+
+--
 -- Structure for view `pages_view`
 --
 DROP TABLE IF EXISTS `pages_view`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`whmazc`@`localhost` SQL SECURITY DEFINER VIEW `pages_view`  AS SELECT `p`.`id` AS `id`, `p`.`page_title` AS `page_title`, `p`.`page_slug` AS `page_slug`, `p`.`page_content` AS `page_content`, `p`.`meta_title` AS `meta_title`, `p`.`meta_description` AS `meta_description`, `p`.`meta_keywords` AS `meta_keywords`, `p`.`is_published` AS `is_published`, `p`.`is_system` AS `is_system`, `p`.`sort_order` AS `sort_order`, `p`.`total_view` AS `total_view`, `p`.`inserted_on` AS `inserted_on`, `p`.`inserted_by` AS `inserted_by`, `p`.`updated_on` AS `updated_on`, `p`.`updated_by` AS `updated_by`, `p`.`deleted_on` AS `deleted_on`, `p`.`deleted_by` AS `deleted_by`, `p`.`status` AS `status`, `u1`.`username` AS `created_by_name`, `u2`.`username` AS `updated_by_name` FROM ((`pages` `p` left join `admin_users` `u1` on(`p`.`inserted_by` = `u1`.`id`)) left join `admin_users` `u2` on(`p`.`updated_by` = `u2`.`id`)) WHERE `p`.`status` = 1 ;
 
+-- --------------------------------------------------------
+
+--
+-- Structure for view `product_service_view`
+--
+DROP TABLE IF EXISTS `product_service_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`whmazc`@`localhost` SQL SECURITY DEFINER VIEW `product_service_view`  AS SELECT DISTINCT `ps`.`id` AS `id`, `ps`.`product_service_group_id` AS `product_service_group_id`, `ps`.`server_id` AS `server_id`, `ps`.`product_service_module_id` AS `product_service_module_id`, `ps`.`product_service_type_id` AS `product_service_type_id`, `ps`.`product_name` AS `product_name`, `ps`.`product_desc` AS `product_desc`, `ps`.`is_hidden` AS `is_hidden`, `ps`.`cp_package` AS `cp_package`, `ps`.`status` AS `status`, `ps`.`updated_on` AS `updated_on`, `psg`.`group_name` AS `group_name`, `psg`.`group_headline` AS `group_headline`, `s`.`name` AS `server_name`, `s`.`hostname` AS `server_hostname`, `s`.`ip_addr` AS `server_ip`, `psm`.`module_name` AS `module_name`, `pst`.`servce_type_name` AS `servce_type_name` FROM ((((`product_services` `ps` join `product_service_groups` `psg` on(`ps`.`product_service_group_id` = `psg`.`id`)) left join `servers` `s` on(`ps`.`server_id` = `s`.`id`)) join `server_modules` `psm` on(`ps`.`product_service_module_id` = `psm`.`id`)) join `product_service_types` `pst` on(`ps`.`product_service_type_id` = `pst`.`id`)) ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `ticket_view`
+--
+DROP TABLE IF EXISTS `ticket_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`whmazc`@`localhost` SQL SECURITY DEFINER VIEW `ticket_view`  AS SELECT `tk`.`id` AS `id`, `tk`.`company_id` AS `company_id`, `tk`.`ticket_dept_id` AS `ticket_dept_id`, `tk`.`order_service_id` AS `order_service_id`, `tk`.`order_domain_id` AS `order_domain_id`, `tk`.`title` AS `title`, `tk`.`message` AS `message`, `tk`.`priority` AS `priority`, `tk`.`attachment` AS `attachment`, `tk`.`status` AS `status`, `tk`.`flag` AS `flag`, `tk`.`inserted_on` AS `inserted_on`, `tk`.`updated_on` AS `updated_on`, `c`.`name` AS `company_name`, `c`.`email` AS `company_email`, `c`.`mobile` AS `company_mobile`, `td`.`name` AS `dept_name`, concat(`u`.`first_name`,' ',`u`.`last_name`) AS `user_name` FROM (((`tickets` `tk` join `companies` `c` on(`tk`.`company_id` = `c`.`id`)) join `ticket_depts` `td` on(`tk`.`ticket_dept_id` = `td`.`id`)) join `users` `u` on(`tk`.`inserted_by` = `u`.`id`)) ;
+
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `order_licenses`
+--
+ALTER TABLE `order_licenses`
+  ADD CONSTRAINT `fk_order_licenses_plan` FOREIGN KEY (`plan_id`) REFERENCES `plans` (`id`);
 
 --
 -- Constraints for table `page_history`
 --
 ALTER TABLE `page_history`
   ADD CONSTRAINT `fk_page_history_page` FOREIGN KEY (`page_id`) REFERENCES `pages` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `plan_features`
+--
+ALTER TABLE `plan_features`
+  ADD CONSTRAINT `fk_plan_features_plan` FOREIGN KEY (`plan_id`) REFERENCES `plans` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `software_pricing`
+--
+ALTER TABLE `software_pricing`
+  ADD CONSTRAINT `fk_software_pricing_product` FOREIGN KEY (`product_id`) REFERENCES `plans` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
