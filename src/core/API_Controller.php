@@ -29,6 +29,13 @@ require_once APPPATH . "third_party/MX/Controller.php";
  */
 class API_Controller extends MX_Controller
 {
+	/**
+	 * Hard per-key throttle: maximum API requests allowed per second, applied
+	 * to every key regardless of its (optional, per-minute) `rate_limit`.
+	 * Central knob — change here to adjust the platform-wide TPS ceiling.
+	 */
+	const RATE_LIMIT_PER_SECOND = 5;
+
 	/** @var array authenticated api_keys row */
 	protected $api_key = array();
 	/** @var int owning reseller companies.id */
@@ -39,6 +46,8 @@ class API_Controller extends MX_Controller
 	protected $request = array();
 	/** @var float request start (for response_time_ms) */
 	private $started_at = 0.0;
+	/** @var int api_request_logs id for this request (0 until accepted) */
+	private $log_id = 0;
 
 	public function __construct()
 	{
@@ -67,13 +76,28 @@ class API_Controller extends MX_Controller
 		$decoded          = json_decode($result['key']['scopes'], true);
 		$this->scopes     = is_array($decoded) ? $decoded : array();
 
-		// Per-key rate limit (requests per minute).
+		// Hard per-key throttle: max N requests per second (applies to every key).
+		if (self::RATE_LIMIT_PER_SECOND > 0
+			&& $this->Apikey_model->countRequestsThisSecond($this->api_key['id']) >= self::RATE_LIMIT_PER_SECOND) {
+			$this->output->set_header('Retry-After: 1');
+			$this->fail(429, 'Rate limit exceeded: max ' . self::RATE_LIMIT_PER_SECOND . ' requests per second.', 'rate_limited');
+		}
+
+		// Optional per-key rate limit (requests per minute; 0 = unlimited).
 		$limit = intval($result['key']['rate_limit']);
 		if ($limit > 0 && $this->Apikey_model->countRecentRequests($this->api_key['id'], 60) >= $limit) {
+			$this->output->set_header('Retry-After: 60');
 			$this->fail(429, 'Rate limit exceeded. Try again shortly.', 'rate_limited');
 		}
 
 		$this->Apikey_model->touchUsage($this->api_key['id'], $this->input->ip_address());
+
+		// Count this accepted request immediately (visible to sibling requests
+		// for the per-second cap); finalised with status/timing in _respond().
+		$this->log_id = $this->Apikey_model->startRequestLog(
+			$this->api_key['id'], $this->company_id,
+			$this->input->method(), $this->uri->uri_string(), $this->input->ip_address()
+		);
 	}
 
 	/** Extract (key_id, secret) from headers. Supports X-Api-* and Bearer. */
@@ -180,7 +204,11 @@ class API_Controller extends MX_Controller
 
 		// Log the request (best-effort; never let logging break the response).
 		try {
-			if (!empty($this->api_key)) {
+			if ($this->log_id > 0) {
+				// Accepted request — finalise its start-log row.
+				$this->Apikey_model->finishRequestLog($this->log_id, $httpCode, $ms);
+			} elseif (!empty($this->api_key)) {
+				// Rejected after auth (e.g. rate limited / bad scope) — one-shot log.
 				$this->Apikey_model->logRequest(
 					$this->api_key['id'], $this->company_id,
 					$this->input->method(), $this->uri->uri_string(),

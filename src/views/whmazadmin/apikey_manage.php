@@ -118,6 +118,7 @@
 									<div class="form-group">
 										<label class="form-label" for="rate_limit"><i class="fa fa-tachometer-alt"></i> Rate Limit (req/min)</label>
 										<input name="rate_limit" type="number" min="0" class="form-control" id="rate_limit" placeholder="0 = unlimited" value="<?= htmlspecialchars($detail['rate_limit'] ?? '0', ENT_QUOTES, 'UTF-8') ?>" />
+										<small class="text-muted">Optional per-minute cap. A hard ceiling of <strong>5 requests/second</strong> applies to every key regardless of this value.</small>
 									</div>
 								</div>
 								<div class="col-md-4">

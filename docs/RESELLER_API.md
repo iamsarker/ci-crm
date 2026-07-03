@@ -105,6 +105,17 @@ HTTP status codes are meaningful: `200/201` ok, `401` bad credentials, `403`
 scope/IP/expiry, `404` not found/not owned, `405` wrong method, `409` conflict,
 `422` validation, `429` rate limited, `5xx` server/upstream.
 
+### Rate limiting
+Every API key is capped at **5 requests per second** (a hard, platform-wide
+ceiling — `API_Controller::RATE_LIMIT_PER_SECOND`). Exceeding it returns `429`
+with `{ "error": { "code": "rate_limited" } }` and a `Retry-After: 1` header.
+Requests are counted per key in a fixed 1-second window, recorded in
+`api_request_logs` at request start (so the cap holds under concurrency).
+
+Keys may **also** carry an optional per-minute cap (`api_keys.rate_limit`,
+`0` = unlimited) set in the admin UI; when both apply, either can trip the `429`
+(the per-minute response sends `Retry-After: 60`).
+
 ### Scopes
 | Scope | Grants |
 |-------|--------|

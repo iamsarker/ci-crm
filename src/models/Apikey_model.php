@@ -210,18 +210,59 @@ class Apikey_model extends CI_Model {
 		);
 	}
 
-	/** Append a request to the audit log. */
-	function logRequest($apiKeyId, $companyId, $method, $endpoint, $ip, $statusCode, $responseMs = null) {
-		$this->db->insert('api_request_logs', array(
-			'api_key_id'       => intval($apiKeyId),
-			'company_id'       => intval($companyId),
-			'method'           => substr((string) $method, 0, 10),
-			'endpoint'         => substr((string) $endpoint, 0, 255),
-			'ip'               => $ip,
+	/**
+	 * Insert a request log row at the START of a request (status pending) and
+	 * return its id. Counting at request-start makes the per-second TPS cap hold
+	 * under concurrency (the row is visible to sibling requests immediately).
+	 */
+	function startRequestLog($apiKeyId, $companyId, $method, $endpoint, $ip) {
+		$this->db->set('api_key_id', intval($apiKeyId));
+		$this->db->set('company_id', intval($companyId));
+		$this->db->set('method', substr((string) $method, 0, 10));
+		$this->db->set('endpoint', substr((string) $endpoint, 0, 255));
+		$this->db->set('ip', $ip);
+		// DB clock (NOW()) so the per-second window matches countRequestsThisSecond,
+		// regardless of PHP/MySQL timezone or clock skew (DB may be remote).
+		$this->db->set('created_on', 'NOW()', FALSE);
+		$this->db->insert('api_request_logs');
+		return $this->db->insert_id();
+	}
+
+	/** Finalise a started request log with its status + response time. */
+	function finishRequestLog($logId, $statusCode, $responseMs = null) {
+		$this->db->where('id', intval($logId));
+		$this->db->update('api_request_logs', array(
 			'status_code'      => intval($statusCode),
 			'response_time_ms' => $responseMs !== null ? intval($responseMs) : null,
-			'created_on'       => getDateTime(),
 		));
+	}
+
+	/** Append a request to the audit log (one-shot; used for rejected requests). */
+	function logRequest($apiKeyId, $companyId, $method, $endpoint, $ip, $statusCode, $responseMs = null) {
+		$this->db->set('api_key_id', intval($apiKeyId));
+		$this->db->set('company_id', intval($companyId));
+		$this->db->set('method', substr((string) $method, 0, 10));
+		$this->db->set('endpoint', substr((string) $endpoint, 0, 255));
+		$this->db->set('ip', $ip);
+		$this->db->set('status_code', intval($statusCode));
+		if ($responseMs !== null) {
+			$this->db->set('response_time_ms', intval($responseMs));
+		}
+		$this->db->set('created_on', 'NOW()', FALSE);   // DB clock, matches the rate-limit window
+		$this->db->insert('api_request_logs');
+	}
+
+	/**
+	 * Requests logged for a key within the current calendar second (TPS cap).
+	 * Fixed 1-second window so the count resets each second.
+	 */
+	function countRequestsThisSecond($apiKeyId) {
+		$row = $this->db->query(
+			"SELECT COUNT(*) AS cnt FROM api_request_logs
+			 WHERE api_key_id = ? AND created_on >= DATE_FORMAT(NOW(), '%Y-%m-%d %H:%i:%s')",
+			array(intval($apiKeyId))
+		)->row_array();
+		return !empty($row) ? intval($row['cnt']) : 0;
 	}
 
 	/** Requests logged for a key within the last N seconds (rate limiting). */
