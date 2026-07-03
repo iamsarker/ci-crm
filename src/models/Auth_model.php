@@ -333,9 +333,13 @@ class Auth_model extends CI_Model{
 		$verifyLink = base_url('auth/verify/' . $verificationCode);
 		$userName = !empty($firstName) ? htmlspecialchars($firstName) : 'User';
 
-		// Try to use email template from database
+		// Use the dedicated email-verification template. (Previously this used
+		// 'welcome_email', which has no {verification_link} placeholder, so the
+		// verify link never appeared in the email.) If the template is missing,
+		// getByKey() returns empty and the hardcoded fallback below — which does
+		// contain the verify link — is used instead.
 		$this->load->model('Emailtemplate_model');
-		$template = $this->Emailtemplate_model->getByKey('welcome_email');
+		$template = $this->Emailtemplate_model->getByKey('email_verification');
 
 		if (!empty($template)) {
 			$placeholders = array(
