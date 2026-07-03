@@ -135,7 +135,7 @@
               { "key": "X-Api-Key", "value": "{{api_key}}" },
               { "key": "X-Api-Secret", "value": "{{api_secret}}" }
             ],
-            "url": { "raw": "{{base_url}}/products/currencies", "host": ["{{base_url}}"], "path": ["products", "currencies"] }
+            "url": { "raw": "{{base_url}}/currencies", "host": ["{{base_url}}"], "path": ["currencies"] }
           }
         },
         {
@@ -146,7 +146,7 @@
               { "key": "X-Api-Key", "value": "{{api_key}}" },
               { "key": "X-Api-Secret", "value": "{{api_secret}}" }
             ],
-            "url": { "raw": "{{base_url}}/products/cycles", "host": ["{{base_url}}"], "path": ["products", "cycles"] }
+            "url": { "raw": "{{base_url}}/billing_cycles", "host": ["{{base_url}}"], "path": ["billing_cycles"] }
           }
         }
       ]

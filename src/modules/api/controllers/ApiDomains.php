@@ -39,7 +39,7 @@ class ApiDomains extends API_Controller
 		$sld        = $parts[0];
 		$extension  = count($parts) > 1 ? end($parts) : 'com';   // last label (mirrors storefront)
 		$currencyId = intval($this->param('currency_id')) ?: 1;
-		$price      = $this->_priceFor($this->Cart_model->getDomPricing(), '.' . $extension, $currencyId);
+		$price      = $this->_priceFor($this->_domPricing($currencyId), '.' . $extension, $currencyId);
 
 		$platform  = strtolower($registrar['platform']);
 		$available = false;
@@ -116,7 +116,7 @@ class ApiDomains extends API_Controller
 		if (empty($registrar)) {
 			$this->fail(503, 'No default domain registrar configured.', 'registrar_unavailable');
 		}
-		$priceList = $this->Cart_model->getDomPricing();
+		$priceList = $this->_domPricing($currencyId);
 		$platform  = strtolower($registrar['platform'] ?? 'resellerclub');
 		$out = array();
 
@@ -169,7 +169,7 @@ class ApiDomains extends API_Controller
 		}
 		$currencyId = intval($this->param('currency_id')) ?: 1;
 		$ext   = '.' . end($parts);
-		$price = $this->_priceFor($this->Cart_model->getDomPricing(), $ext, $currencyId);
+		$price = $this->_priceFor($this->_domPricing($currencyId), $ext, $currencyId);
 
 		if (empty($price) || empty($price['transfer'])) {
 			$this->fail(404, "Transfer is not available for {$ext}.", 'not_found');
@@ -181,6 +181,23 @@ class ApiDomains extends API_Controller
 			'renewal_price'  => !empty($price['renewal']) ? (float) $price['renewal'] : 0,
 			'dom_pricing_id' => !empty($price['id']) ? intval($price['id']) : 0,
 		));
+	}
+
+	/**
+	 * Domain pricing for a specific currency (reg_period = 1). Unlike
+	 * Cart_model::getDomPricing(), which filters by the *session* currency
+	 * (getCurrencyId, default 1/USD), this honours the API's currency_id param
+	 * so BDT (2) etc. resolve correctly on stateless requests.
+	 */
+	private function _domPricing($currencyId)
+	{
+		return $this->db->query(
+			"SELECT dp.id, dp.currency_id, dp.price, dp.transfer, dp.renewal, de.extension
+			 FROM dom_pricing dp
+			 JOIN dom_extensions de ON dp.dom_extension_id = de.id
+			 WHERE dp.status = 1 AND dp.reg_period = 1 AND dp.currency_id = ? AND de.status = 1",
+			array(intval($currencyId))
+		)->result_array();
 	}
 
 	private function _priceFor($priceList, $ext, $currencyId)

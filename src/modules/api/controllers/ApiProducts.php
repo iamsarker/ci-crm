@@ -105,8 +105,19 @@ class ApiProducts extends API_Controller
 
 	public function currencies()
 	{
-		$rows = $this->db->query("SELECT id, code, symbol FROM currencies WHERE status = 1 ORDER BY id")->result_array();
-		$this->ok(array('currencies' => $rows));
+		$rows = $this->db->query(
+			"SELECT id, code, symbol, rate, is_default FROM currencies WHERE status = 1 ORDER BY is_default DESC, id"
+		)->result_array();
+
+		$this->ok(array('currencies' => array_map(function ($r) {
+			return array(
+				'id'         => intval($r['id']),
+				'code'       => $r['code'],
+				'symbol'     => $r['symbol'],
+				'rate'       => (float) $r['rate'],
+				'is_default' => intval($r['is_default']) === 1,
+			);
+		}, $rows)));
 	}
 
 	public function cycles()

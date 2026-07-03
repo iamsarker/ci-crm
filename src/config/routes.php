@@ -79,6 +79,8 @@ $route['api/v1/customers']                 = 'api/ApiCustomers/index';
 $route['api/v1/customers/(:any)/(:any)']   = 'api/ApiCustomers/$1/$2';
 $route['api/v1/customers/(:any)']          = 'api/ApiCustomers/$1';
 
+$route['api/v1/currencies']                = 'api/ApiProducts/currencies';
+$route['api/v1/billing_cycles']            = 'api/ApiProducts/cycles';
 $route['api/v1/products/(:any)']           = 'api/ApiProducts/$1';
 
 $route['api/v1/domains']                   = 'api/ApiDomains/index';

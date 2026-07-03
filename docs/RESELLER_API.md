@@ -137,8 +137,8 @@ Keys may **also** carry an optional per-minute cap (`api_keys.rate_limit`,
 | POST | `/customers/create` | customers:write | Create sub-customer (+ owner login) |
 | GET | `/products/software` | (any key) | Software catalog + pricing |
 | GET | `/products/hosting` | (any key) | Hosting packages |
-| GET | `/products/currencies` | (any key) | Currencies |
-| GET | `/products/cycles` | (any key) | Billing cycles |
+| GET | `/currencies` | (any key) | Currencies (id, code, symbol, rate, is_default) |
+| GET | `/billing_cycles` | (any key) | Billing cycles |
 | GET | `/domains/check?domain=` | domains:read | Availability + `dom_pricing_id` (default registrar) |
 | GET | `/domains/suggest?keyword=` | domains:read | Name suggestions with pricing |
 | GET | `/domains/transfer_price?domain=` | domains:read | Transfer/renewal price for a TLD |
