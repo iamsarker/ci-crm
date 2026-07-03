@@ -217,6 +217,15 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
   - Method: `Support_model::sendTicketReplyToDepartment($ticketId, $message)`
   - Called from: `Tickets::replyticket()` (client module)
 
+**Auth / Registration Emails:**
+- Customer self-registration → new user gets `status=2` (unverified) + a `verify_hash`; a verification email is sent.
+  - Template: **`email_verification`** (with `{verification_link}`) — seeded in `crm_db.sql` / `email_verification_template.sql`.
+  - Method: `Auth_model::sendVerificationEmail($email, $firstName, $verificationCode)` → `sendHtmlEmail()`
+  - Called from: `Auth::register()` (auth module); verified at `Auth::verify($hash)`.
+  - ⚠️ Do **not** point this at `welcome_email` — that template has no `{verification_link}`, so the verify link goes missing. If the `email_verification` template row is absent, the method's hardcoded fallback (which includes the link) is used.
+- Password reset → `password_reset` template via `Auth_model::sendResetLinkEmail()`.
+- All customer/admin mail goes through one sender: `sendHtmlEmail()` (raw SMTP over `fsockopen`, config from `app_settings`). If *every* email fails, it's SMTP config; if only one type is wrong, it's that template.
+
 ### Provisioning System
 
 **Auto-Provisioning Flow:**
@@ -605,6 +614,19 @@ Use "Already Registered" to import domains/hosting that are already live at the 
 - **Admin Gateway Management**: `src/views/whmazadmin/paymentgateway_manage.php`
 
 ## Known Gotchas
+
+### Query Builder lacks where_group_start()/where_group_end()
+This project's bundled CI (system folder `whmaz/`) ships a **trimmed query builder that does NOT have `where_group_start()` / `where_group_end()`**. Calling them fatals with `Call to undefined method CI_DB_mysqli_driver::where_group_start()`. Write OR-groups inline in a raw parameterized query instead:
+```php
+// BAD (fatals on this build)
+$this->db->where('id',$id)->where_group_start()->where('user_id',$u)->or_where('customer_session_id',$s)->where_group_end()->delete('t');
+// GOOD
+$this->db->query("DELETE FROM t WHERE id = ? AND (user_id = ? OR customer_session_id = ?)", array($id,$u,$s));
+```
+(Bit this in `Cart_model::deleteCartWithChildren()` — it broke both the storefront cart-remove and the reseller API `/cart/delete`.)
+
+### API JSON output: echo, don't set_output()+exit
+The Output class only flushes during CI's end-of-request `_display()`. If a controller builds a response with `$this->output->set_output()` / `set_content_type()` / `set_header()` and then calls `exit`, `_display()` never runs → the client gets an **empty body with `content-type: text/html`**. For endpoints that `exit` (like the whole `api` module's `API_Controller::_respond()`), send immediately with `set_status_header()` + raw `header()` + `echo`. Same reason webhook/ssp endpoints use `echo json_encode(); exit;`.
 
 ### processRestCall() Issue
 - `$this->processRestCall()` reads JSON from `php://input` and overwrites `$_POST`
