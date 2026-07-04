@@ -71,7 +71,21 @@
 							</div>
 
 							<!-- API Credentials (for online gateways) -->
-							<?php if (in_array($gateway['gateway_code'], array('stripe', 'paypal', 'razorpay', 'paystack', 'sslcommerz', 'bkash', 'payhere', 'paddle'))): ?>
+							<?php if ($gateway['pay_type'] === 'ONLINE'):
+								// Per-gateway credential labels (data, not nested ternaries);
+								// falls back to generic key naming for gateways not listed.
+								$credLabels = array(
+									'paypal'  => array('Client ID', 'Client Secret'),
+									'bkash'   => array('App Key', 'App Secret'),
+									'payhere' => array('Merchant ID', 'Merchant Secret'),
+									'paddle'  => array('Client-side Token', 'API Key'),
+								);
+								$gwCode = $gateway['gateway_code'];
+								$publicLabel     = isset($credLabels[$gwCode]) ? $credLabels[$gwCode][0] : 'Public/Publishable Key';
+								$secretLabel     = isset($credLabels[$gwCode]) ? $credLabels[$gwCode][1] : 'Secret Key';
+								$testPublicLabel = isset($credLabels[$gwCode]) ? 'Sandbox ' . $credLabels[$gwCode][0] : 'Test Public Key';
+								$testSecretLabel = isset($credLabels[$gwCode]) ? 'Sandbox ' . $credLabels[$gwCode][1] : 'Test Secret Key';
+							?>
 							<div class="order-card mb-4">
 								<div class="card-header">
 									<div class="header-icon"><i class="fas fa-key"></i></div>
@@ -94,14 +108,14 @@
 										<h6 class="text-success"><i class="fas fa-check-circle"></i> Live Credentials</h6>
 										<div class="mb-3">
 											<label class="form-label">
-												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Client ID' : ($gateway['gateway_code'] === 'bkash' ? 'App Key' : ($gateway['gateway_code'] === 'payhere' ? 'Merchant ID' : ($gateway['gateway_code'] === 'paddle' ? 'Client-side Token' : 'Public/Publishable Key'))); ?>
+												<?php echo $publicLabel; ?>
 											</label>
 											<input type="text" class="form-control" name="public_key"
 												value="<?php echo htmlspecialchars($gateway['public_key'] ?? ''); ?>">
 										</div>
 										<div class="mb-3">
 											<label class="form-label">
-												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Client Secret' : ($gateway['gateway_code'] === 'bkash' ? 'App Secret' : ($gateway['gateway_code'] === 'payhere' ? 'Merchant Secret' : ($gateway['gateway_code'] === 'paddle' ? 'API Key' : 'Secret Key'))); ?>
+												<?php echo $secretLabel; ?>
 											</label>
 											<input type="password" class="form-control" name="secret_key"
 												value="<?php echo htmlspecialchars($gateway['secret_key'] ?? ''); ?>">
@@ -113,14 +127,14 @@
 										<h6 class="text-warning"><i class="fas fa-flask"></i> Test/Sandbox Credentials</h6>
 										<div class="mb-3">
 											<label class="form-label">
-												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Sandbox Client ID' : ($gateway['gateway_code'] === 'bkash' ? 'Sandbox App Key' : ($gateway['gateway_code'] === 'payhere' ? 'Sandbox Merchant ID' : ($gateway['gateway_code'] === 'paddle' ? 'Sandbox Client-side Token' : 'Test Public Key'))); ?>
+												<?php echo $testPublicLabel; ?>
 											</label>
 											<input type="text" class="form-control" name="test_public_key"
 												value="<?php echo htmlspecialchars($gateway['test_public_key'] ?? ''); ?>">
 										</div>
 										<div class="mb-3">
 											<label class="form-label">
-												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Sandbox Client Secret' : ($gateway['gateway_code'] === 'bkash' ? 'Sandbox App Secret' : ($gateway['gateway_code'] === 'payhere' ? 'Sandbox Merchant Secret' : ($gateway['gateway_code'] === 'paddle' ? 'Sandbox API Key' : 'Test Secret Key'))); ?>
+												<?php echo $testSecretLabel; ?>
 											</label>
 											<input type="password" class="form-control" name="test_secret_key"
 												value="<?php echo htmlspecialchars($gateway['test_secret_key'] ?? ''); ?>">

@@ -62,19 +62,19 @@
                     <div class="method-radio"></div>
                     <div class="method-icon">
                         <?php
-                        $icon = 'fa-money-bill';
-                        switch ($gateway['gateway_code']) {
-                            case 'stripe': $icon = 'fa-credit-card'; break;
-                            case 'paypal': $icon = 'fa-paypal'; break;
-                            case 'razorpay': $icon = 'fa-rupee-sign'; break;
-                            case 'sslcommerz': $icon = 'fa-mobile-alt'; break;
-                            case 'bkash': $icon = 'fa-mobile-alt'; break;
-                            case 'payhere': $icon = 'fa-money-check-alt'; break;
-                            case 'paddle': $icon = 'fa-credit-card'; break;
-                            case 'paystack': $icon = 'fa-credit-card'; break;
-                            case 'bank_transfer': $icon = 'fa-university'; break;
-                            case 'manual': $icon = 'fa-hand-holding-usd'; break;
-                        }
+                        $iconMap = array(
+                            'stripe' => 'fa-credit-card',
+                            'paypal' => 'fa-paypal',
+                            'razorpay' => 'fa-rupee-sign',
+                            'sslcommerz' => 'fa-mobile-alt',
+                            'bkash' => 'fa-mobile-alt',
+                            'payhere' => 'fa-money-check-alt',
+                            'paddle' => 'fa-credit-card',
+                            'paystack' => 'fa-credit-card',
+                            'bank_transfer' => 'fa-university',
+                            'manual' => 'fa-hand-holding-usd',
+                        );
+                        $icon = isset($iconMap[$gateway['gateway_code']]) ? $iconMap[$gateway['gateway_code']] : 'fa-money-bill';
                         ?>
                         <i class="fas <?php echo $icon; ?>"></i>
                     </div>

@@ -155,8 +155,9 @@ $billingConfig = $this->Syscnf_model->getByGroup('BILLING');
 ```
 
 ### Security
-- **Content Security Policy (CSP)**: `src/config/config.php` (line ~599)
+- **Content Security Policy (CSP)**: `src/config/config.php` (line ~627)
   - Add external script domains here for payment gateways, analytics, etc.
+  - **Paddle** overlay needs `https://cdn.paddle.com` (script-src) + `*.paddle.com` (frame-src/connect-src) — already added. Redirect gateways (bKash/PayHere/SSLCommerz) load no external script, so they need no CSP entry.
 
 
 ### Webhook Configuration
@@ -167,6 +168,10 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
 |---------|-------------|
 | Stripe | `https://yourdomain.com/webhook/stripe` |
 | SSLCommerz | `https://yourdomain.com/webhook/sslcommerz` |
+| PayHere | `https://yourdomain.com/webhook/payhere` (IPN / `notify_url`) |
+| Paddle | `https://yourdomain.com/webhook/paddle` (register as a Paddle notification destination; event `transaction.completed`) |
+
+> **bKash has no webhook** — its browser callback `billing/pay/bkash_callback` calls the execute API and confirms the payment synchronously. **PayHere & Paddle webhook POSTs must be publicly reachable**, and both are CSRF-excluded in `config.php` (`csrf_exclude_uris`).
 
 **Database Fields (payment_gateway table):**
 | Field | Description |
@@ -188,8 +193,11 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
 **Webhook Security:**
 - Stripe: Signature verification via `Stripe::verifyWebhook()`
 - SSLCommerz: IPN validation
+- PayHere: MD5 `md5sig` verification via `Payhere::verifyNotification()`; also rejects unless the paid amount/currency match the transaction before completing
+- Paddle: HMAC-SHA256 `Paddle-Signature` verification via `Paddle::verifyWebhookSignature()`; acts only on `transaction.completed`, verifies amount (allows Paddle's MoR tax on top), and refuses to resurrect a `refunded`/`cancelled` transaction
 - All webhooks logged to `webhook_logs` table
-- Duplicate event detection via `Payment_model::isWebhookProcessed()`
+- Duplicate event detection via `Payment_model::isWebhookProcessed()` (keyed on Stripe `id` / Paddle `event_id`; `logWebhook()` extracts both)
+- All amount checks matter because `processSuccessfulPayment()` trusts the **local** transaction amount — a gateway confirming a smaller real payment must not mark the full invoice PAID
 
 **Payment Confirmation Emails:**
 - Sent automatically when invoice is marked as PAID
@@ -716,6 +724,9 @@ When payment gateways redirect back to the app via **external POST**, browsers b
 |---------|-----------|----------------|
 | Stripe | AJAX + client-side JS → same-origin redirect | No |
 | SSLCommerz | AJAX → **external redirect** → **external POST back** | **Yes** |
+| bKash | AJAX → **external redirect** → GET callback | **Yes** (token restore via `value_c`) |
+| PayHere | AJAX → form POST to gateway → GET return | **Yes** (token restore via `value_c`; payment confirmed by IPN) |
+| Paddle | Paddle.js **overlay** (stays on page, no redirect) | No |
 | Bank Transfer | Manual process | No |
 
 **Solution for external-redirect gateways (SSLCommerz, etc.):**
@@ -725,13 +736,13 @@ When payment gateways redirect back to the app via **external POST**, browsers b
 4. On callback, verify token and restore session via `Auth_model->getUserSessionData($userId)`
 
 **Reference implementation:** `src/modules/billing/controllers/Pay.php`
-- `sslcommerz_init()` - generates and stores token
-- `sslcommerz_success/fail/cancel()` - calls `_restoreSessionFromTransaction()`
-- `_restoreSessionFromTransaction()` - verifies token, restores session
+- `sslcommerz_init()` / `bkash_init()` / `payhere_init()` - generate and store token
+- `sslcommerz_success/fail/cancel()`, `bkash_callback()`, `payhere_return/cancel()` - call `_restoreSessionFromTransaction()`
+- `_restoreSessionFromTransaction()` - verifies token (returns bool; gate any state mutation on it so a stranger who learns a transaction uuid can't cancel an in-flight payment), restores session
 
 **When adding new payment gateways:**
-- If gateway uses popup/modal or AJAX: No special handling needed
-- If gateway does full browser redirect + POST callback: Implement token-based session restoration
+- If gateway uses popup/modal or AJAX (e.g. Stripe, **Paddle overlay**): No session handling needed
+- If gateway does full browser redirect back (e.g. bKash, PayHere, SSLCommerz): implement token-based session restoration, and gate cancel/fail state changes on the token check
 
 ## Cart & Checkout Implementation
 

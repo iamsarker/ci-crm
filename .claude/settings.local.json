@@ -25,7 +25,12 @@
       "WebFetch(domain:github.com)",
       "Bash(php *)",
       "Bash(python3 *)",
-      "Bash(awk '/CREATE TABLE `invoices`/{f=1} f{print} f&&/ENGINE=/{exit}' /opt/lampp/htdocs/ci-crm/crm_db.sql)"
+      "Bash(awk '/CREATE TABLE `invoices`/{f=1} f{print} f&&/ENGINE=/{exit}' /opt/lampp/htdocs/ci-crm/crm_db.sql)",
+      "Read(//opt/lampp/htdocs/ci-crm-docs/**)",
+      "Bash(git -C /opt/lampp/htdocs/ci-crm-docs status)",
+      "Read(//opt/lampp/htdocs/whmaz-site/includes/**)",
+      "Read(//opt/lampp/htdocs/whmaz-site/img/**)",
+      "Read(//opt/lampp/htdocs/whmaz-site/icons-pack/**)"
     ]
   },
   "effortLevel": "high"

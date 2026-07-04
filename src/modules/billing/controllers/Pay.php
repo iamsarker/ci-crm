@@ -962,6 +962,15 @@ class Pay extends WHMAZ_Controller
         // Generate secure payment token for session restoration
         $paymentToken = bin2hex(random_bytes(32));
 
+        // Obtain the bKash token BEFORE opening the DB transaction so the token-grant
+        // network round-trip doesn't hold row locks open.
+        $this->load->library('Bkash');
+        $token = $this->bkash->grantToken();
+        if (!$token['success']) {
+            echo json_encode(array('success' => false, 'error' => $token['error']));
+            return;
+        }
+
         $this->db->trans_start();
 
         try {
@@ -987,14 +996,6 @@ class Pay extends WHMAZ_Controller
                     'payment_token' => $paymentToken
                 )
             ));
-
-            // Load bKash library and obtain a token
-            $this->load->library('Bkash');
-
-            $token = $this->bkash->grantToken();
-            if (!$token['success']) {
-                throw new Exception($token['error']);
-            }
 
             // Callback carries our own reference + session-restore token back to us
             $callbackUrl = base_url() . 'billing/pay/bkash_callback?value_a='
