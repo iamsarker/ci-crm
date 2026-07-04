@@ -43,6 +43,7 @@
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/order/new_order"><i class="fas fa-plus-square me-2"></i>New Order</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/provisioning/index"><i class="fas fa-cogs me-2"></i>Provisioning Logs</a></li>
+                        <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/cancellation/index"><i class="fas fa-times-circle me-2"></i>Cancellation Requests</a></li>
                     </ul>
                 </li>
 

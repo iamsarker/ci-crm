@@ -639,6 +639,43 @@ Use "Already Registered" to import domains/hosting that are already live at the 
 **Invoice for domain items:**
 - `billing_cycle_id` is set to the ID of `cycle_key='YEARLY'` from `billing_cycle` table
 
+### Customer Domain Management
+
+Customer-facing domain tools live on the **domain detail page** (`clientarea/domain_detail/{id}`), all in one controller.
+
+**Key Files:**
+- `src/modules/clientarea/controllers/Clientarea.php` — all endpoints + per-registrar API calls (hand-rolled inline, not in a helper)
+- `src/modules/clientarea/views/clientarea_domain_detail.php` — page markup + inline jQuery/AJAX (SweetAlert)
+- `src/views/templates/customer/domain_nav.php` — "Domain Actions" sidebar (Transfer Lock toggle, Send EPP Code, Request Cancellation button)
+- `src/models/Clientarea_model.php` — DB ops against `order_domains` / `order_domain_child_ns`; `getDomainRegistrarInfo()` joins the registrar (falls back to default `is_selected=1`, and returns `def_ns1..4`)
+
+Supported registrars: **ResellerClub / Resell.biz / Stargate** (JSON) and **Namecheap** (XML). Anything else returns "Unsupported registrar platform".
+
+| Feature | Endpoint(s) | Notes |
+|---------|-------------|-------|
+| Nameservers | `update_nameservers` | **Default NS** vs **Custom NS** radios. Custom NS pushes typed values; Default NS applies the registrar's `def_ns1..4` (server-side). ResellerClub NS **must** be sent as repeated `ns=` params (via `domain_api_post_raw`), not `ns[]` — see gotcha below. |
+| Sync from registrar | `sync_domain_data` | Pulls NS + registrant contact into the form/DB |
+| Contact / WHOIS | `update_contacts` | Namecheap: full `setContacts`. ResellerClub: looks up the registrant `contact-id` from live details, then `contacts/modify.json` with the submitted values (keeps existing phone country code) |
+| EPP / Auth code | `send_epp_code` | Fetched fresh from registrar and emailed; never stored |
+| Transfer lock | `get_transfer_lock` / `toggle_transfer_lock` | ResellerClub theft-protection, Namecheap `setRegistrarLock`; DB `order_domains.transfer_lock` synced, falls back to DB on API failure |
+| Child (private) nameservers | `child_ns_add` / `child_ns_delete` | Glue records (e.g. `ns1.example.com` → IP). Registered at registrar **and** stored in `order_domain_child_ns`; the list renders from the local table. Host must be a subdomain of the domain; IP validated |
+| Cancellation request | `domain_cancellation_request` | Inserts a row in `domain_cancellation_requests` (blocks duplicate pending), emails admin + customer. Does NOT cancel — admin processes it (below) |
+
+**Child nameserver registrar functions** (`domain_helper.php`): `registrar_register_child_ns()` / `registrar_delete_child_ns()` dispatchers → ResellerClub (`register-ns.json` / `delete-ns-ip.json`) and Namecheap (`namecheap.domains.ns.create` / `.delete`).
+
+> **Gotcha — ResellerClub array params:** `http_build_query(['ns'=>[...]])` encodes as `ns[0]=…` which ResellerClub ignores. Build the raw body manually (`…&ns=a&ns=b`) and send via `domain_api_post_raw()`. Same applies to the child-ns `ip` param. The working domain-registration flow does this too.
+
+### Admin Domain Cancellation Requests
+
+Admin side of the customer "Request Cancellation" button.
+
+- **URL**: `whmazadmin/cancellation/index` — **Menu**: Orders → Cancellation Requests
+- **Controller**: `src/controllers/whmazadmin/Cancellation.php` (`index` stats, `list_api` server-side DataTable, `process`, `dismiss`)
+- **View**: `src/views/whmazadmin/domain_cancellations.php` (stats cards, status filter, review modal)
+- `process()` cancels the domain via `Order_model::cancelDomain($domainId, 'immediate'|'end_of_period', $reason)` then sets request `status=1`; `dismiss()` sets `status=2` without cancelling. Both guard against already-handled requests.
+
+**`domain_cancellation_requests`** — `status`: 0=pending, 1=processed, 2=dismissed. **`order_domain_child_ns`** — customer child nameservers (soft delete via `status=0`). Both tables are in `crm_db.sql`; standalone installer: **`domain_features_migration.sql`** (run once on an existing DB).
+
 ### Database
 - **Database Config**: `src/config/database.php`
 - **SQL Schema**: `crm_db.sql` (contains all tables and data)

@@ -385,5 +385,74 @@ class Clientarea_model extends CI_Model{
 
 		return $stats;
 	}
+
+	/* ---------- Child (private) nameservers ---------- */
+
+	/**
+	 * List active child nameservers for a domain (scoped to company).
+	 */
+	function getChildNameservers($domainId, $companyId) {
+		if (!is_numeric($domainId) || !is_numeric($companyId)) {
+			return array();
+		}
+		return $this->db->query(
+			"SELECT id, hostname, ip FROM order_domain_child_ns
+			 WHERE domain_id = ? AND company_id = ? AND status = 1
+			 ORDER BY hostname ASC",
+			array(intval($domainId), intval($companyId))
+		)->result_array();
+	}
+
+	/**
+	 * Whether a given host already exists (active) for this domain.
+	 */
+	function childNameserverExists($domainId, $companyId, $hostname) {
+		$row = $this->db->query(
+			"SELECT id FROM order_domain_child_ns
+			 WHERE domain_id = ? AND company_id = ? AND hostname = ? AND status = 1 LIMIT 1",
+			array(intval($domainId), intval($companyId), $hostname)
+		)->row_array();
+		return !empty($row);
+	}
+
+	/**
+	 * Insert a child nameserver record.
+	 */
+	function addChildNameserver($domainId, $companyId, $hostname, $ip, $insertedBy = 0) {
+		$this->db->insert('order_domain_child_ns', array(
+			'domain_id'   => intval($domainId),
+			'company_id'  => intval($companyId),
+			'hostname'    => $hostname,
+			'ip'          => $ip,
+			'status'      => 1,
+			'inserted_on' => date('Y-m-d H:i:s'),
+			'inserted_by' => intval($insertedBy),
+		));
+		return $this->db->insert_id();
+	}
+
+	/**
+	 * Fetch a single child nameserver row (scoped to domain + company).
+	 */
+	function getChildNameserverById($id, $domainId, $companyId) {
+		return $this->db->query(
+			"SELECT id, hostname, ip FROM order_domain_child_ns
+			 WHERE id = ? AND domain_id = ? AND company_id = ? AND status = 1 LIMIT 1",
+			array(intval($id), intval($domainId), intval($companyId))
+		)->row_array();
+	}
+
+	/**
+	 * Soft-delete a child nameserver record.
+	 */
+	function deleteChildNameserver($id, $domainId, $companyId, $deletedBy = 0) {
+		$this->db->query(
+			"UPDATE order_domain_child_ns
+			 SET status = 0, deleted_on = ?, deleted_by = ?
+			 WHERE id = ? AND domain_id = ? AND company_id = ?",
+			array(date('Y-m-d H:i:s'), intval($deletedBy), intval($id), intval($domainId), intval($companyId))
+		);
+		return $this->db->affected_rows() > 0;
+	}
 }
 ?>

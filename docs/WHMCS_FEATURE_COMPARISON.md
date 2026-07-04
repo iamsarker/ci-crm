@@ -38,6 +38,11 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [x] Domain search functionality
 - [x] Domain suggestions
 - [x] Domain cart integration
+- [x] Client nameserver management (Default / Custom NS, pushed to registrar)
+- [x] Client WHOIS / contact editing (per-registrar push)
+- [x] Private (child) nameserver management — glue records
+- [x] Transfer lock toggle & EPP code retrieval (customer portal)
+- [x] Client-initiated domain cancellation requests (admin review queue)
 
 #### 4. Order Management
 - [x] Shopping cart system
@@ -157,6 +162,10 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [x] Domain transfer handling (EPP/auth code flow)
 - [x] Domain contact management (per-registrar contact creation)
 - [x] EPP code management
+- [x] Customer nameserver management UI (Default / Custom NS, sync from registrar)
+- [x] Customer WHOIS / contact editing UI (per-registrar push)
+- [x] Private (child) nameserver / glue-record management (ResellerClub + Namecheap)
+- [x] Registrar transfer-lock toggle + Send-EPP-to-email
 - [ ] GoDaddy integration
 - [ ] Enom integration
 - [ ] Standalone WHOIS lookup UI
@@ -271,7 +280,7 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [x] Service renewal automation (renewal invoice cron; combined domain+service invoices)
 - [x] Service upgrade/downgrade (admin package/server change; license tier upgrade with proration)
 - [x] Admin service cancellation (immediate or end-of-period, optional account deletion)
-- [ ] Client-initiated cancellation requests
+- [x] Client-initiated cancellation requests (domain; admin review/process/dismiss queue)
 - [ ] Cancellation feedback
 - [ ] Service transfer between clients
 
@@ -356,13 +365,15 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - ✅ Automated suspension & termination (cron dunning ladder)
 - ❌ Generic/custom server module SDK
 
-**Domain Management:** ✅ 80% Complete
+**Domain Management:** ✅ 90% Complete
 - ✅ Domain registration system
 - ✅ Domain pricing
 - ✅ Registrar integrations (ResellerClub, Resell.biz, Namecheap)
 - ✅ Transfer + renewal + EPP handling
-- ❌ WHOIS management UI
-- ❌ DNS management UI
+- ✅ WHOIS / contact management UI (customer portal, per-registrar push)
+- ✅ Nameserver management UI (Default / Custom NS + private/child nameservers)
+- ✅ Transfer-lock toggle & client-initiated cancellation requests
+- ❌ Full DNS zone (A/CNAME/MX/TXT) record editor
 
 **Support System:** ✅ 85% Complete
 - ✅ Ticket system
@@ -447,9 +458,10 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [x] ResellerClub / Resell.biz API integration
 - [x] Domain transfer handling (EPP)
 - [x] Domain renewal + registrar expiry sync (double-renewal guard)
+- [x] WHOIS / nameserver management interface (contacts, Default/Custom NS, child NS, transfer lock, EPP)
 - [ ] GoDaddy API integration
 - [ ] Enom integration
-- [ ] WHOIS / DNS management interface
+- [ ] Full DNS zone record editor (A/CNAME/MX/TXT)
 
 **Impact:** Complete domain management
 
@@ -458,7 +470,7 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [ ] Service management interface
 - [ ] Password reset for services
 - [ ] Service upgrade requests
-- [ ] Cancellation requests
+- [x] Cancellation requests (domain — customer submits, admin processes)
 - [ ] Payment method management
 - [ ] Service usage statistics
 

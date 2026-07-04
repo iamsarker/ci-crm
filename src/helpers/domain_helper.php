@@ -1353,3 +1353,177 @@ function namecheap_format_phone($countryCode, $phone)
 
     return '+' . $cc . '.' . $ph;
 }
+
+/* ============================================================
+ * Child / Private Nameservers (glue records)
+ * A child nameserver is a host record under the domain itself,
+ * e.g. ns1.example.com -> 1.2.3.4, that can then be used as an
+ * authoritative nameserver.
+ * ============================================================ */
+
+/**
+ * Register a child nameserver (glue record) using the appropriate registrar API.
+ *
+ * @param array  $registrar Registrar config (dom_registers row)
+ * @param string $orderId   Domain order id at registrar (ResellerClub)
+ * @param string $domain    The parent domain (example.com)
+ * @param string $hostname  The child nameserver host (ns1.example.com)
+ * @param string $ip        IPv4/IPv6 address for the host
+ * @return array ['success'=>bool, 'error'=>string|null]
+ */
+function registrar_register_child_ns($registrar, $orderId, $domain, $hostname, $ip)
+{
+    $platform = strtolower($registrar['platform'] ?? 'resellerclub');
+
+    switch ($platform) {
+        case 'resellerclub':
+        case 'resellbiz':
+        case 'resell.biz':
+        case 'stargate':
+            return resellerclub_register_child_ns($registrar, $orderId, $hostname, $ip);
+
+        case 'namecheap':
+            return namecheap_register_child_ns($registrar, $domain, $hostname, $ip);
+
+        default:
+            return array('success' => false, 'error' => 'Unsupported registrar platform: ' . $platform);
+    }
+}
+
+/**
+ * Delete a child nameserver (glue record) using the appropriate registrar API.
+ *
+ * @return array ['success'=>bool, 'error'=>string|null]
+ */
+function registrar_delete_child_ns($registrar, $orderId, $domain, $hostname, $ip)
+{
+    $platform = strtolower($registrar['platform'] ?? 'resellerclub');
+
+    switch ($platform) {
+        case 'resellerclub':
+        case 'resellbiz':
+        case 'resell.biz':
+        case 'stargate':
+            return resellerclub_delete_child_ns($registrar, $orderId, $hostname, $ip);
+
+        case 'namecheap':
+            return namecheap_delete_child_ns($registrar, $domain, $hostname);
+
+        default:
+            return array('success' => false, 'error' => 'Unsupported registrar platform: ' . $platform);
+    }
+}
+
+/**
+ * ResellerClub: add a child nameserver — POST /api/domains/register-ns.json
+ * The "ip" parameter must be sent as a repeated field (ip=..&ip=..).
+ */
+function resellerclub_register_child_ns($registrar, $orderId, $hostname, $ip)
+{
+    if (empty($orderId)) {
+        return array('success' => false, 'error' => 'Domain order ID not found at registrar');
+    }
+
+    $baseUrl = rtrim($registrar['api_base_url'], '/');
+    $postData = http_build_query(array(
+        'auth-userid' => $registrar['auth_userid'],
+        'api-key' => $registrar['auth_apikey'],
+        'order-id' => strval($orderId),
+        'cns' => $hostname,
+    ));
+    $postData .= '&ip=' . urlencode($ip);
+
+    $resp = domain_api_post_raw($baseUrl . '/api/domains/register-ns.json', $postData);
+    return _resellerclub_child_ns_result($resp);
+}
+
+/**
+ * ResellerClub: delete a child nameserver's IP — POST /api/domains/delete-ns-ip.json
+ * Removing the host's last IP removes the child nameserver.
+ */
+function resellerclub_delete_child_ns($registrar, $orderId, $hostname, $ip)
+{
+    if (empty($orderId)) {
+        return array('success' => false, 'error' => 'Domain order ID not found at registrar');
+    }
+
+    $baseUrl = rtrim($registrar['api_base_url'], '/');
+    $params = array(
+        'auth-userid' => $registrar['auth_userid'],
+        'api-key' => $registrar['auth_apikey'],
+        'order-id' => strval($orderId),
+        'cns' => $hostname,
+        'ip' => $ip,
+    );
+
+    $resp = domain_api_post($baseUrl . '/api/domains/delete-ns-ip.json', $params);
+    return _resellerclub_child_ns_result($resp);
+}
+
+/**
+ * Normalise a ResellerClub child-ns API response into ['success','error'].
+ */
+function _resellerclub_child_ns_result($resp)
+{
+    if (!$resp['success'] && empty($resp['data'])) {
+        return array('success' => false, 'error' => $resp['error'] ?? 'Registrar API request failed');
+    }
+
+    $data = $resp['data'];
+
+    if (is_string($data) && stripos($data, 'success') !== false) {
+        return array('success' => true, 'error' => null);
+    }
+    if ($data === true || (is_string($data) && strtolower(trim($data)) === 'true')) {
+        return array('success' => true, 'error' => null);
+    }
+    if (is_array($data)) {
+        if (isset($data['status']) && strtolower($data['status']) === 'success') {
+            return array('success' => true, 'error' => null);
+        }
+        if (isset($data['message'])) {
+            return array('success' => false, 'error' => $data['message']);
+        }
+    }
+
+    return array('success' => false, 'error' => 'Registrar did not confirm the operation');
+}
+
+/**
+ * Namecheap: create a private nameserver — namecheap.domains.ns.create
+ */
+function namecheap_register_child_ns($registrar, $domain, $hostname, $ip)
+{
+    $parts = explode('.', $domain, 2);
+    if (count($parts) < 2) {
+        return array('success' => false, 'error' => 'Invalid domain format');
+    }
+
+    $resp = namecheap_api_request($registrar, 'namecheap.domains.ns.create', array(
+        'SLD' => $parts[0],
+        'TLD' => $parts[1],
+        'Nameserver' => $hostname,
+        'IP' => $ip,
+    ));
+
+    return array('success' => $resp['success'], 'error' => $resp['success'] ? null : ($resp['error'] ?? 'Namecheap API error'));
+}
+
+/**
+ * Namecheap: delete a private nameserver — namecheap.domains.ns.delete
+ */
+function namecheap_delete_child_ns($registrar, $domain, $hostname)
+{
+    $parts = explode('.', $domain, 2);
+    if (count($parts) < 2) {
+        return array('success' => false, 'error' => 'Invalid domain format');
+    }
+
+    $resp = namecheap_api_request($registrar, 'namecheap.domains.ns.delete', array(
+        'SLD' => $parts[0],
+        'TLD' => $parts[1],
+        'Nameserver' => $hostname,
+    ));
+
+    return array('success' => $resp['success'], 'error' => $resp['success'] ? null : ($resp['error'] ?? 'Namecheap API error'));
+}

@@ -339,6 +339,57 @@ INSERT INTO `companies` (`id`, `name`, `mobile`, `phone`, `email`, `address`, `c
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `order_domain_child_ns`
+-- Customer-managed child / private nameservers (glue records) for a domain,
+-- e.g. ns1.example.com -> 1.2.3.4. Mirrored at the registrar on add/delete.
+--
+
+CREATE TABLE `order_domain_child_ns` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `domain_id` int(11) NOT NULL,
+  `company_id` int(11) NOT NULL,
+  `hostname` varchar(255) NOT NULL,
+  `ip` varchar(45) NOT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1=active, 0=deleted',
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `deleted_on` datetime DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_child_ns_domain` (`domain_id`),
+  KEY `idx_child_ns_company` (`company_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `domain_cancellation_requests`
+-- Customer-submitted domain cancellation requests, processed by an admin.
+-- status: 0=pending, 1=processed (domain cancelled), 2=dismissed.
+--
+
+CREATE TABLE `domain_cancellation_requests` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `domain_id` int(11) NOT NULL,
+  `order_id` int(11) DEFAULT NULL,
+  `company_id` int(11) NOT NULL,
+  `customer_id` int(11) DEFAULT NULL COMMENT 'users.id who requested',
+  `domain` varchar(255) NOT NULL,
+  `reason` text DEFAULT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 0 COMMENT '0=pending, 1=processed, 2=dismissed',
+  `admin_note` varchar(255) DEFAULT NULL,
+  `requested_on` datetime DEFAULT NULL,
+  `processed_on` datetime DEFAULT NULL,
+  `processed_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_cancel_domain` (`domain_id`),
+  KEY `idx_cancel_company` (`company_id`),
+  KEY `idx_cancel_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `reseller_profiles`
 -- Per-reseller config: discount applied to the reseller's orders, tracked
 -- credit balance, and whether the reseller may use the third-party API.

@@ -225,6 +225,9 @@ class Clientarea extends WHMAZ_Controller {
 	public function domain_detail($id) {
 		$data['detail'] = $this->Order_model->loadOrderDomainById(getCompanyId(), $id);
 		$data['countries'] = $this->Clientarea_model->getCountries();
+		$data['child_ns'] = !empty($data['detail']['id'])
+			? $this->Clientarea_model->getChildNameservers($data['detail']['id'], getCompanyId())
+			: array();
 
 		$this->load->view('clientarea_domain_detail', $data);
 	}
@@ -1147,6 +1150,141 @@ class Clientarea extends WHMAZ_Controller {
 	}
 
 	/**
+	 * Add a child (private) nameserver: register at the registrar, then store locally.
+	 */
+	public function child_ns_add() {
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
+		if (!$this->input->post()) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid request method'));
+			return;
+		}
+
+		$domainId = $this->input->post('domain_id');
+		$hostname = strtolower(trim(strval($this->input->post('hostname'))));
+		$ip = trim(strval($this->input->post('ip')));
+		$companyId = getCompanyId();
+
+		if (!is_numeric($domainId) || $domainId <= 0) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid domain ID'));
+			return;
+		}
+
+		$domainInfo = $this->Clientarea_model->getDomainRegistrarInfo($domainId, $companyId);
+		if (empty($domainInfo)) {
+			echo json_encode(array('success' => false, 'msg' => 'Domain not found or access denied'));
+			return;
+		}
+
+		$domain = strval($domainInfo['domain'] ?? '');
+
+		// Validate hostname: valid FQDN and a subdomain of this domain
+		if (strpos($hostname, '.') === false || !preg_match('/^[a-z0-9]([a-z0-9\-\.]*[a-z0-9])?$/', $hostname)) {
+			echo json_encode(array('success' => false, 'msg' => 'Enter a valid nameserver host (e.g. ns1.' . $domain . ')'));
+			return;
+		}
+		if ($domain !== '' && substr($hostname, -strlen('.' . $domain)) !== '.' . $domain) {
+			echo json_encode(array('success' => false, 'msg' => 'The child nameserver must be a subdomain of ' . $domain . ' (e.g. ns1.' . $domain . ')'));
+			return;
+		}
+
+		// Validate IP (v4 or v6)
+		if (!filter_var($ip, FILTER_VALIDATE_IP)) {
+			echo json_encode(array('success' => false, 'msg' => 'Enter a valid IP address'));
+			return;
+		}
+
+		if ($this->Clientarea_model->childNameserverExists($domainId, $companyId, $hostname)) {
+			echo json_encode(array('success' => false, 'msg' => 'That nameserver host already exists'));
+			return;
+		}
+
+		if (empty($domainInfo['dom_register_id']) || empty($domainInfo['platform'])) {
+			echo json_encode(array('success' => false, 'msg' => 'No registrar configured for this domain. Please contact support.'));
+			return;
+		}
+
+		// Register at the registrar
+		$registrar = $this->_childNsRegistrarConfig($domainInfo);
+		$apiResult = registrar_register_child_ns($registrar, $domainInfo['domain_order_id'] ?? '', $domain, $hostname, $ip);
+
+		if (empty($apiResult['success'])) {
+			echo json_encode(array('success' => false, 'msg' => 'Registrar error: ' . ($apiResult['error'] ?? 'Failed to add child nameserver')));
+			return;
+		}
+
+		$this->Clientarea_model->addChildNameserver($domainId, $companyId, $hostname, $ip, getCustomerId());
+
+		echo json_encode(array('success' => true, 'msg' => 'Child nameserver added successfully'));
+	}
+
+	/**
+	 * Delete a child (private) nameserver: remove at the registrar, then locally.
+	 */
+	public function child_ns_delete() {
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
+		if (!$this->input->post()) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid request method'));
+			return;
+		}
+
+		$domainId = $this->input->post('domain_id');
+		$childId = $this->input->post('child_ns_id');
+		$companyId = getCompanyId();
+
+		if (!is_numeric($domainId) || $domainId <= 0 || !is_numeric($childId) || $childId <= 0) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid request'));
+			return;
+		}
+
+		$domainInfo = $this->Clientarea_model->getDomainRegistrarInfo($domainId, $companyId);
+		if (empty($domainInfo)) {
+			echo json_encode(array('success' => false, 'msg' => 'Domain not found or access denied'));
+			return;
+		}
+
+		$child = $this->Clientarea_model->getChildNameserverById($childId, $domainId, $companyId);
+		if (empty($child)) {
+			echo json_encode(array('success' => false, 'msg' => 'Child nameserver not found'));
+			return;
+		}
+
+		if (empty($domainInfo['dom_register_id']) || empty($domainInfo['platform'])) {
+			echo json_encode(array('success' => false, 'msg' => 'No registrar configured for this domain. Please contact support.'));
+			return;
+		}
+
+		$registrar = $this->_childNsRegistrarConfig($domainInfo);
+		$apiResult = registrar_delete_child_ns($registrar, $domainInfo['domain_order_id'] ?? '', strval($domainInfo['domain'] ?? ''), $child['hostname'], $child['ip']);
+
+		if (empty($apiResult['success'])) {
+			echo json_encode(array('success' => false, 'msg' => 'Registrar error: ' . ($apiResult['error'] ?? 'Failed to delete child nameserver')));
+			return;
+		}
+
+		$this->Clientarea_model->deleteChildNameserver($childId, $domainId, $companyId, getCustomerId());
+
+		echo json_encode(array('success' => true, 'msg' => 'Child nameserver deleted successfully'));
+	}
+
+	/**
+	 * Build a dom_registers-shaped config array from the joined domain info
+	 * for the domain_helper registrar_* functions.
+	 */
+	private function _childNsRegistrarConfig($domainInfo) {
+		return array(
+			'platform'       => $domainInfo['platform'] ?? '',
+			'api_base_url'   => $domainInfo['api_base_url'] ?? '',
+			'auth_userid'    => $domainInfo['auth_userid'] ?? '',
+			'auth_apikey'    => $domainInfo['auth_apikey'] ?? '',
+			'whitelisted_ip' => $domainInfo['whitelisted_ip'] ?? '',
+		);
+	}
+
+	/**
 	 * Submit a domain cancellation request.
 	 * Does NOT cancel the domain — it records the request, notifies the admin,
 	 * and emails a confirmation to the customer. Admin processes it in the portal.
@@ -1178,16 +1316,28 @@ class Clientarea extends WHMAZ_Controller {
 
 		$domainName = strval($domain['domain'] ?? '');
 
-		// Record the request against the domain (append to remarks as an audit note)
-		$note = 'Cancellation requested by customer on ' . date('Y-m-d H:i')
-			. ($reason !== '' ? ' — Reason: ' . $reason : '');
-		$existingRemarks = trim(strval($domain['remarks'] ?? ''));
-		$newRemarks = $existingRemarks !== '' ? ($existingRemarks . ' | ' . $note) : $note;
+		// Block duplicate pending requests for the same domain
+		$existing = $this->db->query(
+			"SELECT id FROM domain_cancellation_requests WHERE domain_id = ? AND company_id = ? AND status = 0 LIMIT 1",
+			array(intval($domainId), intval($companyId))
+		)->row_array();
 
-		$this->db->query(
-			"UPDATE order_domains SET remarks = ?, updated_on = NOW() WHERE id = ? AND company_id = ?",
-			array(substr($newRemarks, 0, 255), intval($domainId), intval($companyId))
-		);
+		if (!empty($existing)) {
+			echo json_encode(array('success' => false, 'msg' => 'A cancellation request for this domain is already pending review.'));
+			return;
+		}
+
+		// Record the request for admin processing
+		$this->db->insert('domain_cancellation_requests', array(
+			'domain_id'    => intval($domainId),
+			'order_id'     => intval($domain['order_id'] ?? 0),
+			'company_id'   => intval($companyId),
+			'customer_id'  => intval(getCustomerId()),
+			'domain'       => $domainName,
+			'reason'       => $reason,
+			'status'       => 0,
+			'requested_on' => date('Y-m-d H:i:s'),
+		));
 
 		$appSettings = getAppSettings();
 		$customer = $this->session->userdata('CUSTOMER');

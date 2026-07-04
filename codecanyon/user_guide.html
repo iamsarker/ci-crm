@@ -280,6 +280,8 @@ pre .var { color: #e06c75; }
         <a class="nav-link sub" href="#managing-existing-orders">Managing Existing Orders</a>
         <a class="nav-link sub" href="#hosting-usage-sync-real-time">Hosting Usage Sync</a>
         <a class="nav-link" href="#domain-management">Domain Management</a>
+        <a class="nav-link sub" href="#domain-detail-page">Domain Detail Page</a>
+        <a class="nav-link sub" href="#private-child-nameservers">Private (Child) Nameservers</a>
         <a class="nav-link sub" href="#domain-transfer">Domain Transfer</a>
         <a class="nav-link" href="#viewing-invoices">Viewing Invoices</a>
         <a class="nav-link" href="#making-payments">Making Payments</a>
@@ -303,6 +305,7 @@ pre .var { color: #e06c75; }
         <a class="nav-link" href="#order-management">Order Management</a>
         <a class="nav-link sub" href="#creating-an-order-manual">Creating an Order</a>
         <a class="nav-link sub" href="#managing-existing-orders-admin">Managing Existing Orders</a>
+        <a class="nav-link sub" href="#cancellation-requests">Cancellation Requests</a>
         <a class="nav-link" href="#package-management">Package Management</a>
         <a class="nav-link" href="#service-product-management">Service Product Management</a>
         <a class="nav-link" href="#email-template-management">Email Template Management</a>
@@ -1096,16 +1099,40 @@ A modal will appear asking for your domain information. Choose one of three opti
   <li>Filter by status (Active, Expired, etc.)</li>
 </ul>
 
-<p><strong>Domain Actions:</strong></p>
-<ul>
-  <li><strong>Renew:</strong> Pay renewal invoice</li>
-  <li><strong>Transfer:</strong> Initiate domain transfer</li>
-  <li><strong>Nameservers:</strong> Update DNS settings</li>
-  <li><strong>WHOIS:</strong> Update contact information</li>
-  <li><strong>Auto-Renew:</strong> Enable/disable automatic renewal</li>
-</ul>
+<p>Click <strong>Manage</strong> on any domain to open the <strong>Domain Detail</strong> page, where all of the tools below are available. Nameserver, contact, transfer-lock, EPP and child-nameserver actions are applied at your domain registrar in real time (ResellerClub / Resell.biz and Namecheap are supported).</p>
 
 <div class="screenshot-img"><img src="screenshots/domain-list.png" alt="Domain List"><div class="caption">Domain list with management options</div></div>
+
+<h3 id="domain-detail-page">Domain Detail Page</h3>
+
+<p><strong>DNS Configuration &amp; Nameservers</strong></p>
+<ul>
+  <li><strong>Default NS</strong> &mdash; point the domain at the provider's default nameservers with one click; the <em>Update Nameservers</em> button applies them for you.</li>
+  <li><strong>Custom NS</strong> &mdash; enter your own Nameserver 1&ndash;4 and click <strong>Update Nameservers</strong>. Nameserver 1 and 2 are required.</li>
+  <li><strong>Sync from Registrar</strong> &mdash; pull the current nameservers and registrant contact from the registrar into the page.</li>
+</ul>
+
+<p><strong>Contact / WHOIS Information</strong></p>
+<ul>
+  <li>Edit the registrant name, company, email, phone and address, then click <strong>Update Contact Information</strong>.</li>
+  <li>Changes are saved in your account and pushed to the registrar.</li>
+</ul>
+
+<p><strong>Domain Actions (sidebar)</strong></p>
+<ul>
+  <li><strong>Transfer Lock</strong> &mdash; toggle the registrar lock that protects the domain from unauthorized transfers. Turn it off before requesting an EPP code to transfer the domain away.</li>
+  <li><strong>Send EPP Code</strong> &mdash; the authorization/EPP code is fetched fresh from the registrar and emailed to your registered address (it is never stored).</li>
+  <li><strong>Request Cancellation</strong> &mdash; submit a cancellation request with an optional reason. The domain stays active until our team reviews it; you'll receive a confirmation email, and the request appears in the admin portal for processing.</li>
+</ul>
+
+<h4 id="private-child-nameservers">Private (Child) Nameservers</h4>
+<p>Create your own nameservers under the domain (glue records), e.g. <code>ns1.yourdomain.com</code> pointing to a server IP. Once registered they can be used as nameservers for this or other domains.</p>
+<ol>
+  <li>Scroll to the <strong>Private Nameservers (Child NS)</strong> card on the domain detail page.</li>
+  <li>Enter the <strong>Nameserver Host</strong> (must be a subdomain of this domain, e.g. <code>ns1.yourdomain.com</code>) and its <strong>IP Address</strong>.</li>
+  <li>Click <strong>Add</strong> &mdash; the host is registered at the registrar and listed in the table.</li>
+  <li>Use the <strong>delete</strong> (trash) button next to an entry to remove it from the registrar.</li>
+</ol>
 
 <h3 id="domain-transfer">Domain Transfer</h3>
 
@@ -2107,6 +2134,31 @@ A modal will appear asking for your domain information. Choose one of three opti
 </tbody>
 </table>
 </div>
+
+<h3 id="cancellation-requests">Domain Cancellation Requests</h3>
+
+<p>When a customer clicks <strong>Request Cancellation</strong> on their domain, the request is queued here for an administrator to review &mdash; the domain is <em>not</em> cancelled automatically.</p>
+
+<p><strong>Accessing:</strong> Go to <strong>Orders &rarr; Cancellation Requests</strong> (<code>whmazadmin/cancellation</code>).</p>
+
+<ul>
+  <li><strong>Stats cards</strong> &mdash; total, pending, processed and dismissed counts.</li>
+  <li><strong>Filter</strong> by status (Pending / Processed / Dismissed) and search by domain or customer.</li>
+  <li><strong>Review</strong> &mdash; open a request to see the domain, customer, date and the reason the customer gave.</li>
+</ul>
+
+<p><strong>Processing a request:</strong></p>
+<ol>
+  <li>Click <strong>Review</strong> on a pending request.</li>
+  <li>Choose the cancellation type:
+    <ul>
+      <li><strong>Immediate</strong> &mdash; the domain is marked cancelled now.</li>
+      <li><strong>End of period</strong> &mdash; the domain is scheduled to cancel at its expiry date.</li>
+    </ul>
+  </li>
+  <li>Add an optional admin note and click <strong>Cancel Domain</strong> &mdash; the domain status is updated and the request is marked <em>Processed</em>.</li>
+  <li>Alternatively click <strong>Dismiss</strong> to close the request without cancelling the domain.</li>
+</ol>
 
 <hr>
 

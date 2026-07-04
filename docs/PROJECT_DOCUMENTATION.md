@@ -682,6 +682,28 @@ See **Pattern 3: Server-Side DataTable with JOINs** in [CODING_STANDARDS_AND_PAT
 - `/whmazadmin/domain_pricing/create` - Add new extension
 - `/whmazadmin/domain_pricing/edit/{id}` - Edit pricing
 
+#### 5.2 Customer Domain Management (Domain Detail Page)
+**Controller:** `src/modules/clientarea/controllers/Clientarea.php`
+**View:** `src/modules/clientarea/views/clientarea_domain_detail.php` (+ `templates/customer/domain_nav.php`)
+**Model:** `Clientarea_model.php` (registrar lookup, nameserver/contact/child-ns persistence)
+**URL:** `/clientarea/domain_detail/{id}`
+
+All registrar operations run in real time against the domain's registrar (**ResellerClub / Resell.biz / Stargate** JSON, **Namecheap** XML). Per-registrar helpers are hand-rolled in the controller; child-nameserver helpers live in `domain_helper.php`.
+
+| Feature | Endpoint | Notes |
+|---------|----------|-------|
+| Nameservers | `update_nameservers` | **Default NS** applies `dom_registers.def_ns1..4`; **Custom NS** pushes typed values. ResellerClub NS sent as repeated `ns=` (raw POST) |
+| Sync from registrar | `sync_domain_data` | Pulls NS + registrant contact |
+| Contact / WHOIS | `update_contacts` | Namecheap `setContacts`; ResellerClub resolves the registrant `contact-id` then `contacts/modify.json` |
+| Transfer lock | `get_transfer_lock` / `toggle_transfer_lock` | Registrar lock, synced to `order_domains.transfer_lock` |
+| Send EPP code | `send_epp_code` | Fetched fresh, emailed, never stored |
+| Private/child nameservers | `child_ns_add` / `child_ns_delete` | Glue records; registrar + local `order_domain_child_ns` |
+| Request cancellation | `domain_cancellation_request` | Inserts into `domain_cancellation_requests`, emails admin+customer; does not cancel |
+
+**Admin cancellation queue:** `whmazadmin/Cancellation.php` → view `domain_cancellations.php`, menu **Orders → Cancellation Requests**. `process()` cancels the domain via `Order_model::cancelDomain()` (immediate / end-of-period); `dismiss()` closes without cancelling.
+
+**Tables:** `order_domain_child_ns`, `domain_cancellation_requests` (canonical in `crm_db.sql`; standalone installer `domain_features_migration.sql`).
+
 ---
 
 ### 6. Order Management
@@ -1653,6 +1675,8 @@ src/modules/*/views/
 | `orders` | Master order records |
 | `order_services` | Ordered hosting services |
 | `order_domains` | Ordered domains |
+| `order_domain_child_ns` | Customer child/private nameservers (glue records) per domain |
+| `domain_cancellation_requests` | Customer domain cancellation requests (0=pending, 1=processed, 2=dismissed) |
 | `add_to_carts` | Shopping cart items |
 
 #### `order_services` Table Structure

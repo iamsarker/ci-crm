@@ -329,6 +329,73 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Private (Child) Nameservers Section -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card detail-card">
+                            <div class="card-header detail-card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mg-b-0"><i class="fa fa-sitemap mg-r-10"></i>Private Nameservers (Child NS)</h5>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small">
+                                    Create your own nameservers under this domain (glue records), e.g.
+                                    <code>ns1.<?= htmlspecialchars($detail['domain'] ?? 'yourdomain.com', ENT_QUOTES, 'UTF-8') ?></code>.
+                                    These are registered at the registrar and can then be used as nameservers.
+                                </p>
+
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle" id="childNsTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Nameserver Host</th>
+                                                <th>IP Address</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        <?php if (!empty($child_ns)): ?>
+                                            <?php foreach ($child_ns as $cns): ?>
+                                            <tr data-child-id="<?= (int)$cns['id'] ?>">
+                                                <td><?= htmlspecialchars($cns['hostname'], ENT_QUOTES, 'UTF-8') ?></td>
+                                                <td><?= htmlspecialchars($cns['ip'], ENT_QUOTES, 'UTF-8') ?></td>
+                                                <td class="text-end">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger btn-delete-child-ns" data-child-id="<?= (int)$cns['id'] ?>" data-host="<?= htmlspecialchars($cns['hostname'], ENT_QUOTES, 'UTF-8') ?>">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        <?php endif; ?>
+                                            <tr id="childNsEmptyRow" style="<?= !empty($child_ns) ? 'display:none;' : '' ?>">
+                                                <td colspan="3" class="text-center text-muted py-3">No private nameservers yet.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <hr>
+
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-5">
+                                        <label for="child_ns_host" class="form-label small mb-1">Nameserver Host</label>
+                                        <input type="text" class="form-control" id="child_ns_host" placeholder="ns1.<?= htmlspecialchars($detail['domain'] ?? 'yourdomain.com', ENT_QUOTES, 'UTF-8') ?>" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="child_ns_ip" class="form-label small mb-1">IP Address</label>
+                                        <input type="text" class="form-control" id="child_ns_ip" placeholder="192.0.2.1" />
+                                    </div>
+                                    <div class="col-md-3">
+                                        <button type="button" id="btnAddChildNs" class="btn btn-primary w-100">
+                                            <i class="fa fa-plus mg-r-5"></i>Add
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="childNsStatus" class="ns-update-status mt-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -798,6 +865,88 @@ $(function(){
             });
         });
     });
+    // ---- Private (child) nameservers ----
+    function childNsStatus(type, message) {
+        var $s = $('#childNsStatus');
+        var cls = type === 'success' ? 'alert-success' : 'alert-danger';
+        var icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+        $s.removeClass('alert-success alert-danger').addClass('alert ' + cls)
+          .html('<i class="fa ' + icon + ' mg-r-5"></i>' + escapeXSS(message)).fadeIn();
+        if (type === 'success') setTimeout(function(){ $s.fadeOut(); }, 5000);
+    }
+
+    $('#btnAddChildNs').on('click', function() {
+        var $btn = $(this);
+        var domainId = $('#domain_id').val();
+        var host = ($('#child_ns_host').val() || '').trim().toLowerCase();
+        var ip = ($('#child_ns_ip').val() || '').trim();
+
+        if (!host || !ip) {
+            childNsStatus('error', 'Nameserver host and IP are required.');
+            return;
+        }
+
+        $btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin mg-r-5"></i>Adding...');
+
+        var csrfName = $('meta[name="csrf-token-name"]').attr('content');
+        var csrfToken = $('meta[name="csrf-token-hash"]').attr('content');
+        var postData = { domain_id: domainId, hostname: host, ip: ip };
+        postData[csrfName] = csrfToken;
+
+        $.ajax({
+            url: BASE_URL + 'clientarea/child_ns_add',
+            type: 'POST', data: postData, dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    childNsStatus('success', response.msg);
+                    setTimeout(function(){ location.reload(); }, 1000);
+                } else {
+                    childNsStatus('error', response.msg || 'Failed to add child nameserver.');
+                }
+            },
+            error: function() { childNsStatus('error', 'An error occurred. Please try again.'); },
+            complete: function() { $btn.prop('disabled', false).html('<i class="fa fa-plus mg-r-5"></i>Add'); }
+        });
+    });
+
+    $('#childNsTable').on('click', '.btn-delete-child-ns', function() {
+        var childId = $(this).data('child-id');
+        var host = $(this).data('host');
+        var domainId = $('#domain_id').val();
+
+        Swal.fire({
+            title: 'Delete Nameserver?',
+            html: 'Remove <strong>' + escapeXSS(String(host)) + '</strong> from the registrar?',
+            icon: 'warning', showCancelButton: true,
+            confirmButtonColor: '#d9534f', confirmButtonText: 'Yes, delete', cancelButtonText: 'Cancel'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+
+            Swal.fire({ title: 'Please wait...', allowOutsideClick: false, allowEscapeKey: false, didOpen: function(){ Swal.showLoading(); } });
+
+            var csrfName = $('meta[name="csrf-token-name"]').attr('content');
+            var csrfToken = $('meta[name="csrf-token-hash"]').attr('content');
+            var postData = { domain_id: domainId, child_ns_id: childId };
+            postData[csrfName] = csrfToken;
+
+            $.ajax({
+                url: BASE_URL + 'clientarea/child_ns_delete',
+                type: 'POST', data: postData, dataType: 'json',
+                success: function(response) {
+                    Swal.fire({
+                        icon: response.success ? 'success' : 'error',
+                        title: response.success ? 'Deleted' : 'Failed',
+                        text: response.msg,
+                        confirmButtonColor: '#0168fa'
+                    }).then(function(){ if (response.success) location.reload(); });
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred. Please try again.', confirmButtonColor: '#0168fa' });
+                }
+            });
+        });
+    });
+
     // Request Cancellation button
     $('#btnRequestCancellation').on('click', function(e) {
         e.preventDefault();
