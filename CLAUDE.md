@@ -395,6 +395,38 @@ Suspends hosting accounts whose invoice is overdue. Runs as part of `/cronjobs/r
 
 **Idempotency:** once `status = 3`, the candidate query (which requires `status = 1`) skips the service on subsequent runs.
 
+### Service Termination Cronjob
+
+Terminates hosting accounts that have stayed **suspended past a grace period**. Runs as part of `/cronjobs/run` (step 2b, right after suspension); also callable standalone at `/cronjobs/terminateOverdueServices?key=SECRET`. This is the second stage of the WHMCS-style dunning ladder: Active → (`suspension_days_after_due`) → Suspended → (`cancellation_days_after_suspension`) → Terminated.
+
+**Key Files:**
+- `src/modules/cronjobs/controllers/Cronjobs.php` — `terminateOverdueServices()`, `sendServiceTerminatedEmail()`
+- `src/models/Cronjob_model.php` — `getServicesOverdueForTermination($daysAfterSuspension)`
+- `src/models/Provisioning_model.php` — `terminateService($service, $reason)` (public; deletes remote account then flips local status)
+
+**Configuration (sys_cnf, AUTOMATION group):**
+| Key | Default | Purpose |
+|-----|---------|---------|
+| `cancellation_days_after_suspension` | 30 (fallback in code) | Days a service must stay suspended before termination |
+| `cron_enabled` | 1 | Set 0 to globally disable the termination pass (shared with suspension) |
+
+**Candidate criteria (all must match):**
+- `order_services.status = 3` (Suspended), `suspension_date IS NOT NULL`, `is_synced = 1`, `cp_username` not empty, `deleted_on IS NULL`
+- Service's server module is `cpanel`, `plesk`, or `directadmin`
+- At least one `invoices` row where `status = 1`, `pay_status = 'DUE'` (PARTIAL excluded), joined via `invoice_items.ref_id = order_services.id AND item_type = 2` — a service whose invoice was paid but was never unsuspended will NOT be terminated
+- Grace measured from `suspension_date` (NOT invoice `due_date`): `suspension_date + N days <= today`
+
+**Flow:**
+1. Read `cancellation_days_after_suspension` from `sys_cnf`
+2. `getServicesOverdueForTermination($days)` returns candidates sorted by `service_id ASC, due_date ASC`
+3. Dedupe by `service_id` — oldest overdue invoice per service wins as the "trigger" invoice
+4. `Provisioning_model::terminateService()` calls the module helper (`whm_terminate_account` / `plesk_terminate_account` / `da_terminate_account`) to **delete the remote account**
+5. On success: `order_services.status = 4`, `termination_date = today`, `suspension_reason = 'Invoice #<no> unpaid; suspended <N> days'`
+6. Email customer using the `dunning_terminated` template (id=5, DUNNING category); same placeholder set as `dunning_suspended`
+7. On failure: local state is NOT changed → next cron run retries
+
+**Idempotency:** once `status = 4`, the candidate query (which requires `status = 3`) skips the service on subsequent runs. No-module services are never cron-suspended, so they never reach `status = 3` and are not cron-terminated. Licenses are not covered here — SaaS license termination remains manual via `Orderlicense_model::terminateLicense()`.
+
 ## Software Selling & Self-Hosted Licensing
 
 ci-crm sells **software products** (the WHMAZ app, add-on modules, or any downloadable software). Admin creates products with per-currency × per-billing-cycle pricing; customers **browse and buy them through the cart** like hosting/domains. Delivery is a downloadable ZIP; the installed software **phones home** to enforce its license.

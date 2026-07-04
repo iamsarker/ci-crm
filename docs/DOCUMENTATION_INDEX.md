@@ -68,7 +68,7 @@ CI-CRM is a complete business management system designed for hosting and service
   - Support ticket system
   - Knowledge base
   - Multi-currency support
-  - Automated tasks (cron jobs)
+  - Automated tasks (cron jobs): renewal invoicing, overdue suspension, and grace-period termination
   - Expense tracking
   - Reporting and analytics
 

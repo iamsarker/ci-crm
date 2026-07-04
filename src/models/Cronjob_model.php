@@ -664,6 +664,65 @@ class Cronjob_model extends CI_Model
 	}
 
 	/**
+	 * Get suspended hosting services that should be terminated because they have
+	 * remained suspended (status=3) for at least $daysAfterSuspension days while
+	 * their invoice is still unpaid.
+	 *
+	 * Grace model (WHMCS-style): Active --(suspension_days_after_due)--> Suspended
+	 * --(cancellation_days_after_suspension)--> Terminated. The grace window is
+	 * measured from order_services.suspension_date (set when the service was
+	 * suspended), not from the invoice due_date.
+	 *
+	 * Only services on a real control panel are candidates; the still-DUE invoice
+	 * requirement guards against terminating a service whose invoice was paid but
+	 * which was never unsuspended. Rows may repeat per qualifying invoice; the
+	 * caller should dedupe by service_id and treat the first (oldest) as the trigger.
+	 *
+	 * @param int $daysAfterSuspension How many days past suspension_date before terminating
+	 * @return array
+	 */
+	function getServicesOverdueForTermination($daysAfterSuspension)
+	{
+		$daysAfterSuspension = max(0, intval($daysAfterSuspension));
+
+		$sql = "SELECT os.id AS service_id,
+					os.company_id, os.order_id, os.product_service_id,
+					os.cp_username, os.hosting_domain, os.suspension_date,
+					sm.module_name,
+					ps.product_name,
+					c.email AS customer_email,
+					c.first_name, c.last_name,
+					c.name AS company_name_customer,
+					i.id AS invoice_id,
+					i.invoice_uuid, i.invoice_no, i.total, i.due_date,
+					i.currency_code, i.currency_id,
+					cu.symbol AS currency_symbol,
+					DATEDIFF(CURDATE(), i.due_date) AS days_overdue,
+					DATEDIFF(CURDATE(), os.suspension_date) AS days_suspended
+				FROM order_services os
+				JOIN invoice_items ii ON ii.ref_id = os.id AND ii.item_type = 2
+				JOIN invoices i ON ii.invoice_id = i.id
+				JOIN product_services ps ON os.product_service_id = ps.id
+				JOIN servers s ON ps.server_id = s.id
+				JOIN server_modules sm ON s.product_service_module_id = sm.id
+				JOIN companies c ON os.company_id = c.id
+				LEFT JOIN currencies cu ON i.currency_id = cu.id
+				WHERE os.status = 3
+				  AND os.suspension_date IS NOT NULL
+				  AND os.is_synced = 1
+				  AND os.cp_username IS NOT NULL
+				  AND os.cp_username != ''
+				  AND os.deleted_on IS NULL
+				  AND i.status = 1
+				  AND i.pay_status = 'DUE'
+				  AND DATE_ADD(os.suspension_date, INTERVAL ? DAY) <= CURDATE()
+				  AND LOWER(sm.module_name) IN ('cpanel', 'plesk', 'directadmin')
+				ORDER BY os.id ASC, i.due_date ASC";
+
+		return $this->db->query($sql, array($daysAfterSuspension))->result_array();
+	}
+
+	/**
 	 * Get active licenses whose invoice is overdue by >= $daysAfterDue days.
 	 *
 	 * Self-hosted: there's no server module to join — suspension is soft (status

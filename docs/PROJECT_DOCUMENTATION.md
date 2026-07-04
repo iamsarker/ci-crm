@@ -814,6 +814,7 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 | New Hosting | Create hosting account | Server module API (cPanel/Plesk/DirectAdmin) |
 | Hosting Renewal | Unsuspend if suspended, update dates | Server module API (if suspended) |
 | Hosting Suspension (overdue) | Suspend account after N days overdue (`sys_cnf.suspension_days_after_due`) | Server module suspend API |
+| Hosting Termination (grace expired) | Delete account after it has stayed suspended for N days (`sys_cnf.cancellation_days_after_suspension`) | Server module terminate API |
 
 **Renewal Detection (`Provisioning_model::isRenewalInvoiceItem()`):**
 An invoice item is treated as a renewal if any earlier PAID invoice references the same `ref_id`. This replaces the older domain_order_id / billing_period heuristics, which could mis-route a renewal payment into a re-registration when the registrar order ID was missing or the domain status had flipped to Expired/Grace.
@@ -847,9 +848,22 @@ An invoice item is treated as a renewal if any earlier PAID invoice references t
 | Job | Purpose | Key sys_cnf keys |
 |-----|---------|------------------|
 | `generateRenewalInvoices` | Creates renewal invoices 15 days before `next_renewal_date` (combined when domain + linked service share the renewal date) | `cron_enabled` |
-| `suspendOverdueServices` | Suspends hosting services via cPanel/Plesk/DirectAdmin when their `DUE` invoice is past due by N days; emails the customer via the `dunning_suspended` template | `cron_enabled`, `suspension_days_after_due` (default 7) |
+| `suspendOverdueServices` | Suspends hosting services via cPanel/Plesk/DirectAdmin when their `DUE` invoice is past due by N days; emails the customer via the `dunning_suspended` template | `cron_enabled`, `suspension_days_after_due` (seeded 5) |
+| `terminateOverdueServices` | Terminates (deletes) hosting accounts that have stayed **suspended** for N more days while still unpaid; emails the customer via the `dunning_terminated` template | `cron_enabled`, `cancellation_days_after_suspension` (seeded 30) |
 
-Each job is also individually callable (`/cronjobs/generateRenewalInvoices`, `/cronjobs/suspendOverdueServices`). Suspension is scoped to hosting only — domain items on the same overdue invoice are not affected.
+Each job is also individually callable (`/cronjobs/generateRenewalInvoices`, `/cronjobs/suspendOverdueServices`, `/cronjobs/terminateOverdueServices`). Suspension and termination are scoped to hosting only — domain items on the same overdue invoice are not affected.
+
+**Dunning ladder (WHMCS-style), all values in `sys_cnf` (AUTOMATION group):**
+
+```
+Invoice due ──(suspension_days_after_due, seeded 5)──▶ Suspended ──(cancellation_days_after_suspension, seeded 30)──▶ Terminated
+   status=1 (active)                                     status=3                                                      status=4
+```
+
+- **Suspension grace** is measured from the invoice `due_date`; **termination grace** is measured from the service's `suspension_date` (i.e. it starts counting only once the account is actually suspended).
+- Both passes require the triggering invoice to still be `pay_status='DUE'`, so a service that gets paid up will not advance the ladder. Set `cron_enabled=0` to freeze both passes.
+- Only services on a real control panel (`cpanel`/`plesk`/`directadmin`) advance; "No Module" services never reach `status=3` via cron and so are never cron-terminated.
+- On API failure the local status is left unchanged and the next cron run retries. Once a service is terminated (`status=4`) the account is deleted at the server and cannot be automatically restored.
 
 #### 7.3 Promo Code / Coupon System
 
@@ -1226,7 +1240,9 @@ Each job is also individually callable (`/cronjobs/generateRenewalInvoices`, `/c
 - **Renewal Invoice Generation** - Auto-generate invoices 15 days before expiry
 - Service renewal processing with billing cycle support
 - Domain renewal processing with multi-year support
-- Email notifications for renewal invoices
+- **Overdue Suspension** - Suspend hosting accounts once their invoice is overdue by `suspension_days_after_due` days
+- **Grace-period Termination** - Delete hosting accounts that stay suspended for `cancellation_days_after_suspension` more days while still unpaid
+- Email notifications for renewal invoices, suspensions, and terminations
 - Duplicate invoice prevention
 - CLI and HTTP execution support
 - Execution logging
@@ -1242,8 +1258,10 @@ Each job is also individually callable (`/cronjobs/generateRenewalInvoices`, `/c
 
 **Key URLs:**
 - `/cronjobs` - System info and setup instructions
-- `/cronjobs/run` - Main entry point (run all tasks)
+- `/cronjobs/run` - Main entry point (run all tasks: renewals → suspensions → terminations → license passes)
 - `/cronjobs/generateRenewalInvoices` - Generate renewal invoices only
+- `/cronjobs/suspendOverdueServices` - Suspend overdue hosting services only
+- `/cronjobs/terminateOverdueServices` - Terminate services suspended past the grace period only
 - `/cronjobs/testRenewal/{days}` - Preview expiring items (no invoice creation)
 
 **Cron Setup:**
@@ -1260,6 +1278,10 @@ Each job is also individually callable (`/cronjobs/generateRenewalInvoices`, `/c
 - `createServiceRenewalInvoice($service)` - Create invoice for service
 - `createDomainRenewalInvoice($domain)` - Create invoice for domain
 - `updateNextDueDateAfterPayment($invoiceId)` - Update dates after payment
+- `getServicesOverdueForSuspension($daysAfterDue)` - Candidates for suspension (overdue past due_date)
+- `getServicesOverdueForTermination($daysAfterSuspension)` - Candidates for termination (suspended past grace)
+
+Suspend/terminate the remote account via `Provisioning_model::suspendService()` / `terminateService()`, which dispatch to the correct control-panel helper (cPanel/Plesk/DirectAdmin) and then flip the local `order_services.status` (3=suspended, 4=terminated).
 
 ---
 

@@ -55,6 +55,10 @@ class Install
         '.env.example',
     ];
 
+    // Fixed vendor license server. Every install is a master copy that enforces
+    // its LICENSE_KEY against this host via the admin-login gate.
+    const LICENSE_SERVER_URL = 'https://whmaz.com';
+
     /**
      * Constructor
      */
@@ -533,6 +537,125 @@ class Install
     }
 
     /**
+     * Truncate transactional / customer-data tables carried over from the
+     * development dump in crm_db.sql, so each fresh install starts clean.
+     *
+     * Seed/config tables (app_settings, sys_cnf, email_templates, billing_cycle,
+     * currencies, plans, product catalog, servers, dom_registers, etc.) are
+     * intentionally KEPT and are not listed below.
+     *
+     * Called right after crm_db.sql is imported (step 4), before the admin
+     * account is created in step 5 — so admin_users is safely emptied here and
+     * the buyer's admin is INSERTed fresh by updateAdminCredentials().
+     *
+     * To adjust what gets wiped, just add/remove a name in $tables — nothing
+     * else needs to change. Non-existent tables are skipped, not fatal.
+     *
+     * @return array {truncated: string[], skipped: string[]}
+     */
+    public function truncateDataTables()
+    {
+        $db = $this->getDbCredentials();
+        if (!$db) {
+            throw new Exception("Database credentials not found in session");
+        }
+
+        $this->pdo = $this->createConnection(
+            $db['host'], $db['port'], $db['database'], $db['username'], $db['password']
+        );
+
+        // Tables emptied on every fresh install.
+        $tables = [
+            // --- Customer & order data ---
+            'companies', 'users',
+            'orders', 'order_services', 'order_domains', 'order_licenses',
+            'add_to_carts',
+            // --- Billing data ---
+            'invoices', 'invoice_items', 'invoice_txn',
+            'payment_transactions', 'payment_refunds', 'dunning_log',
+            // --- Support ---
+            'tickets', 'ticket_replies',
+            // --- Vendor content / catalog data ---
+            'expenses', 'expense_types', 'expense_vendors',
+            'announcements', 'software_releases',
+            'promo_codes', 'promo_code_usage',
+            'promo_code_customers', 'promo_code_products',
+            // --- Hosting catalog & infrastructure ---
+            'product_services', 'product_service_types',
+            'product_service_groups', 'product_service_pricing',
+            'servers', 'dom_registers', 'dom_extensions', 'dom_pricing',
+            'ticket_depts',
+            // --- Reseller / API ---
+            'reseller_profiles', 'api_keys', 'api_request_logs',
+            // --- Logs, history & queues ---
+            'provisioning_logs', 'webhook_logs', 'cron_jobs',
+            'admin_logins', 'user_logins', 'login_attempts', 'password_resets',
+            'pending_executions',
+            // --- Admin accounts (buyer's admin is created fresh in step 5) ---
+            'admin_users',
+        ];
+
+        $truncated = [];
+        $skipped = [];
+
+        $this->pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+
+        foreach ($tables as $table) {
+            try {
+                // Only touch tables that actually exist in this database
+                $stmt = $this->pdo->query("SHOW TABLES LIKE " . $this->pdo->quote($table));
+                if ($stmt->rowCount() === 0) {
+                    $skipped[] = $table;
+                    continue;
+                }
+                $this->pdo->exec("TRUNCATE TABLE `{$table}`");
+                $truncated[] = $table;
+            } catch (PDOException $e) {
+                $skipped[] = $table;
+                $this->log("Truncate skipped for {$table}: " . $e->getMessage(), 'warning');
+            }
+        }
+
+        // Reset invoice/order sequence counters so numbering starts clean
+        // (first generated number will be 101).
+        try {
+            $this->pdo->exec("UPDATE `gen_numbers` SET `last_no` = 100");
+        } catch (PDOException $e) {
+            $this->log("gen_numbers reset failed: " . $e->getMessage(), 'warning');
+        }
+
+        // Sanitize credential-bearing config rows that must NOT be truncated
+        // (the app expects the row to exist / to keep other config).
+        // app_settings: clear the vendor's SMTP + reCAPTCHA secrets (buyer sets
+        // their own in admin). Columns are NOT NULL varchar, so use ''.
+        try {
+            $this->pdo->exec("
+                UPDATE `app_settings`
+                SET `smtp_username`      = NULL,
+                    `smtp_authkey`       = NULL,
+                    `captcha_site_key`   = '',
+                    `captcha_secret_key` = ''
+            ");
+        } catch (PDOException $e) {
+            $this->log("app_settings sanitize failed: " . $e->getMessage(), 'warning');
+        }
+
+        // sys_cnf: blank the cron secret so buyers don't share the vendor's key
+        // (a blank key denies HTTP cron access until the buyer sets their own).
+        try {
+            $this->pdo->exec("UPDATE `sys_cnf` SET `cnf_val` = '' WHERE `cnf_key` = 'cron_secret_key'");
+        } catch (PDOException $e) {
+            $this->log("cron_secret_key reset failed: " . $e->getMessage(), 'warning');
+        }
+
+        $this->pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
+
+        $this->log('Data tables truncated: ' . implode(', ', $truncated), 'info');
+
+        return ['truncated' => $truncated, 'skipped' => $skipped];
+    }
+
+    /**
      * Create .env file
      */
     public function createEnvFile($license = [])
@@ -558,15 +681,14 @@ class Install
         $content = preg_replace('/^DB_USERNAME=.*$/m', 'DB_USERNAME=' . $db['username'], $content);
         $content = preg_replace('/^DB_PASSWORD=.*$/m', 'DB_PASSWORD=' . $db['password'], $content);
 
-        // Software license (self-hosted phone-home). A master/vendor install is
-        // never gated; a client install stores its key + the vendor server URL.
-        $isMaster  = !empty($license['is_master']);
-        $key       = $isMaster ? '' : trim($license['license_key'] ?? '');
-        $serverUrl = $isMaster ? '' : rtrim(trim($license['license_server_url'] ?? ''), '/');
+        // Software license (self-hosted phone-home). Every install ships as a
+        // master copy pinned to the vendor server; the buyer's key is enforced
+        // by the admin-login gate against LICENSE_SERVER_URL.
+        $key = trim($license['license_key'] ?? '');
 
-        $content = preg_replace('/^IS_LICENSE_MASTER=.*$/m', 'IS_LICENSE_MASTER=' . ($isMaster ? 'true' : 'false'), $content);
+        $content = preg_replace('/^IS_LICENSE_MASTER=.*$/m', 'IS_LICENSE_MASTER=true', $content);
         $content = preg_replace('/^LICENSE_KEY=.*$/m', 'LICENSE_KEY=' . $key, $content);
-        $content = preg_replace('/^LICENSE_SERVER_URL=.*$/m', 'LICENSE_SERVER_URL=' . $serverUrl, $content);
+        $content = preg_replace('/^LICENSE_SERVER_URL=.*$/m', 'LICENSE_SERVER_URL=' . self::LICENSE_SERVER_URL, $content);
 
         if (file_put_contents($envFile, $content) === false) {
             throw new Exception("Failed to create .env file. Check file permissions.");
@@ -580,20 +702,16 @@ class Install
      * Best-effort: used by the wizard's "Verify" button so the customer can
      * confirm their key before finishing. Never blocks installation.
      *
-     * @param string $key       License key (WHMAZ-XXXXX-...)
-     * @param string $serverUrl Vendor CRM base URL
+     * @param string $key License key (WHMAZ-XXXXX-...)
      * @return array {success, status, plan_key, message}
      */
-    public function verifyLicenseKey($key, $serverUrl)
+    public function verifyLicenseKey($key)
     {
         $key = trim($key);
-        $serverUrl = rtrim(trim($serverUrl), '/');
+        $serverUrl = rtrim(self::LICENSE_SERVER_URL, '/');
 
-        if ($key === '' || $serverUrl === '') {
-            return ['success' => false, 'message' => 'License key and server URL are required.'];
-        }
-        if (!preg_match('#^https?://#i', $serverUrl)) {
-            return ['success' => false, 'message' => 'Server URL must start with http:// or https://'];
+        if ($key === '') {
+            return ['success' => false, 'message' => 'License key is required.'];
         }
 
         $ch = curl_init($serverUrl . '/license/verify');
@@ -651,21 +769,126 @@ class Install
         // Use email as username (before @ part)
         $username = strstr($email, '@', true) ?: 'admin';
 
-        // Update admin user
+        // Upsert the buyer's admin as id=1. admin_users is emptied during the
+        // import step (truncateDataTables), so INSERT creates it fresh; the
+        // ON DUPLICATE clause keeps this safe if the row already exists.
         $stmt = $this->pdo->prepare("
-            UPDATE admin_users
-            SET email = ?,
-                mobile ='0',
-                phone ='0',
-                password = ?,
-                username = ?,
-                first_name = ?,
-                last_name = ?,
+            INSERT INTO admin_users
+                (id, admin_role_id, first_name, last_name, username, password,
+                 email, mobile, phone, support_depts, status, inserted_on, updated_on)
+            VALUES (1, 1, ?, ?, ?, ?, ?, '0', '0', '1,2', 1, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE
+                first_name    = VALUES(first_name),
+                last_name     = VALUES(last_name),
+                username      = VALUES(username),
+                password      = VALUES(password),
+                email         = VALUES(email),
+                mobile        = VALUES(mobile),
+                phone         = VALUES(phone),
+                support_depts = VALUES(support_depts),
+                status        = 1,
+                updated_on    = NOW()
+        ");
+
+        $stmt->execute([$firstName, $lastName, $username, $hashedPassword, $email]);
+
+        // Point admin notifications at the buyer's admin email (sys_cnf,
+        // group NOTIFICATIONS). Insert the row if a dump is missing it.
+        $check = $this->pdo->prepare("SELECT id FROM sys_cnf WHERE cnf_key = 'admin_notification_email' LIMIT 1");
+        $check->execute();
+        if ($check->fetch()) {
+            $ns = $this->pdo->prepare(
+                "UPDATE sys_cnf SET cnf_val = ?, updated_on = NOW() WHERE cnf_key = 'admin_notification_email'"
+            );
+            $ns->execute([$email]);
+        } else {
+            $ns = $this->pdo->prepare(
+                "INSERT INTO sys_cnf (cnf_key, cnf_val, cnf_group, created_on, updated_on)
+                 VALUES ('admin_notification_email', ?, 'NOTIFICATIONS', NOW(), NOW())"
+            );
+            $ns->execute([$email]);
+        }
+
+        return true;
+    }
+
+    /**
+     * Store the buyer's license key in app_settings.
+     *
+     * license_auth = the raw key (as entered / stored in .env LICENSE_KEY),
+     * license_hash = its SHA-256 for a tamper-evident local record. A master
+     * install (no key) clears both columns.
+     *
+     * @param string $key License key ('' for master installs)
+     * @return bool
+     */
+    public function storeLicenseInSettings($key)
+    {
+        $db = $this->getDbCredentials();
+        if (!$db) {
+            throw new Exception("Database credentials not found");
+        }
+
+        $this->pdo = $this->createConnection(
+            $db['host'], $db['port'], $db['database'], $db['username'], $db['password']
+        );
+
+        $key = trim((string) $key);
+        $auth = ($key === '') ? null : $key;
+        $hash = ($key === '') ? null : hash('sha256', $key);
+
+        $stmt = $this->pdo->prepare("
+            UPDATE app_settings
+            SET license_auth = ?,
+                license_hash = ?,
                 updated_on = NOW()
             WHERE id = 1
         ");
+        $stmt->execute([$auth, $hash]);
 
-        $stmt->execute([$email, $hashedPassword, $username, $firstName, $lastName]);
+        return true;
+    }
+
+    /**
+     * Store the default nameservers in sys_cnf (group DNS). Rows
+     * DefaultNameServer1..4 ship seeded; empty values are stored as NULL.
+     * Robust against a dump missing the rows (inserts them if absent).
+     *
+     * @param array $nameservers [1 => 'ns1..', 2 => 'ns2..', 3 => '', 4 => '']
+     * @return bool
+     */
+    public function updateNameservers($nameservers)
+    {
+        $db = $this->getDbCredentials();
+        if (!$db) {
+            throw new Exception("Database credentials not found");
+        }
+
+        $this->pdo = $this->createConnection(
+            $db['host'], $db['port'], $db['database'], $db['username'], $db['password']
+        );
+
+        for ($i = 1; $i <= 4; $i++) {
+            $key = 'DefaultNameServer' . $i;
+            $val = trim((string) ($nameservers[$i] ?? ''));
+            $val = ($val === '') ? null : $val;
+
+            $check = $this->pdo->prepare("SELECT id FROM sys_cnf WHERE cnf_key = ? LIMIT 1");
+            $check->execute([$key]);
+
+            if ($check->fetch()) {
+                $stmt = $this->pdo->prepare(
+                    "UPDATE sys_cnf SET cnf_val = ?, updated_on = NOW() WHERE cnf_key = ?"
+                );
+                $stmt->execute([$val, $key]);
+            } else {
+                $stmt = $this->pdo->prepare(
+                    "INSERT INTO sys_cnf (cnf_key, cnf_val, cnf_group, created_on, updated_on)
+                     VALUES (?, ?, 'DNS', NOW(), NOW())"
+                );
+                $stmt->execute([$key, $val]);
+            }
+        }
 
         return true;
     }

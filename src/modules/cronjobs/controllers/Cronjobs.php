@@ -120,6 +120,10 @@ class Cronjobs extends WHMAZ_Controller
 		$suspensionResult = $this->suspendOverdueServices();
 		$output['suspensions'] = $suspensionResult;
 
+		// 2b. Terminate Hosting Services suspended past the grace period
+		$terminationResult = $this->terminateOverdueServices();
+		$output['terminations'] = $terminationResult;
+
 		// 3. Soft-suspend Overdue SaaS Licenses
 		$licenseSuspensionResult = $this->suspendOverdueLicenses();
 		$output['license_suspensions'] = $licenseSuspensionResult;
@@ -155,6 +159,14 @@ class Cronjobs extends WHMAZ_Controller
 			echo "  Emails sent: {$suspensionResult['emails_sent']}\n";
 			if (!empty($suspensionResult['errors'])) {
 				echo "  Errors: " . count($suspensionResult['errors']) . "\n";
+			}
+			echo "\nTerminations:\n";
+			echo "  Services checked: {$terminationResult['services_checked']}\n";
+			echo "  Terminated: {$terminationResult['terminated']}\n";
+			echo "  Failed: {$terminationResult['failed']}\n";
+			echo "  Emails sent: {$terminationResult['emails_sent']}\n";
+			if (!empty($terminationResult['errors'])) {
+				echo "  Errors: " . count($terminationResult['errors']) . "\n";
 			}
 			echo "\nLicense Suspensions:\n";
 			echo "  Licenses checked: {$licenseSuspensionResult['licenses_checked']}\n";
@@ -597,6 +609,167 @@ class Cronjobs extends WHMAZ_Controller
 	}
 
 	/**
+	 * Terminate hosting services that have stayed suspended past the grace period.
+	 *
+	 * A service is terminated once it has been suspended (status=3) for at least
+	 * sys_cnf.cancellation_days_after_suspension days while its invoice is still
+	 * unpaid. The remote account is deleted via the server module and the local
+	 * status flips to Terminated (4). Sends the dunning_terminated email.
+	 *
+	 * URL: /cronjobs/terminateOverdueServices?key=YOUR_SECRET_KEY
+	 *
+	 * @return array result counters
+	 */
+	function terminateOverdueServices()
+	{
+		// Security check
+		if (!$this->validateCronAccess()) {
+			$this->denyAccess();
+		}
+
+		$result = array(
+			'services_checked' => 0,
+			'terminated' => 0,
+			'failed' => 0,
+			'emails_sent' => 0,
+			'errors' => array()
+		);
+
+		// Honor the global cron toggle
+		if ((int)$this->Cronjob_model->getSysConfig('cron_enabled', 1) !== 1) {
+			log_message('info', 'terminateOverdueServices skipped: cron_enabled=0');
+			return $result;
+		}
+
+		$daysAfterSuspension = intval($this->Cronjob_model->getSysConfig('cancellation_days_after_suspension', 30));
+		if ($daysAfterSuspension < 1) {
+			$daysAfterSuspension = 30;
+		}
+
+		$this->load->model('Provisioning_model');
+
+		$appSettings = $this->Cronjob_model->getAppSettings();
+		$candidates = $this->Cronjob_model->getServicesOverdueForTermination($daysAfterSuspension);
+
+		// Dedupe by service_id — one termination per service per run, using the oldest
+		// invoice (first row per service_id, since the query sorts by due_date ASC) as
+		// the triggering invoice referenced in logs and the customer email.
+		$processedServiceIds = array();
+
+		foreach ($candidates as $row) {
+			$serviceId = (int)$row['service_id'];
+			if (isset($processedServiceIds[$serviceId])) {
+				continue;
+			}
+			$processedServiceIds[$serviceId] = true;
+			$result['services_checked']++;
+
+			// Load the full order_services row for the helper
+			$service = $this->db->where('id', $serviceId)->get('order_services')->row_array();
+			if (empty($service)) {
+				$result['errors'][] = "Service #{$serviceId}: not found during termination";
+				continue;
+			}
+
+			$reason = 'Invoice #' . $row['invoice_no'] . ' unpaid; suspended ' . $row['days_suspended'] . ' days';
+
+			$terminateResult = $this->Provisioning_model->terminateService($service, $reason);
+
+			if (!empty($terminateResult['success'])) {
+				$result['terminated']++;
+				log_message('info', "Service #{$serviceId} terminated ({$terminateResult['module']}) — invoice #{$row['invoice_no']}");
+
+				if ($this->sendServiceTerminatedEmail($row, $appSettings)) {
+					$result['emails_sent']++;
+				}
+			} else {
+				$result['failed']++;
+				$result['errors'][] = "Service #{$serviceId}: " . ($terminateResult['error'] ?? 'unknown error');
+			}
+		}
+
+		// Optional run log; table may not exist on older installs
+		try {
+			$this->Cronjob_model->logCronjobExecution(
+				'service_terminations',
+				empty($result['errors']) ? 'success' : 'partial',
+				json_encode($result),
+				$result['terminated']
+			);
+		} catch (Exception $e) {
+			// ignore
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Send the dunning_terminated email to a customer whose service was just
+	 * terminated. Same placeholder set as the suspension email.
+	 *
+	 * @param array $row         row from getServicesOverdueForTermination
+	 * @param array $appSettings app_settings row
+	 * @return bool
+	 */
+	private function sendServiceTerminatedEmail($row, $appSettings)
+	{
+		try {
+			$template = $this->Cronjob_model->getEmailTemplate('dunning_terminated');
+			if (empty($template)) {
+				log_message('error', 'Email template "dunning_terminated" not found');
+				return false;
+			}
+
+			if (empty($row['customer_email'])) {
+				return false;
+			}
+
+			$customerName = trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+			if (empty($customerName)) {
+				$customerName = $row['company_name_customer'] ?? 'Customer';
+			}
+
+			$invoiceUrl = base_url() . "billing/view_invoice/{$row['invoice_uuid']}";
+			$currencySymbol = !empty($row['currency_symbol']) ? $row['currency_symbol'] : ($row['currency_code'] ?? '');
+
+			$placeholders = array(
+				'{client_name}'   => $customerName,
+				'{invoice_no}'    => $row['invoice_no'],
+				'{amount_due}'    => number_format((float)$row['total'], 2),
+				'{currency}'      => $row['currency_code'] ?? '',
+				'{currency_symbol}' => $currencySymbol,
+				'{due_date}'      => date('F j, Y', strtotime($row['due_date'])),
+				'{days_overdue}'  => (int)$row['days_overdue'],
+				'{invoice_url}'   => $invoiceUrl,
+				'{service_name}'  => $row['product_name'] ?? 'Hosting Service',
+				'{hosting_domain}' => $row['hosting_domain'] ?? '',
+				'{site_name}'     => $appSettings['company_name'] ?? 'Our Company',
+				'{site_url}'      => base_url(),
+				'{company_name}'  => $appSettings['company_name'] ?? 'Our Company'
+			);
+
+			$subject = strtr($template['subject'], $placeholders);
+			$body = strtr($template['body'], $placeholders);
+
+			$fromEmail = $appSettings['smtp_user'] ?? $appSettings['site_email'] ?? 'noreply@example.com';
+			$fromName = $appSettings['company_name'] ?? 'Billing System';
+
+			$sent = sendHtmlEmail($row['customer_email'], $subject, $body, $fromEmail, $fromName);
+
+			if ($sent) {
+				log_message('info', "Termination email sent to {$row['customer_email']} for invoice #{$row['invoice_no']}");
+			} else {
+				log_message('error', "Failed to send termination email to {$row['customer_email']}");
+			}
+
+			return (bool)$sent;
+		} catch (Exception $e) {
+			log_message('error', 'sendServiceTerminatedEmail error: ' . $e->getMessage());
+			return false;
+		}
+	}
+
+	/**
 	 * Soft-suspend WHMAZ SaaS licenses whose invoice is overdue.
 	 *
 	 * Self-hosted: we can't touch the customer's server, so this only flips
@@ -826,6 +999,8 @@ class Cronjobs extends WHMAZ_Controller
 			'endpoints' => array(
 				'/cronjobs/run?key=YOUR_KEY' => 'Run all cronjobs',
 				'/cronjobs/generateRenewalInvoices?key=YOUR_KEY' => 'Generate renewal invoices only',
+				'/cronjobs/suspendOverdueServices?key=YOUR_KEY' => 'Suspend overdue hosting services only',
+				'/cronjobs/terminateOverdueServices?key=YOUR_KEY' => 'Terminate services suspended past the grace period',
 				'/cronjobs/testRenewal/{days}?key=YOUR_KEY' => 'Test: preview expiring items'
 			),
 			'cron_setup' => array(

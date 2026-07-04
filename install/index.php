@@ -60,6 +60,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $result = $installer->importSqlFile($file);
 
+                    // After the main schema+data import, strip the development
+                    // data that ships inside crm_db.sql so the buyer starts with
+                    // a clean database. Runs before step 5 creates the admin.
+                    if ($file === 'crm_db.sql') {
+                        $installer->truncateDataTables();
+                    }
+
                     if (empty($result['errors'])) {
                         echo json_encode([
                             'success' => true,
@@ -86,10 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit;
 
             case 'verify_license':
-                $result = $installer->verifyLicenseKey(
-                    $_POST['license_key'] ?? '',
-                    $_POST['license_server_url'] ?? ''
-                );
+                $result = $installer->verifyLicenseKey($_POST['license_key'] ?? '');
                 echo json_encode($result);
                 exit;
 
@@ -202,9 +206,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $adminEmail = $_POST['admin_email'] ?? '';
                 $adminPassword = $_POST['admin_password'] ?? '';
                 $adminPasswordConfirm = $_POST['admin_password_confirm'] ?? '';
+                $licenseKey = trim($_POST['license_key'] ?? '');
+                $nameservers = [
+                    1 => trim($_POST['DefaultNameServer1'] ?? ''),
+                    2 => trim($_POST['DefaultNameServer2'] ?? ''),
+                    3 => trim($_POST['DefaultNameServer3'] ?? ''),
+                    4 => trim($_POST['DefaultNameServer4'] ?? ''),
+                ];
 
                 // Validate
                 $errors = [];
+
+                // License key is mandatory for every install
+                if ($licenseKey === '') {
+                    $errors[] = 'License key is required';
+                }
+
+                // At least the first two nameservers are required
+                if ($nameservers[1] === '') {
+                    $errors[] = 'Nameserver 1 is required';
+                }
+                if ($nameservers[2] === '') {
+                    $errors[] = 'Nameserver 2 is required';
+                }
 
                 if (empty($siteName)) {
                     $errors[] = 'Site name is required';
@@ -237,15 +261,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if (empty($errors)) {
                     try {
-                        // Create .env file (with software-license settings)
-                        $installer->createEnvFile([
-                            'is_master'          => !empty($_POST['is_license_master']),
-                            'license_key'        => $_POST['license_key'] ?? '',
-                            'license_server_url' => $_POST['license_server_url'] ?? '',
-                        ]);
+                        // Create .env file. IS_LICENSE_MASTER + LICENSE_SERVER_URL
+                        // are fixed by the installer; only the buyer's key varies.
+                        $installer->createEnvFile(['license_key' => $licenseKey]);
 
                         // Update site settings
                         $installer->updateSiteSettings($siteName, $siteUrl);
+
+                        // Store license key in app_settings (license_auth + hash).
+                        // The same key is written to .env by createEnvFile above.
+                        $installer->storeLicenseInSettings($licenseKey);
+
+                        // Store default nameservers in sys_cnf (group DNS)
+                        $installer->updateNameservers($nameservers);
 
                         // Update admin credentials
                         $installer->updateAdminCredentials($adminEmail, $adminPassword, $adminFirstName, $adminLastName);

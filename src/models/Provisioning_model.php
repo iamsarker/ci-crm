@@ -914,6 +914,66 @@ class Provisioning_model extends CI_Model
     }
 
     /**
+     * Public: terminate a hosting account and, on success, flip local status to
+     * Terminated (4). Mirrors suspendService(): deletes the remote account via the
+     * appropriate module helper, then records termination_date + reason locally.
+     * On API failure the local state is NOT changed so the next cron run retries.
+     *
+     * @param array  $service order_services row (needs id, product_service_id, cp_username/hosting_domain)
+     * @param string $reason  stored in suspension_reason
+     * @return array {success: bool, action: 'terminate', module: string, error: string|null}
+     */
+    function terminateService($service, $reason = 'Terminated for non-payment')
+    {
+        log_message('info', 'Provisioning: Terminating service #' . $service['id'] . ' — ' . $reason);
+
+        $serverInfo = $this->getServerInfoForService($service['product_service_id']);
+        if (empty($serverInfo) || empty($serverInfo['hostname'])) {
+            return array('success' => false, 'action' => 'terminate', 'error' => 'Server not configured');
+        }
+
+        $moduleName = $this->getServerModuleName($serverInfo);
+
+        if ($moduleName === 'cpanel') {
+            if (empty($service['cp_username'])) {
+                return array('success' => false, 'action' => 'terminate', 'module' => $moduleName, 'error' => 'No cPanel username');
+            }
+            $result = whm_terminate_account($serverInfo, $service['cp_username']);
+        } elseif ($moduleName === 'plesk') {
+            if (empty($service['hosting_domain'])) {
+                return array('success' => false, 'action' => 'terminate', 'module' => $moduleName, 'error' => 'No hosting domain for Plesk');
+            }
+            $result = plesk_terminate_account($serverInfo, $service['hosting_domain']);
+        } elseif ($moduleName === 'directadmin') {
+            if (empty($service['cp_username'])) {
+                return array('success' => false, 'action' => 'terminate', 'module' => $moduleName, 'error' => 'No DirectAdmin username');
+            }
+            $result = da_terminate_account($serverInfo, $service['cp_username']);
+        } else {
+            // No-module services have no remote account — flip local state only
+            $this->db->where('id', $service['id'])->update('order_services', array(
+                'status' => 4,
+                'termination_date' => date('Y-m-d'),
+                'suspension_reason' => $reason
+            ));
+            return array('success' => true, 'action' => 'terminate', 'module' => 'none', 'error' => null);
+        }
+
+        if (!empty($result['success'])) {
+            $this->db->where('id', $service['id'])->update('order_services', array(
+                'status' => 4,
+                'termination_date' => date('Y-m-d'),
+                'suspension_reason' => $reason
+            ));
+            log_message('info', 'Service #' . $service['id'] . ' terminated via ' . $moduleName);
+            return array('success' => true, 'action' => 'terminate', 'module' => $moduleName, 'error' => null);
+        }
+
+        log_message('error', 'Terminate failed for service #' . $service['id'] . ' via ' . $moduleName . ': ' . ($result['error'] ?? 'unknown'));
+        return array('success' => false, 'action' => 'terminate', 'module' => $moduleName, 'error' => $result['error'] ?? 'unknown');
+    }
+
+    /**
      * Public: unsuspend a hosting account and, on success, restore local
      * Active status. Mirrors suspendService() so callers outside the renewal
      * path (e.g. the third-party API) can lift a suspension directly.

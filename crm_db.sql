@@ -147,7 +147,7 @@ CREATE TABLE `admin_users` (
 --
 
 INSERT INTO `admin_users` (`id`, `admin_role_id`, `first_name`, `last_name`, `username`, `password`, `email`, `mobile`, `phone`, `designation`, `signature`, `profile_pic`, `support_depts`, `pass_reset_key`, `pass_reset_data`, `pass_reset_expiry`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 1, 'WHM', 'Admin', 'whmaz', '$2y$10$HjX8Hz.af07jH5ACIp4aX.i7umbHLgoPkYXvlK.FFNzh30oaXmYVa', 'admin@whmaz.com', '+94788888888', '+94788888888', NULL, NULL, NULL, '1,2', NULL, NULL, NULL, 1, NULL, NULL, '2026-03-07 06:24:41', NULL);
+(1, 1, 'Admin', 'User', 'admin', '$2y$12$rdf4.Xl6CAEO53LX2395OenB.XWGxmzhjCS3B1Y5CI9HTvyjXJKtC', 'admin@example.com', NULL, NULL, NULL, NULL, NULL, '1,2', NULL, NULL, NULL, 1, NULL, NULL, '2026-03-07 06:24:41', NULL);
 
 -- --------------------------------------------------------
 
@@ -260,7 +260,7 @@ CREATE TABLE `app_settings` (
 --
 
 INSERT INTO `app_settings` (`id`, `site_name`, `site_desc`, `admin_url`, `favicon`, `logo`, `bin_tax`, `company_name`, `company_address`, `zip_code`, `city`, `state`, `country`, `license_auth`, `license_hash`, `email`, `fax`, `phone`, `smtp_host`, `smtp_port`, `smtp_username`, `smtp_authkey`, `captcha_site_key`, `captcha_secret_key`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'WHMAZ', 'Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System', 'https://demo.whmaz.com/whmazadmin/authenticate/login', 'favicon_ea001f05de00bfe79ffb1864114d868e.ico', 'logo_c741480362e311d793820fd49d7b6e33.png', '', 'WHMAZ', 'Colombo', '98765', '', '', '', NULL, NULL, 'support@whmaz.com', '2345', '12345', 'mail.whmaz.com', '587', 'support@whmaz.com', 'q=VP[k2BUPhS', '6Lej8lUsAAAAAASMAoMFwiMIvx1_Qkh8pKVLJ6Qo', '6Lej8lUsAAAAAEVPLbN0Yyqyb8_Zoiqtlu0s9bOw', NULL, NULL, '2026-03-17 14:57:33', 1);
+(1, 'WHMAZ', 'Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System', '', 'favicon_ea001f05de00bfe79ffb1864114d868e.ico', 'logo_c741480362e311d793820fd49d7b6e33.png', '', 'WHMAZ', 'Your Company Address', '00000', '', '', '', NULL, NULL, 'admin@example.com', '', '', NULL, '587', NULL, NULL, '', '', NULL, NULL, '2026-03-17 14:57:33', 1);
 
 -- --------------------------------------------------------
 
@@ -933,8 +933,8 @@ CREATE TABLE `dom_registers` (
 --
 
 INSERT INTO `dom_registers` (`id`, `name`, `platform`, `api_base_url`, `domain_check_api`, `suggestion_api`, `domain_reg_api`, `ns_update_api`, `contact_details_api`, `contact_update_api`, `whitelisted_ip`, `auth_userid`, `auth_apikey`, `is_selected`, `def_ns1`, `def_ns2`, `def_ns3`, `def_ns4`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'Resell.Biz', 'STARGATE', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', '103.159.72.22', '123456', 'IPE8me54tgfhgfhfhfd55p5b3lxfvabPOA', 0, 'ns1.whmaz.com', 'ns2.whmaz.com', '', '', 1, NULL, NULL, '2026-03-07 07:44:10', 1),
-(2, 'Namecheap', 'NAMECHEAP', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', '67.222.24.126', 'tongbaritest', '993d950d882041ed90eea8158abec1d3', 1, 'ns1.whmaz.com', 'ns2.whmaz.com', '', '', 1, NULL, NULL, '2026-03-07 08:36:20', 1);
+(1, 'Resell.Biz', 'STARGATE', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', 'https://test.httpapi.com', '', '', '', 0, '', '', '', '', 1, NULL, NULL, '2026-03-07 07:44:10', 1),
+(2, 'Namecheap', 'NAMECHEAP', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', 'https://api.sandbox.namecheap.com/xml.response', '', '', '', 1, '', '', '', '', 1, NULL, NULL, '2026-03-07 08:36:20', 1);
 
 -- --------------------------------------------------------
 
@@ -1879,12 +1879,12 @@ CREATE TABLE `payment_gateway` (
 
 INSERT INTO `payment_gateway` (`id`, `name`, `gateway_code`, `gateway_type`, `icon_fa_unicode`, `pay_type`, `public_key`, `secret_key`, `webhook_secret`, `is_test_mode`, `test_public_key`, `test_secret_key`, `test_webhook_secret`, `extra_config`, `bank_name`, `account_name`, `account_number`, `routing_number`, `swift_code`, `iban`, `supported_currencies`, `min_amount`, `max_amount`, `fee_type`, `fee_fixed`, `fee_percent`, `fee_bearer`, `logo`, `display_name`, `description`, `sort_order`, `webhook_url`, `merchant_id`, `merchant_pwd`, `instructions`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
 (1, 'Offline Payment', 'manual', 'manual', 'f3d1', 'OFFLINE', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD', 0.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Manual Payment', 'Pay via bank transfer or other offline methods. Your order will be processed after payment confirmation.', 0, NULL, NULL, NULL, NULL, 0, NULL, NULL, '2026-02-21 12:22:53', NULL),
-(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', 1, 'pk_test_51T0Z7vQ1EoHKEhCU5c6hSlRWTjpIpTixMXacQQJNmRrqHbTFiJJO1xsL9giWAVMR8AbRvSGfbcIQefH7vU41Rhb100X4sfY7No', 'sk_test_51T0Z7vQ1EoHKEhCUhqlSXZxSmBsaUMwoPQLz9AGSXc1hGqolLr9HagHl884JsFKMEDQe7cTfxRL80qDpdBXiwZ5R00LIamUXtn', 'whsec_ntwZ3yCtPncUyVPIRKuEfqqXj95R4dqX', NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Stripe Card Payment', 'Pay securely with your credit or debit card via Stripe.', 1, 'http://localhost/ci-crm/webhook/stripe', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-03-18 19:44:43', 1),
+(2, 'Stripe', 'stripe', 'online_card', NULL, 'ONLINE', '', '', '', 1, '', '', '', NULL, '', '', '', '', '', '', 'USD,EUR,GBP,CAD,AUD,INR,SGD,JPY', 1.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'Stripe Card Payment', 'Pay securely with your credit or debit card via Stripe.', 1, '', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-03-18 19:44:43', 1),
 (3, 'PayPal', 'paypal', 'online_wallet', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'USD,EUR,GBP,CAD,AUD,JPY,CHF,HKD,SGD,SEK,DKK,PLN,NOK,CZK,ILS,MXN,BRL,PHP,TWD,THB,MYR', 0.00, 0.00, 'both', 0.30, 2.90, 'merchant', NULL, 'PayPal', 'Pay securely using your PayPal account or card.', 2, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (4, 'Razorpay', 'razorpay', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'INR', 0.00, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'Razorpay', 'Pay with UPI, Cards, Netbanking, or Wallets via Razorpay.', 3, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (5, 'Paystack', 'paystack', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NGN,GHS,ZAR,KES', 0.00, 0.00, 'both', 100.00, 1.50, 'merchant', NULL, 'Paystack', 'Pay with card or bank transfer via Paystack.', 4, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
-(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', 'http://localhost/webhook/sslcommerz', 1, 'titum5d71b6d6edd13', 'titum5d71b6d6edd13@ssl', NULL, '{\r\n    \"store_id\": \"titum5d71b6d6edd13\",\r\n    \"store_password\": \"titum5d71b6d6edd13@ssl\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD,BDT', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, 'http://localhost/webhook/sslcommerz', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-07-03 15:03:13', 1),
-(7, 'Bank Transfer', 'bank_transfer', 'bank_transfer', NULL, 'OFFLINE', '', '', '', 0, '', '', NULL, NULL, 'TEST Bank PLC', 'WHMAZ', '1234567890123', '1234567', '12345678', '1234567', 'USD,EUR,GBP,BDT,INR', 0.10, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Bank Transfer', 'Transfer funds directly to our bank account. Order will be processed after payment confirmation.', 10, 'http://localhost/webhook/bank_transfer', '', NULL, 'Please share the TXN number after payment', 1, '2026-02-13 10:28:21', NULL, '2026-02-14 08:56:29', 1);
+(6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', '', 1, '', '', NULL, '{\r\n    \"store_id\": \"\",\r\n    \"store_password\": \"\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD,BDT', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, '', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-07-03 15:03:13', 1),
+(7, 'Bank Transfer', 'bank_transfer', 'bank_transfer', NULL, 'OFFLINE', '', '', '', 0, '', '', NULL, NULL, '', '', '', '', '', '', 'USD,EUR,GBP,BDT,INR', 0.10, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Bank Transfer', 'Transfer funds directly to our bank account. Order will be processed after payment confirmation.', 10, '', '', NULL, 'Please share the TXN number after payment', 1, '2026-02-13 10:28:21', NULL, '2026-02-14 08:56:29', 1);
 
 -- --------------------------------------------------------
 
@@ -2546,11 +2546,11 @@ CREATE TABLE `sys_cnf` (
 --
 
 INSERT INTO `sys_cnf` (`id`, `cnf_key`, `cnf_val`, `cnf_group`, `created_on`, `updated_on`) VALUES
-(1, 'DefaultNameServer1', 'ns1.whmaz.com', 'DNS', '2022-10-09 16:43:09', '2026-03-07 00:16:00'),
-(2, 'DefaultNameServer2', 'ns2.whmaz.com', 'DNS', '2022-10-09 16:43:09', '2026-03-07 00:16:10'),
+(1, 'DefaultNameServer1', NULL, 'DNS', '2022-10-09 16:43:09', '2026-03-07 00:16:00'),
+(2, 'DefaultNameServer2', NULL, 'DNS', '2022-10-09 16:43:09', '2026-03-07 00:16:10'),
 (3, 'DefaultNameServer3', NULL, 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
 (4, 'DefaultNameServer4', NULL, 'DNS', '2022-10-09 16:43:09', '2022-10-09 16:43:09'),
-(5, 'cron_secret_key', 'a7f3b2c9d8e4f1a0b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8', 'SYSTEM', '2026-02-11 23:12:43', '2026-02-11 23:12:43'),
+(5, 'cron_secret_key', '', 'SYSTEM', '2026-02-11 23:12:43', '2026-02-11 23:12:43'),
 (6, 'invoice_prefix', 'INV-', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (7, 'invoice_starting_number', '1000', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (8, 'invoice_due_days', '7', 'BILLING', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
@@ -2582,7 +2582,7 @@ INSERT INTO `sys_cnf` (`id`, `cnf_key`, `cnf_val`, `cnf_group`, `created_on`, `u
 (34, 'feature_affiliate_system', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (35, 'feature_two_factor_auth', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (36, 'feature_social_login', '0', 'FEATURES', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
-(37, 'admin_notification_email', 'support@whmaz.com', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-03-07 00:16:33'),
+(37, 'admin_notification_email', 'admin@example.com', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-03-07 00:16:33'),
 (38, 'notify_admin_new_order', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (39, 'notify_admin_new_ticket', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),
 (40, 'notify_admin_new_customer', '1', 'NOTIFICATIONS', '2026-02-21 00:05:42', '2026-02-21 00:05:42'),

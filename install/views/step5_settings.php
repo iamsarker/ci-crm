@@ -93,33 +93,18 @@ $detectedUrl = $installer->detectSiteUrl();
     <div class="alert alert-warning">
         <i class="fas fa-info-circle"></i>
         <div>
-            Enter the license key you received when you purchased WHMAZ. The
-            install verifies it against the vendor and unlocks your tier's
-            features. You can proceed without it, but tier features stay locked
-            until a valid key is saved.
+            Enter the license key you received when you purchased WHMAZ. It is
+            verified against the vendor at <strong>whmaz.com</strong> and is
+            required on every admin login — a valid key is mandatory to finish
+            installation.
         </div>
-    </div>
-
-    <div class="form-group">
-        <label class="checkbox-inline">
-            <input type="checkbox" id="is_license_master" name="is_license_master" value="1">
-            This is the master / vendor server (skip license key)
-        </label>
-        <p class="form-text">Only tick this on the CRM that <strong>sells</strong> licenses. Client installs leave it unchecked.</p>
     </div>
 
     <div id="licenseFields">
         <div class="form-group">
-            <label for="license_key">License Key</label>
+            <label for="license_key">License Key <span style="color:#c0392b;">*</span></label>
             <input type="text" class="form-control" id="license_key" name="license_key"
-                   placeholder="WHMAZ-XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off">
-        </div>
-
-        <div class="form-group">
-            <label for="license_server_url">License Server URL</label>
-            <input type="url" class="form-control" id="license_server_url" name="license_server_url"
-                   placeholder="https://vendor-crm.example.com">
-            <p class="form-text">The vendor CRM that issued your key (include http:// or https://).</p>
+                   placeholder="WHMAZ-XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off" required>
         </div>
 
         <div class="form-group">
@@ -128,6 +113,44 @@ $detectedUrl = $installer->detectSiteUrl();
             </button>
             <span id="licenseResult" style="margin-left: 10px;"></span>
         </div>
+    </div>
+
+    <h4 class="section-title"><i class="fas fa-sitemap"></i> Default Nameservers</h4>
+
+    <div class="alert alert-warning">
+        <i class="fas fa-info-circle"></i>
+        <div>
+            Nameservers assigned to domains registered through your CRM. The
+            first two are required; the last two are optional.
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="DefaultNameServer1">Nameserver 1 <span style="color:#c0392b;">*</span></label>
+        <input type="text" class="form-control" id="DefaultNameServer1" name="DefaultNameServer1"
+               placeholder="ns1.yourdomain.com" autocomplete="off"
+               value="<?= htmlspecialchars($_POST['DefaultNameServer1'] ?? '') ?>" required>
+    </div>
+
+    <div class="form-group">
+        <label for="DefaultNameServer2">Nameserver 2 <span style="color:#c0392b;">*</span></label>
+        <input type="text" class="form-control" id="DefaultNameServer2" name="DefaultNameServer2"
+               placeholder="ns2.yourdomain.com" autocomplete="off"
+               value="<?= htmlspecialchars($_POST['DefaultNameServer2'] ?? '') ?>" required>
+    </div>
+
+    <div class="form-group">
+        <label for="DefaultNameServer3">Nameserver 3</label>
+        <input type="text" class="form-control" id="DefaultNameServer3" name="DefaultNameServer3"
+               placeholder="ns3.yourdomain.com (optional)" autocomplete="off"
+               value="<?= htmlspecialchars($_POST['DefaultNameServer3'] ?? '') ?>">
+    </div>
+
+    <div class="form-group">
+        <label for="DefaultNameServer4">Nameserver 4</label>
+        <input type="text" class="form-control" id="DefaultNameServer4" name="DefaultNameServer4"
+               placeholder="ns4.yourdomain.com (optional)" autocomplete="off"
+               value="<?= htmlspecialchars($_POST['DefaultNameServer4'] ?? '') ?>">
     </div>
 
     <div class="btn-group">
@@ -216,21 +239,14 @@ document.getElementById('settingsForm').addEventListener('submit', function(e) {
 });
 
 // ─── Software license ─────────────────────────────────────────────────────
-const masterCheckbox = document.getElementById('is_license_master');
-const licenseFields = document.getElementById('licenseFields');
 const verifyBtn = document.getElementById('verifyLicenseBtn');
 const licenseResult = document.getElementById('licenseResult');
 
-masterCheckbox.addEventListener('change', function() {
-    licenseFields.style.display = this.checked ? 'none' : 'block';
-});
-
 verifyBtn.addEventListener('click', function() {
     const key = document.getElementById('license_key').value.trim();
-    const url = document.getElementById('license_server_url').value.trim();
 
-    if (!key || !url) {
-        licenseResult.innerHTML = '<span style="color:#c0392b;">Enter both the license key and server URL.</span>';
+    if (!key) {
+        licenseResult.innerHTML = '<span style="color:#c0392b;">Enter your license key.</span>';
         return;
     }
 
@@ -241,7 +257,6 @@ verifyBtn.addEventListener('click', function() {
     body.append('action', 'verify_license');
     body.append('csrf_token', '<?= $csrfToken ?>');
     body.append('license_key', key);
-    body.append('license_server_url', url);
 
     fetch('index.php', { method: 'POST', body: body })
         .then(r => r.json())

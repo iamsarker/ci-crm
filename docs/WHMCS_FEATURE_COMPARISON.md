@@ -105,6 +105,22 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [x] XSS protection
 - [x] CSRF protection
 
+#### 11. Software Selling & Self-Hosted Licensing (beyond WHMCS core)
+- [x] Software product catalog (per-currency × per-billing-cycle pricing, feature matrix)
+- [x] Cart-based purchase of software licenses (`item_type=3`) → license key issuance
+- [x] Software release management + per-product downloads
+- [x] License renewal + overdue soft-suspension via cron
+- [x] Family-group tier upgrades/downgrades with prorated invoices
+- [x] Anti-piracy: phone-home license verification + admin-login license gate
+- [x] Download binding to install domain + server IP (bind-once domain, resettable IP)
+- [x] Entitlement gating from license tier (`entitlement_can()` / `entitlement_value()`)
+
+#### 12. Reseller Management & Third-Party REST API (beyond WHMCS core)
+- [x] Reseller accounts (company hierarchy via `parent_company_id`, per-reseller discounts)
+- [x] Reseller sub-customer scoping across all API resources
+- [x] API keys with scopes, IP allowlist, rate limits, expiry (admin + client self-service)
+- [x] Full `/api/v1` REST surface (customers, products, domains, hosting, orders, invoices, licenses, cart, checkout)
+
 ---
 
 ## 🔄 Partially Implemented / Needs Enhancement
@@ -112,49 +128,56 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 ### 1. Service Provisioning
 - [x] Module framework exists
 - [x] cPanel/WHM integration (package listing via WHM API, dynamic package dropdown in service product management)
-- [ ] cPanel/WHM automated account creation
-- [ ] cPanel/WHM automated suspension/termination
-- [ ] Plesk integration
-- [ ] DirectAdmin integration
-- [ ] Custom server module API
-- [ ] Automated account creation (generic)
-- [ ] Automated suspension/termination (generic)
-- [ ] Service upgrade/downgrade automation
+- [x] cPanel/WHM automated account creation (`whm_create_account` on invoice payment)
+- [x] cPanel/WHM automated suspension/termination (cron: `suspendOverdueServices` / `terminateOverdueServices`)
+- [x] Plesk integration (create/suspend/unsuspend/terminate via XML RPC)
+- [x] DirectAdmin integration (create/suspend/unsuspend/terminate via REST)
+- [x] "No Module" mode (local-only activation, no remote API call)
+- [ ] Fully generic/custom server module API (SDK for arbitrary panels)
+- [x] Automated account creation (generic dispatch by server module)
+- [x] Automated suspension/termination (generic, grace-period dunning ladder via `sys_cnf`)
+- [x] Service upgrade/downgrade (admin package/server change; license tier upgrade with proration)
 
 ### 2. Payment Gateways
-- [x] Gateway framework exists
-- [ ] PayPal integration
-- [ ] Stripe integration
+- [x] Gateway framework exists (admin CRUD, test/live keys, webhook secrets)
+- [x] PayPal integration (`Paypal.php` — init/capture/cancel)
+- [x] Stripe integration (`Stripe.php` — Payment Intents + webhook verification)
+- [x] SSLCommerz integration (`Sslcommerz.php` — with token-based session restoration)
+- [x] Bank transfer handling (manual gateway)
+- [ ] Razorpay (seed row present, not yet wired)
 - [ ] Authorize.net integration
 - [ ] 2Checkout integration
-- [ ] Bank transfer handling
 - [ ] Cryptocurrency payment support
 
 ### 3. Domain Registrar Integration
-- [x] Registrar framework exists
-- [ ] Namecheap integration
+- [x] Registrar framework exists (`dom_registers`, default-registrar system)
+- [x] ResellerClub integration (register/transfer/renew/expiry)
+- [x] Resell.biz integration (shares ResellerClub API)
+- [x] Namecheap integration (XML API — register/transfer/renew/expiry)
+- [x] Domain transfer handling (EPP/auth code flow)
+- [x] Domain contact management (per-registrar contact creation)
+- [x] EPP code management
 - [ ] GoDaddy integration
 - [ ] Enom integration
-- [ ] ResellerClub integration
-- [ ] Domain transfer handling
-- [ ] WHOIS lookup
-- [ ] Domain contact management
-- [ ] EPP code management
+- [ ] Standalone WHOIS lookup UI
 
 ### 4. Email Templates
-- [x] Email sending functionality
+- [x] Email sending functionality (SMTP via `sendHtmlEmail()`)
 - [x] Email template management UI (CRUD with Quill rich text editor, categories, server-side DataTable)
 - [x] Template variables system (placeholders: {client_name}, {invoice_no}, {amount_due}, {due_date}, {days_overdue}, etc.)
+- [x] Dunning rules management (configurable steps in General Settings, mapped to templates)
+- [ ] Automated dunning/payment-reminder sending cron (rules are defined but not yet dispatched; suspension/termination cron is separate)
 - [ ] Multi-language email templates
 - [ ] Email queue system
 - [ ] Email logs
 
 ### 5. Reporting
 - [x] Basic reporting module
+- [x] Provisioning logs (admin dashboard with stats, filters, retry)
+- [x] Transaction / webhook logs
 - [ ] Income reports
 - [ ] Product/service reports
 - [ ] Client reports
-- [ ] Transaction reports
 - [ ] Tax reports
 - [ ] Custom report builder
 - [ ] Report scheduling
@@ -178,13 +201,13 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [ ] Mass payment processing
 
 #### 2. Client Portal Enhancements
-- [ ] Service management (suspend, cancel)
+- [x] Invoice payment portal (billing/pay with Stripe/PayPal/SSLCommerz/bank)
+- [x] Software license self-management ("My Software": download, tier upgrade, install binding)
+- [x] Reseller self-service API key management (clientarea/apikeys)
+- [ ] Client-initiated service management (suspend, cancel)
 - [ ] Password reset for services
 - [ ] Service upgrade requests
-- [ ] Billing information management
-- [ ] Credit card management
-- [ ] Payment method selection
-- [ ] Invoice payment portal
+- [ ] Credit card / payment method vault
 - [ ] Service renewal reminders
 
 #### 3. Communication System
@@ -216,21 +239,19 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [ ] Domain locking/unlocking
 
 #### 6. Security Enhancements
-- [ ] Two-factor authentication (2FA)
-- [ ] IP whitelist/blacklist
+- [x] API authentication tokens (key + secret, per-key scopes, IP allowlist, rate limits)
+- [x] IP whitelist (per API key, CIDR-aware; admin-login license IP gate)
+- [ ] Two-factor authentication (2FA) — `feature_two_factor_auth` flag exists, no implementation yet
 - [ ] Fraud detection
-- [ ] Security logs
-- [ ] Activity logs (detailed)
-- [ ] API authentication tokens
 - [ ] OAuth integration
 
-#### 7. API System
-- [ ] RESTful API
-- [ ] API documentation
-- [ ] API authentication
-- [ ] Webhook system
-- [ ] Third-party integrations
-- [ ] Developer portal
+#### 7. API System — ✅ IMPLEMENTED
+- [x] RESTful API (`/api/v1/...`, reseller-scoped resource controllers)
+- [x] API documentation (`docs/RESELLER_API.md` + Postman collection)
+- [x] API authentication (`X-Api-Key` / `X-Api-Secret`, `Apikey_model::authenticate()`)
+- [x] Webhook system (Stripe + SSLCommerz IPN, logged, duplicate-detected)
+- [x] Rate limiting (5 req/sec hard cap + optional per-key per-minute)
+- [ ] Public (non-reseller) developer portal
 
 ### Medium Priority
 
@@ -245,13 +266,14 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [ ] Bulk operations
 
 #### 9. Service Management
-- [ ] Service suspension automation
-- [ ] Service termination automation
-- [ ] Service upgrade/downgrade
-- [ ] Service transfer between clients
-- [ ] Service cancellation requests
+- [x] Service suspension automation (cron, grace-period dunning ladder)
+- [x] Service termination automation (cron, grace-period dunning ladder)
+- [x] Service renewal automation (renewal invoice cron; combined domain+service invoices)
+- [x] Service upgrade/downgrade (admin package/server change; license tier upgrade with proration)
+- [x] Admin service cancellation (immediate or end-of-period, optional account deletion)
+- [ ] Client-initiated cancellation requests
 - [ ] Cancellation feedback
-- [ ] Service renewal automation
+- [ ] Service transfer between clients
 
 #### 10. Customization
 - [ ] Custom fields system
@@ -316,28 +338,31 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - ❌ Client merge
 - ❌ Client import/export
 
-**Billing & Invoicing:** ✅ 70% Complete
+**Billing & Invoicing:** ✅ 75% Complete
 - ✅ Invoice generation
 - ✅ Payment tracking
 - ✅ Multiple currencies
-- ❌ Recurring billing automation
+- ✅ Recurring/renewal billing automation (invoice generated before expiry via cron)
+- 🔄 Pro-rata billing (implemented for license tier upgrades; not general)
 - ❌ Credit system
-- ❌ Late fees
-- ❌ Pro-rata billing
+- ❌ Late fees automation
 
-**Service Provisioning:** 🔄 40% Complete
+**Service Provisioning:** ✅ 85% Complete
 - ✅ Module framework
-- 🔄 cPanel/WHM integration (package listing & product management done; account creation pending)
-- ❌ Plesk integration
-- ❌ Automated provisioning
-- ❌ Automated suspension
+- ✅ cPanel/WHM integration (create/suspend/unsuspend/terminate + package management)
+- ✅ Plesk integration
+- ✅ DirectAdmin integration
+- ✅ Automated provisioning on payment
+- ✅ Automated suspension & termination (cron dunning ladder)
+- ❌ Generic/custom server module SDK
 
-**Domain Management:** ✅ 60% Complete
+**Domain Management:** ✅ 80% Complete
 - ✅ Domain registration system
 - ✅ Domain pricing
-- ❌ Registrar integrations
-- ❌ WHOIS management
-- ❌ DNS management
+- ✅ Registrar integrations (ResellerClub, Resell.biz, Namecheap)
+- ✅ Transfer + renewal + EPP handling
+- ❌ WHOIS management UI
+- ❌ DNS management UI
 
 **Support System:** ✅ 85% Complete
 - ✅ Ticket system
@@ -346,24 +371,34 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - ❌ Email piping
 - ❌ Ticket satisfaction ratings
 
-**Automation:** 🔄 40% Complete
+**Automation:** ✅ 70% Complete
 - ✅ Cron job system
-- ❌ Recurring billing
-- ❌ Service provisioning automation
-- ❌ Suspension automation
-- ❌ Payment reminders
+- ✅ Recurring/renewal invoicing
+- ✅ Service provisioning automation
+- ✅ Suspension & termination automation (grace-period dunning ladder)
+- ✅ License renewal + suspension automation
+- ❌ Payment reminder / dunning-email sending
 
-**Reporting:** 🔄 35% Complete
+**Reporting:** 🔄 40% Complete
 - ✅ Basic reports
+- ✅ Provisioning / transaction / webhook logs
 - ❌ Advanced financial reports
 - ❌ Custom report builder
 - ❌ Report scheduling
 
-**Payment Gateways:** 🔄 20% Complete
+**Payment Gateways:** ✅ 55% Complete
 - ✅ Gateway framework
-- ❌ PayPal integration
-- ❌ Stripe integration
-- ❌ Multiple gateway implementations
+- ✅ Stripe integration
+- ✅ PayPal integration
+- ✅ SSLCommerz integration
+- ✅ Bank transfer (manual)
+- ❌ Razorpay / Authorize.net / crypto
+
+**API & Extensibility:** ✅ 70% Complete
+- ✅ RESTful `/api/v1` (key+secret auth, scopes, rate limiting)
+- ✅ Webhook system
+- ✅ API documentation + Postman collection
+- ❌ Public developer portal / plugin marketplace
 
 ---
 
@@ -380,40 +415,41 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 **Impact:** Essential for automated operations
 
-### Phase 2: Service Provisioning (Priority: HIGH)
+### Phase 2: Service Provisioning (Priority: HIGH) — ✅ COMPLETED
 **Timeline:** 3-4 months
 - [x] cPanel/WHM package listing (WHM API integration via `cpanel_helper.php`)
 - [x] Service product management with dynamic cPanel package selection
-- [ ] cPanel/WHM automated account creation
-- [ ] cPanel/WHM automated suspension/unsuspension
-- [ ] Plesk integration module
-- [ ] Automated account creation
-- [ ] Automated suspension/unsuspension
-- [ ] Service upgrade/downgrade automation
-- [ ] Custom provisioning module API
+- [x] cPanel/WHM automated account creation
+- [x] cPanel/WHM automated suspension/unsuspension/termination
+- [x] Plesk integration module
+- [x] DirectAdmin integration module
+- [x] Automated account creation (generic dispatch)
+- [x] Automated suspension/termination (grace-period dunning ladder)
+- [x] Service upgrade/downgrade (admin package/server change; license proration)
+- [ ] Fully generic/custom provisioning module SDK
 
 **Impact:** Core automation feature
 
-### Phase 3: Payment Gateway Integration (Priority: HIGH)
+### Phase 3: Payment Gateway Integration (Priority: HIGH) — ✅ MOSTLY COMPLETE
 **Timeline:** 1-2 months
-- [ ] PayPal Standard integration
-- [ ] PayPal Express Checkout
-- [ ] Stripe integration
-- [ ] Authorize.net integration
-- [ ] Bank transfer handling
-- [ ] Payment gateway testing framework
+- [x] PayPal integration (`Paypal.php`)
+- [x] Stripe integration (`Stripe.php`, Payment Intents + webhooks)
+- [x] SSLCommerz integration (`Sslcommerz.php`, token session restore)
+- [x] Bank transfer handling
+- [ ] Razorpay (seed present, unwired) / Authorize.net
+- [ ] Cryptocurrency payment support
 
 **Impact:** Revenue collection capability
 
-### Phase 4: Domain Registrar Integration (Priority: HIGH)
+### Phase 4: Domain Registrar Integration (Priority: HIGH) — ✅ MOSTLY COMPLETE
 **Timeline:** 2-3 months
-- [ ] Namecheap API integration
+- [x] Namecheap API integration
+- [x] ResellerClub / Resell.biz API integration
+- [x] Domain transfer handling (EPP)
+- [x] Domain renewal + registrar expiry sync (double-renewal guard)
 - [ ] GoDaddy API integration
 - [ ] Enom integration
-- [ ] Domain synchronization
-- [ ] WHOIS management
-- [ ] DNS management interface
-- [ ] Domain transfer handling
+- [ ] WHOIS / DNS management interface
 
 **Impact:** Complete domain management
 
@@ -473,14 +509,13 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 **Impact:** Business insights
 
-### Phase 10: API & Integrations (Priority: LOW)
+### Phase 10: API & Integrations (Priority: LOW) — ✅ CORE COMPLETE
 **Timeline:** 2-3 months
-- [ ] RESTful API development
-- [ ] API documentation
-- [ ] Webhook system
-- [ ] Third-party integration framework
-- [ ] Accounting software integration
-- [ ] CRM integration
+- [x] RESTful API development (`/api/v1`, reseller-scoped)
+- [x] API documentation (`docs/RESELLER_API.md` + Postman collection)
+- [x] Webhook system (payment gateways)
+- [x] Reseller management + API key self-service
+- [ ] Third-party integration framework (accounting/CRM)
 
 **Impact:** Extensibility
 
@@ -491,23 +526,26 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 | Feature Category | WHMCS | CI-CRM (Current) | CI-CRM (Planned) |
 |------------------|-------|------------------|------------------|
 | **Client Management** | ✅ Full | ✅ Full | ✅ Enhanced |
-| **Billing System** | ✅ Full | 🔄 Partial | ✅ Full |
-| **Recurring Billing** | ✅ Yes | ❌ No | 🔄 Planned |
-| **Service Provisioning** | ✅ Full | 🔄 Framework | ✅ Full |
-| **Domain Management** | ✅ Full | 🔄 Partial | ✅ Full |
+| **Billing System** | ✅ Full | ✅ Full | ✅ Full |
+| **Recurring Billing** | ✅ Yes | ✅ Renewal-invoice cron | ✅ Full |
+| **Service Provisioning** | ✅ Full | ✅ cPanel/Plesk/DirectAdmin | ✅ Full |
+| **Domain Management** | ✅ Full | ✅ 3 registrars | ✅ Full |
 | **Support System** | ✅ Full | ✅ Full | ✅ Enhanced |
-| **Payment Gateways** | ✅ 50+ | 🔄 Framework | ✅ 10+ |
-| **Registrar APIs** | ✅ 25+ | 🔄 Framework | ✅ 5+ |
-| **Server Modules** | ✅ 100+ | 🔄 Framework | ✅ 5+ |
-| **Email Templates** | ✅ Full | 🔄 Partial (UI + variables done) | ✅ Full |
-| **Automation** | ✅ Full | 🔄 Partial | ✅ Full |
-| **Reports** | ✅ Full | 🔄 Basic | ✅ Full |
-| **API** | ✅ Yes | ❌ No | 🔄 Planned |
+| **Payment Gateways** | ✅ 50+ | ✅ 4 (Stripe/PayPal/SSLCommerz/Bank) | ✅ 10+ |
+| **Registrar APIs** | ✅ 25+ | ✅ 3 (ResellerClub/Resell.biz/Namecheap) | ✅ 5+ |
+| **Server Modules** | ✅ 100+ | ✅ 3 (cPanel/Plesk/DirectAdmin) + No-module | ✅ 5+ |
+| **Email Templates** | ✅ Full | ✅ UI + variables + dunning rules | ✅ Full |
+| **Automation** | ✅ Full | ✅ Renewal/suspend/terminate/license crons | ✅ Full |
+| **Reports** | ✅ Full | 🔄 Basic + operational logs | ✅ Full |
+| **API** | ✅ Yes | ✅ REST `/api/v1` (key+secret, scopes) | ✅ Enhanced |
+| **Software Licensing** | ❌ No | ✅ Catalog + self-hosted enforcement | ✅ Enhanced |
+| **Reseller/Sub-accounts** | ✅ Yes | ✅ Hierarchy + scoped API | ✅ Enhanced |
 | **Multi-Currency** | ✅ Yes | ✅ Yes | ✅ Yes |
 | **Multi-Language** | ✅ Yes | ❌ No | 🔄 Planned |
 | **Tax Management** | ✅ Full | 🔄 Basic | ✅ Full |
-| **Addons/Extras** | ✅ Yes | ❌ No | 🔄 Planned |
+| **Late Fees / Credit** | ✅ Yes | ❌ No | 🔄 Planned |
 | **Affiliate System** | ✅ Yes | ❌ No | 🔄 Planned |
+| **2FA** | ✅ Yes | ❌ Flag only | 🔄 Planned |
 | **Marketplace** | ✅ Yes | ❌ No | ❌ No plan |
 | **Mobile App** | ✅ Yes | ❌ No | ❌ No plan |
 
@@ -575,11 +613,12 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 ## Development Priorities
 
 ### Immediate (Next 3 Months)
-1. **Recurring Billing Automation** - Critical for business operations
-2. **Payment Gateway Integration** - At least PayPal and Stripe
-3. **Email Template System** - For automated communications
-4. **Service Provisioning** - cPanel/WHM integration
-5. **Payment Reminders** - Automated dunning system
+_Recurring billing, payment gateways, email templates, and cPanel/Plesk/DirectAdmin provisioning are now shipped. Remaining near-term gaps:_
+1. **Payment Reminders** - Dispatch the already-configured dunning rules by email (cron sender)
+2. **Late Fee Automation** - Wire the existing `late_fee_*` config keys into invoice generation
+3. **Credit System** - Turn reseller `credit_balance` into real applicable store credit
+4. **Tax Rules Engine** - Move beyond flat per-order tax fields
+5. **Two-Factor Authentication** - Implement behind the existing feature flag
 
 ### Short-term (3-6 Months)
 1. **Domain Registrar Integration** - At least 1-2 registrars
@@ -609,9 +648,9 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 ### Feature Parity Goals:
 - **80% WHMCS feature parity** in core functionality within 12 months
 - **100% billing automation** within 6 months
-- **At least 5 payment gateways** within 6 months
-- **At least 3 server provisioning modules** within 9 months
-- **At least 2 domain registrars** within 9 months
+- **At least 5 payment gateways** within 6 months — 🔄 4 live (Stripe, PayPal, SSLCommerz, Bank)
+- **At least 3 server provisioning modules** within 9 months — ✅ met (cPanel, Plesk, DirectAdmin)
+- **At least 2 domain registrars** within 9 months — ✅ met (ResellerClub, Resell.biz, Namecheap)
 
 ### Business Goals:
 - Production-ready for small hosting companies (< 500 clients) in 6 months
@@ -633,9 +672,10 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 - [ ] Plugin/addon marketplace (future)
 
 ### Documentation Needs:
-- [x] Installation guide
-- [x] Developer documentation
-- [ ] API documentation
+- [x] Installation guide (`docs/AUTO_INSTALLER.md`)
+- [x] Developer documentation (`docs/PROJECT_DOCUMENTATION.md`, `CLAUDE.md`)
+- [x] API documentation (`docs/RESELLER_API.md` + Postman collection)
+- [x] SaaS licensing guide (`docs/SAAS_LICENSING.md`)
 - [ ] Module development guide
 - [ ] Payment gateway development guide
 - [ ] Theme development guide
@@ -658,5 +698,5 @@ This CI-CRM project is being developed as a **WHMCS-like system** - an alternati
 
 **Project Vision:** Become the best open-source alternative to WHMCS for small to medium web hosting businesses.
 
-**Last Updated:** 2026-01-28
-**Version:** 1.2
+**Last Updated:** 2026-07-04
+**Version:** 2.0 (reconciled against shipped provisioning, gateways, registrars, REST API, SaaS licensing, and reseller features)
