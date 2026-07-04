@@ -1506,9 +1506,11 @@ class Pay extends WHMAZ_Controller
         if (!empty($transactionUuid)) {
             $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
             if ($transaction) {
-                $this->_restoreSessionFromTransaction($transaction, $paymentToken);
+                $sessionOk = $this->_restoreSessionFromTransaction($transaction, $paymentToken);
 
-                if ($transaction['status'] !== 'completed') {
+                // Only cancel for a verified session/token holder, so a stranger who learns
+                // a transaction uuid cannot cancel someone's in-flight payment.
+                if ($sessionOk && $transaction['status'] !== 'completed') {
                     $this->Payment_model->updateTransactionStatus($transaction['id'], 'cancelled');
                 }
 
