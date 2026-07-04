@@ -69,6 +69,7 @@
                             case 'razorpay': $icon = 'fa-rupee-sign'; break;
                             case 'sslcommerz': $icon = 'fa-mobile-alt'; break;
                             case 'bkash': $icon = 'fa-mobile-alt'; break;
+                            case 'payhere': $icon = 'fa-money-check-alt'; break;
                             case 'paystack': $icon = 'fa-credit-card'; break;
                             case 'bank_transfer': $icon = 'fa-university'; break;
                             case 'manual': $icon = 'fa-hand-holding-usd'; break;
@@ -142,6 +143,17 @@
                     <i class="fas fa-info-circle"></i> You will be redirected to the bKash secure payment page to complete your payment.
                 </p>
                 <button type="button" class="btn-pay" id="bkash-pay-btn">
+                    <i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>
+                </button>
+            </div>
+
+            <!-- PayHere -->
+            <div class="payment-form" id="payhere-form" class="payment-form-section">
+                <h5 class="payment-form-title"><i class="fas fa-money-check-alt"></i> Pay with PayHere</h5>
+                <p class="payment-form-description">
+                    <i class="fas fa-info-circle"></i> You will be redirected to the PayHere secure payment page to pay using Visa, Mastercard, or mobile wallets.
+                </p>
+                <button type="button" class="btn-pay" id="payhere-pay-btn">
                     <i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>
                 </button>
             </div>
@@ -540,6 +552,49 @@ if (bkashBtn) {
             }
             // Redirect to bKash payment page
             window.location.href = data.gateway_url;
+        })
+        .catch(function(error) {
+            showError(error.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>';
+        });
+    });
+}
+
+// PayHere Payment (redirect via signed form POST)
+var payhereBtn = document.getElementById('payhere-pay-btn');
+if (payhereBtn) {
+    payhereBtn.addEventListener('click', function() {
+        var btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
+        hideError();
+
+        fetch('<?php echo base_url(); ?>billing/pay/payhere_init', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'invoice_uuid=' + encodeURIComponent(invoiceUuid) + '&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>'
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to initialize payment');
+            }
+            // Build a hidden form and POST to PayHere's checkout page
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = data.checkout_url;
+            Object.keys(data.params).forEach(function(key) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = data.params[key];
+                form.appendChild(input);
+            });
+            document.body.appendChild(form);
+            form.submit();
         })
         .catch(function(error) {
             showError(error.message);

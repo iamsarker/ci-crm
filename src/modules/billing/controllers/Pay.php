@@ -1150,6 +1150,212 @@ class Pay extends WHMAZ_Controller
     }
 
     /**
+     * Initiate PayHere payment (Sri Lanka)
+     * Returns the checkout URL + signed form params; the browser POSTs them to PayHere.
+     */
+    public function payhere_init()
+    {
+        header('Content-Type: application/json');
+
+        $companyId = getCompanyId();
+        $userId = getCustomerId();
+
+        if ($companyId <= 0) {
+            echo json_encode(array('success' => false, 'error' => 'Please login to continue'));
+            return;
+        }
+
+        $invoice_uuid = $this->input->post('invoice_uuid');
+        $invoice = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
+
+        if (empty($invoice)) {
+            echo json_encode(array('success' => false, 'error' => 'Invoice not found'));
+            return;
+        }
+
+        $paidAmount = $this->Payment_model->getSuccessfulPaymentAmount($invoice['id']);
+        $amountDue = floatval($invoice['total']) - $paidAmount;
+
+        if ($amountDue <= 0) {
+            echo json_encode(array('success' => false, 'error' => 'Invoice is already fully paid'));
+            return;
+        }
+
+        $gateway = $this->PaymentGateway_model->getByCode('payhere');
+        if (!$gateway || $gateway['status'] != 1) {
+            echo json_encode(array('success' => false, 'error' => 'PayHere is not available'));
+            return;
+        }
+
+        $feeAmount = 0;
+        if ($gateway['fee_bearer'] === 'customer') {
+            $feeAmount = $this->PaymentGateway_model->calculateFee($gateway['id'], $amountDue);
+        }
+        $totalAmount = $amountDue + $feeAmount;
+
+        // Generate secure payment token for session restoration
+        $paymentToken = bin2hex(random_bytes(32));
+
+        $this->db->trans_start();
+
+        try {
+            $transaction = $this->Payment_model->createTransaction(array(
+                'invoice_id' => $invoice['id'],
+                'payment_gateway_id' => $gateway['id'],
+                'gateway_code' => 'payhere',
+                'amount' => $totalAmount,
+                'fee_amount' => $feeAmount,
+                'net_amount' => $amountDue,
+                'currency_code' => $invoice['currency_code'],
+                'txn_type' => 'payment',
+                'status' => 'pending',
+                'ip_address' => $this->input->ip_address(),
+                'user_agent' => $this->input->user_agent(),
+                'inserted_by' => $userId,
+                'metadata' => array(
+                    'invoice_no' => $invoice['invoice_no'],
+                    'invoice_uuid' => $invoice_uuid,
+                    'company_id' => $companyId,
+                    'user_id' => $userId,
+                    'payment_token' => $paymentToken
+                )
+            ));
+
+            // Customer info
+            $customer = $this->db->where('id', $companyId)->get('companies')->row_array();
+
+            $this->load->library('Payhere');
+
+            // Carry uuid + session token on the browser return URLs
+            $returnUrl = base_url() . 'billing/pay/payhere_return?value_a='
+                . urlencode($transaction['transaction_uuid']) . '&value_c=' . urlencode($paymentToken);
+            $cancelUrl = base_url() . 'billing/pay/payhere_cancel?value_a='
+                . urlencode($transaction['transaction_uuid']) . '&value_c=' . urlencode($paymentToken);
+
+            $result = $this->payhere->buildCheckoutParams(array(
+                // order_id = transaction uuid so the IPN maps straight back to the transaction
+                'order_id' => $transaction['transaction_uuid'],
+                'amount' => $totalAmount,
+                'currency' => $invoice['currency_code'],
+                'items' => 'Invoice #' . $invoice['invoice_no'],
+                'first_name' => $customer['first_name'] ?? ($customer['name'] ?? 'Customer'),
+                'last_name' => $customer['last_name'] ?? '',
+                'email' => $customer['email'] ?? '',
+                'phone' => $customer['phone'] ?? ($customer['mobile'] ?? ''),
+                'address' => $customer['address'] ?? '',
+                'city' => $customer['city'] ?? '',
+                'country' => $customer['country'] ?? 'Sri Lanka',
+                'return_url' => $returnUrl,
+                'cancel_url' => $cancelUrl,
+                'notify_url' => base_url() . 'webhook/payhere',
+                'custom_1' => $invoice['invoice_no']
+            ));
+
+            if ($result['success']) {
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'processing', array(
+                    'gateway_order_id' => $transaction['transaction_uuid']
+                ));
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    throw new Exception('Database transaction failed');
+                }
+
+                echo json_encode(array(
+                    'success' => true,
+                    'checkout_url' => $result['data']['checkout_url'],
+                    'params' => $result['data']['params'],
+                    'transaction_uuid' => $transaction['transaction_uuid']
+                ));
+            } else {
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
+                    'failure_reason' => $result['error']
+                ));
+
+                $this->db->trans_complete();
+
+                echo json_encode(array('success' => false, 'error' => $result['error']));
+            }
+        } catch (Exception $e) {
+            $this->db->trans_rollback();
+            log_message('error', 'PayHere payment init failed: ' . $e->getMessage());
+            echo json_encode(array(
+                'success' => false,
+                'error' => 'Payment initialization failed. Please try again.'
+            ));
+        }
+    }
+
+    /**
+     * PayHere browser return handler.
+     * The actual payment is confirmed server-to-server at webhook/payhere (IPN);
+     * this just restores the session and reflects the current status to the user.
+     */
+    public function payhere_return()
+    {
+        $transactionUuid = $this->input->get('value_a');
+        $paymentToken = $this->input->get('value_c');
+
+        $redirectUrl = base_url() . 'billing/invoices';
+
+        if (empty($transactionUuid)) {
+            $this->session->set_flashdata('alert_info', 'Payment is being verified. You will receive confirmation shortly.');
+            redirect($redirectUrl);
+            return;
+        }
+
+        $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
+
+        if (!$transaction) {
+            $this->session->set_flashdata('alert_error', 'Transaction not found.');
+            redirect($redirectUrl);
+            return;
+        }
+
+        $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
+        $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
+
+        $this->_restoreSessionFromTransaction($transaction, $paymentToken);
+
+        if ($transaction['status'] === 'completed') {
+            $this->session->set_flashdata('alert_success', 'Payment successful! Thank you for your payment.');
+        } else {
+            $this->session->set_flashdata('alert_info', 'Payment received. It is being verified and your invoice will update shortly.');
+        }
+
+        redirect($redirectUrl);
+    }
+
+    /**
+     * PayHere cancel handler.
+     */
+    public function payhere_cancel()
+    {
+        $transactionUuid = $this->input->get('value_a');
+        $paymentToken = $this->input->get('value_c');
+
+        $redirectUrl = base_url() . 'billing/invoices';
+
+        if (!empty($transactionUuid)) {
+            $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
+            if ($transaction) {
+                $this->_restoreSessionFromTransaction($transaction, $paymentToken);
+
+                if ($transaction['status'] !== 'completed') {
+                    $this->Payment_model->updateTransactionStatus($transaction['id'], 'cancelled');
+                }
+
+                $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
+                $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
+            }
+        }
+
+        $this->session->set_flashdata('alert_info', 'Payment was cancelled.');
+        redirect($redirectUrl);
+    }
+
+    /**
      * Restore user session from transaction data using secure payment token
      *
      * This method verifies the payment token passed through the gateway matches

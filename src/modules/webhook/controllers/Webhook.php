@@ -561,6 +561,92 @@ class Webhook extends WHMAZ_Controller
     }
 
     /**
+     * PayHere IPN Handler (Sri Lanka)
+     * URL: /webhook/payhere  (this is the authoritative payment confirmation)
+     */
+    public function payhere()
+    {
+        $payload = file_get_contents('php://input');
+
+        $webhookId = $this->Payment_model->logWebhook(
+            'payhere',
+            $_POST['status_code'] ?? 'unknown',
+            !empty($payload) ? $payload : json_encode($_POST),
+            $this->getRequestHeaders(),
+            $_POST['md5sig'] ?? null
+        );
+
+        // order_id was set to the transaction uuid during init
+        $transactionUuid = $_POST['order_id'] ?? null;
+        $statusCode = $_POST['status_code'] ?? '';
+
+        if (empty($transactionUuid)) {
+            $this->Payment_model->markWebhookProcessed($webhookId, false, 'Missing order reference');
+            $this->sendResponse(400, 'Missing order reference');
+            return;
+        }
+
+        $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
+
+        if (!$transaction) {
+            $this->Payment_model->markWebhookProcessed($webhookId, false, 'Transaction not found');
+            $this->sendResponse(400, 'Transaction not found');
+            return;
+        }
+
+        // Already completed
+        if ($transaction['status'] === 'completed') {
+            $this->Payment_model->markWebhookProcessed($webhookId, true, 'Already processed');
+            $this->sendResponse(200, 'Already processed');
+            return;
+        }
+
+        $this->load->library('Payhere');
+        $verification = $this->payhere->verifyNotification($_POST);
+
+        if ($verification['success']) {
+            // Signature valid AND status_code == 2 (success)
+            $details = $this->payhere->extractPaymentDetails($_POST);
+
+            $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
+                'gateway_transaction_id' => $details['transaction_id'],
+                'payment_method' => $details['payment_method'] ?: 'payhere',
+                'gateway_response' => $_POST
+            ));
+
+            $this->Payment_model->processSuccessfulPayment($transaction['id']);
+            $this->Payment_model->recordInvoiceTxn($transaction['id']);
+
+            $this->Payment_model->markWebhookProcessed($webhookId, true, 'Payment completed');
+            log_message('info', 'PayHere IPN: Payment completed for transaction #' . $transaction['id']);
+        } else {
+            // Signature mismatch is a hard failure (do not touch the transaction)
+            if (($verification['error'] ?? '') === 'Signature mismatch') {
+                $this->Payment_model->markWebhookProcessed($webhookId, false, 'Signature mismatch');
+                $this->sendResponse(400, 'Invalid signature');
+                return;
+            }
+
+            // Valid signature but a non-success status: -1 cancelled, -2 failed, -3 chargedback
+            if ((string) $statusCode === '-1') {
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'cancelled', array('gateway_response' => $_POST));
+            } elseif ((string) $statusCode === '-3') {
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'refunded', array('gateway_response' => $_POST));
+            } elseif ((string) $statusCode === '-2') {
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
+                    'failure_reason' => $_POST['status_message'] ?? 'Payment failed',
+                    'gateway_response' => $_POST
+                ));
+            }
+            // status_code 0 (pending): leave as-is; a later IPN will finalize it
+            $this->Payment_model->markWebhookProcessed($webhookId, true, 'Status ' . $statusCode);
+            log_message('info', 'PayHere IPN: status ' . $statusCode . ' for transaction #' . $transaction['id']);
+        }
+
+        $this->sendResponse(200, 'IPN Received');
+    }
+
+    /**
      * Send JSON response
      */
     private function sendResponse($statusCode, $message)
