@@ -22,7 +22,10 @@
       "Bash(awk \"/CREATE TABLE \\\\`order_services\\\\`/{f=1} f{print} f&&/ENGINE=/{exit}\" crm_db.sql)",
       "WebFetch(domain:www.ioncube.com)",
       "WebFetch(domain:developer.bka.sh)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(php *)",
+      "Bash(python3 *)",
+      "Bash(awk '/CREATE TABLE `invoices`/{f=1} f{print} f&&/ENGINE=/{exit}' /opt/lampp/htdocs/ci-crm/crm_db.sql)"
     ]
   },
   "effortLevel": "high"

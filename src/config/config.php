@@ -516,6 +516,9 @@ $config['csrf_exclude_uris'] = array(
 	'billing/pay/sslcommerz_cancel',
 	'billing/pay/sslcommerz_fail',
 	'webhook/sslcommerz',
+	// PayHere IPN + Paddle webhook (external server-to-server POST requests)
+	'webhook/payhere',
+	'webhook/paddle',
 	// SaaS subscription checkout/upgrade (authenticated JSON/form posts)
 	'subscription/subscribe',
 	'subscription/upgrade',
@@ -623,8 +626,8 @@ if ($config['security_headers']) {
 	// Content Security Policy - restrict resource loading
 	// Google reCAPTCHA requires: www.google.com, www.gstatic.com
 	// Google Fonts requires: fonts.googleapis.com (CSS), fonts.gstatic.com (font files)
-	// Payment Gateways: Stripe, PayPal, Razorpay, Paystack, SSLCommerz
-	header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://js.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://checkout.razorpay.com https://js.paystack.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https: data:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://www.google.com https://api.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://api.razorpay.com https://api.paystack.co; frame-src 'self' https://www.google.com https://js.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://api.razorpay.com https://checkout.razorpay.com; frame-ancestors 'self'");
+	// Payment Gateways: Stripe, PayPal, Razorpay, Paystack, SSLCommerz, Paddle (paddle.js overlay)
+	header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://js.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://checkout.razorpay.com https://js.paystack.co https://cdn.paddle.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https: data:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://www.google.com https://api.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://api.razorpay.com https://api.paystack.co https://cdn.paddle.com https://api.paddle.com https://sandbox-api.paddle.com https://checkout-service.paddle.com https://sandbox-checkout-service.paddle.com; frame-src 'self' https://www.google.com https://js.stripe.com https://www.paypal.com https://www.sandbox.paypal.com https://api.razorpay.com https://checkout.razorpay.com https://buy.paddle.com https://sandbox-buy.paddle.com https://cdn.paddle.com; frame-ancestors 'self'");
 	
 	// Additional security headers for modern browsers
 	header('Permissions-Policy: geolocation=(), microphone=(), camera=()');

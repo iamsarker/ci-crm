@@ -579,7 +579,8 @@ if (bkashBtn) {
 }
 
 // Paddle Payment (overlay checkout)
-<?php if (!empty($paddle_client_token)): ?>
+// Handler always attaches so a misconfigured/blocked Paddle surfaces an error
+// instead of a silently dead button; paddle.js only loads when a token is set.
 var paddleInitialized = false;
 function initPaddle() {
     if (paddleInitialized || typeof Paddle === 'undefined') return;
@@ -599,6 +600,11 @@ function initPaddle() {
     paddleInitialized = true;
 }
 
+// csrf_regenerate rotates the token on every POST; the overlay can be reopened
+// in place, so keep a live hash refreshed from each response for the next attempt.
+var paddleCsrfName = '<?php echo $this->security->get_csrf_token_name(); ?>';
+var paddleCsrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
+
 var paddleBtn = document.getElementById('paddle-pay-btn');
 if (paddleBtn) {
     paddleBtn.addEventListener('click', function() {
@@ -612,14 +618,18 @@ if (paddleBtn) {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: 'invoice_uuid=' + encodeURIComponent(invoiceUuid) + '&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>'
+            body: 'invoice_uuid=' + encodeURIComponent(invoiceUuid) + '&' + paddleCsrfName + '=' + encodeURIComponent(paddleCsrfHash)
         })
         .then(function(response) { return response.json(); })
         .then(function(data) {
+            if (data.csrf_hash) { paddleCsrfHash = data.csrf_hash; }
             if (!data.success) {
                 throw new Error(data.error || 'Failed to initialize payment');
             }
             initPaddle();
+            if (typeof Paddle === 'undefined') {
+                throw new Error('Paddle checkout could not load. Please try another payment method or contact support.');
+            }
             Paddle.Checkout.open({ transactionId: data.paddle_transaction_id });
             // Restore the button so the customer can retry if they close the overlay
             btn.disabled = false;
@@ -632,7 +642,6 @@ if (paddleBtn) {
         });
     });
 }
-<?php endif; ?>
 
 // PayHere Payment (redirect via signed form POST)
 var payhereBtn = document.getElementById('payhere-pay-btn');

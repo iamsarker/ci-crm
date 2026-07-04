@@ -178,6 +178,34 @@ class Paymentgateway extends WHMAZADMIN_Controller
                     ));
                     return;
                 }
+
+                // Deep validation: these gateways need more than the key pair, so ask
+                // the gateway library itself whether it considers the config complete
+                // (e.g. bKash needs username/password from extra_config).
+                $libMap = array('bkash' => 'Bkash', 'payhere' => 'Payhere', 'paddle' => 'Paddle');
+                if (isset($libMap[$gatewayCode])) {
+                    $lib = $libMap[$gatewayCode];
+                    $this->load->library($lib);
+                    if (!$this->{strtolower($lib)}->isConfigured()) {
+                        echo json_encode(array(
+                            'success' => false,
+                            'message' => 'Please complete all credentials for this gateway before enabling it.'
+                        ));
+                        return;
+                    }
+
+                    // Paddle cannot confirm any payment without its webhook signing secret
+                    if ($gatewayCode === 'paddle') {
+                        $webhookSecret = $isTest ? $gateway['test_webhook_secret'] : $gateway['webhook_secret'];
+                        if (empty($webhookSecret)) {
+                            echo json_encode(array(
+                                'success' => false,
+                                'message' => 'Please set the Paddle webhook secret before enabling this gateway.'
+                            ));
+                            return;
+                        }
+                    }
+                }
             }
         }
 

@@ -1080,8 +1080,8 @@ class Pay extends WHMAZ_Controller
         $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
         $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
 
-        // Restore session using the secure token
-        $this->_restoreSessionFromTransaction($transaction, $paymentToken);
+        // Restore session using the secure token (return value gates state mutation below)
+        $sessionOk = $this->_restoreSessionFromTransaction($transaction, $paymentToken);
 
         // Already processed (prevent double-charging)
         if ($transaction['status'] === 'completed') {
@@ -1092,10 +1092,14 @@ class Pay extends WHMAZ_Controller
 
         // Customer cancelled or bKash reported failure
         if ($status !== 'success') {
-            $newStatus = ($status === 'cancel') ? 'cancelled' : 'failed';
-            $this->Payment_model->updateTransactionStatus($transaction['id'], $newStatus, array(
-                'failure_reason' => 'bKash reported status: ' . $status
-            ));
+            // Only mutate transaction state for a verified session/token holder,
+            // so a stranger who learns a transaction uuid cannot cancel an in-flight payment.
+            if ($sessionOk) {
+                $newStatus = ($status === 'cancel') ? 'cancelled' : 'failed';
+                $this->Payment_model->updateTransactionStatus($transaction['id'], $newStatus, array(
+                    'failure_reason' => 'bKash reported status: ' . $status
+                ));
+            }
             $this->session->set_flashdata(
                 'alert_' . ($status === 'cancel' ? 'info' : 'error'),
                 $status === 'cancel' ? 'Payment was cancelled.' : 'Payment failed. Please try again.'
@@ -1114,11 +1118,33 @@ class Pay extends WHMAZ_Controller
             return;
         }
 
-        $paymentId = !empty($paymentId) ? $paymentId : $transaction['gateway_order_id'];
+        // Always execute the paymentID we created at init — never trust the query-string
+        // paymentID, which an attacker could swap for a cheaper payment of their own.
+        $paymentId = $transaction['gateway_order_id'];
         $execution = $this->bkash->executePayment($paymentId, $token['data']['id_token']);
+
+        // Execute can time out AFTER bKash debits the customer; reconcile via query before failing.
+        if (!$execution['success']) {
+            $query = $this->bkash->queryPayment($paymentId, $token['data']['id_token']);
+            if ($query['success'] && (($query['data']['transactionStatus'] ?? '') === 'Completed')) {
+                $execution = $query;
+            }
+        }
 
         if ($execution['success']) {
             $details = $this->bkash->extractPaymentDetails($execution);
+
+            // Anti-tamper: the amount bKash actually charged must match this transaction.
+            if (abs((float) $details['amount'] - (float) $transaction['amount']) > 0.01) {
+                log_message('error', 'bKash amount mismatch for ' . $transaction['transaction_uuid']
+                    . ': charged ' . $details['amount'] . ', expected ' . $transaction['amount']);
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
+                    'failure_reason' => 'Amount mismatch: charged ' . $details['amount'] . ', expected ' . $transaction['amount']
+                ));
+                $this->session->set_flashdata('alert_error', 'Payment amount did not match the invoice. Please contact support.');
+                redirect($redirectUrl);
+                return;
+            }
 
             $this->db->trans_start();
 
@@ -1256,12 +1282,14 @@ class Pay extends WHMAZ_Controller
                     throw new Exception('Database transaction failed');
                 }
 
+                // client_token/environment are delivered to the page by invoice(); the JS
+                // reads those, so they are intentionally not duplicated in this response.
+                // csrf_hash: csrf_regenerate rotates the token per POST, so the overlay can
+                // be reopened without a page reload (the JS reuses this for its next attempt).
                 echo json_encode(array(
                     'success' => true,
                     'paddle_transaction_id' => $result['data']['transaction_id'],
-                    'client_token' => $this->paddle->getClientToken(),
-                    'environment' => $this->paddle->getEnvironment(),
-                    'transaction_uuid' => $transaction['transaction_uuid']
+                    'csrf_hash' => $this->security->get_csrf_hash()
                 ));
             } else {
                 $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
@@ -1270,14 +1298,19 @@ class Pay extends WHMAZ_Controller
 
                 $this->db->trans_complete();
 
-                echo json_encode(array('success' => false, 'error' => $result['error']));
+                echo json_encode(array(
+                    'success' => false,
+                    'error' => $result['error'],
+                    'csrf_hash' => $this->security->get_csrf_hash()
+                ));
             }
         } catch (Exception $e) {
             $this->db->trans_rollback();
             log_message('error', 'Paddle payment init failed: ' . $e->getMessage());
             echo json_encode(array(
                 'success' => false,
-                'error' => 'Payment initialization failed. Please try again.'
+                'error' => 'Payment initialization failed. Please try again.',
+                'csrf_hash' => $this->security->get_csrf_hash()
             ));
         }
     }

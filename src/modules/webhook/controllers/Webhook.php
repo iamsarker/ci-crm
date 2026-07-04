@@ -608,6 +608,20 @@ class Webhook extends WHMAZ_Controller
             // Signature valid AND status_code == 2 (success)
             $details = $this->payhere->extractPaymentDetails($_POST);
 
+            // Anti-tamper: the amount/currency PayHere actually charged must match this
+            // transaction. The md5sig only proves PayHere sent it — it does not bind the
+            // amount to our order unless the merchant enabled checkout-hash enforcement.
+            $paidAmount = (float) ($_POST['payhere_amount'] ?? 0);
+            $paidCurrency = $_POST['payhere_currency'] ?? '';
+            if ($paidAmount + 0.01 < (float) $transaction['amount'] || $paidCurrency !== $transaction['currency_code']) {
+                log_message('error', 'PayHere amount/currency mismatch for ' . $transaction['transaction_uuid']
+                    . ': charged ' . $paidAmount . ' ' . $paidCurrency
+                    . ', expected ' . $transaction['amount'] . ' ' . $transaction['currency_code']);
+                $this->Payment_model->markWebhookProcessed($webhookId, false, 'Amount/currency mismatch');
+                $this->sendResponse(200, 'Amount mismatch');
+                return;
+            }
+
             $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
                 'gateway_transaction_id' => $details['transaction_id'],
                 'payment_method' => $details['payment_method'] ?: 'payhere',
@@ -674,14 +688,21 @@ class Webhook extends WHMAZ_Controller
             return;
         }
 
-        // Only act on successful transaction events
-        if (!in_array($eventType, array('transaction.completed', 'transaction.paid'))) {
+        $details = $this->paddle->extractPaymentDetails($event);
+
+        // Idempotency: skip an event we already processed (Paddle retries deliveries).
+        if (!empty($details['event_id']) && $this->Payment_model->isWebhookProcessed($details['event_id'], 'paddle')) {
+            $this->sendResponse(200, 'Already processed');
+            return;
+        }
+
+        // Act only on the single terminal event. Paddle emits transaction.paid AND
+        // transaction.completed for one payment; handling both would double-process.
+        if ($eventType !== 'transaction.completed') {
             $this->Payment_model->markWebhookProcessed($webhookId, true, 'Ignored event: ' . $eventType);
             $this->sendResponse(200, 'Event ignored');
             return;
         }
-
-        $details = $this->paddle->extractPaymentDetails($event);
 
         // Map back to our transaction: prefer custom_data.transaction_uuid, fallback to Paddle txn id
         $transactionUuid = $details['custom_data']['transaction_uuid'] ?? null;
@@ -690,7 +711,7 @@ class Webhook extends WHMAZ_Controller
             $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
         }
         if (!$transaction && !empty($details['transaction_id'])) {
-            $transaction = $this->Payment_model->getByGatewayOrderId($details['transaction_id']);
+            $transaction = $this->Payment_model->getByGatewayOrderId($details['transaction_id'], 'paddle');
         }
 
         if (!$transaction) {
@@ -699,9 +720,24 @@ class Webhook extends WHMAZ_Controller
             return;
         }
 
-        if ($transaction['status'] === 'completed') {
-            $this->Payment_model->markWebhookProcessed($webhookId, true, 'Already processed');
-            $this->sendResponse(200, 'Already processed');
+        // Never resurrect a terminal transaction (a replayed completed event must not
+        // re-pay an invoice that was since refunded or cancelled).
+        if (in_array($transaction['status'], array('completed', 'refunded', 'cancelled'))) {
+            $this->Payment_model->markWebhookProcessed($webhookId, true, 'Already ' . $transaction['status']);
+            $this->sendResponse(200, 'Already ' . $transaction['status']);
+            return;
+        }
+
+        // Anti-tamper: reject underpayment. Paddle is a Merchant of Record and may add
+        // sales tax/VAT on top of our amount, so grand_total can legitimately exceed it —
+        // only a payment for LESS than the transaction amount is suspicious.
+        if ((float) $details['amount'] + 0.01 < (float) $transaction['amount']
+            || strtoupper($details['currency']) !== strtoupper($transaction['currency_code'])) {
+            log_message('error', 'Paddle amount/currency mismatch for ' . $transaction['transaction_uuid']
+                . ': charged ' . $details['amount'] . ' ' . $details['currency']
+                . ', expected ' . $transaction['amount'] . ' ' . $transaction['currency_code']);
+            $this->Payment_model->markWebhookProcessed($webhookId, false, 'Amount/currency mismatch');
+            $this->sendResponse(200, 'Amount mismatch');
             return;
         }
 

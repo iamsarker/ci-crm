@@ -281,9 +281,15 @@ class Payment_model extends CI_Model
             'processed' => 0
         );
 
-        // Extract event_id if present in payload
-        if (is_array($payload) && isset($payload['id'])) {
-            $data['event_id'] = $payload['id'];
+        // Extract event_id if present in payload (accept both array and JSON-string payloads,
+        // and both the 'id' key (Stripe) and 'event_id' key (Paddle)).
+        $decoded = is_array($payload) ? $payload : json_decode($payload, true);
+        if (is_array($decoded)) {
+            if (isset($decoded['id'])) {
+                $data['event_id'] = $decoded['id'];
+            } elseif (isset($decoded['event_id'])) {
+                $data['event_id'] = $decoded['event_id'];
+            }
         }
 
         $this->db->insert($this->webhookTable, $data);

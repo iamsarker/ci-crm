@@ -90,11 +90,8 @@ class Paddle
         }
 
         // Paddle expects the amount in the currency's minor units, as a string.
-        // Zero-decimal currencies (e.g. JPY, KRW) have no minor unit, so no *100.
         $currency = strtoupper($data['currency'] ?? 'USD');
-        $zeroDecimal = array('JPY', 'KRW', 'VND', 'CLP', 'ISK');
-        $multiplier = in_array($currency, $zeroDecimal) ? 1 : 100;
-        $minorAmount = (string) intval(round(((float) $data['amount']) * $multiplier));
+        $minorAmount = (string) intval(round(((float) $data['amount']) * $this->minorUnitFactor($currency)));
         $desc = $data['description'] ?? 'Invoice Payment';
 
         $body = array(
@@ -197,16 +194,29 @@ class Paddle
     {
         $data = $event['data'] ?? array();
         $totals = $data['details']['totals'] ?? array();
+        $currency = $totals['currency_code'] ?? ($data['currency_code'] ?? 'USD');
 
         return array(
             'transaction_id' => $data['id'] ?? '',
             'status'         => $data['status'] ?? '',
-            'amount'         => isset($totals['grand_total']) ? ($totals['grand_total'] / 100) : 0,
-            'currency'       => $totals['currency_code'] ?? ($data['currency_code'] ?? 'USD'),
+            'amount'         => isset($totals['grand_total']) ? ($totals['grand_total'] / $this->minorUnitFactor($currency)) : 0,
+            'currency'       => $currency,
             'custom_data'    => $data['custom_data'] ?? array(),
             'event_id'       => $event['event_id'] ?? '',
             'event_type'     => $event['event_type'] ?? ''
         );
+    }
+
+    /**
+     * Minor-unit factor for a currency: zero-decimal currencies (e.g. JPY, KRW)
+     * have no minor unit so the factor is 1; everything else is 100.
+     * Used for BOTH outbound (major->minor) and inbound (minor->major) conversion
+     * so the two directions can never disagree.
+     */
+    private function minorUnitFactor($currency)
+    {
+        $zeroDecimal = array('BIF', 'CLP', 'DJF', 'GNF', 'ISK', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF');
+        return in_array(strtoupper($currency), $zeroDecimal) ? 1 : 100;
     }
 
     /**
