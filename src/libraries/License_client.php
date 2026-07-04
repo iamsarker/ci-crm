@@ -38,6 +38,9 @@ class License_client {
 	const GRACE_DAYS           = 7;   // serve last-good verdict while unreachable
 	const HTTP_TIMEOUT         = 8;   // seconds
 
+	/** Hard-coded anti-piracy verification endpoint (admin-login gate). */
+	const ADMIN_VERIFY_URL = 'https://whmaz.com/api/verify-license.php';
+
 	/** @var CI_Controller */
 	protected $CI;
 
@@ -47,6 +50,37 @@ class License_client {
 	public function __construct()
 	{
 		$this->CI =& get_instance();
+	}
+
+	// ─── admin-login gate ────────────────────────────────────────────────
+
+	/**
+	 * Anti-piracy check for the admin login. Hard-coded endpoint (NOT a config
+	 * value, so a cracker can't repoint it at a fake server). Pure API call —
+	 * no cache, no grace: returns TRUE only if the server explicitly authorizes
+	 * this install's LICENSE_KEY, FALSE on deny, missing key, or any error.
+	 */
+	public function admin_authorized()
+	{
+		$key = trim((string) env('LICENSE_KEY', ''));
+		if ($key === '' || $key === 'XXXX-XXXX-XXXX-XXXX') {
+			return false;
+		}
+
+		$ch = curl_init(self::ADMIN_VERIFY_URL . '?license_key=' . rawurlencode($key));
+		curl_setopt_array($ch, array(
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_HTTPHEADER     => array('Accept: application/json'),
+			CURLOPT_TIMEOUT        => self::HTTP_TIMEOUT,
+			CURLOPT_CONNECTTIMEOUT => self::HTTP_TIMEOUT,
+			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_SSL_VERIFYHOST => false,
+		));
+		$body = curl_exec($ch);
+		curl_close($ch);
+
+		$data = json_decode((string) $body, true);
+		return is_array($data) && ! empty($data['authorized']);
 	}
 
 	// ─── role ────────────────────────────────────────────────────────────

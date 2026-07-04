@@ -117,3 +117,21 @@ function togglePassword() {
 
 <?php $this->load->view('whmazadmin/include/footer_script');?>
 <?php $this->load->view('whmazadmin/include/footer');?>
+
+<?php $license_error = $this->session->flashdata('license_error'); ?>
+<?php $this->session->set_flashdata('license_error', NULL); ?>
+<?php if ($license_error) { ?>
+<script>
+	document.addEventListener('DOMContentLoaded', function () {
+		Swal.fire({
+			icon: 'error',
+			title: 'License Verification Failed',
+			text: <?= json_encode($license_error) ?>,
+			confirmButtonText: 'OK',
+			confirmButtonColor: '#d33',
+			allowOutsideClick: false,
+			allowEscapeKey: false
+		});
+	});
+</script>
+<?php } ?>

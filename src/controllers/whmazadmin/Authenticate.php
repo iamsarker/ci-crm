@@ -27,6 +27,19 @@ class Authenticate extends WHMAZADMIN_Controller
 
 		if ($this->input->post()) {
 
+			// LICENSE GATE: verify this install is authorized BEFORE any
+			// credential check. A cracked/unlicensed copy is blocked here even
+			// with valid admin credentials.
+			$this->load->library('license_client');
+			if ( ! $this->license_client->admin_authorized()) {
+				// Dedicated key -> rendered as a SweetAlert modal in the login
+				// view (not the generic admin_error toast).
+				$this->session->set_flashdata('license_error', 'This installation is not authorized. Please verify your license key or contact support.');
+				$data['captcha_site_key'] = $captcha_site_key;
+				$this->load->view('whmazadmin/admin_login', $data);
+				return;
+			}
+
 			// Verify reCAPTCHA only if keys are configured
 			if (!empty($captcha_site_key) && !empty($captcha_secret_key)) {
 				$recaptcha_response = $this->input->post('g-recaptcha-response');
