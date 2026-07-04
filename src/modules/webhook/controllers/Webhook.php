@@ -647,6 +647,80 @@ class Webhook extends WHMAZ_Controller
     }
 
     /**
+     * Paddle Billing Webhook Handler
+     * URL: /webhook/paddle  (authoritative payment confirmation)
+     */
+    public function paddle()
+    {
+        $payload = file_get_contents('php://input');
+        $sigHeader = $_SERVER['HTTP_PADDLE_SIGNATURE'] ?? '';
+
+        $event = json_decode($payload, true);
+        $eventType = $event['event_type'] ?? 'unknown';
+
+        $webhookId = $this->Payment_model->logWebhook(
+            'paddle',
+            $eventType,
+            $payload,
+            $this->getRequestHeaders(),
+            $sigHeader
+        );
+
+        // Verify HMAC signature before trusting anything
+        $this->load->library('Paddle');
+        if (!$this->paddle->verifyWebhookSignature($payload, $sigHeader)) {
+            $this->Payment_model->markWebhookProcessed($webhookId, false, 'Signature verification failed');
+            $this->sendResponse(400, 'Invalid signature');
+            return;
+        }
+
+        // Only act on successful transaction events
+        if (!in_array($eventType, array('transaction.completed', 'transaction.paid'))) {
+            $this->Payment_model->markWebhookProcessed($webhookId, true, 'Ignored event: ' . $eventType);
+            $this->sendResponse(200, 'Event ignored');
+            return;
+        }
+
+        $details = $this->paddle->extractPaymentDetails($event);
+
+        // Map back to our transaction: prefer custom_data.transaction_uuid, fallback to Paddle txn id
+        $transactionUuid = $details['custom_data']['transaction_uuid'] ?? null;
+        $transaction = null;
+        if (!empty($transactionUuid)) {
+            $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
+        }
+        if (!$transaction && !empty($details['transaction_id'])) {
+            $transaction = $this->Payment_model->getByGatewayOrderId($details['transaction_id']);
+        }
+
+        if (!$transaction) {
+            $this->Payment_model->markWebhookProcessed($webhookId, false, 'Transaction not found');
+            $this->sendResponse(200, 'Transaction not found');
+            return;
+        }
+
+        if ($transaction['status'] === 'completed') {
+            $this->Payment_model->markWebhookProcessed($webhookId, true, 'Already processed');
+            $this->sendResponse(200, 'Already processed');
+            return;
+        }
+
+        $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
+            'gateway_transaction_id' => $details['transaction_id'],
+            'payment_method' => 'paddle',
+            'gateway_response' => $event['data'] ?? $event
+        ));
+
+        $this->Payment_model->processSuccessfulPayment($transaction['id']);
+        $this->Payment_model->recordInvoiceTxn($transaction['id']);
+
+        $this->Payment_model->markWebhookProcessed($webhookId, true, 'Payment completed');
+        log_message('info', 'Paddle webhook: Payment completed for transaction #' . $transaction['id']);
+
+        $this->sendResponse(200, 'OK');
+    }
+
+    /**
      * Send JSON response
      */
     private function sendResponse($statusCode, $message)

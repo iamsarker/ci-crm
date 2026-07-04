@@ -78,6 +78,15 @@ class Pay extends WHMAZ_Controller
             $data['paypal_mode'] = $isTest ? 'sandbox' : 'production';
         }
 
+        $data['paddle_client_token'] = '';
+        $data['paddle_environment'] = 'production';
+        $paddleGateway = $this->PaymentGateway_model->getByCode('paddle');
+        if ($paddleGateway && $paddleGateway['status'] == 1) {
+            $isTest = $paddleGateway['is_test_mode'] == 1;
+            $data['paddle_client_token'] = $isTest ? $paddleGateway['test_public_key'] : $paddleGateway['public_key'];
+            $data['paddle_environment'] = $isTest ? 'sandbox' : 'production';
+        }
+
         $this->load->view('billing_pay', $data);
     }
 
@@ -1147,6 +1156,130 @@ class Pay extends WHMAZ_Controller
 
         $this->session->set_flashdata('alert_' . $alertType, $alertMessage);
         redirect($redirectUrl);
+    }
+
+    /**
+     * Initiate Paddle payment (Merchant of Record, overlay checkout)
+     * Creates a Paddle transaction and returns its id for Paddle.js.
+     */
+    public function paddle_init()
+    {
+        header('Content-Type: application/json');
+
+        $companyId = getCompanyId();
+        $userId = getCustomerId();
+
+        if ($companyId <= 0) {
+            echo json_encode(array('success' => false, 'error' => 'Please login to continue'));
+            return;
+        }
+
+        $invoice_uuid = $this->input->post('invoice_uuid');
+        $invoice = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
+
+        if (empty($invoice)) {
+            echo json_encode(array('success' => false, 'error' => 'Invoice not found'));
+            return;
+        }
+
+        $paidAmount = $this->Payment_model->getSuccessfulPaymentAmount($invoice['id']);
+        $amountDue = floatval($invoice['total']) - $paidAmount;
+
+        if ($amountDue <= 0) {
+            echo json_encode(array('success' => false, 'error' => 'Invoice is already fully paid'));
+            return;
+        }
+
+        $gateway = $this->PaymentGateway_model->getByCode('paddle');
+        if (!$gateway || $gateway['status'] != 1) {
+            echo json_encode(array('success' => false, 'error' => 'Paddle is not available'));
+            return;
+        }
+
+        $feeAmount = 0;
+        if ($gateway['fee_bearer'] === 'customer') {
+            $feeAmount = $this->PaymentGateway_model->calculateFee($gateway['id'], $amountDue);
+        }
+        $totalAmount = $amountDue + $feeAmount;
+
+        $this->db->trans_start();
+
+        try {
+            $transaction = $this->Payment_model->createTransaction(array(
+                'invoice_id' => $invoice['id'],
+                'payment_gateway_id' => $gateway['id'],
+                'gateway_code' => 'paddle',
+                'amount' => $totalAmount,
+                'fee_amount' => $feeAmount,
+                'net_amount' => $amountDue,
+                'currency_code' => $invoice['currency_code'],
+                'txn_type' => 'payment',
+                'status' => 'pending',
+                'ip_address' => $this->input->ip_address(),
+                'user_agent' => $this->input->user_agent(),
+                'inserted_by' => $userId,
+                'metadata' => array(
+                    'invoice_no' => $invoice['invoice_no'],
+                    'invoice_uuid' => $invoice_uuid,
+                    'company_id' => $companyId,
+                    'user_id' => $userId
+                )
+            ));
+
+            $customer = $this->db->where('id', $companyId)->get('companies')->row_array();
+
+            $this->load->library('Paddle');
+
+            $result = $this->paddle->createTransaction(array(
+                'amount' => $totalAmount,
+                'currency' => $invoice['currency_code'],
+                'description' => 'Invoice #' . $invoice['invoice_no'],
+                'product_name' => 'Invoice Payment',
+                'customer_email' => $customer['email'] ?? '',
+                // custom_data maps the Paddle transaction back to ours in the webhook
+                'custom_data' => array(
+                    'transaction_uuid' => $transaction['transaction_uuid'],
+                    'invoice_no' => $invoice['invoice_no']
+                )
+            ));
+
+            if ($result['success']) {
+                // Store the Paddle transaction id for webhook fallback lookup
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'processing', array(
+                    'gateway_order_id' => $result['data']['transaction_id'],
+                    'gateway_response' => $result['data']['raw']
+                ));
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    throw new Exception('Database transaction failed');
+                }
+
+                echo json_encode(array(
+                    'success' => true,
+                    'paddle_transaction_id' => $result['data']['transaction_id'],
+                    'client_token' => $this->paddle->getClientToken(),
+                    'environment' => $this->paddle->getEnvironment(),
+                    'transaction_uuid' => $transaction['transaction_uuid']
+                ));
+            } else {
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
+                    'failure_reason' => $result['error']
+                ));
+
+                $this->db->trans_complete();
+
+                echo json_encode(array('success' => false, 'error' => $result['error']));
+            }
+        } catch (Exception $e) {
+            $this->db->trans_rollback();
+            log_message('error', 'Paddle payment init failed: ' . $e->getMessage());
+            echo json_encode(array(
+                'success' => false,
+                'error' => 'Payment initialization failed. Please try again.'
+            ));
+        }
     }
 
     /**

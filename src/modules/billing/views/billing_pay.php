@@ -70,6 +70,7 @@
                             case 'sslcommerz': $icon = 'fa-mobile-alt'; break;
                             case 'bkash': $icon = 'fa-mobile-alt'; break;
                             case 'payhere': $icon = 'fa-money-check-alt'; break;
+                            case 'paddle': $icon = 'fa-credit-card'; break;
                             case 'paystack': $icon = 'fa-credit-card'; break;
                             case 'bank_transfer': $icon = 'fa-university'; break;
                             case 'manual': $icon = 'fa-hand-holding-usd'; break;
@@ -143,6 +144,17 @@
                     <i class="fas fa-info-circle"></i> You will be redirected to the bKash secure payment page to complete your payment.
                 </p>
                 <button type="button" class="btn-pay" id="bkash-pay-btn">
+                    <i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>
+                </button>
+            </div>
+
+            <!-- Paddle -->
+            <div class="payment-form" id="paddle-form" class="payment-form-section">
+                <h5 class="payment-form-title"><i class="fas fa-credit-card"></i> Pay with Paddle</h5>
+                <p class="payment-form-description">
+                    <i class="fas fa-info-circle"></i> A secure Paddle checkout will open on this page to complete your card payment.
+                </p>
+                <button type="button" class="btn-pay" id="paddle-pay-btn">
                     <i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>
                 </button>
             </div>
@@ -272,6 +284,11 @@
 <!-- PayPal JS -->
 <?php if (!empty($paypal_client_id)): ?>
 <script src="https://www.paypal.com/sdk/js?client-id=<?php echo $paypal_client_id; ?>&currency=<?php echo $invoice['currency_code']; ?>"></script>
+<?php endif; ?>
+
+<!-- Paddle JS -->
+<?php if (!empty($paddle_client_token)): ?>
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <?php endif; ?>
 
 <script>
@@ -560,6 +577,62 @@ if (bkashBtn) {
         });
     });
 }
+
+// Paddle Payment (overlay checkout)
+<?php if (!empty($paddle_client_token)): ?>
+var paddleInitialized = false;
+function initPaddle() {
+    if (paddleInitialized || typeof Paddle === 'undefined') return;
+    if ('<?php echo $paddle_environment; ?>' === 'sandbox') {
+        Paddle.Environment.set('sandbox');
+    }
+    Paddle.Initialize({
+        token: '<?php echo htmlspecialchars($paddle_client_token, ENT_QUOTES); ?>',
+        eventCallback: function(ev) {
+            if (ev && ev.name === 'checkout.completed') {
+                showProcessing();
+                // Confirmation is finalized by the webhook; land on the invoice
+                window.location.href = '<?php echo base_url(); ?>billing/view_invoice/' + invoiceUuid + '?paid=1';
+            }
+        }
+    });
+    paddleInitialized = true;
+}
+
+var paddleBtn = document.getElementById('paddle-pay-btn');
+if (paddleBtn) {
+    paddleBtn.addEventListener('click', function() {
+        var btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening checkout...';
+        hideError();
+
+        fetch('<?php echo base_url(); ?>billing/pay/paddle_init', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'invoice_uuid=' + encodeURIComponent(invoiceUuid) + '&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>'
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to initialize payment');
+            }
+            initPaddle();
+            Paddle.Checkout.open({ transactionId: data.paddle_transaction_id });
+            // Restore the button so the customer can retry if they close the overlay
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>';
+        })
+        .catch(function(error) {
+            showError(error.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>';
+        });
+    });
+}
+<?php endif; ?>
 
 // PayHere Payment (redirect via signed form POST)
 var payhereBtn = document.getElementById('payhere-pay-btn');

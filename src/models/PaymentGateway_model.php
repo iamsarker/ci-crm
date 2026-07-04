@@ -224,6 +224,7 @@ class PaymentGateway_model extends CI_Model
             'sslcommerz' => array('name' => 'SSLCommerz', 'type' => 'online_card'),
             'bkash' => array('name' => 'bKash', 'type' => 'online_wallet'),
             'payhere' => array('name' => 'PayHere', 'type' => 'online_card'),
+            'paddle' => array('name' => 'Paddle', 'type' => 'online_card'),
             'bank_transfer' => array('name' => 'Bank Transfer', 'type' => 'bank_transfer'),
             'manual' => array('name' => 'Manual Payment', 'type' => 'manual')
         );
