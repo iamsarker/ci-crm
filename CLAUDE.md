@@ -1,5 +1,7 @@
 # WHMAZ CRM - Development Notes
 
+> **Docs live in a separate repo.** The `docs/` folder and the CodeCanyon `codecanyon/` folder (guides, README, INSTALLATION, CHANGELOG, screenshots) now live in the sibling repo **`../ci-crm-docs`** to keep this repo source-only for releases. Doc pointers below use the `../ci-crm-docs/docs/...` path.
+
 ## Folder Structure
 
 ### Admin (whmazadmin)
@@ -73,7 +75,7 @@ install/
     └── already_installed.php   # Post-install notice
 ```
 
-**Full documentation:** `docs/AUTO_INSTALLER.md`
+**Full documentation:** `../ci-crm-docs/docs/AUTO_INSTALLER.md`
 
 ### CSS Styling
 ```
@@ -450,7 +452,7 @@ Key facts to know at a glance:
 - **Encode-for-teeth (IonCube/SourceGuardian):** these anti-piracy checks are plain PHP a buyer can delete, so encode: **(1) `src/libraries/License_client.php`** (the check logic + hard-coded admin URL + entitlement client) and **(2) `src/controllers/whmazadmin/Authenticate.php`** (the gate call site — without it, a cracker just deletes the two-line call). The customer download-binding is not anti-piracy (real enforcement would live server-side in `license/verify`), so it needs no encoding.
 - Schema: `crm_db.sql` is canonical; incremental migrations `software_catalog_migration.sql` + `software_family_upgrade_migration.sql` + `license_bind_ip_migration.sql`.
 
-**Full documentation:** `docs/SAAS_LICENSING.md`
+**Full documentation:** `../ci-crm-docs/docs/SAAS_LICENSING.md`
 
 ## Reseller Management & Third-Party REST API
 
@@ -468,7 +470,7 @@ Key facts at a glance:
 - **Order placement reuses the storefront cart/checkout code verbatim** — not re-implemented. `ApiCart` (`/api/v1/cart/*`: add_domain/add_hosting/add_software/link_*/delete/view) and `ApiCheckout` (`/api/v1/checkout`) bootstrap a CUSTOMER session for the acting customer (`API_Controller::actAsCustomer()`) then `Modules::run('cart/...')` / `cart/checkoutSubmit`. **`customer_id` param = `users.id`** (API-only convention; from `/me.reseller.customer_id` or `/customers[].customer_id`, omit to default to the reseller's own owner user) — resolved to its company and checked against scope; `company_id` is also surfaced everywhere for reference. The cart lives in `add_to_carts` keyed by the customer's user_id, so calls compose across stateless requests. Nothing provisions until `POST /invoices/pay/{uuid}`. **Note:** every API controller is `Api`-prefixed (ApiCart, ApiDomains, …) — partly because the storefront controller is already `class Cart` (a same-name class would clash when `Modules::run` loads it), and kept consistent across the module. Each `/api/v1/<resource>` URL is mapped in routes.php to the exact class case (no lowercase catch-all).
 - The read endpoints are a **thin authenticated layer over existing models** (`Order_model`, `Provisioning_model`, `Invoice_model`, `Orderlicense_model`, `Company_model`, `Plan_model`, `Common_model`, `Cart_model`). `Apikey_model` is the single source of truth for scopes + `authenticate()`. Added public `Provisioning_model::unsuspendService()` for `hosting:write`.
 
-**Full documentation:** `docs/RESELLER_API.md`
+**Full documentation:** `../ci-crm-docs/docs/RESELLER_API.md`
 
 ### Admin Order Management
 
