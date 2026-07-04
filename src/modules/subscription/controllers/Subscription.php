@@ -121,28 +121,38 @@ class Subscription extends WHMAZ_Controller
 			return;
 		}
 
-		// Already locked — nothing to change; go straight to the download.
-		if ($this->Orderlicense_model->isBound($license)) {
+		// Only collect the fields that are still empty. Domain is bind-once
+		// (locked once set); IP may be (re)bound after a customer reset.
+		$needDomain = empty($license['license_domain']);
+		$needIp     = empty($license['license_ip']);
+		if (!$needDomain && !$needIp) {
 			redirect('/subscription/download/' . $licenseId, 'refresh');
 			return;
 		}
 
-		$domain = strtolower(trim((string) $this->input->post('domain')));
-		$ip     = trim((string) $this->input->post('ip'));
-
-		// Accept a pasted URL and reduce it to a bare host.
-		if (strpos($domain, '://') !== false) {
-			$domain = parse_url($domain, PHP_URL_HOST) ?: $domain;
-		}
-		$domain = preg_replace('#^www\.#', '', $domain);
-
 		$errors = array();
-		if ($domain === '' || !preg_match('/^([a-z0-9](-?[a-z0-9])*\.)+[a-z]{2,}$/i', $domain)) {
-			$errors[] = 'Enter a valid install domain (e.g. app.example.com).';
+
+		$domain = '';
+		if ($needDomain) {
+			$domain = strtolower(trim((string) $this->input->post('domain')));
+			// Accept a pasted URL and reduce it to a bare host.
+			if (strpos($domain, '://') !== false) {
+				$domain = parse_url($domain, PHP_URL_HOST) ?: $domain;
+			}
+			$domain = preg_replace('#^www\.#', '', $domain);
+			if ($domain === '' || !preg_match('/^([a-z0-9](-?[a-z0-9])*\.)+[a-z]{2,}$/i', $domain)) {
+				$errors[] = 'Enter a valid install domain (e.g. app.example.com).';
+			}
 		}
-		if ($ip === '' || filter_var($ip, FILTER_VALIDATE_IP) === false) {
-			$errors[] = 'Enter a valid server IP address (IPv4 or IPv6).';
+
+		$ip = '';
+		if ($needIp) {
+			$ip = trim((string) $this->input->post('ip'));
+			if ($ip === '' || filter_var($ip, FILTER_VALIDATE_IP) === false) {
+				$errors[] = 'Enter a valid server IP address (IPv4 or IPv6).';
+			}
 		}
+
 		if ($errors) {
 			$this->session->set_flashdata('alert_error', implode(' ', $errors));
 			redirect('/subscription/download/' . $licenseId, 'refresh');
@@ -155,8 +165,34 @@ class Subscription extends WHMAZ_Controller
 			return;
 		}
 
-		$this->session->set_flashdata('alert_success', 'License bound to ' . $domain . ' (' . $ip . '). Your download will begin shortly.');
+		$this->session->set_flashdata('alert_success', 'License binding updated. Your download will begin shortly.');
 		redirect('/subscription/download/' . $licenseId, 'refresh');
+	}
+
+	/**
+	 * Customer self-service: clear the bound install IP so a new server IP can
+	 * be set on the next download. The domain binding stays locked. POST:
+	 * license_id.
+	 */
+	public function reset_ip()
+	{
+		if (!$this->isLogin()) {
+			redirect('/auth/login', 'refresh');
+			return;
+		}
+		$companyId = getCompanyId();
+		$licenseId = (int) $this->input->post('license_id');
+
+		$license = $this->Subscription_model->get_company_license($licenseId, $companyId);
+		if (empty($license) || (int) $license['status'] !== 1) {
+			$this->session->set_flashdata('alert_error', 'License not available.');
+			redirect('/subscription', 'refresh');
+			return;
+		}
+
+		$this->Orderlicense_model->resetIp($licenseId);
+		$this->session->set_flashdata('alert_success', 'IP binding reset. You can set a new server IP the next time you download.');
+		redirect('/subscription', 'refresh');
 	}
 
 	/** Show same-family upgrade/downgrade options for a license. */

@@ -47,6 +47,9 @@ class License_client {
 	/** @var array|null in-request memo of the resolved state */
 	private $state = null;
 
+	/** @var array last admin_authorized() response payload (for grace info) */
+	private $adminVerdict = array();
+
 	public function __construct()
 	{
 		$this->CI =& get_instance();
@@ -57,11 +60,17 @@ class License_client {
 	/**
 	 * Anti-piracy check for the admin login. Hard-coded endpoint (NOT a config
 	 * value, so a cracker can't repoint it at a fake server). Pure API call —
-	 * no cache, no grace: returns TRUE only if the server explicitly authorizes
+	 * no local cache: returns TRUE only if the server reports authorized for
 	 * this install's LICENSE_KEY, FALSE on deny, missing key, or any error.
+	 *
+	 * The server may report authorized while inside a grace window (`grace` /
+	 * `grace_until` in the response) — access is still granted, and the caller
+	 * can surface a warning via admin_in_grace() / admin_grace_until().
 	 */
 	public function admin_authorized()
 	{
+		$this->adminVerdict = array();
+
 		$key = trim((string) env('LICENSE_KEY', ''));
 		if ($key === '' || $key === 'XXXX-XXXX-XXXX-XXXX') {
 			return false;
@@ -80,7 +89,26 @@ class License_client {
 		curl_close($ch);
 
 		$data = json_decode((string) $body, true);
-		return is_array($data) && ! empty($data['authorized']);
+		if ( ! is_array($data)) {
+			return false;
+		}
+
+		$this->adminVerdict = $data;
+		return ! empty($data['authorized']);
+	}
+
+	/** TRUE if the last admin_authorized() verdict was inside a grace window. */
+	public function admin_in_grace()
+	{
+		return ! empty($this->adminVerdict['grace']);
+	}
+
+	/** The grace expiry date (YYYY-MM-DD) from the last verdict, or '' if none. */
+	public function admin_grace_until()
+	{
+		return isset($this->adminVerdict['grace_until'])
+			? (string) $this->adminVerdict['grace_until']
+			: '';
 	}
 
 	// ─── role ────────────────────────────────────────────────────────────

@@ -84,6 +84,14 @@ class Authenticate extends WHMAZADMIN_Controller
 			if ($resp['status_code'] == 1) {
 				$this->session->set_userdata("ADMIN", $resp['data']);
 
+				// Carry any license grace window into the session so the admin
+				// layout can show a persistent warning banner until it clears.
+				if ($this->license_client->admin_in_grace()) {
+					$this->session->set_userdata('LICENSE_GRACE_UNTIL', $this->license_client->admin_grace_until());
+				} else {
+					$this->session->unset_userdata('LICENSE_GRACE_UNTIL');
+				}
+
 				// SECURITY FIX: Validate redirect URL to prevent open redirect vulnerability
 				if( !empty($redirectUrl) ){
 					// Only allow internal redirects (relative URLs starting with /)

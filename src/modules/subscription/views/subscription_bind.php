@@ -28,13 +28,20 @@
                     </div>
                     <div class="card-body">
 
+<?php $domainLocked = !empty($license['license_domain']); ?>
+
                         <div class="alert alert-warning d-flex align-items-start" role="alert">
                             <i class="fa fa-exclamation-triangle mg-r-10 mt-1"></i>
                             <div>
-                                Before your first download you must bind this license to the
-                                <strong>domain</strong> and <strong>server IP</strong> where the software
-                                will be installed. <strong>This can only be set once</strong> — please
-                                double-check it. Contact support if it later needs to change.
+                                <?php if ($domainLocked): ?>
+                                    Set the <strong>server IP</strong> where this license will run. The
+                                    install <strong>domain is locked</strong> and cannot be changed.
+                                <?php else: ?>
+                                    Before your first download you must bind this license to the
+                                    <strong>domain</strong> and <strong>server IP</strong> where the software
+                                    will be installed. <strong>The domain can only be set once</strong> —
+                                    please double-check it. The IP can be reset later from My Software.
+                                <?php endif; ?>
                             </div>
                         </div>
 
@@ -48,10 +55,14 @@
                             <input type="hidden" name="license_id" value="<?= (int) $license['id'] ?>" />
 
                             <div class="mb-3">
-                                <label class="form-label">Install Domain <span class="text-danger">*</span></label>
-                                <input type="text" name="domain" class="form-control" placeholder="app.example.com" required
-                                       value="">
-                                <small class="text-muted">The domain where you will run the software (without http:// or www).</small>
+                                <label class="form-label">Install Domain <?php if (!$domainLocked): ?><span class="text-danger">*</span><?php endif; ?></label>
+                                <?php if ($domainLocked): ?>
+                                    <input type="text" class="form-control" value="<?= htmlspecialchars($license['license_domain']) ?>" readonly disabled>
+                                    <small class="text-muted"><i class="fa fa-lock mg-r-3"></i>Domain is locked to this license.</small>
+                                <?php else: ?>
+                                    <input type="text" name="domain" class="form-control" placeholder="app.example.com" required value="">
+                                    <small class="text-muted">The domain where you will run the software (without http:// or www).</small>
+                                <?php endif; ?>
                             </div>
 
                             <div class="mb-4">

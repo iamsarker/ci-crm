@@ -379,29 +379,53 @@ class Orderlicense_model extends CI_Model {
 	}
 
 	/**
-	 * Bind the install domain + IP to a license (bind-once). No-op returning
-	 * FALSE if the license is already bound; otherwise writes both fields and
-	 * returns TRUE. The caller is responsible for ownership / active checks.
+	 * Bind the install domain and/or IP. The DOMAIN is bind-once (written only
+	 * while empty, then locked); the IP is written whenever it is currently
+	 * empty, so a customer can reset + rebind it after a server move. Locked
+	 * fields in the payload are ignored. Returns TRUE if anything was written.
+	 * The caller is responsible for ownership / active checks.
 	 */
 	function bindInstall($licenseId, $domain, $ip)
 	{
 		$licenseId = (int) $licenseId;
 		$domain    = trim((string) $domain);
 		$ip        = trim((string) $ip);
-		if ($licenseId <= 0 || $domain === '' || $ip === '') {
+		if ($licenseId <= 0) {
 			return false;
 		}
 
 		$license = $this->getLicense($licenseId);
-		if (empty($license) || $this->isBound($license)) {
+		if (empty($license)) {
 			return false;
 		}
 
-		$this->db->where('id', $licenseId)->update($this->table, array(
-			'license_domain' => substr($domain, 0, 255),
-			'license_ip'     => substr($ip, 0, 45),
-		));
-		return $this->db->affected_rows() >= 0;
+		$update = array();
+		if (empty($license['license_domain']) && $domain !== '') {
+			$update['license_domain'] = substr($domain, 0, 255);
+		}
+		if (empty($license['license_ip']) && $ip !== '') {
+			$update['license_ip'] = substr($ip, 0, 60);
+		}
+		if (empty($update)) {
+			return false;
+		}
+
+		$this->db->where('id', $licenseId)->update($this->table, $update);
+		return true;
+	}
+
+	/**
+	 * Clear the bound install IP so the customer can set a new one (e.g. after a
+	 * server migration). The domain binding is left untouched (bind-once).
+	 */
+	function resetIp($licenseId)
+	{
+		$licenseId = (int) $licenseId;
+		if ($licenseId <= 0) {
+			return false;
+		}
+		$this->db->where('id', $licenseId)->update($this->table, array('license_ip' => NULL));
+		return true;
 	}
 
 	// ─── Basic accessors ────────────────────────────────────────────────────

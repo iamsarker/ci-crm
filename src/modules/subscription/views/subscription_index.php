@@ -78,6 +78,13 @@ $statusMap = array(
                                 <td class="text-end">
                                     <?php if ($isActive): ?>
                                         <a href="<?=base_url()?>subscription/download/<?= (int)$lic['id'] ?>" class="btn btn-sm btn-outline-primary" title="Download"><i class="fa fa-download"></i></a>
+                                        <?php if (!empty($lic['license_ip'])): ?>
+                                            <form method="post" action="<?=base_url()?>subscription/reset_ip" class="d-inline" onsubmit="return confirm('Reset the bound IP for this license? You will set a new server IP the next time you download. The domain stays locked.');">
+                                                <input type="hidden" name="<?=$this->security->get_csrf_token_name()?>" value="<?=$this->security->get_csrf_hash()?>" />
+                                                <input type="hidden" name="license_id" value="<?= (int)$lic['id'] ?>" />
+                                                <button type="submit" class="btn btn-sm btn-outline-warning" title="Reset bound IP"><i class="fa fa-sync-alt mg-r-3"></i>Reset IP</button>
+                                            </form>
+                                        <?php endif; ?>
                                         <?php if (!empty($lic['family_group']) && empty($lic['pending_invoice_id'])): ?>
                                             <a href="<?=base_url()?>subscription/upgrade/<?= (int)$lic['id'] ?>" class="btn btn-sm btn-outline-success" title="Change plan"><i class="fa fa-arrow-up"></i> Upgrade</a>
                                         <?php endif; ?>

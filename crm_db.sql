@@ -1599,7 +1599,7 @@ CREATE TABLE `order_licenses` (
   `is_synced` tinyint(4) NOT NULL DEFAULT 1,
   `last_sync_dt` datetime DEFAULT NULL,
   `license_domain` varchar(255) DEFAULT NULL COMMENT 'Install domain bound on first phone-home',
-  `license_ip` varchar(45) DEFAULT NULL COMMENT 'Install IP the client bound at download (bind-once)',
+  `license_ip` varchar(60) DEFAULT NULL COMMENT 'Install IP the client bound at download (bind-once)',
   `last_check_in` datetime DEFAULT NULL COMMENT 'Last successful phone-home',
   `last_check_ip` varchar(45) DEFAULT NULL COMMENT 'IP of last phone-home',
   `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0=pending,1=active,2=expired,3=suspended,4=terminated',
