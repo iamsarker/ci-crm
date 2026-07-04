@@ -144,10 +144,14 @@ A company can own **multiple** licenses; each is an independent `order_licenses`
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `subscription` | GET | **My Software** (`subscription_index.php`) — every license with product, price/cycle, key, next renewal, status, and per-license Download / Upgrade actions |
-| `subscription/download/{license_id}` | GET | License-gated download. Verifies **ownership + active status**, then resolves the release via `Software_model::getReleaseForProduct()`: product's `current_release_id` → product-scoped `is_current` → global `is_current`. No id → the sole active license, else redirects to My Software. |
+| `subscription` | GET | **My Software** (`subscription_index.php`) — every license with product, price/cycle, key, next renewal, status, per-license Download / Upgrade / **Reset IP** actions, and the bound domain·IP under the key |
+| `subscription/download/{license_id}` | GET | License-gated download. Verifies **ownership + active status**, then the **install-binding gate** (see below): unbound → renders the bind form; bound → resolves the release via `Software_model::getReleaseForProduct()` (product's `current_release_id` → product-scoped `is_current` → global `is_current`) and streams it. No id → the sole active license, else redirects to My Software. |
+| `subscription/bind` | POST | Binds the install **domain + server IP** to the license (CSRF). Validates domain shape + IP (`FILTER_VALIDATE_IP`, v4/v6), only collects the field(s) still empty, then `Orderlicense_model::bindInstall()` → redirect back to `download`. |
+| `subscription/reset_ip` | POST | Customer self-service (CSRF + JS confirm): `Orderlicense_model::resetIp()` clears `license_ip` (domain stays locked) so a new server IP can be set on the next download. |
 | `subscription/upgrade/{license_id}` | GET | Same-family upgrade/downgrade options (same currency + cycle), each showing the **prorated charge** for the days remaining until renewal |
 | `subscription/do_upgrade` | POST | Applies the change (form POST + CSRF): upgrade → prorated DUE invoice + `setPendingPlanChange()`, redirect to `billing/pay`; downgrade/same-price → `changePlan()` immediately |
+
+**Install-binding gate (anti-piracy):** each license binds to one install identity — `order_licenses.license_domain` + **`license_ip`** (varchar 60; added by `license_bind_ip_migration.sql`). `download()` calls `Orderlicense_model::isBound()` (both fields set); if not, it renders `subscription_bind.php` instead of streaming. The **domain is bind-once** (written only while empty, then locked and shown read-only); the **IP is resettable** by the customer, so a server migration doesn't require support. `bindInstall()` writes only the empty field(s) — a locked domain in the payload is ignored. Validation errors and success surface as the existing customer toasts (`alert_error`/`alert_success`). **Enforcement is store-only for now** — `license/verify` records domain/IP but doesn't reject mismatches (see Pending follow-ups); the bound values are in place to compare against when you're ready to enforce.
 
 **Prorated upgrade lifecycle:** `do_upgrade` computes `(new_recurring − old_recurring) × remaining_days / cycle_days`. If positive, it creates a DUE proration invoice (`item_type=3`, ref = license) and records the target on the license (`pending_plan_id` + `pending_invoice_id`); the plan switch happens only when that invoice is paid (see `provisionLicense` above). Non-positive (downgrade / same price) applies immediately with the new price billed from the next renewal — no invoice.
 
@@ -200,7 +204,7 @@ The installed software calls these endpoints. All are CSRF-excluded.
 
 **Helpers:** `license_client()` (library accessor) and `license_state()` (display-friendly verdict) in `entitlement_helper.php`.
 
-> **Self-hosted caveat:** the customer has the source, so this check is removable. Encode `License_client.php` (IonCube / SourceGuardian) for real teeth — same model WHMCS uses.
+> **Self-hosted caveat:** the customer has the source, so this check is removable. Encode `License_client.php` (IonCube / SourceGuardian) for real teeth — same model WHMCS uses. See **[Files to encode](#files-to-encode-ioncube--sourceguardian)** below — `License_client.php` also houses the admin-login gate, so encoding it covers both.
 
 ### Feature gates — enforcing the tier in the product
 
@@ -224,6 +228,65 @@ Two gate primitives (in `entitlement_helper.php`), both autoloaded:
 | `domain_registration_transfers` | Admin menu (Domain Register/Pricing), `Domain_register` controller guard |
 
 **Not gated in code (deliberately):** `priority_support`, `support_response_hours`, `dedicated_account_manager`, `sla_guarantee` are **service-level** promises (the vendor's support to the client), shown on the pricing cards only — nothing to enforce in the product. `dns_management`, `reseller_management`, `api_expose_for_third_party`, `advanced_modules`, `automatic_updates` are gateable but need subsystem-specific guards; add them with the same `feature_enabled()` / `require_feature()` pattern at those call sites.
+
+---
+
+## Admin-Login License Gate (anti-piracy)
+
+A **separate** mechanism from the entitlement client above: it protects **this** install from being run cracked, rather than gating tiers. It lives in the same file (`License_client.php`) but is independent of the master/client/unconfigured roles — it always runs on `whmazadmin` login.
+
+**Flow:** `Authenticate::login()` (`src/controllers/whmazadmin/Authenticate.php`) calls `License_client::admin_authorized()` **before** the credential check (and before reCAPTCHA). A cracked/unlicensed copy is blocked even with correct admin credentials.
+
+**The check** (`admin_authorized()`):
+- Reads `LICENSE_KEY` from `.env` (empty or the `XXXX-…` placeholder ⇒ `false`).
+- Pure `GET` to the **hard-coded** endpoint `https://whmaz.com/api/verify-license.php?license_key=<KEY>` (`Accept: application/json`). The URL is a class const **on purpose** — not a `.env`/DB value — so a cracker can't repoint it at a fake "always-authorized" server.
+- Authorized ⇔ JSON `authorized: true`. No local cache and no local grace: the vendor server is the sole source of truth (a network outage at login ⇒ blocked; this was a deliberate "simple, no cache" choice).
+
+**Response shape** (server-controlled):
+```json
+{ "status": "authorized", "authorized": true, "ip": "103.159.72.16",
+  "ip_match": null, "grace": true, "grace_until": "2026-07-09" }
+```
+
+**Grace window:** when the server reports `authorized:true` with `grace:true` + `grace_until`, login is allowed and:
+- `Authenticate::login()` stores `LICENSE_GRACE_UNTIL` in the session on successful login (cleared when not in grace; wiped on logout via `sess_destroy`).
+- `whmazadmin/include/header.php` renders a persistent `alert-warning` banner at the top of **every** admin page ("License grace period … until *Jul 9, 2026* (N days remaining)"), refreshed each login.
+- Library getters: `admin_in_grace()`, `admin_grace_until()` (populated from the last `admin_authorized()` call). When the window lapses the server returns `authorized:false` and the login gate blocks outright.
+
+**Failure UX:** on block, `login()` sets a dedicated `license_error` flashdata (not the generic `admin_error` toast) and re-renders the login view, which shows a **SweetAlert modal** ("License Verification Failed") — SweetAlert2 is already loaded via `footer_script.php`.
+
+## Files to encode (IonCube / SourceGuardian)
+
+These checks are plain PHP a self-hosted buyer can read and edit. **Encoding buys two different things** — decide which you want, they're not the same:
+
+- **Tamper-resistance** — stop a cracker *modifying* the decision (the real point of encoding).
+- **Concealment** — stop a cracker *reading* how the scheme works. Note this is only achievable for the whole enforcement surface: the licensing model still leaks from anything left plaintext (the `require_feature()` call sites name what's gated, `config/plans.php` lists the feature keys, the helper spells out the remote-map model). Encoding one file in isolation does **not** conceal the scheme.
+
+The canonical file list also lives at **`ioncube-encodes-files.txt`** in the repo root (build script input).
+
+### Must — tamper-critical decision points
+
+| File | Why |
+|------|-----|
+| `src/libraries/License_client.php` | The check logic itself — hard-coded admin-verify URL, `admin_authorized()`, plus the entitlement phone-home client. **Primary target;** covers both the admin gate and the tier feature map (one file). |
+| `src/controllers/whmazadmin/Authenticate.php` | The **call site** of the admin gate. Without encoding it, a cracker just removes the two-line `admin_authorized()` call and the encoded library never runs. |
+
+### Defense-in-depth set — encode together, not individually
+
+Only worthwhile if you want to harden **tier feature-gating** *and* obscure the licensing layer. Encode these **as a set** — encoding one alone leaves the model readable in the others (and `Entitlement.php` has **0 gate call sites**, so on its own it protects nothing):
+
+| File | Why |
+|------|-----|
+| `src/helpers/entitlement_helper.php` | Holds the **used** gate functions (`feature_enabled()` / `require_feature()` / `feature_value()`) plus the `license_client()` accessor — the single-point bypass all 10 gates funnel through. The higher-value member of the set. |
+| `src/libraries/Entitlement.php` | Per-company entitlement resolver. **Not** on any current gate path (legacy multi-tenant API), but its source reveals the scheme, so it belongs in the *concealment* set if you encode the layer. Skip if you only care about tamper-resistance. |
+
+### Stays plaintext (do not encode)
+
+- `src/config/plans.php` — config (feature keys / universal flags / labels), read as data; encoding config is fragile for no gain.
+- The `require_feature()` / `feature_enabled()` **call sites** scattered in controllers/views — impractical to encode the whole app; they leak *what* is gated but can't flip the verdict once the decision files above are encoded.
+- Customer **download-binding** (`subscription` module, `Orderlicense_model` bind methods) — not anti-piracy; real enforcement would live server-side in `license/verify`, which runs on the vendor's own server and never ships.
+
+> **Encoding notes:** CI loads these via the loader then instantiates them, so IonCube works normally — ensure the target server has a matching IonCube loader installed. Keep **unencoded copies in source control**; encode only the distributed build. `entitlement_helper.php` and `Entitlement.php` also run on the **master/vendor** install, so test the encoded build there before shipping.
 
 ---
 
@@ -276,6 +339,7 @@ Runs as part of `/cronjobs/run`; also standalone at `/cronjobs/suspendOverdueLic
 ## Pending follow-ups
 
 - **Cross-cycle upgrades** aren't offered — upgrade options are restricted to the license's current billing cycle to keep proration simple.
-- `license/verify` **records but does not hard-reject domain mismatches** (lenient, to allow legitimate server migrations).
+- `license/verify` **records but does not hard-reject domain/IP mismatches** (lenient, to allow legitimate server migrations). The customer now binds `license_domain` + `license_ip` at download (domain bind-once, IP resettable), so those bound values exist to enforce against when desired — flip `validateLicense()` to compare the calling install's domain/IP to the bound values.
+- **Admin-login gate has no local grace/cache** — if `whmaz.com` is unreachable at login, admins are blocked until it responds. Grace is entirely server-driven (`grace`/`grace_until` in the response). Consider a short local fail-open window if vendor-server availability becomes a concern.
 - `paddle_*` columns exist but Paddle (Merchant of Record) wiring is not implemented yet.
 - The retired `subscription/plans` endpoint is dormant; consider removing it once the cart flow is confirmed in production.

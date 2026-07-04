@@ -1,0 +1,70 @@
+Which files to encode (IonCube / SourceGuardian)
+================================================================
+
+Full rationale: docs/SAAS_LICENSING.md > "Files to encode".
+
+Encoding buys two DIFFERENT things — decide which you want:
+  - Tamper-resistance: stop a cracker MODIFYING the decision (the real point).
+  - Concealment: stop a cracker READING the scheme. Only meaningful for the
+    WHOLE enforcement surface — encoding one file in isolation conceals
+    nothing (the model still leaks from plaintext call sites + config).
+
+Target PHP version: 8.2  (this install runs on XAMPP/LAMPP PHP 8.2.12)
+  - IonCube encoding is PHP-version-specific: encode targeting PHP 8.2.
+  - Codebase is validated for PHP 8.2+ (see docs/PHP82_UPGRADE_AND_TROUBLESHOOTING.md).
+  - If buyers run other PHP versions, produce a separate encoded build per
+    target version (e.g. 8.1 / 8.2 / 8.3) and ship the matching one.
+  - The target server must have the ionCube Loader for that same PHP version
+    installed (php.ini: zend_extension=ioncube_loader_lin_8.2.so).
+
+Rules:
+  - Keep UNENCODED copies in source control; encode only the shipped build.
+  - Ensure the target server has a matching IonCube loader installed.
+  - entitlement_helper.php + Entitlement.php also run on the master/vendor
+    install — test the encoded build there before shipping.
+
+
+=== MUST — tamper-critical decision points ===
+
+1.  File: src/libraries/License_client.php
+-----------------------------------------------------------------
+  Why: The check logic itself — hard-coded admin-verify URL + admin_authorized()
+  + the entitlement phone-home client. One file covers both the admin gate and
+  the tier feature map.
+
+2.  File: src/controllers/whmazadmin/Authenticate.php
+-----------------------------------------------------------------
+  Why: The call site. Without encoding it, a cracker just deletes the two-line
+  admin_authorized() call and your encoded library never runs.
+
+
+=== DEFENSE-IN-DEPTH SET — encode together, or not at all ===
+(Only if you also want to harden tier feature-gating AND obscure the licensing
+ layer. Encoding either one ALONE leaves the model readable in the other. For
+ tamper-resistance only, skip BOTH.)
+
+3.  File: src/helpers/entitlement_helper.php
+-----------------------------------------------------------------
+  Why: Holds the USED gate functions (feature_enabled() / require_feature() /
+  feature_value()) + the license_client() accessor — the single-point bypass
+  all 10 gates funnel through. Higher-value member of the set.
+
+4.  File: src/libraries/Entitlement.php
+-----------------------------------------------------------------
+  Why: Per-company entitlement resolver. NOT on any current gate path (legacy
+  multi-tenant API, 0 gate call sites) — included only so its source doesn't
+  reveal the scheme. Concealment only; skip if you care about tamper-resistance
+  alone.
+
+
+=== DO NOT ENCODE (kept plaintext) ===
+
+  - src/config/plans.php
+        Config/data (feature keys, universal flags, labels). Encoding config is
+        fragile for no gain.
+  - src/modules/subscription/**  (download-binding, Orderlicense_model binds)
+        Not anti-piracy; real enforcement would live server-side in
+        license/verify, which never ships to buyers.
+  - require_feature() / feature_enabled() call sites in controllers/views
+        Impractical to encode the whole app; they reveal WHAT is gated but
+        cannot flip the verdict once the decision files above are encoded.

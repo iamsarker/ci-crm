@@ -19,7 +19,8 @@
       "Bash(awk \"/CREATE TABLE \\\\`dom_registers\\\\`/{f=1} f{print} f&&/ENGINE=/{exit}\" crm_db.sql)",
       "Bash(awk \"/CREATE TABLE \\\\`plans\\\\`/{f=1} f{print} f&&/ENGINE=/{exit}\" crm_db.sql)",
       "Bash(awk \"/CREATE TABLE \\\\`software_pricing\\\\`/{f=1} f{print} f&&/ENGINE=/{exit}\" crm_db.sql)",
-      "Bash(awk \"/CREATE TABLE \\\\`order_services\\\\`/{f=1} f{print} f&&/ENGINE=/{exit}\" crm_db.sql)"
+      "Bash(awk \"/CREATE TABLE \\\\`order_services\\\\`/{f=1} f{print} f&&/ENGINE=/{exit}\" crm_db.sql)",
+      "WebFetch(domain:www.ioncube.com)"
     ]
   },
   "effortLevel": "high"
