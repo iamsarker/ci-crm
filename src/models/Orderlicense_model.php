@@ -367,6 +367,43 @@ class Orderlicense_model extends CI_Model {
 			->row_array() ?: array();
 	}
 
+	/**
+	 * Whether an install has already been bound (both domain + IP set). Once
+	 * bound, the binding is locked (bind-once) and cannot be changed here.
+	 */
+	function isBound($license)
+	{
+		return is_array($license)
+			&& ! empty($license['license_domain'])
+			&& ! empty($license['license_ip']);
+	}
+
+	/**
+	 * Bind the install domain + IP to a license (bind-once). No-op returning
+	 * FALSE if the license is already bound; otherwise writes both fields and
+	 * returns TRUE. The caller is responsible for ownership / active checks.
+	 */
+	function bindInstall($licenseId, $domain, $ip)
+	{
+		$licenseId = (int) $licenseId;
+		$domain    = trim((string) $domain);
+		$ip        = trim((string) $ip);
+		if ($licenseId <= 0 || $domain === '' || $ip === '') {
+			return false;
+		}
+
+		$license = $this->getLicense($licenseId);
+		if (empty($license) || $this->isBound($license)) {
+			return false;
+		}
+
+		$this->db->where('id', $licenseId)->update($this->table, array(
+			'license_domain' => substr($domain, 0, 255),
+			'license_ip'     => substr($ip, 0, 45),
+		));
+		return $this->db->affected_rows() >= 0;
+	}
+
 	// ─── Basic accessors ────────────────────────────────────────────────────
 
 	function getLicense($id)

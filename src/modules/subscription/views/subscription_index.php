@@ -64,6 +64,11 @@ $statusMap = array(
                                 <td>
                                     <?php if ($isActive && !empty($lic['license_key'])): ?>
                                         <code style="font-size:.8rem;"><?= htmlspecialchars($lic['license_key']) ?></code>
+                                        <?php if (!empty($lic['license_domain']) && !empty($lic['license_ip'])): ?>
+                                            <div class="small text-muted mt-1" title="This license is bound to this install">
+                                                <i class="fa fa-link mg-r-3"></i><?= htmlspecialchars($lic['license_domain']) ?> &middot; <?= htmlspecialchars($lic['license_ip']) ?>
+                                            </div>
+                                        <?php endif; ?>
                                     <?php else: ?>
                                         <span class="text-muted">&mdash;</span>
                                     <?php endif; ?>

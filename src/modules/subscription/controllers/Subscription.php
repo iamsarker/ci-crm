@@ -78,6 +78,16 @@ class Subscription extends WHMAZ_Controller
 			return;
 		}
 
+		// Bind-once gate: before the first download the client must bind the
+		// install domain + IP to this license key. Once bound it's locked, and
+		// subsequent downloads skip straight through.
+		if (!$this->Orderlicense_model->isBound($license)) {
+			$data['license']      = $license;
+			$data['suggested_ip'] = $this->input->ip_address();
+			$this->load->view('subscription_bind', $data);
+			return;
+		}
+
 		$release = $this->Software_model->getReleaseForProduct((int) $license['plan_id']);
 		$path = $this->Software_model->filePath($release);
 		if (empty($path)) {
@@ -88,6 +98,65 @@ class Subscription extends WHMAZ_Controller
 
 		$slug = preg_replace('/[^a-z0-9\-]+/', '-', strtolower($license['plan_key']));
 		stream_file_download($path, $slug . '-' . $release['version'] . '.zip');
+	}
+
+	/**
+	 * Bind the install domain + IP to a license, then continue to the download.
+	 * Bind-once: rejected if the license is already bound. POST: license_id,
+	 * domain, ip.
+	 */
+	public function bind()
+	{
+		if (!$this->isLogin()) {
+			redirect('/auth/login', 'refresh');
+			return;
+		}
+		$companyId = getCompanyId();
+		$licenseId = (int) $this->input->post('license_id');
+
+		$license = $this->Subscription_model->get_company_license($licenseId, $companyId);
+		if (empty($license) || (int) $license['status'] !== 1) {
+			$this->session->set_flashdata('alert_error', 'License not available.');
+			redirect('/subscription', 'refresh');
+			return;
+		}
+
+		// Already locked — nothing to change; go straight to the download.
+		if ($this->Orderlicense_model->isBound($license)) {
+			redirect('/subscription/download/' . $licenseId, 'refresh');
+			return;
+		}
+
+		$domain = strtolower(trim((string) $this->input->post('domain')));
+		$ip     = trim((string) $this->input->post('ip'));
+
+		// Accept a pasted URL and reduce it to a bare host.
+		if (strpos($domain, '://') !== false) {
+			$domain = parse_url($domain, PHP_URL_HOST) ?: $domain;
+		}
+		$domain = preg_replace('#^www\.#', '', $domain);
+
+		$errors = array();
+		if ($domain === '' || !preg_match('/^([a-z0-9](-?[a-z0-9])*\.)+[a-z]{2,}$/i', $domain)) {
+			$errors[] = 'Enter a valid install domain (e.g. app.example.com).';
+		}
+		if ($ip === '' || filter_var($ip, FILTER_VALIDATE_IP) === false) {
+			$errors[] = 'Enter a valid server IP address (IPv4 or IPv6).';
+		}
+		if ($errors) {
+			$this->session->set_flashdata('alert_error', implode(' ', $errors));
+			redirect('/subscription/download/' . $licenseId, 'refresh');
+			return;
+		}
+
+		if (!$this->Orderlicense_model->bindInstall($licenseId, $domain, $ip)) {
+			$this->session->set_flashdata('alert_error', 'Could not bind this license. Please try again.');
+			redirect('/subscription/download/' . $licenseId, 'refresh');
+			return;
+		}
+
+		$this->session->set_flashdata('alert_success', 'License bound to ' . $domain . ' (' . $ip . '). Your download will begin shortly.');
+		redirect('/subscription/download/' . $licenseId, 'refresh');
 	}
 
 	/** Show same-family upgrade/downgrade options for a license. */
