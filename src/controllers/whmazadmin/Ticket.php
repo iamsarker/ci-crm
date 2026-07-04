@@ -61,6 +61,17 @@ class Ticket extends WHMAZADMIN_Controller {
                             $ticketId = $this->db->insert_id();
                             if ($ticketId > 0) {
                                 $this->Support_model->sendNewTicketToCustomer($ticketId);
+
+                                // In-app notification to the customer account
+                                $this->load->model('Notification_model');
+                                $tkt = $this->db->where('id', $ticketId)->get('tickets')->row_array();
+                                $this->Notification_model->notifyCompany(
+                                    $tkt['company_id'], 'ticket',
+                                    'New support ticket opened',
+                                    !empty($tkt['title']) ? $tkt['title'] : ('Ticket #' . $ticketId),
+                                    base_url() . 'tickets/viewticket/' . $ticketId,
+                                    'fa-life-ring'
+                                );
                             }
 
                             $this->session->set_flashdata('admin_success', 'Support ticket has been placed successfully.');
@@ -203,6 +214,17 @@ class Ticket extends WHMAZADMIN_Controller {
 
                         // Send reply notification email to customer
                         $this->Support_model->sendTicketReplyToCustomer($ticket_id, $this->input->post('message'));
+
+                        // In-app notification to the customer account
+                        $this->load->model('Notification_model');
+                        $tkt = $this->db->where('id', $ticket_id)->get('tickets')->row_array();
+                        $this->Notification_model->notifyCompany(
+                            $tkt['company_id'], 'ticket',
+                            'New reply to your ticket',
+                            'Support replied to ticket #' . $ticket_id . '.',
+                            base_url() . 'tickets/viewticket/' . $ticket_id,
+                            'fa-reply'
+                        );
 
                         $this->session->set_flashdata('admin_success', 'Ticket reply has been placed successfully.');
                         redirect("whmazadmin/ticket/viewticket/".$ticket_id);

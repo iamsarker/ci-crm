@@ -71,7 +71,7 @@
 							</div>
 
 							<!-- API Credentials (for online gateways) -->
-							<?php if (in_array($gateway['gateway_code'], array('stripe', 'paypal', 'razorpay', 'paystack', 'sslcommerz'))): ?>
+							<?php if (in_array($gateway['gateway_code'], array('stripe', 'paypal', 'razorpay', 'paystack', 'sslcommerz', 'bkash'))): ?>
 							<div class="order-card mb-4">
 								<div class="card-header">
 									<div class="header-icon"><i class="fas fa-key"></i></div>
@@ -94,14 +94,14 @@
 										<h6 class="text-success"><i class="fas fa-check-circle"></i> Live Credentials</h6>
 										<div class="mb-3">
 											<label class="form-label">
-												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Client ID' : 'Public/Publishable Key'; ?>
+												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Client ID' : ($gateway['gateway_code'] === 'bkash' ? 'App Key' : 'Public/Publishable Key'); ?>
 											</label>
 											<input type="text" class="form-control" name="public_key"
 												value="<?php echo htmlspecialchars($gateway['public_key'] ?? ''); ?>">
 										</div>
 										<div class="mb-3">
 											<label class="form-label">
-												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Client Secret' : 'Secret Key'; ?>
+												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Client Secret' : ($gateway['gateway_code'] === 'bkash' ? 'App Secret' : 'Secret Key'); ?>
 											</label>
 											<input type="password" class="form-control" name="secret_key"
 												value="<?php echo htmlspecialchars($gateway['secret_key'] ?? ''); ?>">
@@ -113,14 +113,14 @@
 										<h6 class="text-warning"><i class="fas fa-flask"></i> Test/Sandbox Credentials</h6>
 										<div class="mb-3">
 											<label class="form-label">
-												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Sandbox Client ID' : 'Test Public Key'; ?>
+												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Sandbox Client ID' : ($gateway['gateway_code'] === 'bkash' ? 'Sandbox App Key' : 'Test Public Key'); ?>
 											</label>
 											<input type="text" class="form-control" name="test_public_key"
 												value="<?php echo htmlspecialchars($gateway['test_public_key'] ?? ''); ?>">
 										</div>
 										<div class="mb-3">
 											<label class="form-label">
-												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Sandbox Client Secret' : 'Test Secret Key'; ?>
+												<?php echo $gateway['gateway_code'] === 'paypal' ? 'Sandbox Client Secret' : ($gateway['gateway_code'] === 'bkash' ? 'Sandbox App Secret' : 'Test Secret Key'); ?>
 											</label>
 											<input type="password" class="form-control" name="test_secret_key"
 												value="<?php echo htmlspecialchars($gateway['test_secret_key'] ?? ''); ?>">
@@ -304,7 +304,7 @@
 							</div>
 
 							<!-- Extra Config (for SSLCommerz, etc.) -->
-							<?php if (!empty($gateway['extra_config']) || in_array($gateway['gateway_code'], array('sslcommerz'))): ?>
+							<?php if (!empty($gateway['extra_config']) || in_array($gateway['gateway_code'], array('sslcommerz', 'bkash'))): ?>
 							<div class="order-card mb-4">
 								<div class="card-header">
 									<div class="header-icon"><i class="fas fa-sliders-h"></i></div>
@@ -315,7 +315,11 @@
 										<label class="form-label">Extra Config (JSON)</label>
 										<textarea class="form-control" name="extra_config" rows="6"
 											placeholder='{"key": "value"}'><?php echo is_array($gateway['extra_config']) ? json_encode($gateway['extra_config'], JSON_PRETTY_PRINT) : htmlspecialchars($gateway['extra_config'] ?? ''); ?></textarea>
-										<small class="text-muted">Gateway-specific settings in JSON format</small>
+										<?php if ($gateway['gateway_code'] === 'bkash'): ?>
+											<small class="text-muted">bKash username/password go here (App Key/Secret are set above). Live: <code>username</code>/<code>password</code>; sandbox: <code>sandbox_username</code>/<code>sandbox_password</code>. Optional: <code>sandbox_url</code>/<code>live_url</code>.</small>
+											<?php else: ?>
+											<small class="text-muted">Gateway-specific settings in JSON format</small>
+											<?php endif; ?>
 									</div>
 								</div>
 							</div>

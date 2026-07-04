@@ -222,6 +222,7 @@ class PaymentGateway_model extends CI_Model
             'razorpay' => array('name' => 'Razorpay', 'type' => 'online_card'),
             'paystack' => array('name' => 'Paystack', 'type' => 'online_card'),
             'sslcommerz' => array('name' => 'SSLCommerz', 'type' => 'online_card'),
+            'bkash' => array('name' => 'bKash', 'type' => 'online_wallet'),
             'bank_transfer' => array('name' => 'Bank Transfer', 'type' => 'bank_transfer'),
             'manual' => array('name' => 'Manual Payment', 'type' => 'manual')
         );

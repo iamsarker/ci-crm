@@ -767,4 +767,40 @@
 		}
 	}
 
+	if ( ! function_exists('time_ago')) {
+		/**
+		 * Human-friendly relative time (e.g. "5 minutes ago", "2 days ago").
+		 * Falls back to a formatted date for anything older than ~30 days.
+		 */
+		function time_ago($datetime)
+		{
+			if (empty($datetime)) return '';
+
+			$ts = is_numeric($datetime) ? (int) $datetime : strtotime($datetime);
+			if (!$ts) return '';
+
+			$diff = time() - $ts;
+			if ($diff < 0) $diff = 0;
+
+			if ($diff < 60) return 'just now';
+
+			$units = array(
+				2592000 => 'month',
+				604800  => 'week',
+				86400   => 'day',
+				3600    => 'hour',
+				60      => 'minute'
+			);
+
+			foreach ($units as $secs => $label) {
+				if ($diff >= $secs) {
+					$val = floor($diff / $secs);
+					return $val . ' ' . $label . ($val > 1 ? 's' : '') . ' ago';
+				}
+			}
+
+			return date('M j, Y', $ts);
+		}
+	}
+
 ?>

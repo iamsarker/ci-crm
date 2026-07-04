@@ -141,3 +141,70 @@
 
 	})
 </script>
+
+<!-- In-App Notifications -->
+<style>
+.notif-dropdown{width:340px;max-width:92vw;padding:0;}
+.notif-list{max-height:360px;overflow-y:auto;}
+.notif-badge-hidden{display:none;}
+.notif-item{display:block;padding:10px 14px;border-bottom:1px solid #f0f0f0;color:inherit;text-decoration:none;cursor:pointer;}
+.notif-item:hover{background:#f8f9fc;}
+.notif-item.unread{background:#eef4ff;}
+.notif-item .notif-title{font-weight:600;font-size:.85rem;margin-bottom:2px;}
+.notif-item .notif-msg{font-size:.8rem;color:#6c757d;margin-bottom:2px;}
+.notif-item .notif-time{font-size:.72rem;color:#a0a0a0;}
+</style>
+<script>
+$(function(){
+	var NOTIF_BASE = '<?=base_url()?>notifications/';
+	var $badge = $('#notif-badge');
+	var $list  = $('#notif-list');
+	if(!$badge.length) return;
+
+	function renderBadge(count){
+		count = parseInt(count) || 0;
+		$badge.text(count > 99 ? '99+' : count).css('display', count > 0 ? 'inline-block' : 'none');
+	}
+	function escapeHtml(s){ return $('<div>').text(s == null ? '' : s).html(); }
+
+	function loadCount(){
+		$.getJSON(NOTIF_BASE + 'unread_count', function(r){ if(r && r.success) renderBadge(r.count); });
+	}
+
+	function loadList(){
+		$.getJSON(NOTIF_BASE + 'list_api', function(r){
+			if(!r || !r.success) return;
+			renderBadge(r.unread_count);
+			if(!r.notifications.length){
+				$list.html('<div class="text-center text-muted py-4">No notifications</div>');
+				return;
+			}
+			var html = '';
+			r.notifications.forEach(function(n){
+				html += '<a class="notif-item' + (n.is_read == 0 ? ' unread' : '') + '" data-id="' + n.id + '" href="' + (n.url ? escapeHtml(n.url) : '#') + '">'
+					 +  '<div class="notif-title">' + escapeHtml(n.title) + '</div>'
+					 +  (n.message ? '<div class="notif-msg">' + escapeHtml(n.message) + '</div>' : '')
+					 +  '<div class="notif-time">' + escapeHtml(n.time_ago) + '</div>'
+					 +  '</a>';
+			});
+			$list.html(html);
+		});
+	}
+
+	$('#notifBell').on('show.bs.dropdown', loadList);
+
+	$list.on('click', '.notif-item', function(e){
+		var $item = $(this), id = $item.data('id'), url = $item.attr('href');
+		$.post(NOTIF_BASE + 'mark_read', { id: id }, function(){ $item.removeClass('unread'); loadCount(); });
+		if(!url || url === '#'){ e.preventDefault(); }
+	});
+
+	$('#notif-mark-all').on('click', function(e){
+		e.preventDefault();
+		$.post(NOTIF_BASE + 'mark_all_read', {}, function(){ $list.find('.notif-item').removeClass('unread'); renderBadge(0); });
+	});
+
+	loadCount();
+	setInterval(loadCount, 60000);
+});
+</script>

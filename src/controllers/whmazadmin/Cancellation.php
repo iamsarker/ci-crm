@@ -172,6 +172,16 @@ class Cancellation extends WHMAZADMIN_Controller
             array(substr($note, 0, 255), date('Y-m-d H:i:s'), getAdminId(), intval($id))
         );
 
+        // Notify the customer their request was processed
+        $this->load->model('Notification_model');
+        $this->Notification_model->notifyCompany(
+            $req['company_id'], 'cancellation',
+            'Domain cancellation processed',
+            'Your cancellation request for ' . $req['domain'] . ' has been processed.',
+            base_url() . 'clientarea/domain_detail/' . intval($req['domain_id']),
+            'fa-ban'
+        );
+
         echo json_encode(array('success' => true, 'message' => 'Domain cancelled and request marked as processed'));
     }
 
@@ -191,7 +201,7 @@ class Cancellation extends WHMAZADMIN_Controller
         }
 
         $req = $this->db->query(
-            "SELECT status FROM domain_cancellation_requests WHERE id = ? LIMIT 1",
+            "SELECT * FROM domain_cancellation_requests WHERE id = ? LIMIT 1",
             array(intval($id))
         )->row_array();
 
@@ -207,6 +217,16 @@ class Cancellation extends WHMAZADMIN_Controller
         $this->db->query(
             "UPDATE domain_cancellation_requests SET status = 2, admin_note = ?, processed_on = ?, processed_by = ? WHERE id = ?",
             array(substr($note, 0, 255), date('Y-m-d H:i:s'), getAdminId(), intval($id))
+        );
+
+        // Notify the customer their request was declined
+        $this->load->model('Notification_model');
+        $this->Notification_model->notifyCompany(
+            $req['company_id'], 'cancellation',
+            'Domain cancellation request declined',
+            'Your cancellation request for ' . $req['domain'] . ' was reviewed and not processed.',
+            base_url() . 'clientarea/domain_detail/' . intval($req['domain_id']),
+            'fa-ban'
         );
 
         echo json_encode(array('success' => true, 'message' => 'Request dismissed'));

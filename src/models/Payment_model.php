@@ -517,6 +517,27 @@ class Payment_model extends CI_Model
             );
         }
 
+        // In-app notifications (customer account + admins)
+        $this->load->model('Notification_model');
+        $amountLabel = $currencySymbol . number_format($transaction['amount'], 2);
+        $this->Notification_model->notifyCompany(
+            $invoice['company_id'], 'payment',
+            'Payment received for Invoice #' . $invoice['invoice_no'],
+            'We received your payment of ' . $amountLabel . ' via ' . $gatewayName . '.',
+            base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'],
+            'fa-money-bill-wave'
+        );
+        if ($notifyAdmin) {
+            $customerLabel = !empty($company['name']) ? $company['name'] : $company['email'];
+            $this->Notification_model->notifyAdmins(
+                'payment',
+                'Payment received: ' . $amountLabel,
+                'Invoice #' . $invoice['invoice_no'] . ' paid by ' . $customerLabel . ' via ' . $gatewayName . '.',
+                base_url() . 'whmazadmin/invoice/view/' . $invoice['company_id'] . '/' . $invoice['invoice_uuid'],
+                'fa-money-bill-wave'
+            );
+        }
+
         log_message('info', 'Payment confirmation emails sent for transaction #' . $transactionId .
             ' - Customer: ' . ($result['customer'] ? 'Yes' : 'No') .
             ', Admin: ' . ($result['admin'] ? 'Yes' : 'No'));

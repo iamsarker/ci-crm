@@ -211,6 +211,32 @@ CREATE TABLE `announcements` (
   `deleted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `app_notifications`
+-- In-app notifications with per-recipient read state (admin + customer portals)
+--
+
+CREATE TABLE `app_notifications` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `recipient_type` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1=admin, 2=customer',
+  `recipient_id` int(11) NOT NULL DEFAULT 0 COMMENT 'admin_users.id or companies.id',
+  `type` varchar(50) DEFAULT 'system' COMMENT 'order, payment, ticket, cancellation, customer, system',
+  `title` varchar(255) NOT NULL,
+  `message` text DEFAULT NULL,
+  `url` varchar(255) DEFAULT NULL,
+  `icon` varchar(50) DEFAULT NULL,
+  `is_read` tinyint(4) NOT NULL DEFAULT 0,
+  `read_on` datetime DEFAULT NULL,
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_recipient` (`recipient_type`,`recipient_id`,`is_read`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
 --
 -- Dumping data for table `announcements`
 --
@@ -1935,7 +1961,8 @@ INSERT INTO `payment_gateway` (`id`, `name`, `gateway_code`, `gateway_type`, `ic
 (4, 'Razorpay', 'razorpay', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'INR', 0.00, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'Razorpay', 'Pay with UPI, Cards, Netbanking, or Wallets via Razorpay.', 3, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (5, 'Paystack', 'paystack', 'online_card', NULL, 'ONLINE', NULL, NULL, NULL, 1, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'NGN,GHS,ZAR,KES', 0.00, 0.00, 'both', 100.00, 1.50, 'merchant', NULL, 'Paystack', 'Pay with card or bank transfer via Paystack.', 4, NULL, NULL, NULL, NULL, 0, '2026-02-13 10:28:21', NULL, NULL, NULL),
 (6, 'SSLCommerz', 'sslcommerz', 'online_card', NULL, 'ONLINE', '', '', '', 1, '', '', NULL, '{\r\n    \"store_id\": \"\",\r\n    \"store_password\": \"\",\r\n    \"sandbox_url\": \"https:\\/\\/sandbox.sslcommerz.com\",\r\n    \"live_url\": \"https:\\/\\/securepay.sslcommerz.com\"\r\n}', '', '', '', '', '', '', 'USD,BDT', 0.10, 0.00, 'percentage', 0.00, 2.00, 'merchant', NULL, 'SSLCommerz', 'Pay with bKash, Nagad, Cards, or Mobile Banking.', 5, '', '', NULL, '', 1, '2026-02-13 10:28:21', NULL, '2026-07-03 15:03:13', 1),
-(7, 'Bank Transfer', 'bank_transfer', 'bank_transfer', NULL, 'OFFLINE', '', '', '', 0, '', '', NULL, NULL, '', '', '', '', '', '', 'USD,EUR,GBP,BDT,INR', 0.10, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Bank Transfer', 'Transfer funds directly to our bank account. Order will be processed after payment confirmation.', 10, '', '', NULL, 'Please share the TXN number after payment', 1, '2026-02-13 10:28:21', NULL, '2026-02-14 08:56:29', 1);
+(7, 'Bank Transfer', 'bank_transfer', 'bank_transfer', NULL, 'OFFLINE', '', '', '', 0, '', '', NULL, NULL, '', '', '', '', '', '', 'USD,EUR,GBP,BDT,INR', 0.10, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'Bank Transfer', 'Transfer funds directly to our bank account. Order will be processed after payment confirmation.', 10, '', '', NULL, 'Please share the TXN number after payment', 1, '2026-02-13 10:28:21', NULL, '2026-02-14 08:56:29', 1),
+(8, 'bKash', 'bkash', 'online_wallet', NULL, 'ONLINE', '', '', '', 1, '', '', NULL, '{"username":"","password":"","sandbox_username":"","sandbox_password":"","sandbox_url":"https://tokenized.sandbox.bka.sh/v1.2.0-beta","live_url":"https://tokenized.pay.bka.sh/v1.2.0-beta"}', '', '', '', '', '', '', 'BDT', 1.00, 0.00, 'none', 0.00, 0.00, 'merchant', NULL, 'bKash', 'Pay securely with your bKash account.', 6, '', '', NULL, '', 0, '2026-07-04 00:00:00', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 

@@ -279,6 +279,24 @@
             </li>
 
             <?php if( isLoggedin() ){ $user = getUserData();?>
+            <!-- Notifications Bell -->
+            <li class="nav-item dropdown me-2">
+              <a class="nav-link position-relative" href="#" id="notifBell" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle notif-badge-hidden" id="notif-badge"></span>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end notif-dropdown">
+                <li class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                  <strong class="text-dark">Notifications</strong>
+                  <a href="#" class="small text-decoration-none" id="notif-mark-all">Mark all read</a>
+                </li>
+                <li>
+                  <div id="notif-list" class="notif-list">
+                    <div class="text-center text-muted py-4" id="notif-empty">No notifications</div>
+                  </div>
+                </li>
+              </ul>
+            </li>
             <!-- User Dropdown (Logged In) -->
             <li class="nav-item dropdown dropdown-profile">
               <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">

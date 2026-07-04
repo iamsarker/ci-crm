@@ -75,6 +75,17 @@ class Tickets extends WHMAZ_Controller {
                             $ticketId = $this->db->insert_id();
                             if ($ticketId > 0) {
                                 $this->Support_model->sendNewTicketToDepartment($ticketId);
+
+                                // In-app notification to admins
+                                $this->load->model('Notification_model');
+                                $tkt = $this->db->where('id', $ticketId)->get('tickets')->row_array();
+                                $this->Notification_model->notifyAdmins(
+                                    'ticket',
+                                    'New support ticket',
+                                    !empty($tkt['title']) ? $tkt['title'] : ('Ticket #' . $ticketId),
+                                    base_url() . 'whmazadmin/ticket/viewticket/' . $ticketId,
+                                    'fa-life-ring'
+                                );
                             }
 
                             $this->session->set_flashdata('alert_success', 'Support ticket has been placed successfully.');
@@ -219,6 +230,16 @@ class Tickets extends WHMAZ_Controller {
 
                         // Send reply notification email to department
                         $this->Support_model->sendTicketReplyToDepartment($ticket_id, $this->input->post('message'));
+
+                        // In-app notification to admins
+                        $this->load->model('Notification_model');
+                        $this->Notification_model->notifyAdmins(
+                            'ticket',
+                            'New ticket reply from customer',
+                            'A customer replied to ticket #' . $ticket_id . '.',
+                            base_url() . 'whmazadmin/ticket/viewticket/' . $ticket_id,
+                            'fa-reply'
+                        );
 
                         $this->session->set_flashdata('alert_success', 'Ticket reply has been placed successfully.');
                         redirect("tickets/viewticket/".$ticket_id);

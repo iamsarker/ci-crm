@@ -68,6 +68,7 @@
                             case 'paypal': $icon = 'fa-paypal'; break;
                             case 'razorpay': $icon = 'fa-rupee-sign'; break;
                             case 'sslcommerz': $icon = 'fa-mobile-alt'; break;
+                            case 'bkash': $icon = 'fa-mobile-alt'; break;
                             case 'paystack': $icon = 'fa-credit-card'; break;
                             case 'bank_transfer': $icon = 'fa-university'; break;
                             case 'manual': $icon = 'fa-hand-holding-usd'; break;
@@ -130,6 +131,17 @@
                     <i class="fas fa-info-circle"></i> You will be redirected to SSLCommerz secure payment page to complete your payment using bKash, Nagad, Cards, or Mobile Banking.
                 </p>
                 <button type="button" class="btn-pay" id="sslcommerz-pay-btn">
+                    <i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>
+                </button>
+            </div>
+
+            <!-- bKash -->
+            <div class="payment-form" id="bkash-form" class="payment-form-section">
+                <h5 class="payment-form-title"><i class="fas fa-mobile-alt"></i> Pay with bKash</h5>
+                <p class="payment-form-description">
+                    <i class="fas fa-info-circle"></i> You will be redirected to the bKash secure payment page to complete your payment.
+                </p>
+                <button type="button" class="btn-pay" id="bkash-pay-btn">
                     <i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>
                 </button>
             </div>
@@ -495,6 +507,38 @@ if (sslcommerzBtn) {
                 throw new Error(data.error || 'Failed to initialize payment');
             }
             // Redirect to SSLCommerz payment page
+            window.location.href = data.gateway_url;
+        })
+        .catch(function(error) {
+            showError(error.message);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-lock"></i> Pay <?php echo $invoice['currency_code']; ?> <?php echo number_format($amount_due, 2); ?>';
+        });
+    });
+}
+
+// bKash Payment
+var bkashBtn = document.getElementById('bkash-pay-btn');
+if (bkashBtn) {
+    bkashBtn.addEventListener('click', function() {
+        var btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
+        hideError();
+
+        fetch('<?php echo base_url(); ?>billing/pay/bkash_init', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'invoice_uuid=' + encodeURIComponent(invoiceUuid) + '&<?php echo $this->security->get_csrf_token_name(); ?>=<?php echo $this->security->get_csrf_hash(); ?>'
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                throw new Error(data.error || 'Failed to initialize payment');
+            }
+            // Redirect to bKash payment page
             window.location.href = data.gateway_url;
         })
         .catch(function(error) {

@@ -899,6 +899,257 @@ class Pay extends WHMAZ_Controller
     }
 
     /**
+     * Initiate bKash tokenized-checkout payment
+     */
+    public function bkash_init()
+    {
+        header('Content-Type: application/json');
+
+        $companyId = getCompanyId();
+        $userId = getCustomerId();
+
+        if ($companyId <= 0) {
+            echo json_encode(array('success' => false, 'error' => 'Please login to continue'));
+            return;
+        }
+
+        $invoice_uuid = $this->input->post('invoice_uuid');
+        $invoice = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
+
+        if (empty($invoice)) {
+            echo json_encode(array('success' => false, 'error' => 'Invoice not found'));
+            return;
+        }
+
+        // Calculate amount due
+        $paidAmount = $this->Payment_model->getSuccessfulPaymentAmount($invoice['id']);
+        $amountDue = floatval($invoice['total']) - $paidAmount;
+
+        if ($amountDue <= 0) {
+            echo json_encode(array('success' => false, 'error' => 'Invoice is already fully paid'));
+            return;
+        }
+
+        // Get gateway info
+        $gateway = $this->PaymentGateway_model->getByCode('bkash');
+        if (!$gateway || $gateway['status'] != 1) {
+            echo json_encode(array('success' => false, 'error' => 'bKash is not available'));
+            return;
+        }
+
+        // bKash processes BDT only
+        if ($invoice['currency_code'] !== 'BDT') {
+            echo json_encode(array('success' => false, 'error' => 'bKash supports BDT invoices only'));
+            return;
+        }
+
+        // Calculate fee if customer pays
+        $feeAmount = 0;
+        if ($gateway['fee_bearer'] === 'customer') {
+            $feeAmount = $this->PaymentGateway_model->calculateFee($gateway['id'], $amountDue);
+        }
+        $totalAmount = $amountDue + $feeAmount;
+
+        // Generate secure payment token for session restoration
+        $paymentToken = bin2hex(random_bytes(32));
+
+        $this->db->trans_start();
+
+        try {
+            // Create transaction record with payment token
+            $transaction = $this->Payment_model->createTransaction(array(
+                'invoice_id' => $invoice['id'],
+                'payment_gateway_id' => $gateway['id'],
+                'gateway_code' => 'bkash',
+                'amount' => $totalAmount,
+                'fee_amount' => $feeAmount,
+                'net_amount' => $amountDue,
+                'currency_code' => $invoice['currency_code'],
+                'txn_type' => 'payment',
+                'status' => 'pending',
+                'ip_address' => $this->input->ip_address(),
+                'user_agent' => $this->input->user_agent(),
+                'inserted_by' => $userId,
+                'metadata' => array(
+                    'invoice_no' => $invoice['invoice_no'],
+                    'invoice_uuid' => $invoice_uuid,
+                    'company_id' => $companyId,
+                    'user_id' => $userId,
+                    'payment_token' => $paymentToken
+                )
+            ));
+
+            // Load bKash library and obtain a token
+            $this->load->library('Bkash');
+
+            $token = $this->bkash->grantToken();
+            if (!$token['success']) {
+                throw new Exception($token['error']);
+            }
+
+            // Callback carries our own reference + session-restore token back to us
+            $callbackUrl = base_url() . 'billing/pay/bkash_callback?value_a='
+                . urlencode($transaction['transaction_uuid'])
+                . '&value_c=' . urlencode($paymentToken);
+
+            $result = $this->bkash->createPayment(array(
+                'id_token' => $token['data']['id_token'],
+                'amount' => $totalAmount,
+                'currency' => 'BDT',
+                'merchant_invoice_number' => $invoice['invoice_no'],
+                'payer_reference' => $invoice['invoice_no'],
+                'callback_url' => $callbackUrl
+            ));
+
+            if ($result['success']) {
+                // Store paymentID for the execute step + reconciliation
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'processing', array(
+                    'gateway_order_id' => $result['data']['payment_id'],
+                    'gateway_response' => $result['data']['raw']
+                ));
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    throw new Exception('Database transaction failed');
+                }
+
+                echo json_encode(array(
+                    'success' => true,
+                    'gateway_url' => $result['data']['bkash_url'],
+                    'transaction_uuid' => $transaction['transaction_uuid']
+                ));
+            } else {
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
+                    'failure_reason' => $result['error']
+                ));
+
+                $this->db->trans_complete();
+
+                echo json_encode(array('success' => false, 'error' => $result['error']));
+            }
+        } catch (Exception $e) {
+            $this->db->trans_rollback();
+            log_message('error', 'bKash payment init failed: ' . $e->getMessage());
+            echo json_encode(array(
+                'success' => false,
+                'error' => 'Payment initialization failed. Please try again.'
+            ));
+        }
+    }
+
+    /**
+     * bKash callback handler
+     * bKash redirects here with: paymentID, status (success|failure|cancel),
+     * plus our own value_a (transaction uuid) and value_c (session token).
+     */
+    public function bkash_callback()
+    {
+        $transactionUuid = $this->input->get('value_a');
+        $paymentToken = $this->input->get('value_c');
+        $paymentId = $this->input->get('paymentID');
+        $status = strtolower($this->input->get('status') ?? '');
+
+        $redirectUrl = base_url() . 'billing/invoices';
+        $alertType = 'error';
+        $alertMessage = 'Invalid payment response.';
+
+        if (empty($transactionUuid)) {
+            $this->session->set_flashdata('alert_error', $alertMessage);
+            redirect($redirectUrl);
+            return;
+        }
+
+        $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
+
+        if (!$transaction) {
+            $this->session->set_flashdata('alert_error', 'Transaction not found.');
+            redirect($redirectUrl);
+            return;
+        }
+
+        $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
+        $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
+
+        // Restore session using the secure token
+        $this->_restoreSessionFromTransaction($transaction, $paymentToken);
+
+        // Already processed (prevent double-charging)
+        if ($transaction['status'] === 'completed') {
+            $this->session->set_flashdata('alert_success', 'Payment already processed.');
+            redirect($redirectUrl);
+            return;
+        }
+
+        // Customer cancelled or bKash reported failure
+        if ($status !== 'success') {
+            $newStatus = ($status === 'cancel') ? 'cancelled' : 'failed';
+            $this->Payment_model->updateTransactionStatus($transaction['id'], $newStatus, array(
+                'failure_reason' => 'bKash reported status: ' . $status
+            ));
+            $this->session->set_flashdata(
+                'alert_' . ($status === 'cancel' ? 'info' : 'error'),
+                $status === 'cancel' ? 'Payment was cancelled.' : 'Payment failed. Please try again.'
+            );
+            redirect($redirectUrl);
+            return;
+        }
+
+        // status = success -> execute the payment
+        $this->load->library('Bkash');
+
+        $token = $this->bkash->grantToken();
+        if (!$token['success']) {
+            $this->session->set_flashdata('alert_info', 'Payment is being verified. You will receive confirmation shortly.');
+            redirect($redirectUrl);
+            return;
+        }
+
+        $paymentId = !empty($paymentId) ? $paymentId : $transaction['gateway_order_id'];
+        $execution = $this->bkash->executePayment($paymentId, $token['data']['id_token']);
+
+        if ($execution['success']) {
+            $details = $this->bkash->extractPaymentDetails($execution);
+
+            $this->db->trans_start();
+
+            try {
+                $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
+                    'gateway_transaction_id' => $details['transaction_id'],
+                    'payment_method' => 'bkash',
+                    'gateway_response' => $execution['data']
+                ));
+
+                $this->Payment_model->processSuccessfulPayment($transaction['id']);
+                $this->Payment_model->recordInvoiceTxn($transaction['id']);
+
+                $this->db->trans_complete();
+
+                if ($this->db->trans_status() === FALSE) {
+                    throw new Exception('Database transaction failed during payment processing');
+                }
+
+                $alertType = 'success';
+                $alertMessage = 'Payment successful! Thank you for your payment.';
+            } catch (Exception $e) {
+                $this->db->trans_rollback();
+                log_message('error', 'bKash payment processing failed: ' . $e->getMessage());
+                $alertType = 'error';
+                $alertMessage = 'Payment processing failed. Please contact support.';
+            }
+        } else {
+            $this->Payment_model->updateTransactionStatus($transaction['id'], 'failed', array(
+                'failure_reason' => $execution['error']
+            ));
+            $alertType = 'error';
+            $alertMessage = 'Payment could not be completed: ' . $execution['error'];
+        }
+
+        $this->session->set_flashdata('alert_' . $alertType, $alertMessage);
+        redirect($redirectUrl);
+    }
+
+    /**
      * Restore user session from transaction data using secure payment token
      *
      * This method verifies the payment token passed through the gateway matches

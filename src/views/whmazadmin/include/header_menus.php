@@ -2,7 +2,7 @@
 <nav class="app-header navbar navbar-expand-lg admin-navbar">
     <div class="container-fluid">
         <!-- Brand -->
-        <a href="<?=base_url()?>whmazadmin" class="navbar-brand">
+        <a href="<?=base_url()?>whmazadmin/dashboard/index" class="navbar-brand">
             <span class="brand-text">WHM<span>A-Z</span> Admin</span>
         </a>
 
@@ -15,12 +15,6 @@
         <div class="collapse navbar-collapse" id="adminNavbar">
             <?php if( isAdminLoggedIn() ){?>
             <ul class="navbar-nav me-auto">
-                <!-- Home -->
-                <li class="nav-item">
-                    <a href="<?=base_url()?>whmazadmin/dashboard/index" class="nav-link">
-                        <i class="fas fa-home me-1"></i> Home
-                    </a>
-                </li>
 
                 <!-- Customers Dropdown -->
                 <li class="nav-item dropdown">
@@ -136,6 +130,24 @@
         <!-- Right Side - User Profile -->
         <ul class="navbar-nav ms-auto">
             <?php if( isAdminLoggedIn() ){ $admin = getAdminData();?>
+            <!-- Notifications Bell -->
+            <li class="nav-item dropdown me-2">
+                <a class="nav-link position-relative" href="#" id="notifBell" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" title="Notifications">
+                    <i class="fas fa-bell text-white"></i>
+                    <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle notif-badge-hidden" id="notif-badge"></span>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end notif-dropdown">
+                    <li class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                        <strong class="text-dark">Notifications</strong>
+                        <a href="#" class="small text-decoration-none" id="notif-mark-all">Mark all read</a>
+                    </li>
+                    <li>
+                        <div id="notif-list" class="notif-list">
+                            <div class="text-center text-muted py-4" id="notif-empty">No notifications</div>
+                        </div>
+                    </li>
+                </ul>
+            </li>
             <li class="nav-item dropdown dropdown-profile">
                 <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="avatar avatar-sm me-2">

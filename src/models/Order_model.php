@@ -400,6 +400,26 @@ class Order_model extends CI_Model{
 			}
 		}
 
+		// In-app notifications (customer account + admins)
+		$this->load->model('Notification_model');
+		$this->Notification_model->notifyCompany(
+			$order['company_id'], 'order',
+			'Order #' . $order['order_no'] . ' placed',
+			'Your order has been created. Invoice #' . $invoice['invoice_no'] . ' — ' . $currencySymbol . number_format($invoice['total'], 2) . '.',
+			base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'],
+			'fa-shopping-cart'
+		);
+		if ($notifyAdmin) {
+			$customerLabel = !empty($company['name']) ? $company['name'] : $company['email'];
+			$this->Notification_model->notifyAdmins(
+				'order',
+				'New order #' . $order['order_no'],
+				'Placed by ' . $customerLabel . ' — ' . $currencySymbol . number_format($invoice['total'], 2) . '.',
+				base_url() . 'whmazadmin/order/view/' . $order['order_uuid'],
+				'fa-shopping-cart'
+			);
+		}
+
 		log_message('info', 'Order confirmation emails sent for order #' . $orderId .
 			' - Customer: ' . ($result['customer'] ? 'Yes' : 'No') .
 			', Admin: ' . ($result['admin'] ? 'Yes' : 'No'));

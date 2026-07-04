@@ -166,7 +166,7 @@ class Paymentgateway extends WHMAZADMIN_Controller
             $gatewayCode = $gateway['gateway_code'];
 
             // Check if online gateway has credentials
-            if (in_array($gatewayCode, array('stripe', 'paypal', 'razorpay', 'paystack', 'sslcommerz'))) {
+            if (in_array($gatewayCode, array('stripe', 'paypal', 'razorpay', 'paystack', 'sslcommerz', 'bkash'))) {
                 $isTest = $gateway['is_test_mode'] == 1;
                 $publicKey = $isTest ? $gateway['test_public_key'] : $gateway['public_key'];
                 $secretKey = $isTest ? $gateway['test_secret_key'] : $gateway['secret_key'];

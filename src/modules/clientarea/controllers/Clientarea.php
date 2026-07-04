@@ -1365,6 +1365,16 @@ class Clientarea extends WHMAZ_Controller {
 			sendHtmlEmail($customerEmail, $custSubject, $custBody);
 		}
 
+		// In-app notification to admins
+		$this->load->model('Notification_model');
+		$this->Notification_model->notifyAdmins(
+			'cancellation',
+			'Domain cancellation request',
+			$customerName . ' requested cancellation of ' . $domainName . '.',
+			base_url() . 'whmazadmin/cancellation/index',
+			'fa-ban'
+		);
+
 		echo json_encode(array('success' => true, 'msg' => 'Your cancellation request has been submitted. Our team will contact you shortly.'));
 	}
 

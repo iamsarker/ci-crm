@@ -145,6 +145,17 @@ class Auth extends WHMAZ_Controller
 					!empty($newUserReq['first_name']) ? $newUserReq['first_name'] : '',
 					$resp['verification_code']
 				);
+				// In-app notification to admins about the new customer
+				$this->load->model('Notification_model');
+				$custName = trim(($newUserReq['first_name'] ?? '') . ' ' . ($newUserReq['last_name'] ?? ''));
+				$this->Notification_model->notifyAdmins(
+					'customer',
+					'New customer registered',
+					($custName !== '' ? $custName : $resp['email']) . ' created an account.',
+					base_url() . 'whmazadmin/company',
+					'fa-user-plus'
+				);
+
 				$this->session->set_flashdata('alert_success', 'Registration has been completed successfully. A confirmation link has been sent to your email.');
 			} else {
 				$errorMsg = !empty($resp['error']) ? $resp['error'] : 'Failed to register. Try Again';
