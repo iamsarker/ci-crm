@@ -335,6 +335,14 @@ pre .var { color: #e06c75; }
         <a class="nav-link sub" href="#resellbiz--resellerclub-setup">ResellerClub Setup</a>
         <a class="nav-link sub" href="#namecheap-setup">Namecheap Setup</a>
         <a class="nav-link" href="#automation--cron-jobs">Automation &amp; Cron Jobs</a>
+        <a class="nav-link" href="#software-selling-licensing">Software Selling &amp; Licensing</a>
+        <a class="nav-link sub" href="#selling-software-products">Selling Software Products</a>
+        <a class="nav-link sub" href="#software-releases">Software Releases</a>
+        <a class="nav-link sub" href="#customer-buying-software">Buying &amp; Downloading Software</a>
+        <a class="nav-link sub" href="#self-hosted-licensing">Self-Hosted Licensing</a>
+        <a class="nav-link sub" href="#entering-your-license-key">Entering Your License Key</a>
+        <a class="nav-link sub" href="#feature-gates-by-tier">Feature Availability by Tier</a>
+        <a class="nav-link sub" href="#license-troubleshooting">License Troubleshooting</a>
         <a class="nav-link" href="#customization-options">Customization Options</a>
       </div>
     </div>
@@ -2480,7 +2488,8 @@ A modal will appear asking for your domain information. Choose one of three opti
 <h2 id="dunning-rules-management">Dunning Rules Management</h2>
 
 <h3 id="dunning-overview">Overview</h3>
-<p>Dunning rules automate the process of collecting overdue payments by defining a sequence of actions (email reminders, service suspension, termination) that occur at specified intervals after an invoice becomes overdue.</p>
+<p>Dunning rules let you define a sequence of collection actions (email reminders, service suspension, termination) and the intervals at which they should occur after an invoice becomes overdue. This is the place to design and document your collections workflow.</p>
+<p><strong>Note:</strong> the automated <strong>suspension</strong> and <strong>termination</strong> that the cron actually performs are timed by the <code>suspension_days_after_due</code> and <code>cancellation_days_after_suspension</code> values under <a href="#automation-settings">Settings &rarr; Automation</a> (see the dunning ladder in <a href="#setting-up-cron-jobs">Setting Up Cron Jobs</a>). Keep those two values in sync with the SUSPEND / TERMINATE steps you define here.</p>
 <p><strong>Access:</strong> <code>whmazadmin/general_setting/manage?tab=dunning</code></p>
 
 <h3 id="accessing-dunning-rules">Accessing Dunning Rules</h3>
@@ -2967,8 +2976,8 @@ A modal will appear asking for your domain information. Choose one of three opti
 <tr><td><code>payment_reminder_first</code></td><td>First reminder (days before due)</td><td>3</td></tr>
 <tr><td><code>payment_reminder_second</code></td><td>Second reminder (days before due)</td><td>1</td></tr>
 <tr><td><code>payment_reminder_overdue</code></td><td>Overdue reminder (days after due)</td><td>3</td></tr>
-<tr><td><code>suspension_days_after_due</code></td><td>Days after due to suspend service</td><td>5</td></tr>
-<tr><td><code>cancellation_days_after_suspension</code></td><td>Days after suspension to cancel</td><td>30</td></tr>
+<tr><td><code>suspension_days_after_due</code></td><td>Days after an invoice's due date before the service is suspended</td><td>5</td></tr>
+<tr><td><code>cancellation_days_after_suspension</code></td><td>Days a service stays suspended (while still unpaid) before it is terminated and the hosting account is deleted</td><td>30</td></tr>
 <tr><td><code>domain_reminder_first</code></td><td>First domain reminder (days before expiry)</td><td>30</td></tr>
 <tr><td><code>domain_reminder_second</code></td><td>Second domain reminder</td><td>15</td></tr>
 <tr><td><code>domain_reminder_third</code></td><td>Third domain reminder</td><td>7</td></tr>
@@ -2976,9 +2985,9 @@ A modal will appear asking for your domain information. Choose one of three opti
 </table>
 </div>
 
-<p><strong>Cron Job Command:</strong></p>
-<pre><code>php /path/to/whmaz/index.php cron/run</code></pre>
-<p>Set to run every hour or as needed.</p>
+<p><strong>Cron Job Command:</strong> a single daily job runs every automated task (renewal invoicing, overdue suspension, grace-period termination, and license renewal/suspension). Protect it with the <code>cron_secret_key</code> set in the same Automation settings:</p>
+<pre><code>curl -s "https://yourdomain.com/cronjobs/run?key=YOUR_CRON_SECRET_KEY" &gt;/dev/null 2>&amp;1</code></pre>
+<p>See <a href="#automation--cron-jobs">Automation &amp; Cron Jobs</a> for the full setup and the individual sub-endpoints.</p>
 
 <h3 id="feature-flags">Feature Flags</h3>
 <p><strong>Access:</strong> Settings &rarr; Features</p>
@@ -3331,22 +3340,35 @@ Reference: Please include your invoice number as reference</code></pre>
 <h2 id="automation--cron-jobs">Automation &amp; Cron Jobs</h2>
 
 <h3 id="setting-up-cron-jobs">Setting Up Cron Jobs</h3>
-<p><strong>Required Cron Jobs:</strong></p>
+<p>WHMAZ needs <strong>one</strong> cron job. A single daily call to <code>/cronjobs/run</code> executes every automated task in order:</p>
 <ol>
-  <li><strong>Invoice Generation</strong> - Generates renewal invoices before due date. Daily. <code>php /path/to/whmaz/index.php cron/generate_invoices</code></li>
-  <li><strong>Payment Reminders</strong> - Sends reminder emails for unpaid invoices. Daily. <code>php /path/to/whmaz/index.php cron/payment_reminders</code></li>
-  <li><strong>Service Suspension</strong> - Suspends services with overdue invoices. Daily. <code>php /path/to/whmaz/index.php cron/suspend_services</code></li>
-  <li><strong>Domain Expiry Reminders</strong> - Reminds customers of upcoming expirations. Daily. <code>php /path/to/whmaz/index.php cron/domain_reminders</code></li>
+  <li><strong>Renewal Invoice Generation</strong> - Creates renewal invoices before expiry (combining a domain and its linked hosting service into one invoice when they share a renewal date) and emails them to the customer.</li>
+  <li><strong>Overdue Service Suspension</strong> - Suspends a hosting account once its invoice is overdue by <code>suspension_days_after_due</code> days, then emails the customer.</li>
+  <li><strong>Grace-Period Service Termination</strong> - Terminates (deletes) a hosting account that has stayed suspended for <code>cancellation_days_after_suspension</code> more days while still unpaid.</li>
+  <li><strong>License Renewal &amp; Suspension</strong> - Generates renewal invoices for software licenses and soft-suspends licenses whose invoice is overdue.</li>
 </ol>
+<p>This forms the automated <strong>dunning ladder</strong>: <em>invoice due &rarr; suspend after <code>suspension_days_after_due</code> days &rarr; terminate after <code>cancellation_days_after_suspension</code> more days</em>. Paying the invoice at any point stops the ladder. Set <code>cron_enabled = 0</code> in Automation settings to freeze the suspension and termination passes.</p>
+<p><strong>Security:</strong> the endpoint is protected by the <code>cron_secret_key</code> value (Settings &rarr; Automation). Pass it as <code>?key=</code>. CLI runs (<code>php index.php cronjobs run</code>) are always allowed.</p>
+<p><strong>Individual endpoints</strong> (each also takes <code>?key=</code>) are available if you prefer to schedule them separately:</p>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>Endpoint</th><th>Purpose</th></tr></thead>
+<tbody>
+<tr><td><code>/cronjobs/run</code></td><td>Run all automated tasks (recommended)</td></tr>
+<tr><td><code>/cronjobs/generateRenewalInvoices</code></td><td>Renewal invoices only</td></tr>
+<tr><td><code>/cronjobs/suspendOverdueServices</code></td><td>Overdue suspension only</td></tr>
+<tr><td><code>/cronjobs/terminateOverdueServices</code></td><td>Grace-period termination only</td></tr>
+</tbody>
+</table>
+</div>
 
 <h3 id="cpanel-cron-setup">cPanel Cron Setup</h3>
 <ol>
   <li><strong>Access Cron Jobs</strong> - Login to cPanel, find "Cron Jobs" icon</li>
-  <li><strong>Add New Cron Job</strong> - Select frequency (e.g., daily at 3:00 AM), enter command:
-    <pre><code>php /home/username/public_html/index.php cron/generate_invoices</code></pre>
-    Save cron job.
+  <li><strong>Add New Cron Job</strong> - Select frequency (once daily, e.g. 3:00 AM), enter the command:
+    <pre><code>curl -s "https://yourdomain.com/cronjobs/run?key=YOUR_CRON_SECRET_KEY" &gt;/dev/null 2>&amp;1</code></pre>
+    Save cron job. Only this one job is required.
   </li>
-  <li><strong>Repeat for Each Cron Task</strong> - Add separate cron jobs, stagger times to avoid overload</li>
 </ol>
 
 <h3 id="linux-server-cron-setup">Linux Server Cron Setup</h3>
@@ -3354,18 +3376,12 @@ Reference: Please include your invoice number as reference</code></pre>
   <li><strong>Edit Crontab</strong>
     <pre><code>crontab -e</code></pre>
   </li>
-  <li><strong>Add Cron Entries</strong>
-<pre><code># Invoice generation - Daily at 3:00 AM
-0 3 * * * php /var/www/html/whmaz/index.php cron/generate_invoices
+  <li><strong>Add the Cron Entry</strong>
+<pre><code># WHMAZ automation - runs all tasks daily at 3:00 AM
+0 3 * * * curl -s "https://yourdomain.com/cronjobs/run?key=YOUR_CRON_SECRET_KEY" &gt;/dev/null 2>&amp;1
 
-# Payment reminders - Daily at 9:00 AM
-0 9 * * * php /var/www/html/whmaz/index.php cron/payment_reminders
-
-# Service suspension - Daily at 11:00 AM
-0 11 * * * php /var/www/html/whmaz/index.php cron/suspend_services
-
-# Domain reminders - Daily at 10:00 AM
-0 10 * * * php /var/www/html/whmaz/index.php cron/domain_reminders</code></pre>
+# Or via the CLI instead of curl:
+0 3 * * * php /var/www/html/whmaz/index.php cronjobs run &gt;/dev/null 2>&amp;1</code></pre>
   </li>
   <li><strong>Save and Exit</strong> - Press Ctrl+X, then Y, then Enter (in nano)</li>
 </ol>
@@ -3374,6 +3390,92 @@ Reference: Please include your invoice number as reference</code></pre>
 <p><strong>Check Cron Logs:</strong></p>
 <pre><code>tail -f /var/log/syslog | grep CRON</code></pre>
 <p><strong>Check Application Logs:</strong> View logs in <code>application/logs/</code> directory, look for cron execution entries, verify no errors.</p>
+
+<hr>
+
+<h2 id="software-selling-licensing">Software Selling &amp; Licensing</h2>
+
+<p>WHMAZ can sell <strong>downloadable software products</strong> (the WHMAZ app itself, add-on modules, or any software you distribute) alongside hosting and domains. Customers browse and buy them through the same cart; delivery is a downloadable ZIP, and the installed copy <strong>phones home</strong> to enforce its license. This lets you ship <strong>one source version</strong> that unlocks different features depending on the tier a customer purchased.</p>
+
+<p><strong>Two sides to the system:</strong></p>
+<table>
+<thead><tr><th>Role</th><th>Who</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><strong>Vendor (master)</strong></td><td>You, running WHMAZ to sell software</td><td>Creates products, issues license keys, answers license checks. Never gated.</td></tr>
+<tr><td><strong>Customer (client)</strong></td><td>A buyer who installed a copy</td><td>Enters a license key; the install runs at the tier they paid for.</td></tr>
+</tbody>
+</table>
+
+<h3 id="selling-software-products">Selling Software Products</h3>
+<p>Go to <strong>Admin Portal &rarr; Settings &rarr; Software Products</strong> (<code>whmazadmin/softwareproduct</code>).</p>
+<ol>
+  <li><strong>Create a product</strong> - Click "Add". Enter a name (the slug/key is generated automatically), an optional tagline and rich description, a "popular" flag, and a sort order.</li>
+  <li><strong>Set a family group</strong> - Products that are upgrade tiers of the same software (e.g. Basic / Pro / Max) share a <strong>Family Group</strong>. Customers can upgrade or downgrade only within the same family. Leave it blank for a standalone product.</li>
+  <li><strong>Enter pricing</strong> - Fill the pricing grid (a cell per currency &times; billing cycle). Use the <strong>One-Time</strong> cycle for a perpetual license.</li>
+  <li><strong>Define features</strong> - In the entitlement features list, add key/value rows (e.g. <code>priority_support = 1</code>, <code>support_response_hours = 48</code>). These are the differences between tiers and are exactly what the customer's install unlocks. A feature set to <code>0</code> or omitted stays locked on that tier.</li>
+  <li><strong>Link a release</strong> - Optionally attach the download build (see Software Releases).</li>
+</ol>
+
+<h3 id="software-releases">Software Releases</h3>
+<p>Go to <strong>Admin Portal &rarr; Settings &rarr; Software Releases</strong> (<code>whmazadmin/software</code>).</p>
+<ol>
+  <li><strong>Upload a ZIP</strong> - Upload the installable build. It is stored privately and never exposed by direct URL.</li>
+  <li><strong>Set current</strong> - Mark the build customers download. A release can be tagged to a specific product or left global (used by every product).</li>
+  <li><strong>One build, many tiers</strong> - Because the same source enforces every tier, you normally ship a single current build; the license decides what unlocks.</li>
+</ol>
+<p><strong>Note:</strong> Large uploads may require raising <code>upload_max_filesize</code> and <code>post_max_size</code> in <code>php.ini</code>. The software storage folder must be writable by the web server.</p>
+
+<h3 id="customer-buying-software">Buying &amp; Downloading Software</h3>
+<p>Customers use the <strong>Software</strong> menu in the customer portal:</p>
+<ul>
+  <li><strong>Buy Software</strong> - Browse product cards, pick a billing cycle, and add to cart. Checkout and payment work exactly like hosting/domains. On payment, a license key is issued automatically.</li>
+  <li><strong>My Software</strong> - Lists every license the customer owns, with its key, tier, next renewal, and status. Each license has a <strong>Download</strong> button (resolves the correct build for that product) and an <strong>Upgrade</strong> option (same-family, prorated).</li>
+</ul>
+<p>License <strong>renewals</strong> and <strong>overdue suspension</strong> happen automatically through the daily cron job, just like hosting.</p>
+
+<h3 id="self-hosted-licensing">Self-Hosted Licensing (how enforcement works)</h3>
+<p>Because customers install the software on their own servers, WHMAZ cannot remotely control it. Instead, the installed copy <strong>calls home</strong> to your WHMAZ site to check its license:</p>
+<ol>
+  <li>On a schedule (and daily via cron), the install sends its license key to your server's <code>license/verify</code> endpoint.</li>
+  <li>Your server replies with the license status and the tier's feature list.</li>
+  <li>The install caches that answer and unlocks features accordingly. If the license is suspended, expired, or terminated, premium features lock down to the baseline.</li>
+</ol>
+<p><strong>Resilience:</strong> the answer is cached, so a brief outage on your side does not break customer installs &mdash; the last known-good result is honored for up to 7 days before features degrade.</p>
+<p><strong>Important:</strong> the customer has the source code, so a determined user could remove the check. For real protection, encode the license client file with a tool such as IonCube or SourceGuardian before distributing your build. This is the same approach commercial products like WHMCS use.</p>
+
+<h3 id="entering-your-license-key">Entering Your License Key</h3>
+<p>A customer supplies their license key during installation. In the <strong>Installer &rarr; Step 5 (Site Settings)</strong> there is a <strong>Software License</strong> section:</p>
+<ol>
+  <li><strong>License Key</strong> - Paste the key received at purchase (format <code>WHMAZ-XXXXX-XXXXX-XXXXX-XXXXX</code>).</li>
+  <li><strong>License Server URL</strong> - The address of the vendor's WHMAZ site that issued the key (e.g. <code>https://vendor-crm.example.com</code>).</li>
+  <li><strong>Verify</strong> - Click to confirm the key against the vendor before finishing. Installation can proceed without it, but tier features stay locked until a valid key is saved.</li>
+  <li><strong>Master server checkbox</strong> - The vendor ticks "This is the master / vendor server" on their own WHMAZ install so it is never gated. Customers leave it unticked.</li>
+</ol>
+<p>These values are written to the site's <code>.env</code> file (<code>LICENSE_KEY</code>, <code>LICENSE_SERVER_URL</code>, <code>IS_LICENSE_MASTER</code>) and can be edited there later.</p>
+
+<h3 id="feature-gates-by-tier">Feature Availability by Tier</h3>
+<p>Features you define on each product are unlocked on the customer's install according to the tier they bought. For example:</p>
+<table>
+<thead><tr><th>Feature</th><th>Effect when unlocked</th></tr></thead>
+<tbody>
+<tr><td><strong>Branding removal</strong></td><td>Hides the "Maintain by WHMAZ" attribution in the customer's portal footer.</td></tr>
+<tr><td><strong>Software license selling</strong></td><td>Enables the Software Products / Releases admin menus and the customer "Buy Software" storefront.</td></tr>
+<tr><td><strong>Domain registration &amp; transfers</strong></td><td>Enables the Domain Register / Domain Pricing admin menus and registrar configuration.</td></tr>
+</tbody>
+</table>
+<p>The vendor's own (master) install always runs with every feature available. On a customer install, a suspended or expired license drops back to baseline features until the outstanding invoice is paid.</p>
+
+<h3 id="license-troubleshooting">License Troubleshooting</h3>
+<table>
+<thead><tr><th>Symptom</th><th>Cause / Fix</th></tr></thead>
+<tbody>
+<tr><td>Tier features locked after install</td><td>No valid key saved. Re-run the license step or set <code>LICENSE_KEY</code> and <code>LICENSE_SERVER_URL</code> in <code>.env</code>.</td></tr>
+<tr><td>License shows "suspended"</td><td>An invoice is overdue. Pay it; the next license check restores access.</td></tr>
+<tr><td>License shows "expired"</td><td>Renew the license (renewal invoices are generated automatically before the due date).</td></tr>
+<tr><td>"Unable to verify license"</td><td>The install cannot reach the vendor server. Confirm <code>LICENSE_SERVER_URL</code> is correct and reachable. Cached access is honored for up to 7 days.</td></tr>
+<tr><td>Vendor's own panel is gated</td><td>Set <code>IS_LICENSE_MASTER=true</code> in the vendor install's <code>.env</code>.</td></tr>
+</tbody>
+</table>
 
 <hr>
 

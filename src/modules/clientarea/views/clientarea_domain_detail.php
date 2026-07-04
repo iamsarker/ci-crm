@@ -140,17 +140,16 @@
                                         <i class="fa fa-server"></i>
                                         <span>Default NS</span>
                                     </label>
-                                    <label class="dns-type-option <?= !empty($detail['dns_type']) && $detail['dns_type'] == 'custom_ns' ? 'active' : '' ?>">
-                                        <input type="radio" name="dns_type" value="custom_ns" id="custom_ns" <?= !empty($detail['dns_type']) && $detail['dns_type'] == 'custom_ns' ? 'checked' : '' ?> />
+                                    <label class="dns-type-option <?= (empty($detail['dns_type']) || $detail['dns_type'] == 'custom_ns' || $detail['dns_type'] == 'records') ? 'active' : '' ?>">
+                                        <input type="radio" name="dns_type" value="custom_ns" id="custom_ns" <?= (empty($detail['dns_type']) || $detail['dns_type'] == 'custom_ns' || $detail['dns_type'] == 'records') ? 'checked' : '' ?> />
                                         <i class="fa fa-edit"></i>
                                         <span>Custom NS</span>
                                     </label>
-                                    <label class="dns-type-option <?= !empty($detail['dns_type']) && $detail['dns_type'] == 'records' ? 'active' : '' ?>">
-                                        <input type="radio" name="dns_type" value="records" id="records" <?= !empty($detail['dns_type']) && $detail['dns_type'] == 'records' ? 'checked' : '' ?> />
-                                        <i class="fa fa-list-alt"></i>
-                                        <span>DNS Records</span>
-                                    </label>
                                 </div>
+                                <p class="text-muted small mb-0 mt-2">
+                                    <i class="fa fa-info-circle mg-r-5"></i>
+                                    Choose <strong>Default NS</strong> to point this domain at our nameservers, or <strong>Custom NS</strong> to set your own below.
+                                </p>
                             </div>
                         </div>
 
@@ -160,6 +159,11 @@
                             </div>
                             <div class="card-body">
                                 <input type="hidden" id="domain_id" value="<?= htmlspecialchars($detail['id'] ?? '', ENT_QUOTES, 'UTF-8') ?>" />
+
+                                <div id="defaultNsNote" class="alert alert-info" style="display:none;">
+                                    <i class="fa fa-info-circle mg-r-5"></i>
+                                    <strong>Default NS</strong> selected. Clicking below applies the registrar's default nameservers to this domain.
+                                </div>
 
                                 <div class="ns-input-group">
                                     <div class="ns-input-item">
@@ -336,10 +340,24 @@ $(function(){
     'use strict';
 
     // DNS type selector interaction
+    function applyDnsTypeState() {
+        var dnsType = $('input[name="dns_type"]:checked').val() || 'custom_ns';
+        var isDefault = (dnsType === 'default_ns');
+        // With Default NS, the registrar's default nameservers are applied
+        // server-side, so the custom inputs are locked to avoid confusion.
+        $('#ns1, #ns2, #ns3, #ns4').prop('disabled', isDefault);
+        $('#defaultNsNote').toggle(isDefault);
+        $('#btnUpdateNS').html(isDefault
+            ? '<i class="fa fa-save mg-r-5"></i>Apply Default Nameservers'
+            : '<i class="fa fa-save mg-r-5"></i>Update Nameservers');
+    }
+
     $('.dns-type-option input[type="radio"]').on('change', function() {
         $('.dns-type-option').removeClass('active');
         $(this).closest('.dns-type-option').addClass('active');
+        applyDnsTypeState();
     });
+    applyDnsTypeState();
 
     // Update Nameservers button click
     $('#btnUpdateNS').on('click', function() {
@@ -354,27 +372,30 @@ $(function(){
         var ns4 = $('#ns4').val().trim();
         var dnsType = $('input[name="dns_type"]:checked').val() || 'custom_ns';
 
-        // Basic validation
-        if (!ns1 || !ns2) {
-            showStatus('error', 'Nameserver 1 and Nameserver 2 are required.');
-            return;
-        }
+        // Custom NS requires valid nameserver input; Default NS is filled server-side.
+        if (dnsType !== 'default_ns') {
+            // Basic validation
+            if (!ns1 || !ns2) {
+                showStatus('error', 'Nameserver 1 and Nameserver 2 are required.');
+                return;
+            }
 
-        // Nameserver format validation
-        var nsPattern = /^[a-zA-Z0-9][a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}$/;
-        if (!nsPattern.test(ns1) || !nsPattern.test(ns2)) {
-            showStatus('error', 'Please enter valid nameserver addresses (e.g., ns1.example.com)');
-            return;
-        }
+            // Nameserver format validation
+            var nsPattern = /^[a-zA-Z0-9][a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,}$/;
+            if (!nsPattern.test(ns1) || !nsPattern.test(ns2)) {
+                showStatus('error', 'Please enter valid nameserver addresses (e.g., ns1.example.com)');
+                return;
+            }
 
-        if (ns3 && !nsPattern.test(ns3)) {
-            showStatus('error', 'Nameserver 3 format is invalid.');
-            return;
-        }
+            if (ns3 && !nsPattern.test(ns3)) {
+                showStatus('error', 'Nameserver 3 format is invalid.');
+                return;
+            }
 
-        if (ns4 && !nsPattern.test(ns4)) {
-            showStatus('error', 'Nameserver 4 format is invalid.');
-            return;
+            if (ns4 && !nsPattern.test(ns4)) {
+                showStatus('error', 'Nameserver 4 format is invalid.');
+                return;
+            }
         }
 
         // Disable button and show loading
@@ -403,8 +424,13 @@ $(function(){
             success: function(response) {
                 if (response.success) {
                     showStatus('success', response.msg);
-                    // Update sidebar nameservers display
-                    updateSidebarNS(ns1, ns2, ns3, ns4);
+                    if (dnsType === 'default_ns') {
+                        // Registrar defaults were applied server-side; reload to show them
+                        setTimeout(function() { location.reload(); }, 1200);
+                    } else {
+                        // Update sidebar nameservers display
+                        updateSidebarNS(ns1, ns2, ns3, ns4);
+                    }
                 } else {
                     showStatus('error', response.msg || 'Failed to update nameservers.');
                 }
@@ -414,7 +440,8 @@ $(function(){
                 console.error('AJAX Error:', error);
             },
             complete: function() {
-                $btn.prop('disabled', false).html('<i class="fa fa-save mg-r-5"></i>Update Nameservers');
+                $btn.prop('disabled', false);
+                applyDnsTypeState();
             }
         });
     });
@@ -767,6 +794,63 @@ $(function(){
                         text: 'An error occurred. Please try again.',
                         confirmButtonColor: '#0168fa'
                     }).then(function() { location.reload(); });
+                }
+            });
+        });
+    });
+    // Request Cancellation button
+    $('#btnRequestCancellation').on('click', function(e) {
+        e.preventDefault();
+        var domainId = $('#domain_id').val();
+
+        if (!domainId) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Domain ID not found', confirmButtonColor: '#0168fa' });
+            return;
+        }
+
+        Swal.fire({
+            title: 'Request Domain Cancellation?',
+            text: 'This submits a cancellation request to our team. Your domain stays active until we process it.',
+            input: 'textarea',
+            inputLabel: 'Reason (optional)',
+            inputPlaceholder: 'Tell us why you want to cancel this domain...',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d9534f',
+            confirmButtonText: 'Submit Request',
+            cancelButtonText: 'Cancel'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+
+            var reason = result.value || '';
+
+            Swal.fire({
+                title: 'Submitting...',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: function() { Swal.showLoading(); }
+            });
+
+            var csrfName = $('meta[name="csrf-token-name"]').attr('content');
+            var csrfToken = $('meta[name="csrf-token-hash"]').attr('content');
+            var postData = { domain_id: domainId, reason: reason };
+            postData[csrfName] = csrfToken;
+
+            $.ajax({
+                url: BASE_URL + 'clientarea/domain_cancellation_request',
+                type: 'POST',
+                data: postData,
+                dataType: 'json',
+                success: function(response) {
+                    Swal.fire({
+                        icon: response.success ? 'success' : 'error',
+                        title: response.success ? 'Request Submitted' : 'Failed',
+                        text: response.msg || (response.success ? 'Your request was submitted.' : 'Failed to submit request.'),
+                        confirmButtonColor: '#0168fa'
+                    });
+                },
+                error: function() {
+                    Swal.fire({ icon: 'error', title: 'Error', text: 'An error occurred. Please try again.', confirmButtonColor: '#0168fa' });
                 }
             });
         });

@@ -98,7 +98,8 @@ class Clientarea_model extends CI_Model{
 		try {
 			// First get domain info with its registrar
 			$sql = "SELECT od.*, dr.id as registrar_id, dr.platform, dr.api_base_url, dr.auth_userid, dr.auth_apikey,
-						   dr.ns_update_api, dr.contact_details_api, dr.contact_update_api, dr.whitelisted_ip
+						   dr.ns_update_api, dr.contact_details_api, dr.contact_update_api, dr.whitelisted_ip,
+						   dr.def_ns1, dr.def_ns2, dr.def_ns3, dr.def_ns4
 					FROM order_domains od
 					LEFT JOIN dom_registers dr ON od.dom_register_id = dr.id AND dr.status = 1
 					WHERE od.id = ? AND od.company_id = ?";
@@ -114,7 +115,8 @@ class Clientarea_model extends CI_Model{
 			// If no registrar set or registrar fields are NULL, use default registrar
 			if (empty($result['platform']) || empty($result['dom_register_id'])) {
 				$defaultSql = "SELECT id as registrar_id, platform, api_base_url, auth_userid, auth_apikey,
-								      ns_update_api, contact_details_api, contact_update_api, whitelisted_ip
+								      ns_update_api, contact_details_api, contact_update_api, whitelisted_ip,
+								      def_ns1, def_ns2, def_ns3, def_ns4
 							   FROM dom_registers
 							   WHERE status = 1 AND is_selected = 1
 							   LIMIT 1";
@@ -131,6 +133,10 @@ class Clientarea_model extends CI_Model{
 					$result['contact_details_api'] = $default['contact_details_api'];
 					$result['contact_update_api'] = $default['contact_update_api'];
 					$result['whitelisted_ip'] = $default['whitelisted_ip'];
+					$result['def_ns1'] = $default['def_ns1'];
+					$result['def_ns2'] = $default['def_ns2'];
+					$result['def_ns3'] = $default['def_ns3'];
+					$result['def_ns4'] = $default['def_ns4'];
 
 					// Update order_domains with the default registrar for future operations
 					$this->db->where('id', intval($domainId));

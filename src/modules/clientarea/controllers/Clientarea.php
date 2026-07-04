@@ -327,6 +327,20 @@ class Clientarea extends WHMAZ_Controller {
 				return;
 			}
 
+			// "Default NS": ignore any posted values and apply the registrar's
+			// configured default nameservers (dom_registers.def_ns1..4).
+			if ($dnsType === 'default_ns') {
+				$ns1 = strval($domainInfo['def_ns1'] ?? '');
+				$ns2 = strval($domainInfo['def_ns2'] ?? '');
+				$ns3 = strval($domainInfo['def_ns3'] ?? '');
+				$ns4 = strval($domainInfo['def_ns4'] ?? '');
+
+				if (empty($ns1) || empty($ns2)) {
+					echo json_encode(array('success' => false, 'msg' => 'Default nameservers are not configured for this registrar. Please contact support or choose Custom NS.'));
+					return;
+				}
+			}
+
 			$apiResult = array('success' => true, 'msg' => '');
 
 			// If registrar is configured, update via API
@@ -396,31 +410,37 @@ class Clientarea extends WHMAZ_Controller {
 		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
 		$orderId = strval($domainInfo['domain_order_id'] ?? '');
 
-		// Build nameserver string
+		// Build nameserver list
 		$nsList = array(strval($ns1), strval($ns2));
 		if (!empty(trim(strval($ns3)))) $nsList[] = strval($ns3);
 		if (!empty(trim(strval($ns4)))) $nsList[] = strval($ns4);
 
-		$postData = array(
+		// ResellerClub expects the "ns" parameter REPEATED (ns=a&ns=b), not
+		// bracket-indexed (ns[0]=a&ns[1]=b) as http_build_query() would encode an
+		// array. Build the raw query manually — same approach as the working
+		// registration flow in domain_helper.php.
+		$postData = http_build_query(array(
 			'auth-userid' => $authUserId,
 			'api-key' => $apiKey,
 			'order-id' => $orderId,
-			'ns' => $nsList
-		);
-
-		$response = $this->makeApiRequest($nsUpdateApi, $postData, 'POST');
-
-		if ($response === false) {
-			return array('success' => false, 'msg' => 'Failed to connect to registrar API');
+		));
+		foreach ($nsList as $ns) {
+			$postData .= '&ns=' . urlencode($ns);
 		}
 
-		$result = json_decode($response, true);
+		$apiResponse = domain_api_post_raw($nsUpdateApi, $postData);
 
-		if (isset($result['status']) && strtolower($result['status']) == 'success') {
+		if (!$apiResponse['success'] && empty($apiResponse['data'])) {
+			return array('success' => false, 'msg' => $apiResponse['error'] ?? 'Failed to connect to registrar API');
+		}
+
+		$result = $apiResponse['data'];
+
+		if (is_array($result) && isset($result['status']) && strtolower($result['status']) == 'success') {
 			return array('success' => true, 'msg' => 'Nameservers updated at registrar');
 		}
 
-		$errorMsg = isset($result['message']) ? $result['message'] : 'Unknown API error';
+		$errorMsg = (is_array($result) && isset($result['message'])) ? $result['message'] : 'Unknown API error';
 		return array('success' => false, 'msg' => $errorMsg);
 	}
 
@@ -869,40 +889,98 @@ class Clientarea extends WHMAZ_Controller {
 	 * Update contacts via ResellerClub/Resell.biz/Stargate API
 	 */
 	private function updateContactsResellerclub($domainInfo, $contactData) {
-		// Note: ResellerClub requires updating contact by contact-id
-		// This is a simplified implementation - full implementation would need contact ID management
-		$contactUpdateApi = !empty($domainInfo['contact_update_api'])
-			? strval($domainInfo['contact_update_api'])
-			: rtrim(strval($domainInfo['api_base_url'] ?? ''), '/') . '/api/contacts/modify.json';
+		$baseUrl = rtrim(strval($domainInfo['api_base_url'] ?? ''), '/');
+		$authUserId = strval($domainInfo['auth_userid'] ?? '');
+		$apiKey = strval($domainInfo['auth_apikey'] ?? '');
+		$domain = strval($domainInfo['domain'] ?? '');
 
-		if (empty($domainInfo['domain_order_id'])) {
-			return array('success' => false, 'msg' => 'Domain order ID not found');
+		if (empty($baseUrl) || empty($authUserId) || empty($apiKey) || empty($domain)) {
+			return array('success' => false, 'msg' => 'Registrar API not configured');
 		}
+
+		// Step 1: The registrant contact-id is not stored locally — look it up
+		// (plus its current phone country code) from the live domain details.
+		$detailsUrl = $baseUrl . '/api/domains/details-by-name.json?'
+			. http_build_query(array(
+				'auth-userid' => $authUserId,
+				'api-key' => $apiKey,
+				'domain-name' => $domain,
+				'options' => 'All'
+			));
+
+		$detailsResp = domain_api_get($detailsUrl);
+		if (!$detailsResp['success'] || empty($detailsResp['data']) || !is_array($detailsResp['data'])) {
+			return array('success' => false, 'msg' => $detailsResp['error'] ?? 'Failed to fetch domain details from registrar');
+		}
+		$details = $detailsResp['data'];
+
+		if (isset($details['status']) && strtolower($details['status']) == 'error') {
+			return array('success' => false, 'msg' => $details['message'] ?? 'API Error');
+		}
+
+		// Registrant contact id can appear under a few shapes across API versions
+		$contactId = $details['registrantcontactid'] ?? ($details['registrantcontact']['contactid'] ?? null);
+		if (is_array($contactId)) {
+			$contactId = $contactId['contactid'] ?? ($contactId[0] ?? null);
+		}
+		if (empty($contactId) || is_array($contactId)) {
+			return array('success' => false, 'msg' => 'Could not determine registrant contact at registrar');
+		}
+
+		// Keep the existing phone country code — the single combined phone field
+		// in our form can't be reliably split back into cc + number.
+		$existingPhoneCc = strval($details['registrantcontact']['telnocc'] ?? '');
+		$phoneDigits = preg_replace('/[^0-9]/', '', strval($contactData['contact_phone'] ?? ''));
+		$phoneCc = $existingPhoneCc !== '' ? $existingPhoneCc : '1';
+		if ($existingPhoneCc !== '' && strpos($phoneDigits, $existingPhoneCc) === 0) {
+			$phoneDigits = substr($phoneDigits, strlen($existingPhoneCc));
+		}
+		if ($phoneDigits === '') $phoneDigits = '0000000000';
+
+		// Step 2: Modify the contact record with the submitted WHOIS values.
+		$modifyUrl = !empty($domainInfo['contact_update_api'])
+			? strval($domainInfo['contact_update_api'])
+			: $baseUrl . '/api/contacts/modify.json';
 
 		$postData = array(
-			'auth-userid' => strval($domainInfo['auth_userid'] ?? ''),
-			'api-key' => strval($domainInfo['auth_apikey'] ?? ''),
-			'order-id' => strval($domainInfo['domain_order_id'] ?? ''),
-			'reg-contact-id' => strval($domainInfo['domain_cust_id'] ?? ''),
-			'admin-contact-id' => strval($domainInfo['domain_cust_id'] ?? ''),
-			'tech-contact-id' => strval($domainInfo['domain_cust_id'] ?? ''),
-			'billing-contact-id' => strval($domainInfo['domain_cust_id'] ?? '')
+			'auth-userid' => $authUserId,
+			'api-key' => $apiKey,
+			'contact-id' => strval($contactId),
+			'name' => !empty($contactData['contact_name']) ? $contactData['contact_name'] : 'N/A',
+			'company' => !empty($contactData['contact_company']) ? $contactData['contact_company'] : 'N/A',
+			'email' => strval($contactData['contact_email'] ?? ''),
+			'address-line-1' => !empty($contactData['contact_address1']) ? $contactData['contact_address1'] : 'N/A',
+			'city' => !empty($contactData['contact_city']) ? $contactData['contact_city'] : 'N/A',
+			'country' => !empty($contactData['contact_country']) ? $contactData['contact_country'] : 'US',
+			'zipcode' => !empty($contactData['contact_zip']) ? $contactData['contact_zip'] : '00000',
+			'phone-cc' => $phoneCc,
+			'phone' => $phoneDigits,
 		);
+		if (!empty($contactData['contact_address2'])) $postData['address-line-2'] = $contactData['contact_address2'];
+		if (!empty($contactData['contact_state']))    $postData['state'] = $contactData['contact_state'];
 
-		$response = $this->makeApiRequest($contactUpdateApi, $postData, 'POST');
+		$apiResponse = domain_api_post($modifyUrl, $postData);
 
-		if ($response === false) {
-			return array('success' => false, 'msg' => 'Failed to connect to registrar API');
+		if (!$apiResponse['success'] && empty($apiResponse['data'])) {
+			return array('success' => false, 'msg' => $apiResponse['error'] ?? 'Failed to connect to registrar API');
 		}
 
-		$result = json_decode($response, true);
+		$result = $apiResponse['data'];
 
-		if (isset($result['status']) && strtolower($result['status']) == 'success') {
+		// contacts/modify.json returns the contact-id on success, else a status/error map
+		if (is_numeric($result)) {
 			return array('success' => true, 'msg' => 'Contacts updated at registrar');
 		}
+		if (is_array($result)) {
+			if (isset($result['status']) && strtolower($result['status']) == 'success') {
+				return array('success' => true, 'msg' => 'Contacts updated at registrar');
+			}
+			if (isset($result['message'])) {
+				return array('success' => false, 'msg' => $result['message']);
+			}
+		}
 
-		$errorMsg = isset($result['message']) ? $result['message'] : 'API update not fully supported';
-		return array('success' => false, 'msg' => $errorMsg);
+		return array('success' => false, 'msg' => 'Registrar did not confirm the contact update');
 	}
 
 	/**
@@ -1066,6 +1144,78 @@ class Clientarea extends WHMAZ_Controller {
 		} else {
 			echo json_encode(array('success' => false, 'msg' => 'Failed to send email. Please try again or contact support.'));
 		}
+	}
+
+	/**
+	 * Submit a domain cancellation request.
+	 * Does NOT cancel the domain — it records the request, notifies the admin,
+	 * and emails a confirmation to the customer. Admin processes it in the portal.
+	 */
+	public function domain_cancellation_request() {
+		$this->sendCsrfHeaders();
+		header('Content-Type: application/json');
+
+		if (!$this->input->post()) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid request method'));
+			return;
+		}
+
+		$domainId = $this->input->post('domain_id');
+		$reason = trim(strval($this->input->post('reason')));
+		$companyId = getCompanyId();
+
+		if (!is_numeric($domainId) || $domainId <= 0) {
+			echo json_encode(array('success' => false, 'msg' => 'Invalid domain ID'));
+			return;
+		}
+
+		// Verify ownership + load the domain
+		$domain = $this->Order_model->loadOrderDomainById($companyId, $domainId);
+		if (empty($domain)) {
+			echo json_encode(array('success' => false, 'msg' => 'Domain not found or access denied'));
+			return;
+		}
+
+		$domainName = strval($domain['domain'] ?? '');
+
+		// Record the request against the domain (append to remarks as an audit note)
+		$note = 'Cancellation requested by customer on ' . date('Y-m-d H:i')
+			. ($reason !== '' ? ' — Reason: ' . $reason : '');
+		$existingRemarks = trim(strval($domain['remarks'] ?? ''));
+		$newRemarks = $existingRemarks !== '' ? ($existingRemarks . ' | ' . $note) : $note;
+
+		$this->db->query(
+			"UPDATE order_domains SET remarks = ?, updated_on = NOW() WHERE id = ? AND company_id = ?",
+			array(substr($newRemarks, 0, 255), intval($domainId), intval($companyId))
+		);
+
+		$appSettings = getAppSettings();
+		$customer = $this->session->userdata('CUSTOMER');
+		$customerEmail = !empty($customer['email']) ? $customer['email'] : '';
+		$customerName  = !empty($customer['first_name']) ? $customer['first_name'] : 'Customer';
+
+		// Notify admin
+		if (!empty($appSettings->email)) {
+			$adminSubject = 'Domain Cancellation Request: ' . $domainName;
+			$adminBody  = 'A customer has requested cancellation of a domain.<br><br>';
+			$adminBody .= '<strong>Domain:</strong> ' . htmlspecialchars($domainName) . '<br>';
+			$adminBody .= '<strong>Customer:</strong> ' . htmlspecialchars($customerName) . ' (' . htmlspecialchars($customerEmail) . ')<br>';
+			$adminBody .= '<strong>Reason:</strong> ' . htmlspecialchars($reason !== '' ? $reason : 'Not provided') . '<br><br>';
+			$adminBody .= 'Please review and process this request in the admin portal.';
+			sendHtmlEmail($appSettings->email, $adminSubject, $adminBody);
+		}
+
+		// Confirm to customer
+		if (!empty($customerEmail)) {
+			$custSubject = 'Cancellation Request Received - ' . $domainName;
+			$custBody  = 'Dear ' . htmlspecialchars($customerName) . ',<br><br>';
+			$custBody .= 'We have received your request to cancel the domain <strong>' . htmlspecialchars($domainName) . '</strong>.<br><br>';
+			$custBody .= 'Our team will review your request and contact you shortly. The domain remains active until the request is processed.<br><br>';
+			$custBody .= 'Thanks &amp; Regards,<br>' . htmlspecialchars($appSettings->company_name) . ' Support';
+			sendHtmlEmail($customerEmail, $custSubject, $custBody);
+		}
+
+		echo json_encode(array('success' => true, 'msg' => 'Your cancellation request has been submitted. Our team will contact you shortly.'));
 	}
 
 	/**
