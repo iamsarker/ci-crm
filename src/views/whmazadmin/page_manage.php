@@ -1,6 +1,7 @@
 <?php $this->load->view('whmazadmin/include/header'); ?>
 <link rel="stylesheet" href="<?=base_url()?>resources/assets/css/admin.manage_view.css">
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<?php $isExternal = !empty($detail['external_url']); ?>
 
 <style>
 .ql-editor {
@@ -138,6 +139,29 @@
 								</div>
 							</div>
 
+							<!-- Page Type -->
+							<div class="form-group">
+								<label class="form-label"><i class="fa fa-toggle-on"></i> Page Type</label>
+								<div class="d-flex gap-4 mt-2">
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="page_type" id="type_content" value="content" <?= $isExternal ? '' : 'checked' ?>>
+										<label class="form-check-label" for="type_content">Custom Content</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="radio" name="page_type" id="type_external" value="external" <?= $isExternal ? 'checked' : '' ?>>
+										<label class="form-check-label" for="type_external">External URL</label>
+									</div>
+								</div>
+								<small class="form-text text-muted">Choose "External URL" to redirect visitors to another site instead of showing content on this page.</small>
+							</div>
+
+							<!-- External URL (shown when Page Type = External URL) -->
+							<div class="form-group" id="externalUrlGroup" style="<?= $isExternal ? '' : 'display:none;' ?>">
+								<label class="form-label" for="external_url"><i class="fa fa-external-link-alt"></i> External URL <span class="text-danger">*</span></label>
+								<input type="url" name="external_url" id="external_url" class="form-control" placeholder="https://example.com/privacy-policy" value="<?= !empty($detail['external_url']) ? htmlspecialchars($detail['external_url']) : '' ?>">
+								<small class="form-text text-muted">Visitors opening this page will be redirected here.</small>
+							</div>
+
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group">
@@ -184,13 +208,13 @@
 						</div>
 
 						<!-- Content Section -->
-						<div class="company-form-section">
+						<div class="company-form-section" id="contentSection" style="<?= $isExternal ? 'display:none;' : '' ?>">
 							<div class="section-title">
 								<i class="fa fa-edit"></i> Page Content <span class="text-danger">*</span>
 							</div>
 
 							<div id="quillEditor"><?= !empty($detail['page_content']) ? $detail['page_content'] : '' ?></div>
-							<textarea name="page_content" id="page_content" class="textarea-hidden" required><?= !empty($detail['page_content']) ? htmlspecialchars($detail['page_content']) : '' ?></textarea>
+							<textarea name="page_content" id="page_content" class="textarea-hidden" <?= $isExternal ? '' : 'required' ?>><?= !empty($detail['page_content']) ? htmlspecialchars($detail['page_content']) : '' ?></textarea>
 						</div>
 
 						<!-- Submit Button -->
@@ -324,8 +348,28 @@ $(function(){
 		$('#publishLabel').text($(this).is(':checked') ? 'Published' : 'Draft');
 	});
 
+	// Page Type: Custom Content vs External URL
+	function applyPageType() {
+		var isExternal = $('input[name="page_type"]:checked').val() === 'external';
+		$('#externalUrlGroup').toggle(isExternal);
+		$('#contentSection').toggle(!isExternal);
+		// required attributes must not sit on hidden fields (blocks form submit)
+		$('#external_url').prop('required', isExternal);
+		$('#page_content').prop('required', !isExternal);
+	}
+	$('input[name="page_type"]').on('change', applyPageType);
+	applyPageType();
+
 	// Form submission - sync Quill content
 	$('#pageForm').on('submit', function(e) {
+		var isExternal = $('input[name="page_type"]:checked').val() === 'external';
+
+		if (isExternal) {
+			// content not needed; clear the hidden editor value
+			$('#page_content').val('');
+			return; // let native validation handle the required URL
+		}
+
 		var content = quill.root.innerHTML;
 		if (content === '<p><br></p>' || content.trim() === '') {
 			e.preventDefault();

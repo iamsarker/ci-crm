@@ -5,9 +5,9 @@
       <footer class="app-footer">
         <div class="float-end d-none d-sm-inline">
           <nav class="nav">
-            <a href="<?=base_url()?>pages/terms-and-conditions" class="nav-link" target="_blank">Terms & Conditions</a>
-            <a href="<?=base_url()?>pages/privacy-policy" class="nav-link" target="_blank">Privacy Policy</a>
-            <a href="<?=base_url()?>pages/refund-policy" class="nav-link" target="_blank">Refund Policy</a>
+            <a href="<?=page_url('terms-and-conditions')?>" class="nav-link" target="_blank">Terms & Conditions</a>
+            <a href="<?=page_url('privacy-policy')?>" class="nav-link" target="_blank">Privacy Policy</a>
+            <a href="<?=page_url('refund-policy')?>" class="nav-link" target="_blank">Refund Policy</a>
           </nav>
         </div>
         <strong>&copy; 2014-<?=date("Y")?> WHMAZ v1.0.0</strong>

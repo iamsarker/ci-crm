@@ -113,6 +113,35 @@
     	return $cache[$companyId];
     }
 
+	/**
+	 * Resolve the public URL for a dynamic page slug.
+	 * If the (published) page has an external_url set, return that directly so
+	 * footer/nav links open the external site without the /pages/{slug} redirect hop.
+	 * Otherwise return the local page URL. Request-cached: all published external
+	 * pages are loaded once on first call.
+	 */
+	function page_url($slug){
+		$ci = & get_instance();
+		$slug = trim((string) $slug);
+
+		static $externals = null;
+		if ($externals === null) {
+			$externals = array();
+			$rows = $ci->db->query(
+				"SELECT page_slug, external_url FROM pages
+				 WHERE status = 1 AND is_published = 1 AND external_url IS NOT NULL AND external_url != ''"
+			)->result_array();
+			foreach ($rows as $r) {
+				$externals[$r['page_slug']] = $r['external_url'];
+			}
+		}
+
+		if (!empty($externals[$slug])) {
+			return $externals[$slug];
+		}
+		return base_url() . 'pages/' . $slug;
+	}
+
 	function isAdminLoggedIn(){
 		$ci = & get_instance();
 		$admin = $ci->session->userdata("ADMIN");

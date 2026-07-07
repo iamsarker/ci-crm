@@ -1808,6 +1808,7 @@ CREATE TABLE `pages` (
   `page_title` varchar(255) NOT NULL,
   `page_slug` varchar(255) NOT NULL,
   `page_content` longtext DEFAULT NULL,
+  `external_url` varchar(500) DEFAULT NULL COMMENT 'If set, /pages/{slug} redirects here instead of rendering page_content',
   `meta_title` varchar(255) DEFAULT NULL,
   `meta_description` text DEFAULT NULL,
   `meta_keywords` varchar(500) DEFAULT NULL,

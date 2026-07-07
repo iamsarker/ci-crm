@@ -26,6 +26,12 @@ class Pages extends WHMAZ_Controller {
 		// Increment view count
 		$this->Page_model->incrementView($page['id']);
 
+		// If the page points to an external URL, forward there instead of rendering local content
+		if (!empty($page['external_url'])) {
+			redirect($page['external_url'], 'location', 302);
+			return;
+		}
+
 		$data['page'] = $page;
 		$this->load->view('page_view', $data);
 	}

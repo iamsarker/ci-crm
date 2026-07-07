@@ -19,9 +19,15 @@ class Page extends WHMAZADMIN_Controller {
 
 	public function manage($id_val = null) {
 		if ($this->input->post()) {
+			$pageType = $this->input->post('page_type') === 'external' ? 'external' : 'content';
+
 			$this->form_validation->set_rules('page_title', 'Page Title', 'required|trim');
 			$this->form_validation->set_rules('page_slug', 'Page Slug', 'required|trim|alpha_dash');
-			$this->form_validation->set_rules('page_content', 'Page Content', 'required');
+			if ($pageType === 'external') {
+				$this->form_validation->set_rules('external_url', 'External URL', 'required|trim|valid_url');
+			} else {
+				$this->form_validation->set_rules('page_content', 'Page Content', 'required');
+			}
 
 			if ($this->form_validation->run() == true) {
 				$pageId = !empty($id_val) ? safe_decode($id_val) : 0;
@@ -36,7 +42,8 @@ class Page extends WHMAZADMIN_Controller {
 						'id' => $pageId,
 						'page_title' => $this->input->post('page_title'),
 						'page_slug' => $slug,
-						'page_content' => $this->input->post('page_content'),
+						'page_content' => $pageType === 'external' ? '' : $this->input->post('page_content'),
+						'external_url' => $pageType === 'external' ? $this->input->post('external_url') : null,
 						'meta_title' => $this->input->post('meta_title'),
 						'meta_description' => $this->input->post('meta_description'),
 						'meta_keywords' => $this->input->post('meta_keywords'),

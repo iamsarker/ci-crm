@@ -3,9 +3,11 @@
 
       <!-- Footer -->
       <footer class="app-footer">
+        <?php if ( ! feature_enabled('branding_removal')): ?>
         <div class="float-end d-none d-sm-inline">
           Maintain by <a href="https://whmaz.com/" target="_blank">WHMAZ</a>
         </div>
+        <?php endif; ?>
         <strong>&copy; 2014-<?=date("Y")?> WHMAZ v1.0.0</strong>
       </footer>
 
