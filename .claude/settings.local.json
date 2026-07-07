@@ -30,7 +30,8 @@
       "Bash(git -C /opt/lampp/htdocs/ci-crm-docs status)",
       "Read(//opt/lampp/htdocs/whmaz-site/includes/**)",
       "Read(//opt/lampp/htdocs/whmaz-site/img/**)",
-      "Read(//opt/lampp/htdocs/whmaz-site/icons-pack/**)"
+      "Read(//opt/lampp/htdocs/whmaz-site/icons-pack/**)",
+      "Bash(bash -n /opt/lampp/htdocs/ci-crm-docs/package.sh)"
     ]
   },
   "effortLevel": "high"
