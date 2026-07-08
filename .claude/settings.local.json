@@ -31,10 +31,11 @@
       "Read(//opt/lampp/htdocs/whmaz-site/includes/**)",
       "Read(//opt/lampp/htdocs/whmaz-site/img/**)",
       "Read(//opt/lampp/htdocs/whmaz-site/icons-pack/**)",
-      "Bash(bash -n /opt/lampp/htdocs/ci-crm-docs/package.sh)"
+      "Bash(bash -n /opt/lampp/htdocs/ci-crm-docs/package.sh)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m ' *)"
     ]
   },
-  "effortLevel": "high",
   "hooks": {
     "PostToolUse": [
       {
@@ -59,5 +60,6 @@
         ]
       }
     ]
-  }
+  },
+  "effortLevel": "high"
 }
