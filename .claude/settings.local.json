@@ -34,5 +34,30 @@
       "Bash(bash -n /opt/lampp/htdocs/ci-crm-docs/package.sh)"
     ]
   },
-  "effortLevel": "high"
+  "effortLevel": "high",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/lampp/htdocs/ci-crm/.claude/hooks/ioncube-sync.sh",
+            "statusMessage": "Syncing IonCube encode-set to plainfile..."
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/opt/lampp/htdocs/ci-crm/.claude/hooks/ioncube-drift-check.sh",
+            "statusMessage": "Checking IonCube encode-set drift..."
+          }
+        ]
+      }
+    ]
+  }
 }
