@@ -61,5 +61,8 @@
       }
     ]
   },
-  "effortLevel": "high"
+  "effortLevel": "high",
+  "enabledPlugins": {
+    "paddle@claude-community": true
+  }
 }

@@ -666,6 +666,19 @@ class Webhook extends WHMAZ_Controller
      */
     public function paddle()
     {
+        // Defense-in-depth: only accept deliveries from Paddle's published live IPs
+        // (the HMAC signature is still verified below — this is an additional gate).
+        // NOTE: if this app sits behind a reverse proxy / CDN (Cloudflare, load
+        // balancer, etc.), set $config['proxy_ips'] in config.php so CI resolves the
+        // real client IP from X-Forwarded-For; otherwise ip_address() returns the
+        // proxy's IP and legitimate Paddle deliveries would be rejected here.
+        $clientIp = $this->input->ip_address();
+        if (!$this->paddleWebhookIpAllowed($clientIp)) {
+            log_message('error', 'Paddle webhook rejected: source IP ' . $clientIp . ' not in Paddle allowlist');
+            $this->sendResponse(403, 'Forbidden');
+            return;
+        }
+
         $payload = file_get_contents('php://input');
         $sigHeader = $_SERVER['HTTP_PADDLE_SIGNATURE'] ?? '';
 
@@ -765,5 +778,106 @@ class Webhook extends WHMAZ_Controller
         header('Content-Type: application/json');
         echo json_encode(array('message' => $message));
         exit;
+    }
+
+    /**
+     * Whether $ip falls within Paddle's published live webhook IP ranges.
+     *
+     * The list is fetched from https://api.paddle.com/ips (the authoritative
+     * source, which can change over time) and cached locally — never hard-coded.
+     * On a fetch failure the last cached list is used; if no list can be
+     * established at all, the check is skipped (returns true) so a transient
+     * outage of that endpoint cannot drop legitimate, HMAC-verified deliveries.
+     * The signature check remains the primary gate.
+     */
+    private function paddleWebhookIpAllowed($ip)
+    {
+        $cidrs = $this->fetchPaddleAllowedCidrs();
+        if (empty($cidrs)) {
+            log_message('error', 'Paddle IP allowlist unavailable; skipping IP check (HMAC still enforced)');
+            return true; // fail-open: don't drop verified webhooks on a list-fetch outage
+        }
+        foreach ($cidrs as $cidr) {
+            if ($this->ipInCidr($ip, $cidr)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Fetch + cache Paddle's webhook source IP CIDRs (data.ipv4_cidrs from the
+     * /ips endpoint). Cached to src/cache/paddle_ips.json for 24h. Falls back to
+     * a stale cache if the live fetch fails.
+     */
+    private function fetchPaddleAllowedCidrs()
+    {
+        $cacheFile = APPPATH . 'cache/paddle_ips.json';
+        $ttl = 86400; // 24 hours
+
+        if (is_file($cacheFile) && (time() - filemtime($cacheFile) < $ttl)) {
+            $cached = json_decode(@file_get_contents($cacheFile), true);
+            if (!empty($cached['ipv4_cidrs'])) {
+                return $cached['ipv4_cidrs'];
+            }
+        }
+
+        $ch = curl_init('https://api.paddle.com/ips');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        if (ENVIRONMENT === 'production') {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        } else {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+        }
+        $resp = curl_exec($ch);
+        $err = curl_error($ch);
+        curl_close($ch);
+
+        if (!$err && $resp) {
+            $data = json_decode($resp, true);
+            $cidrs = isset($data['data']['ipv4_cidrs']) ? $data['data']['ipv4_cidrs'] : array();
+            if (!empty($cidrs)) {
+                @file_put_contents($cacheFile, json_encode(array('ipv4_cidrs' => $cidrs, 'fetched_at' => time())));
+                return $cidrs;
+            }
+        } elseif ($err) {
+            log_message('error', 'Paddle IPs fetch failed: ' . $err);
+        }
+
+        // Fetch failed or returned nothing usable — fall back to any stale cache.
+        if (is_file($cacheFile)) {
+            $cached = json_decode(@file_get_contents($cacheFile), true);
+            if (!empty($cached['ipv4_cidrs'])) {
+                return $cached['ipv4_cidrs'];
+            }
+        }
+        return array();
+    }
+
+    /**
+     * Match an IPv4 address against a CIDR range (a bare IP is treated as /32).
+     */
+    private function ipInCidr($ip, $cidr)
+    {
+        if (strpos($cidr, '/') === false) {
+            $cidr .= '/32';
+        }
+        list($subnet, $bits) = explode('/', $cidr, 2);
+
+        $ipLong = ip2long($ip);
+        $subnetLong = ip2long($subnet);
+        if ($ipLong === false || $subnetLong === false) {
+            return false; // not a valid IPv4 (e.g. IPv6) — no match
+        }
+
+        $bits = (int) $bits;
+        if ($bits <= 0) {
+            return true;
+        }
+        $mask = (~((1 << (32 - $bits)) - 1)) & 0xFFFFFFFF;
+        return (($ipLong & $mask) === ($subnetLong & $mask));
     }
 }

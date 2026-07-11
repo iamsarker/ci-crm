@@ -207,7 +207,7 @@
             <ul class="navbar-nav me-auto">
               <!-- Home -->
               <li class="nav-item">
-                <a href="<?=base_url()?>auth/login" class="nav-link">
+                <a href="<?=base_url()?>" class="nav-link">
                   <i class="fas fa-home me-1"></i> Home
                 </a>
               </li>

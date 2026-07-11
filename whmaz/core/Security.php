@@ -226,10 +226,19 @@ class CI_Security {
 			}
 		}
 
+		// Accept the token from the POST body OR the X-CSRF-TOKEN request header.
+		// AJAX callers (see customer/admin footer_script.php $.ajaxSetup) send the
+		// token in the header for JSON/empty-body POSTs where it can't ride in $_POST.
+		$posted_token = isset($_POST[$this->_csrf_token_name]) && is_string($_POST[$this->_csrf_token_name])
+			? $_POST[$this->_csrf_token_name]
+			: (isset($_SERVER['HTTP_X_CSRF_TOKEN']) && is_string($_SERVER['HTTP_X_CSRF_TOKEN'])
+				? $_SERVER['HTTP_X_CSRF_TOKEN']
+				: NULL);
+
 		// Check CSRF token validity, but don't error on mismatch just yet - we'll want to regenerate
-		$valid = isset($_POST[$this->_csrf_token_name], $_COOKIE[$this->_csrf_cookie_name])
-			&& is_string($_POST[$this->_csrf_token_name]) && is_string($_COOKIE[$this->_csrf_cookie_name])
-			&& hash_equals($_POST[$this->_csrf_token_name], $_COOKIE[$this->_csrf_cookie_name]);
+		$valid = $posted_token !== NULL
+			&& isset($_COOKIE[$this->_csrf_cookie_name]) && is_string($_COOKIE[$this->_csrf_cookie_name])
+			&& hash_equals($posted_token, $_COOKIE[$this->_csrf_cookie_name]);
 
 		// We kill this since we're done and we don't want to pollute the _POST array
 		unset($_POST[$this->_csrf_token_name]);
