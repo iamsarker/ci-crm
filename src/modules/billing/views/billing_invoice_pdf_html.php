@@ -117,24 +117,50 @@
 			}
 			?>
 
+			<?php
+			// Totals must come from THIS invoice, not from the parent order. A renewal
+			// invoice shares its order with the original purchase, so orders.total_amount /
+			// orders.discount_amount belong to that first invoice, not this one.
+			$curCode     = htmlspecialchars($invoice['currency_code'] ?? '', ENT_QUOTES, 'UTF-8');
+			$invSubTotal = isset($invoice['sub_total']) && $invoice['sub_total'] > 0 ? (float)$invoice['sub_total'] : (float)$subTotal;
+			$invDiscount = isset($invoice['discount']) ? (float)$invoice['discount'] : 0;
+			$invTax      = isset($invoice['tax']) ? (float)$invoice['tax'] : 0;
+			$invVat      = isset($invoice['vat']) ? (float)$invoice['vat'] : 0;
+			$invTotal    = isset($invoice['total']) ? (float)$invoice['total'] : ($invSubTotal + $invTax + $invVat - $invDiscount - $credit);
+			?>
+
 			<tr>
 				<td colspan="3" style="border: 1px solid #c0c0c0;text-align: right;"><b>Sub Total</b></td>
-				<td style="border: 1px solid #c0c0c0;text-align: right;"><b><?=htmlspecialchars($subTotal ?? '', ENT_QUOTES, 'UTF-8').' '.htmlspecialchars($invoice['currency_code'] ?? '', ENT_QUOTES, 'UTF-8')?></b></td>
+				<td style="border: 1px solid #c0c0c0;text-align: right;"><b><?=number_format($invSubTotal, 2).' '.$curCode?></b></td>
 			</tr>
 
 			<tr>
 				<td colspan="3" style="border: 1px solid #c0c0c0;text-align: right;">Credit</td>
-				<td style="border: 1px solid #c0c0c0;text-align: right;">(-)&nbsp;<?=htmlspecialchars($credit ?? '', ENT_QUOTES, 'UTF-8').' '.htmlspecialchars($invoice['currency_code'] ?? '', ENT_QUOTES, 'UTF-8')?></td>
+				<td style="border: 1px solid #c0c0c0;text-align: right;">(-)&nbsp;<?=number_format((float)$credit, 2).' '.$curCode?></td>
 			</tr>
 
 			<tr>
 				<td colspan="3" style="border: 1px solid #c0c0c0;text-align: right;">Discount<?= !empty($invoice['coupon_code']) ? ' (' . htmlspecialchars($invoice['coupon_code'], ENT_QUOTES, 'UTF-8') . ')' : '' ?></td>
-				<td style="border: 1px solid #c0c0c0;text-align: right;">(-)&nbsp;<?=htmlspecialchars($invoice['discount_amount'] ?? '0.00', ENT_QUOTES, 'UTF-8').' '.htmlspecialchars($invoice['currency_code'] ?? '', ENT_QUOTES, 'UTF-8')?></td>
+				<td style="border: 1px solid #c0c0c0;text-align: right;">(-)&nbsp;<?=number_format($invDiscount, 2).' '.$curCode?></td>
 			</tr>
+
+			<?php if ($invTax > 0){ ?>
+			<tr>
+				<td colspan="3" style="border: 1px solid #c0c0c0;text-align: right;">Tax</td>
+				<td style="border: 1px solid #c0c0c0;text-align: right;"><?=number_format($invTax, 2).' '.$curCode?></td>
+			</tr>
+			<?php } ?>
+
+			<?php if ($invVat > 0){ ?>
+			<tr>
+				<td colspan="3" style="border: 1px solid #c0c0c0;text-align: right;">VAT</td>
+				<td style="border: 1px solid #c0c0c0;text-align: right;"><?=number_format($invVat, 2).' '.$curCode?></td>
+			</tr>
+			<?php } ?>
 
 			<tr>
 				<td colspan="3" style="border: 1px solid #c0c0c0;text-align: right;"><b>Grand Total</b></td>
-				<td style="border: 1px solid #c0c0c0;text-align: right;"><b><?=htmlspecialchars($invoice['order_amount'] ?? '', ENT_QUOTES, 'UTF-8').' '.htmlspecialchars($invoice['currency_code'] ?? '', ENT_QUOTES, 'UTF-8')?></b></td>
+				<td style="border: 1px solid #c0c0c0;text-align: right;"><b><?=number_format($invTotal, 2).' '.$curCode?></b></td>
 			</tr>
 
 			<tr><td colspan="4">&nbsp;</td></tr>

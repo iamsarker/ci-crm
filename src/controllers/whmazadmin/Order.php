@@ -344,6 +344,8 @@ class Order extends WHMAZADMIN_Controller
 		$invoice['sub_total'] = $order['amount'];
 		$invoice['tax'] = 0.0;
 		$invoice['vat'] = 0.0;
+		$invoice['discount'] = empty($order['discount_amount']) ? 0.0 : $order['discount_amount'];
+		$invoice['coupon_code'] = empty($order['coupon_code']) ? null : $order['coupon_code'];
 		$invoice['total'] = $order['total_amount'];
 		$invoice['order_date'] = $order['order_date'];
 		$invoice['due_date'] = $invoiceDueDate;

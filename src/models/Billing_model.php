@@ -34,7 +34,10 @@ class Billing_model extends CI_Model{
 			return array();
 		}
 
-		$sql = "SELECT inv.*, o.discount_amount, o.total_amount order_amount, o.payment_gateway_id,
+		// NOTE: do NOT expose the order's discount_amount / total_amount here. Renewal
+		// invoices reuse the original order, so those columns describe the first invoice
+		// only. Invoice totals live on inv.sub_total / inv.discount / inv.total.
+		$sql = "SELECT inv.*, o.payment_gateway_id,
 				c.name company_name, c.address company_address, c.city company_city,
 				c.state company_state, c.zip_code, c.country
 			FROM invoices inv
