@@ -640,17 +640,37 @@ class Order extends WHMAZADMIN_Controller
 			return;
 		}
 
+		$panelMessage = '';
+
+		// Push the package change to the control panel FIRST — if the panel rejects it,
+		// the local record is left untouched so the CRM never drifts from the server.
+		if ($upgradeCpanel && !empty($packageId)) {
+			$service = $this->Order_model->getServiceItem(safe_decode($serviceId));
+			if (empty($service)) {
+				echo json_encode(array('success' => false, 'message' => 'Service not found'));
+				return;
+			}
+
+			$this->load->model('Provisioning_model');
+			$panelResult = $this->Provisioning_model->changeServicePackage($service, $packageId);
+
+			if (empty($panelResult['success'])) {
+				echo json_encode(array(
+					'success' => false,
+					'message' => 'Control panel package change failed: ' . $panelResult['error'] . '. Nothing was changed.'
+				));
+				return;
+			}
+
+			$panelMessage = ($panelResult['module'] === 'none')
+				? ' (no server module — local change only)'
+				: ' Package changed on ' . $panelResult['module'] . ' server to "' . $panelResult['package'] . '".';
+		}
+
 		$result = $this->Order_model->updateServicePackage(safe_decode($serviceId), $updateData);
 
-		// Handle cPanel package upgrade if requested
-		if ($result['success'] && $upgradeCpanel) {
-			$service = $this->Order_model->getServiceItem(safe_decode($serviceId));
-			if (!empty($service['cp_username'])) {
-				$this->load->helper('cpanel');
-				// Note: WHM API call to change package would go here
-				log_message('info', 'cPanel package change requested for: ' . $service['cp_username']);
-				$result['message'] .= ' cPanel package change initiated.';
-			}
+		if ($result['success'] && $panelMessage !== '') {
+			$result['message'] .= $panelMessage;
 		}
 
 		// Handle server migration if requested

@@ -322,7 +322,7 @@
 
 											<?php if ($service['status'] != 4): // Not terminated ?>
 												<div class="item-actions">
-													<button type="button" class="btn btn-outline-primary btn-sm" onclick="changePackage(<?php echo $service['id']; ?>, '<?php echo htmlspecialchars($service['product_name'] ?? ''); ?>')">
+													<button type="button" class="btn btn-outline-primary btn-sm" onclick="changePackage(<?php echo $service['id']; ?>, '<?php echo htmlspecialchars($service['product_name'] ?? ''); ?>', <?php echo intval($service['server_id'] ?? 0); ?>)">
 														<i class="fas fa-box me-1"></i> Change Package
 													</button>
 													<button type="button" class="btn btn-outline-info btn-sm" onclick="changeServer(<?php echo $service['id']; ?>, '<?php echo htmlspecialchars($service['product_name'] ?? ''); ?>')">
@@ -414,11 +414,11 @@
 				</div>
 
 				<div class="form-check mb-3">
-					<input class="form-check-input" type="checkbox" id="upgrade_cpanel">
+					<input class="form-check-input" type="checkbox" id="upgrade_cpanel" checked>
 					<label class="form-check-label" for="upgrade_cpanel">
-						Apply package change on cPanel server
+						Apply package change on the hosting server
 					</label>
-					<small class="text-muted d-block">This will change the cPanel package via WHM API</small>
+					<small class="text-muted d-block">Changes the plan on the control panel (cPanel/Plesk/DirectAdmin). If the server rejects it, nothing is changed locally either.</small>
 				</div>
 			</div>
 			<div class="modal-footer">
@@ -535,12 +535,26 @@ function submitRegistrarChange() {
 }
 
 // Change Package
-function changePackage(serviceId, currentPackage) {
+function changePackage(serviceId, currentPackage, serverId) {
 	$('#modal_service_id').val(serviceId);
 	$('#modal_current_package').text(currentPackage);
 	$('#new_package_id').val('');
 	$('#pricingContainer').hide();
 	$('#changePackageModal').modal('show');
+
+	// Only packages on the service's own server can be pushed to the control panel —
+	// moving to another server is a migration, not a plan switch.
+	if (serverId) {
+		$.get(baseUrl + 'whmazadmin/order/get_packages_api', { server_id: serverId }, function(response) {
+			let options = '<option value="">-- Select Package --</option>';
+			if (response.success) {
+				response.data.forEach(function(item) {
+					options += '<option value="' + item.id + '">' + (item.group_name || '') + ' - ' + item.product_name + '</option>';
+				});
+			}
+			$('#new_package_id').html(options);
+		}, 'json');
+	}
 }
 
 function loadPricing() {

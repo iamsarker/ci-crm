@@ -998,6 +998,130 @@ class Provisioning_model extends CI_Model
     }
 
     /**
+     * Public: change the hosting package (plan) on the remote control panel.
+     *
+     * Local records are NOT touched here — the caller owns the DB update so it can
+     * decide whether to keep local state in sync when the panel call fails.
+     * The remote account lives on the server of the service's CURRENT package, so
+     * the new package must sit on that same server (a cross-server change is an
+     * account migration, not a plan switch).
+     *
+     * @param array $service             order_services row (needs product_service_id, cp_username/hosting_domain)
+     * @param int   $newProductServiceId product_services.id of the new package
+     * @return array {success: bool, action: 'change_package', module: string, package: string, error: string|null}
+     */
+    function changeServicePackage($service, $newProductServiceId)
+    {
+        $out = array('success' => false, 'action' => 'change_package', 'module' => '', 'package' => '', 'error' => null);
+
+        $serverInfo = $this->getServerInfoForService($service['product_service_id']);
+        if (empty($serverInfo) || empty($serverInfo['hostname'])) {
+            $out['error'] = 'Server not configured';
+            return $out;
+        }
+
+        $newServerInfo = $this->getServerInfoForService($newProductServiceId);
+        if (empty($newServerInfo)) {
+            $out['error'] = 'New package has no active server';
+            return $out;
+        }
+        if (intval($newServerInfo['id']) !== intval($serverInfo['id'])) {
+            $out['error'] = 'New package is on a different server (' . $newServerInfo['name'] . ') — the account must be migrated first';
+            return $out;
+        }
+
+        $newPackage = $this->getServerPackage($newProductServiceId);
+        if (empty($newPackage) || $newPackage === 'default') {
+            $out['error'] = 'New package has no control panel package name configured';
+            return $out;
+        }
+
+        $moduleName = $this->getServerModuleName($serverInfo);
+        $out['module']  = $moduleName;
+        $out['package'] = $newPackage;
+
+        log_message('info', 'Provisioning: Changing package for service #' . $service['id'] . ' to ' . $newPackage . ' via ' . ($moduleName ?: 'none'));
+
+        if ($moduleName === 'cpanel') {
+            if (empty($service['cp_username'])) {
+                $out['error'] = 'No cPanel username';
+                return $out;
+            }
+            $result = whm_modify_account($serverInfo, $service['cp_username'], $newPackage);
+        } elseif ($moduleName === 'plesk') {
+            if (empty($service['hosting_domain'])) {
+                $out['error'] = 'No hosting domain for Plesk';
+                return $out;
+            }
+            $result = plesk_modify_account($serverInfo, $service['hosting_domain'], $newPackage);
+        } elseif ($moduleName === 'directadmin') {
+            if (empty($service['cp_username'])) {
+                $out['error'] = 'No DirectAdmin username';
+                return $out;
+            }
+            $result = da_modify_account($serverInfo, $service['cp_username'], $newPackage);
+        } else {
+            // A service with a live control panel account on a server that has no module
+            // assigned is a misconfiguration, not a "nothing to do" — reporting success
+            // here is what lets the local record drift away from the real server.
+            if (!empty($service['cp_username']) || !empty($service['hosting_domain'])) {
+                $out['module'] = 'none';
+                $out['error']  = 'Server "' . $serverInfo['name'] . '" has no control panel module assigned (Settings → Servers), so the change cannot be pushed';
+                return $out;
+            }
+
+            // Genuinely no remote account — nothing to push
+            $out['success'] = true;
+            $out['module']  = 'none';
+            return $out;
+        }
+
+        if (!empty($result['success'])) {
+            // Read the plan back from the panel — a WHM call can report success without
+            // actually moving the account, and a silent no-op is what puts the CRM out
+            // of sync with the server in the first place.
+            if ($moduleName === 'cpanel') {
+                $livePlan = $this->getLiveCpanelPlan($serverInfo, $service['cp_username']);
+                if ($livePlan !== '' && strcasecmp($livePlan, $newPackage) !== 0) {
+                    $out['error'] = 'Server reported success but the account is still on "' . $livePlan . '"';
+                    log_message('error', 'Package change no-op for service #' . $service['id'] . ': expected ' . $newPackage . ', server has ' . $livePlan);
+                    return $out;
+                }
+            }
+
+            log_message('info', 'Service #' . $service['id'] . ' package changed to ' . $newPackage . ' via ' . $moduleName);
+            $out['success'] = true;
+            return $out;
+        }
+
+        $out['error'] = $result['error'] ?? 'unknown';
+        log_message('error', 'Package change failed for service #' . $service['id'] . ' via ' . $moduleName . ': ' . $out['error']);
+        return $out;
+    }
+
+    /**
+     * Read the plan an account is currently on from WHM (accountsummary).
+     * Returns '' when the value can't be determined — callers treat that as
+     * "unverifiable" rather than "mismatched".
+     */
+    private function getLiveCpanelPlan($serverInfo, $username)
+    {
+        $info = whm_get_account_info($serverInfo, $username);
+        if (empty($info['success'])) {
+            return '';
+        }
+
+        if (isset($info['data']['data']['acct'][0]['plan'])) {
+            return trim($info['data']['data']['acct'][0]['plan']);
+        }
+        if (isset($info['data']['acct'][0]['plan'])) {
+            return trim($info['data']['acct'][0]['plan']);
+        }
+
+        return '';
+    }
+
+    /**
      * Unsuspend a hosting account via the appropriate module API
      */
     private function unsuspendHostingAccount($service)

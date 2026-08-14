@@ -560,12 +560,14 @@ if (!function_exists('whm_get_disk_usage')) {
  */
 if (!function_exists('whm_modify_account')) {
     function whm_modify_account($serverInfo, $username, $newPlan) {
+        // Must be 'changepackage' — WHM's 'modifyacct' has no 'pkg' parameter and
+        // silently returns result=1 while leaving the account on its old plan.
         $params = array(
             'user' => $username,
             'pkg' => $newPlan
         );
 
-        $response = whm_api_call($serverInfo, 'modifyacct', $params);
+        $response = whm_api_call($serverInfo, 'changepackage', $params);
 
         if ($response['success']) {
             log_message('info', 'cPanel account modified: ' . $username . ' to plan: ' . $newPlan);
