@@ -304,7 +304,7 @@ After successful payment (webhook or admin "Mark as Paid"), the system automatic
 2. `provisionPaidServices($invoiceId)` called
 3. Loops through `invoice_items` with `ref_id`
 4. Determines type: domain (`item_type=1`) or service (`item_type=2`)
-5. **Renewal detection** (`Provisioning_model::isRenewalInvoiceItem()`): an item is a renewal if any earlier PAID invoice already references the same `ref_id`. This is unambiguous and doesn't rely on `domain_order_id` / `is_synced` / status flags (which can be missing or stale).
+5. **Renewal detection** (`Provisioning_model::isRenewalInvoiceItem()`): an item is a renewal if any earlier PAID invoice already references the same `ref_id`. This is unambiguous and doesn't rely on `domain_order_id` / `is_synced` / status flags (which can be missing or stale). ⚠️ **But it needs the original item to carry `ref_id`** — pre-linking orders have `ref_id = NULL`, so their first renewal finds nothing, looks like an initial order, and re-registers (registrar: *"the domain already exists in our database"*). `looksLikeLaterTermFor()` is the fallback and requires **both**: (a) `billing_period_start >= exp_date` (falling back to `next_renewal_date`) — an initial order's expiry is a full term *after* its period start, so only a renewal bills from the expiry onward; and (b) the row is already live remotely (domain: `order_type IN (1,2)` + `status IN (1,2,3)` + `domain_order_id`; service: `status IN (1,2,3)` + `cp_username` + `is_synced=1`). Liveness alone would make **Retry** renew a just-registered domain and buy a second year. **Never compare against `reg_date`** — for imported domains it holds the registrar's original date (sometimes years earlier), which initial orders satisfy too.
 6. For domains: if renewal → `renewDomain()`; else dispatch by `order_type` (1=register, 2=transfer, 3=dns_only, 4=already-registered import → local-only)
 7. For services: if renewal → `renewService()` (unsuspend if suspended, extend dates); else `createHostingAccount()`
 8. Calls appropriate API (registrar or server module: cPanel/Plesk/DirectAdmin)
@@ -495,11 +495,17 @@ Key facts at a glance:
 | Domain Items | List of domains with registrar, dates, status |
 | Service Items | List of hosting services with package, server, dates |
 | Change Registrar | Switch domain to different registrar (triggers transfer if active) |
-| Change Package | Change hosting package with optional server panel upgrade |
+| Change Package | Change hosting package (same server only) + push the plan to the control panel |
 | Change Server | Move to different server with optional migration |
 | Cancel Domain | Immediate or end-of-period cancellation |
 | Cancel Service | Immediate or end-of-period with optional server account deletion |
 | Cancel Order | Cancel entire order + unpaid invoices |
+
+**Change Package / Change Server — invariants worth keeping:**
+- **A pricing row is required** whenever `product_service_id` changes (enforced in the modals *and* in `update_service_api`). The price and cycle live on `product_service_pricing`, so writing only `product_service_id` leaves `recurring_amount` + `billing_cycle_id` on the old package — and the renewal cronjob bills from `recurring_amount`, so the customer keeps paying the old price forever. `updateServicePackage()` validates the pricing row belongs to the selected package **and** matches the order's currency (pricing is per currency), then writes `billing_cycle_id` + `recurring_amount`. `first_pay_amount` is only restated while `serviceHasPaidInvoice()` is false — after that it records what was actually charged.
+- **Pricing dropdowns are scoped to the order's currency** (`get_pricing_api` takes `currency_id`; the view exposes `orderCurrencyId` / `orderCurrencyCode`). Unscoped, a BDT price could be applied to a USD order.
+- **Panel push runs before the DB write** (`Provisioning_model::changeServicePackage()`, dispatched by server module) and aborts the local update on failure, so the CRM can never record a package the server rejected. cPanel uses WHM **`changepackage`** — ⚠️ *not* `modifyacct`, which has no `pkg` parameter and returns `result=1` while ignoring it; after success the plan is read back via `accountsummary` to catch a silent no-op. A server with no module assigned is an **error** for a service that has a live account, not a silent success.
+- The package list is scoped to the service's own server — a cross-server package change is an account migration, not a plan switch.
 
 **Order Status Values:**
 ```
@@ -545,10 +551,17 @@ $this->Order_model->cancelOrder($orderId, 'immediate', 'Reason');
 
 // Update items
 $this->Order_model->updateDomainRegistrar($domainId, $newRegistrarId);
+// Pricing id is effectively mandatory — it is what carries billing_cycle_id +
+// recurring_amount onto the service. Returns success=false if the pricing row
+// belongs to another package or is in a different currency than the order.
 $this->Order_model->updateServicePackage($serviceId, [
     'product_service_id' => $packageId,
     'product_service_pricing_id' => $pricingId
 ]);
+
+// Push a plan change to the control panel (cPanel/Plesk/DirectAdmin).
+// Does NOT touch local records — the caller owns the DB write.
+$this->Provisioning_model->changeServicePackage($service, $newProductServiceId);
 
 // Get dropdown data
 $registrars = $this->Order_model->getActiveRegistrars();
