@@ -627,6 +627,13 @@ class Order extends WHMAZADMIN_Controller
 			return;
 		}
 
+		// A package without its pricing row leaves recurring_amount and billing_cycle_id
+		// on the old package, so renewal invoices keep billing the old price.
+		if (!empty($packageId) && empty($pricingId)) {
+			echo json_encode(array('success' => false, 'message' => 'A billing cycle must be selected so the recurring amount matches the new package'));
+			return;
+		}
+
 		$updateData = array();
 		if (!empty($packageId)) {
 			$updateData['product_service_id'] = $packageId;

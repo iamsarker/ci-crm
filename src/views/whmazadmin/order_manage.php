@@ -455,9 +455,17 @@
 
 				<div class="mb-3" id="serverPackageContainer" class="d-hidden">
 					<label class="form-label">Package on New Server</label>
-					<select class="form-select" id="new_server_package_id">
+					<select class="form-select" id="new_server_package_id" onchange="loadServerPricing()">
 						<option value="">-- Select Package --</option>
 					</select>
+				</div>
+
+				<div class="mb-3" id="serverPricingContainer" class="d-hidden">
+					<label class="form-label">Billing Cycle</label>
+					<select class="form-select" id="new_server_pricing_id">
+						<option value="">-- Select Billing Cycle --</option>
+					</select>
+					<small class="text-muted d-block">Sets the recurring amount future renewal invoices are billed at.</small>
 				</div>
 
 				<div class="form-check mb-3">
@@ -484,6 +492,8 @@
 const baseUrl = '<?php echo base_url(); ?>';
 const csrfName = '<?php echo $this->security->get_csrf_token_name(); ?>';
 const csrfHash = '<?php echo $this->security->get_csrf_hash(); ?>';
+const orderCurrencyId = <?php echo intval($order['currency_id'] ?? 0); ?>;
+const orderCurrencyCode = '<?php echo htmlspecialchars($order['currency_code'] ?? '', ENT_QUOTES); ?>';
 
 // Change Registrar
 function changeRegistrar(domainId, domainName) {
@@ -564,13 +574,18 @@ function loadPricing() {
 		return;
 	}
 
-	$.get(baseUrl + 'whmazadmin/order/get_pricing_api', { package_id: packageId }, function(response) {
+	// Scoped to the order's currency — pricing is per currency, so an option from
+	// another currency would silently restate what the customer owes.
+	$.get(baseUrl + 'whmazadmin/order/get_pricing_api', { package_id: packageId, currency_id: orderCurrencyId }, function(response) {
 		if (response.success && response.data.length > 0) {
 			let options = '<option value="">-- Select Billing Cycle --</option>';
 			response.data.forEach(function(item) {
-				options += '<option value="' + item.id + '">' + item.cycle_name + ' - $' + parseFloat(item.price).toFixed(2) + '</option>';
+				options += '<option value="' + item.id + '">' + item.cycle_name + ' - ' + orderCurrencyCode + ' ' + parseFloat(item.price).toFixed(2) + '</option>';
 			});
 			$('#new_pricing_id').html(options);
+			$('#pricingContainer').show();
+		} else {
+			$('#new_pricing_id').html('<option value="">-- No pricing in ' + orderCurrencyCode + ' --</option>');
 			$('#pricingContainer').show();
 		}
 	}, 'json');
@@ -584,6 +599,13 @@ function submitPackageChange() {
 
 	if (!packageId) {
 		Swal.fire({ icon: 'warning', title: 'Warning', text: 'Please select a package' });
+		return;
+	}
+
+	// Without a pricing row the service keeps the old package's recurring amount and
+	// billing cycle, and renewal invoices carry on billing the old price.
+	if (!pricingId) {
+		Swal.fire({ icon: 'warning', title: 'Warning', text: 'Please select a billing cycle so the recurring amount is updated' });
 		return;
 	}
 
@@ -631,7 +653,29 @@ function changeServer(serviceId, serviceName) {
 	$('#modal_server_service_name').text(serviceName);
 	$('#new_server_id').val('');
 	$('#serverPackageContainer').hide();
+	$('#serverPricingContainer').hide();
 	$('#changeServerModal').modal('show');
+}
+
+function loadServerPricing() {
+	const packageId = $('#new_server_package_id').val();
+	if (!packageId) {
+		$('#serverPricingContainer').hide();
+		return;
+	}
+
+	$.get(baseUrl + 'whmazadmin/order/get_pricing_api', { package_id: packageId, currency_id: orderCurrencyId }, function(response) {
+		let options = '<option value="">-- Select Billing Cycle --</option>';
+		if (response.success && response.data.length > 0) {
+			response.data.forEach(function(item) {
+				options += '<option value="' + item.id + '">' + item.cycle_name + ' - ' + orderCurrencyCode + ' ' + parseFloat(item.price).toFixed(2) + '</option>';
+			});
+		} else {
+			options = '<option value="">-- No pricing in ' + orderCurrencyCode + ' --</option>';
+		}
+		$('#new_server_pricing_id').html(options);
+		$('#serverPricingContainer').show();
+	}, 'json');
 }
 
 function loadServerPackages() {
@@ -658,10 +702,16 @@ function loadServerPackages() {
 function submitServerChange() {
 	const serviceId = $('#modal_server_service_id').val();
 	const packageId = $('#new_server_package_id').val();
+	const pricingId = $('#new_server_pricing_id').val();
 	const migrateServer = $('#migrate_server').is(':checked') ? '1' : '0';
 
 	if (!packageId) {
 		Swal.fire({ icon: 'warning', title: 'Warning', text: 'Please select a package' });
+		return;
+	}
+
+	if (!pricingId) {
+		Swal.fire({ icon: 'warning', title: 'Warning', text: 'Please select a billing cycle so the recurring amount is updated' });
 		return;
 	}
 
@@ -677,6 +727,7 @@ function submitServerChange() {
 		[csrfName]: csrfHash,
 		service_id: safe_encode(serviceId),
 		package_id: packageId,
+		pricing_id: pricingId,
 		migrate_server: migrateServer
 	}, function(response) {
 		$('#changeServerModal').modal('hide');

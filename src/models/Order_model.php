@@ -818,18 +818,87 @@ class Order_model extends CI_Model{
 		if (!empty($updateData['product_service_id'])) {
 			$data['product_service_id'] = intval($updateData['product_service_id']);
 		}
+
 		if (!empty($updateData['product_service_pricing_id'])) {
-			$data['product_service_pricing_id'] = intval($updateData['product_service_pricing_id']);
+			// The pricing row carries the price AND the billing cycle. Writing only the
+			// id would leave recurring_amount + billing_cycle_id on the old package, and
+			// the renewal cronjob bills from recurring_amount — so the customer would keep
+			// being charged the old price for the new package.
+			$pricing = $this->db->query(
+				"SELECT psp.id, psp.price, psp.billing_cycle_id, psp.currency_id, psp.product_service_id
+				 FROM product_service_pricing psp
+				 WHERE psp.id = ? AND psp.status = 1 AND psp.deleted_on IS NULL",
+				array(intval($updateData['product_service_pricing_id']))
+			)->row_array();
+
+			if (empty($pricing)) {
+				return array('success' => false, 'message' => 'Selected pricing option not found');
+			}
+
+			$targetPackageId = !empty($updateData['product_service_id'])
+				? intval($updateData['product_service_id'])
+				: intval($service['product_service_id']);
+
+			if (intval($pricing['product_service_id']) !== $targetPackageId) {
+				return array('success' => false, 'message' => 'Selected pricing option does not belong to the selected package');
+			}
+
+			// Pricing is per currency; billing this order in another currency's price
+			// would silently change what the customer owes.
+			$order = $this->db->query(
+				"SELECT currency_id, currency_code FROM orders WHERE id = ?",
+				array(intval($service['order_id']))
+			)->row_array();
+
+			if (!empty($order['currency_id']) && intval($pricing['currency_id']) !== intval($order['currency_id'])) {
+				return array('success' => false, 'message' => 'Selected pricing is in a different currency than the order (' . $order['currency_code'] . ')');
+			}
+
+			$data['product_service_pricing_id'] = intval($pricing['id']);
+			$data['billing_cycle_id']           = intval($pricing['billing_cycle_id']);
+			$data['recurring_amount']           = $pricing['price'];
+
+			// first_pay_amount records what was actually charged up front, so it is only
+			// safe to restate while nothing has been paid for this service yet.
+			if (!$this->serviceHasPaidInvoice($serviceId)) {
+				$data['first_pay_amount'] = $pricing['price'];
+			}
 		}
 
 		$this->db->where('id', intval($serviceId));
 		$result = $this->db->update('order_services', $data);
 
+		$message = 'Service updated successfully';
+		if ($result && isset($data['recurring_amount'])) {
+			$message .= ' Recurring amount set to ' . number_format((float) $data['recurring_amount'], 2) . '.';
+		}
+
 		return array(
 			'success' => $result,
-			'message' => $result ? 'Service updated successfully' : 'Failed to update service',
+			'message' => $result ? $message : 'Failed to update service',
 			'old_service' => $service
 		);
+	}
+
+	/**
+	 * Whether any PAID invoice already covers this service.
+	 * Used to decide if first_pay_amount may still be restated.
+	 *
+	 * @param int $serviceId order_services.id
+	 * @return bool
+	 */
+	function serviceHasPaidInvoice($serviceId)
+	{
+		$row = $this->db->query(
+			"SELECT ii.id
+			 FROM invoice_items ii
+			 JOIN invoices inv ON ii.invoice_id = inv.id
+			 WHERE ii.ref_id = ? AND ii.item_type = 2 AND inv.pay_status = 'PAID'
+			 LIMIT 1",
+			array(intval($serviceId))
+		)->row_array();
+
+		return !empty($row);
 	}
 
 	/**

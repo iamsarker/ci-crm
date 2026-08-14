@@ -228,7 +228,107 @@ class Provisioning_model extends CI_Model
             ->get()
             ->row_array();
 
-        return !empty($earlier);
+        if (!empty($earlier)) {
+            return true;
+        }
+
+        // The check above only works when the original invoice item carries ref_id.
+        // Orders placed before ref_id linking existed have items with ref_id = NULL, so
+        // their first renewal finds no earlier paid invoice, looks like an initial order,
+        // and gets registered/created again — the registrar answers "domain already
+        // exists" and the item fails.
+        return $this->looksLikeLaterTermFor($item, $itemType);
+    }
+
+    /**
+     * Fallback renewal test for items whose original invoice has no ref_id link.
+     *
+     * BOTH conditions must hold, and each rules out a different mistake:
+     *   1. the item bills a term starting at or after the current expiry date — an
+     *      initial order's expiry sits a full term AFTER its billing period starts,
+     *      so only a renewal bills from the expiry onward;
+     *   2. the row is already live at the registrar / control panel.
+     *
+     * Condition 2 alone would make Retry on a successfully registered domain call the
+     * renew API and buy another year. Condition 1 alone would misroute a first invoice
+     * that happens to carry a forward-dated period. Together they only match an item
+     * billing the next term for something that already exists.
+     *
+     * reg_date is deliberately NOT used: for imported or legacy domains it holds the
+     * original registration date at the registrar (sometimes years before the CRM
+     * order), so "period starts after reg_date" is true of initial orders too.
+     *
+     * @param array $item     Invoice item row (needs ref_id, billing_period_start)
+     * @param int   $itemType 1 for domain, 2 for service
+     * @return bool
+     */
+    private function looksLikeLaterTermFor($item, $itemType)
+    {
+        if (empty($item['billing_period_start'])) {
+            return false;
+        }
+
+        $refId = intval($item['ref_id']);
+
+        if ((int) $itemType === 1) {
+            $row = $this->db
+                ->select('order_type, status, domain_order_id, exp_date, next_renewal_date, domain AS label')
+                ->where('id', $refId)
+                ->get('order_domains')
+                ->row_array();
+
+            if (empty($row)) {
+                return false;
+            }
+
+            // Register (1) and Transfer (2) only. DNS-only (3) never reaches the registrar,
+            // and an import (4) legitimately starts Active with a registrar order id — its
+            // first invoice is handled by provisionDomain's order_type switch instead.
+            if (!in_array((int) $row['order_type'], array(1, 2), true)) {
+                return false;
+            }
+
+            // Active / Expired / Grace with a registrar order id means the registrar holds
+            // it already. A pending registration (0) or transfer (5) has neither.
+            $live = in_array((int) $row['status'], array(1, 2, 3), true)
+                    && !empty($row['domain_order_id']);
+        } elseif ((int) $itemType === 2) {
+            $row = $this->db
+                ->select('status, cp_username, is_synced, exp_date, next_renewal_date, hosting_domain AS label')
+                ->where('id', $refId)
+                ->get('order_services')
+                ->row_array();
+
+            if (empty($row)) {
+                return false;
+            }
+
+            // cp_username is only written once the account has actually been created.
+            $live = in_array((int) $row['status'], array(1, 2, 3), true)
+                    && !empty($row['cp_username'])
+                    && (int) $row['is_synced'] === 1;
+        } else {
+            return false;
+        }
+
+        if (!$live) {
+            return false;
+        }
+
+        $currentExpiry = !empty($row['exp_date']) ? $row['exp_date'] : $row['next_renewal_date'];
+        if (empty($currentExpiry)) {
+            return false;
+        }
+
+        if (strtotime($item['billing_period_start']) < strtotime($currentExpiry)) {
+            return false;
+        }
+
+        log_message('info', 'Provisioning: treating invoice item #' . $item['id'] . ' for ' . $row['label']
+            . ' as a RENEWAL — no earlier paid invoice references it, but it is already provisioned and'
+            . ' bills the term starting ' . $item['billing_period_start'] . ' (current expiry ' . $currentExpiry . ')');
+
+        return true;
     }
 
     /**
