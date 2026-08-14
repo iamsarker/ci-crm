@@ -235,6 +235,21 @@
 											</div>
 										</div>
 									</div>
+									<div class="row">
+										<div class="col-md-6">
+											<?php $smtp_crypto = strtolower(trim($detail['smtp_crypto'] ?? '')); ?>
+											<div class="form-group">
+												<label for="smtp_crypto">SMTP Encryption</label>
+												<select name="smtp_crypto" class="form-control" id="smtp_crypto">
+													<option value="" <?= $smtp_crypto === '' ? 'selected' : '' ?>>Auto (detect from port)</option>
+													<option value="tls" <?= $smtp_crypto === 'tls' ? 'selected' : '' ?>>STARTTLS (port 587)</option>
+													<option value="ssl" <?= $smtp_crypto === 'ssl' ? 'selected' : '' ?>>SSL / TLS (port 465)</option>
+													<option value="none" <?= $smtp_crypto === 'none' ? 'selected' : '' ?>>None (port 25)</option>
+												</select>
+												<small class="form-text text-muted">Must match the port. Using STARTTLS on port 465 makes every email hang and fail silently.</small>
+											</div>
+										</div>
+									</div>
 								</div>
 							</div>
 

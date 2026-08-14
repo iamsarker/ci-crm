@@ -123,7 +123,14 @@ class Adminauth_model extends CI_Model{
 				$sql = "UPDATE admin_users SET pass_reset_key = ?, pass_reset_expiry = NOW() + INTERVAL 1 HOUR WHERE id = ?";
 				$this->db->query($sql, array($token, $user->id));
 
-				$this->sendResetLinkEmail($user, $token);
+				// The controller always reports success (so the form cannot be used to
+				// enumerate admins), which means a failed send is otherwise invisible.
+				// Log at 'error' level so it shows up under the production log threshold.
+				if (!$this->sendResetLinkEmail($user, $token)) {
+					log_message('error', 'admin forgetpaswrd: reset email FAILED to send for admin_users.id=' . $user->id);
+				}
+			} else {
+				log_message('error', 'admin forgetpaswrd: no active (status=1) admin matched email/username "' . $email . '" - no reset email sent');
 			}
 
 			return 1;
@@ -136,6 +143,14 @@ class Adminauth_model extends CI_Model{
 	function sendResetLinkEmail($user, $token)
 	{
 		$appSettings = getAppSettings();
+
+		// The lookup matches on email OR username, so an admin who signs in by username
+		// can reach this point with no address on file. Bail out loudly instead of
+		// handing sendHtmlEmail() an empty recipient (which fails at RCPT TO:<>).
+		if (empty($user->email)) {
+			log_message('error', 'admin sendResetLinkEmail: admin_users.id=' . $user->id . ' has no email address on file - cannot send reset link');
+			return false;
+		}
 
 		$resetLink = base_url('whmazadmin/authenticate/resetpassword/' . $token);
 		$userName = !empty($user->first_name) ? htmlspecialchars($user->first_name) : 'User';

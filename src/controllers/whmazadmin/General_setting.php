@@ -61,7 +61,13 @@ class General_setting extends WHMAZADMIN_Controller {
 					}
 				}
 
-				$form_data = array(
+				// Only accept known encryption modes; '' means "derive from the port".
+			$smtp_crypto = strtolower(trim((string) $this->input->post('smtp_crypto')));
+			if (!in_array($smtp_crypto, array('tls', 'ssl', 'none'), true)) {
+				$smtp_crypto = '';
+			}
+
+			$form_data = array(
 					'site_name'          => $this->input->post('site_name'),
 					'site_desc'          => $this->input->post('site_desc'),
 					'admin_url'          => $this->input->post('admin_url'),
@@ -81,6 +87,7 @@ class General_setting extends WHMAZADMIN_Controller {
 					'smtp_port'          => $this->input->post('smtp_port'),
 					'smtp_username'      => $this->input->post('smtp_username'),
 					'smtp_authkey'       => $this->input->post('smtp_authkey'),
+					'smtp_crypto'        => $smtp_crypto,
 					'captcha_site_key'   => $this->input->post('captcha_site_key'),
 					'captcha_secret_key' => $this->input->post('captcha_secret_key'),
 					'updated_on'         => getDateTime(),

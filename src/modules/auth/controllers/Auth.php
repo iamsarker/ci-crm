@@ -23,7 +23,10 @@ class Auth extends WHMAZ_Controller
 		if ($this->input->post()) {
 
 			$username = xss_cleaner($this->input->post('username'));
-			$password = xss_cleaner($this->input->post('password'));
+			// NOTE: password is NEVER xss_cleaned - it is only hashed/compared, never rendered.
+			// Cleaning it here would mangle passwords containing & < > " ' or filtered words,
+			// and would no longer match hashes stored by reset/change-password (which use raw).
+			$password = $this->input->post('password');
 
 			$resp = $this->Auth_model->doLogin($username, $password);
 			if ($resp['status_code'] == 1) {
@@ -138,6 +141,13 @@ class Auth extends WHMAZ_Controller
 			}
 
 			$newUserReq = xss_cleaner($this->input->post('reg'));
+
+			// Keep the password exactly as typed - xss_cleaner would alter it and the
+			// stored hash would then never match a raw login/reset password.
+			$rawReg = $this->input->post('reg');
+			$newUserReq['password'] = isset($rawReg['password']) ? $rawReg['password'] : '';
+			$newUserReq['confirm_password'] = isset($rawReg['confirm_password']) ? $rawReg['confirm_password'] : '';
+
 			$resp = $this->Auth_model->newRegistration($newUserReq);
 			if ($resp['success'] == 1) {
 				$this->Auth_model->sendVerificationEmail(

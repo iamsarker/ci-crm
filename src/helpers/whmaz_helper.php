@@ -536,20 +536,44 @@
 		{
 			$appSettings = getAppSettings();
 
-			$smtpHost   = $appSettings->smtp_host;
-			$smtpPort   = (int) $appSettings->smtp_port;
-			$smtpUser   = $appSettings->smtp_username;
-			$smtpPass   = $appSettings->smtp_authkey;
-			$smtpCrypto = !empty($appSettings->smtp_crypto) ? $appSettings->smtp_crypto : 'tls';
+			$smtpHost   = isset($appSettings->smtp_host)     ? trim($appSettings->smtp_host) : '';
+			$smtpPort   = isset($appSettings->smtp_port)     ? (int) $appSettings->smtp_port : 0;
+			$smtpUser   = isset($appSettings->smtp_username) ? $appSettings->smtp_username : '';
+			$smtpPass   = isset($appSettings->smtp_authkey)  ? $appSettings->smtp_authkey : '';
+
+			// Encryption mode comes from Settings → General Settings. When it is left on
+			// "Auto" (empty) — or the column predates smtp_crypto_migration.sql — derive
+			// it from the port: 465 = implicit SSL, 25 = plain, anything else = STARTTLS.
+			// Talking plaintext to a 465 listener hangs until timeout with no useful error.
+			$smtpCrypto = isset($appSettings->smtp_crypto) ? strtolower(trim($appSettings->smtp_crypto)) : '';
+			if (empty($smtpCrypto)) {
+				if ($smtpPort === 465)     { $smtpCrypto = 'ssl'; }
+				elseif ($smtpPort === 25)  { $smtpCrypto = 'none'; }
+				else                       { $smtpCrypto = 'tls'; }
+			}
 
 			$fromEmail = $fromEmail ?: $appSettings->email;
 			$fromName  = $fromName  ?: $appSettings->company_name;
 
-			// Build MIME message
-			$boundary = md5(uniqid(time()));
+			if (empty($smtpHost) || empty($smtpPort)) {
+				log_message('error', 'sendHtmlEmail: SMTP host/port not configured in app_settings - cannot send to ' . $to);
+				return false;
+			}
+
+			// Build MIME message. Date and Message-ID are REQUIRED for deliverability:
+			// without them Gmail/Outlook silently spam-folder or drop the message even
+			// though the SMTP conversation succeeds.
+			$msgIdDomain = substr(strrchr($fromEmail, '@'), 1);
+			if (empty($msgIdDomain)) {
+				$msgIdDomain = !empty($smtpHost) ? $smtpHost : 'localhost';
+			}
+
 			$headers  = "MIME-Version: 1.0\r\n";
+			$headers .= "Date: " . date('r') . "\r\n";
+			$headers .= "Message-ID: <" . md5(uniqid((string) time(), true)) . "@" . $msgIdDomain . ">\r\n";
 			$headers .= "From: " . mb_encode_mimeheader($fromName, 'UTF-8') . " <{$fromEmail}>\r\n";
 			$headers .= "To: <{$to}>\r\n";
+			$headers .= "Reply-To: <{$fromEmail}>\r\n";
 			$headers .= "Subject: " . mb_encode_mimeheader($subject, 'UTF-8') . "\r\n";
 			$headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 			$headers .= "Content-Transfer-Encoding: base64\r\n";
@@ -600,41 +624,49 @@
 			$getResponse();
 
 			// EHLO
-			if ($sendCmd('EHLO ' . gethostname(), 250) === false) {
+			$ehlo = $sendCmd('EHLO ' . gethostname(), 250);
+			if ($ehlo === false) {
 				fclose($socket);
 				return false;
 			}
 
-			// STARTTLS if needed
-			if ($smtpCrypto === 'tls') {
+			// STARTTLS if needed (skipped when the server does not advertise it)
+			if ($smtpCrypto === 'tls' && stripos($ehlo, 'STARTTLS') !== false) {
 				if ($sendCmd('STARTTLS', 220) === false) {
 					fclose($socket);
 					return false;
 				}
-				if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT)) {
+				$cryptoMethod = STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
+				if (defined('STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT')) {
+					$cryptoMethod |= STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT;
+				}
+				if (!stream_socket_enable_crypto($socket, true, $cryptoMethod)) {
 					log_message('error', 'sendHtmlEmail: STARTTLS crypto negotiation failed');
 					fclose($socket);
 					return false;
 				}
 				// Re-EHLO after STARTTLS
-				if ($sendCmd('EHLO ' . gethostname(), 250) === false) {
+				$ehlo = $sendCmd('EHLO ' . gethostname(), 250);
+				if ($ehlo === false) {
 					fclose($socket);
 					return false;
 				}
 			}
 
-			// AUTH LOGIN
-			if ($sendCmd('AUTH LOGIN', 334) === false) {
-				fclose($socket);
-				return false;
-			}
-			if ($sendCmd(base64_encode($smtpUser), 334) === false) {
-				fclose($socket);
-				return false;
-			}
-			if ($sendCmd(base64_encode($smtpPass), 235) === false) {
-				fclose($socket);
-				return false;
+			// AUTH LOGIN (skipped for relays that accept unauthenticated mail)
+			if ($smtpUser !== '' || $smtpPass !== '') {
+				if ($sendCmd('AUTH LOGIN', 334) === false) {
+					fclose($socket);
+					return false;
+				}
+				if ($sendCmd(base64_encode($smtpUser), 334) === false) {
+					fclose($socket);
+					return false;
+				}
+				if ($sendCmd(base64_encode($smtpPass), 235) === false) {
+					fclose($socket);
+					return false;
+				}
 			}
 
 			// MAIL FROM

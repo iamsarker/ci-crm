@@ -273,6 +273,7 @@ CREATE TABLE `app_settings` (
   `smtp_port` varchar(8) DEFAULT NULL,
   `smtp_username` varchar(255) DEFAULT NULL,
   `smtp_authkey` varchar(255) DEFAULT NULL,
+  `smtp_crypto` varchar(10) DEFAULT NULL COMMENT 'tls=STARTTLS, ssl=implicit SSL, none=plain; NULL/empty = derive from port',
   `captcha_site_key` varchar(100) NOT NULL,
   `captcha_secret_key` varchar(100) NOT NULL,
   `inserted_on` datetime DEFAULT NULL,
@@ -285,8 +286,8 @@ CREATE TABLE `app_settings` (
 -- Dumping data for table `app_settings`
 --
 
-INSERT INTO `app_settings` (`id`, `site_name`, `site_desc`, `admin_url`, `favicon`, `logo`, `bin_tax`, `company_name`, `company_address`, `zip_code`, `city`, `state`, `country`, `license_auth`, `license_hash`, `email`, `fax`, `phone`, `smtp_host`, `smtp_port`, `smtp_username`, `smtp_authkey`, `captcha_site_key`, `captcha_secret_key`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
-(1, 'WHMAZ', 'Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System', '', 'favicon_ea001f05de00bfe79ffb1864114d868e.ico', 'logo_c741480362e311d793820fd49d7b6e33.png', '', 'WHMAZ', 'Your Company Address', '00000', '', '', '', NULL, NULL, 'admin@example.com', '', '', NULL, '587', NULL, NULL, '', '', NULL, NULL, '2026-03-17 14:57:33', 1);
+INSERT INTO `app_settings` (`id`, `site_name`, `site_desc`, `admin_url`, `favicon`, `logo`, `bin_tax`, `company_name`, `company_address`, `zip_code`, `city`, `state`, `country`, `license_auth`, `license_hash`, `email`, `fax`, `phone`, `smtp_host`, `smtp_port`, `smtp_username`, `smtp_authkey`, `smtp_crypto`, `captcha_site_key`, `captcha_secret_key`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`) VALUES
+(1, 'WHMAZ', 'Web Host Manager A to Z solutions. Lightweight Domain Hosting Management System', '', 'favicon_ea001f05de00bfe79ffb1864114d868e.ico', 'logo_c741480362e311d793820fd49d7b6e33.png', '', 'WHMAZ', 'Your Company Address', '00000', '', '', '', NULL, NULL, 'admin@example.com', '', '', NULL, '587', NULL, NULL, 'tls', '', '', NULL, NULL, '2026-03-17 14:57:33', 1);
 
 -- --------------------------------------------------------
 

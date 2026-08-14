@@ -56,7 +56,24 @@ class Auth_model extends CI_Model{
 			}
 
 			$userdata = $query->row();
-			if (password_verify($password,$userdata->password)) {
+
+			$passwordOk = password_verify($password, $userdata->password);
+
+			// LEGACY: registrations before the xss_cleaner fix stored the hash of the
+			// CLEANED password. Accept it once, then re-hash to the raw password so the
+			// account matches reset / change-password from here on.
+			if (!$passwordOk) {
+				$legacy = xss_cleaner($password);
+				if ($legacy !== $password && $legacy !== '' && password_verify($legacy, $userdata->password)) {
+					$passwordOk = true;
+					$this->db->query(
+						"UPDATE users SET password = ? WHERE id = ?",
+						array(password_hash($password, PASSWORD_DEFAULT), $userdata->id)
+					);
+				}
+			}
+
+			if ($passwordOk) {
 				$this->Loginattempt_model->clearAllAttempts($email, $ip);
 
 				$resp = array();
@@ -279,7 +296,16 @@ class Auth_model extends CI_Model{
 				$sql = "UPDATE users SET pass_reset_key = ?, pass_reset_expiry = NOW() + INTERVAL 1 HOUR WHERE id = ?";
 				$this->db->query($sql, array($token, $user->id));
 
-				$this->sendResetLinkEmail($user, $token);
+				// The controller always reports success (so the form cannot be used to
+				// enumerate accounts), which means a failed send is otherwise invisible.
+				// Log at 'error' level so it shows up under the production log threshold.
+				if (!$this->sendResetLinkEmail($user, $token)) {
+					log_message('error', 'forgetpaswrd: reset email FAILED to send to ' . $email . ' (see preceding sendHtmlEmail error)');
+				}
+			} else {
+				// No active user matched. Self-registered accounts sit at status=2 until
+				// the address is verified, so an unverified user gets no reset mail.
+				log_message('error', 'forgetpaswrd: no active (status=1) user for ' . $email . ' - no reset email sent');
 			}
 
 			return 1;
