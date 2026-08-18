@@ -793,7 +793,7 @@ app.controller('ServiceCheckoutCtrl', function ($scope, $http, $timeout, $rootSc
 				// Redirect to invoice payment page
 				if( resp.data && resp.data.invoice_uuid ){
 					setTimeout(function(){
-						window.location.href = BASE_URL + 'billing/pay/invoice/' + resp.data.invoice_uuid;
+						window.location.href = BASE_URL + 'invoicing/pay/invoice/' + resp.data.invoice_uuid;
 					}, 500);
 				}
 

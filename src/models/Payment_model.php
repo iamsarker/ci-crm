@@ -530,7 +530,7 @@ class Payment_model extends CI_Model
             $invoice['company_id'], 'payment',
             'Payment received for Invoice #' . $invoice['invoice_no'],
             'We received your payment of ' . $amountLabel . ' via ' . $gatewayName . '.',
-            base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'],
+            base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid'],
             'fa-money-bill-wave'
         );
         if ($notifyAdmin) {

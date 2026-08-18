@@ -52,7 +52,15 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $route['default_controller'] = 'home';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
+$route['invoicing'] = FALSE;
+// Legacy `billing/*` URLs → the renamed `invoicing` module. Invoice links already
+// sent by email, customer bookmarks and in-flight gateway callbacks (SSLCommerz
+// success/fail/cancel, bKash/PayHere return) still carry the old path.
+// (:any) matches a single segment on this CI build, so map each depth explicitly.
 $route['billing'] = FALSE;
+$route['billing/(:any)/(:any)/(:any)'] = 'invoicing/$1/$2/$3';
+$route['billing/(:any)/(:any)'] = 'invoicing/$1/$2';
+$route['billing/(:any)'] = 'invoicing/$1';
 $route['change-currency/(:any)/(:any)'] = 'auth/change_currency/$1/$2';
 $route['domain-search'] = 'cart/domain_search';
 $route['domain-suggestion'] = 'cart/get_domain_suggestions';

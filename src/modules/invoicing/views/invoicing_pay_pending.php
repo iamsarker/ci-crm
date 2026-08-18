@@ -191,10 +191,10 @@
             </div>
 
             <div class="btn-actions">
-                <a href="<?php echo base_url(); ?>billing/viewinvoice/<?php echo $invoice['invoice_uuid']; ?>" class="btn btn-secondary">
+                <a href="<?php echo base_url(); ?>invoicing/viewinvoice/<?php echo $invoice['invoice_uuid']; ?>" class="btn btn-secondary">
                     <i class="fas fa-file-invoice"></i> View Invoice
                 </a>
-                <a href="<?php echo base_url(); ?>billing/invoices" class="btn btn-primary">
+                <a href="<?php echo base_url(); ?>invoicing/invoices" class="btn btn-primary">
                     <i class="fas fa-list"></i> All Invoices
                 </a>
             </div>

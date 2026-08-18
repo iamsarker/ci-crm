@@ -490,7 +490,8 @@ $config['csrf_exclude_uris'] = array(
 	'whmazadmin/ticket/recent_list_api',
 	'clientarea/summary_api',
 	'tickets/ticket_list_api',
-	'billing/invoice_list_api',
+	'invoicing/invoice_list_api',
+	'billing/invoice_list_api', // legacy alias (routed to invoicing/*)
 	// Cart Angular JSON API endpoints (require authentication)
 	'cart/addToCartAjax/.*',
 	'cart/addDomainToCart',
@@ -505,13 +506,18 @@ $config['csrf_exclude_uris'] = array(
 	'cart/delete/.*',
 	'pages/.*',
 	'cart/delete_all',
-	'billing/pay/invoice/*',
+	'invoicing/pay/invoice/*',
+	'billing/pay/invoice/*', // legacy alias (routed to invoicing/*)
 	// Order management dropdown API endpoints (require admin authentication)
 	'whmazadmin/package/filter_api',
 	'whmazadmin/package/prices',
 	'whmazadmin/domain_pricing/prices',
 	'whmazadmin/invoice/mark_as_paid',
 	// SSLCommerz payment gateway callbacks (external POST requests)
+	'invoicing/pay/sslcommerz_success',
+	'invoicing/pay/sslcommerz_cancel',
+	'invoicing/pay/sslcommerz_fail',
+	// legacy aliases — in-flight sessions started before the billing→invoicing rename
 	'billing/pay/sslcommerz_success',
 	'billing/pay/sslcommerz_cancel',
 	'billing/pay/sslcommerz_fail',

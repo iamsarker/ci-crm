@@ -16,9 +16,9 @@ src/modules/
 ├── auth/                       # Authentication
 │   ├── controllers/
 │   └── views/
-├── billing/                    # Invoices, payments
-│   ├── controllers/
-│   └── views/
+├── invoicing/                  # Invoices, payments (menu label: Invoicing)
+│   ├── controllers/            #   Invoicing.php (invoices/view/download) + Pay.php
+│   └── views/                  #   invoicing_*.php
 ├── cart/                       # Shopping cart
 │   ├── controllers/
 │   └── views/
@@ -171,7 +171,7 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
 | PayHere | `https://yourdomain.com/webhook/payhere` (IPN / `notify_url`) |
 | Paddle | `https://yourdomain.com/webhook/paddle` (register as a Paddle notification destination; event `transaction.completed`) |
 
-> **bKash has no webhook** — its browser callback `billing/pay/bkash_callback` calls the execute API and confirms the payment synchronously. **PayHere & Paddle webhook POSTs must be publicly reachable**, and both are CSRF-excluded in `config.php` (`csrf_exclude_uris`).
+> **bKash has no webhook** — its browser callback `invoicing/pay/bkash_callback` calls the execute API and confirms the payment synchronously. **PayHere & Paddle webhook POSTs must be publicly reachable**, and both are CSRF-excluded in `config.php` (`csrf_exclude_uris`).
 
 **Database Fields (payment_gateway table):**
 | Field | Description |
@@ -457,7 +457,7 @@ Key facts to know at a glance:
 - Reference seed: `whmaz_plans_seed.sql` = the 3-tier WHMAZ family (Basic/Pro/Max, `family_group='whmaz'`) with pricing + full feature matrix.
 - License **renewal** and **overdue-suspension** run inside `/cronjobs/run` (`getExpiringLicenses`/`createLicenseRenewalInvoice`; `getLicensesOverdueForSuspension` + `suspendOverdueLicenses`).
 - License **client** (enforcement half, ships inside the sold product): `src/libraries/License_client.php` phones home to the vendor's `license/verify`, caches the tier's feature map (`uploadedfiles/license/state.json`), and `Entitlement` gates from it on **client** installs. Roles set in `.env`: `IS_LICENSE_MASTER=true` (vendor, never gated) vs `LICENSE_KEY`+`LICENSE_SERVER_URL` (client). One source version enforces all tiers; installer step 5 collects the key. **The same file also houses the admin-login gate (`admin_authorized()`)** — one file for both.
-- **Encode-for-teeth (IonCube/SourceGuardian):** these anti-piracy checks are plain PHP a buyer can delete, so the shipped build is encoded. The encode set has expanded from the original 6 tamper-critical files to the **whole admin portal plus the auth/SMTP layer — 85 files** — to conceal the app's server-side logic wholesale, not just the license decision points. The **canonical source of truth is the sibling snapshot dir `../ci-crm-docs/plainfile/**`**, which holds an UNENCODED copy of every file that ships encoded; encode exactly what's there. The 85 break down as: **(a) licensing/entitlement core (3)** — `src/libraries/License_client.php` (check logic + hard-coded admin URL + entitlement client), `src/libraries/Entitlement.php` (per-tier entitlement resolver), `src/helpers/entitlement_helper.php` (autoloaded `feature_enabled()`/`require_feature()`/`feature_value()` + `license_client()` accessor — the single-point bypass all gates funnel through); **(b) admin controllers (7)** — `Authenticate.php` (the license-gate call site; without it a cracker deletes the two-line `admin_authorized()` call and the encoded library never runs), `General_setting.php`, `Invoice.php`, `Software.php`, `Softwareproduct.php`, `Domain_register.php`, `Apikey.php`; **(c) shared templates/includes (5)** — `src/views/templates/customer/{header,footer}.php` + `src/views/whmazadmin/include/{header,header_menus,footer}.php` (both footers are the branding-removal enforcement points: `if(!feature_enabled('branding_removal'))` wraps the "Maintain by WHMAZ" backlink; branding is presentational-only with no server-side backstop, so deleting a plaintext footer call site IS the bypass — encode both); **(d) every top-level admin view (66)** — all `src/views/whmazadmin/*.php`; **(e) auth/SMTP transport (4, added 2026-08-14)** — `src/helpers/whmaz_helper.php` (holds `sendHtmlEmail()`: reads the SMTP username/password from `app_settings`, negotiates STARTTLS/implicit SSL, speaks AUTH LOGIN — ⚠️ also the broadly autoloaded helper behind `isReseller()`/`safe_encode()`/`getAppSettings()`, so smoke-test the **client portal** as well as admin after encoding it), `src/models/Adminauth_model.php`, `src/models/Auth_model.php`, `src/modules/auth/controllers/Auth.php`. **Not encoded:** `src/config/plans.php` (config/data), `src/modules/subscription/**` (download-binding is not anti-piracy; real enforcement would live server-side in `license/verify`), and gate call sites outside the encoded admin surface. Full rationale + the flat file list: **`../ci-crm-docs/ioncube-encodes-files.txt`**. Diff `plainfile/**` against live source before every build (the original 81 verified identical as of 2026-07-08; the 4 auth/SMTP files snapshotted 2026-08-14). ⚠️ **Sync workflow (see `[[feedback_ioncube_sync_workflow]]`):** development happens in **`ci-crm`**, NOT in `plainfile/`. Whenever you edit any file in the encode set here, your job is to (1) **copy the changed file to `../ci-crm-docs/plainfile/`** (same relative path) so the encode source-of-truth stays current, then (2) **notify the user to re-encode that specific file**. Forgetting the copy ships stale code in the next encoded build.
+- **Encode-for-teeth (IonCube/SourceGuardian):** these anti-piracy checks are plain PHP a buyer can delete, so the shipped build is encoded. The encode set has expanded from the original 6 tamper-critical files to the **whole admin portal plus the auth/SMTP layer — 85 files** — to conceal the app's server-side logic wholesale, not just the license decision points. The **canonical source of truth is the sibling snapshot dir `../ci-crm-docs/plainfile/**`**, which holds an UNENCODED copy of every file that ships encoded; encode exactly what's there. The 85 break down as: **(a) licensing/entitlement core (3)** — `src/libraries/License_client.php` (check logic + hard-coded admin URL + entitlement client), `src/libraries/Entitlement.php` (per-tier entitlement resolver), `src/helpers/entitlement_helper.php` (autoloaded `feature_enabled()`/`require_feature()`/`feature_value()` + `license_client()` accessor — the single-point bypass all gates funnel through); **(b) admin controllers (7)** — `Authenticate.php` (the license-gate call site; without it a cracker deletes the two-line `admin_authorized()` call and the encoded library never runs), `General_setting.php`, `Invoice.php`, `Software.php`, `Softwareproduct.php`, `Domain_register.php`, `Apikey.php`; **(c) shared templates/includes (5)** — `src/views/templates/customer/{header,footer}.php` + `src/views/whmazadmin/include/{header,header_menus,footer}.php` (both footers are the branding-removal enforcement points: `if(!feature_enabled('branding_removal'))` wraps the "Maintain by WHMAZ" backlink; branding is presentational-only with no server-side backstop, so deleting a plaintext footer call site IS the bypass — encode both); **(d) every top-level admin view (66)** — all `src/views/whmazadmin/*.php`; **(e) auth/SMTP transport (4, added 2026-08-14)** — `src/helpers/whmaz_helper.php` (holds `sendHtmlEmail()`: reads the SMTP username/password from `app_settings`, negotiates STARTTLS/implicit SSL, speaks AUTH LOGIN — ⚠️ also the broadly autoloaded helper behind `isReseller()`/`safe_encode()`/`getAppSettings()`, so smoke-test the **client portal** as well as admin after encoding it), `src/models/Adminauth_model.php`, `src/models/Auth_model.php`, `src/modules/auth/controllers/Auth.php`. **Not encoded:** `src/config/plans.php` (config/data), `src/modules/subscription/**` (download-binding is not anti-piracy; real enforcement would live server-side in `license/verify`), and gate call sites outside the encoded admin surface. Full rationale + the flat file list: **`../ci-crm-docs/ioncube-encodes-files.txt`**. Diff `plainfile/**` against live source before every build (the original 81 verified identical as of 2026-07-08; the 4 auth/SMTP files snapshotted 2026-08-14). ⚠️ **Sync workflow (see `[[feedback_ioncube_sync_workflow]]`):** development happens in **`ci-crm`**, NOT in `plainfile/`. Whenever you edit any file in the encode set here, your job is to (1) **copy the changed file to `../ci-crm-docs/plainfile/`** (same relative path) so the encode source-of-truth stays current, then (2) **append it to the running to-do list `../ci-crm-docs/pending-reencode.txt`** (grouped by change, with what changed and why) and **notify the user to re-encode that specific file** — encoding is done in batches later, so the list is what keeps track between batches; remove entries once encoded. Forgetting the copy ships stale code in the next encoded build.
 - Schema: `crm_db.sql` is canonical; incremental migrations `software_catalog_migration.sql` + `software_family_upgrade_migration.sql` + `license_bind_ip_migration.sql`.
 
 **Full documentation:** `../ci-crm-docs/docs/SAAS_LICENSING.md`
@@ -706,8 +706,17 @@ Admin side of the customer "Request Cancellation" button.
 - **Note**: `order_view` uses `LEFT JOIN payment_gateway` (not INNER JOIN) so orders with `payment_gateway_id=0` are not excluded
 
 ### Views
-- **Customer Payment Page**: `src/modules/billing/views/billing_pay.php`
+- **Customer Payment Page**: `src/modules/invoicing/views/invoicing_pay.php`
 - **Admin Gateway Management**: `src/views/whmazadmin/paymentgateway_manage.php`
+
+### Billing → Invoicing rename (module + menu)
+
+The customer module `billing` is now **`invoicing`** (controller class `Invoicing`, views `invoicing_*.php`) and both portal menus read **Invoicing** (customer `templates/customer/header.php`, admin `whmazadmin/include/header_menus.php`). Admin pages were never under a `billing` route — its dropdown already points at `whmazadmin/invoice` / `whmazadmin/paymentgateway`, so only the label changed there.
+
+- Public paths: `invoicing/invoices`, `invoicing/view_invoice/{uuid}`, `invoicing/download_invoice/{uuid}`, `invoicing/invoice_list_api`, `invoicing/pay/*` (all gateway init/return/callback URLs).
+- **Legacy `billing/*` routes are kept** in `routes.php` (mapped one depth at a time — `(:any)` matches a single segment on this CI build) so invoice links already emailed, bookmarks, and in-flight gateway callbacks keep resolving. The matching old `billing/pay/...` entries stay in `csrf_exclude_uris` for the same reason — CSRF is checked against the *requested* URI, before routing. Drop both sets once no old links are in circulation.
+- `Billing_model` and the `uploadedfiles/billing/` upload path were **not** renamed (data layer / filesystem, not routing).
+- DB-stored links are fixed by **`invoicing_rename_migration.sql`** (run once per environment). It only touches admin-authored content — `pages`, `kbs`, `announcements`, `app_notifications`. **Email templates, `alerts` and `dunning_rules` are deliberately excluded**: their invoice links come from `{invoice_url}`-style placeholders built in PHP at send time, so they already carry the new path.
 
 ## Known Gotchas
 
@@ -748,7 +757,7 @@ When payment gateways redirect back to the app via **external POST**, browsers b
 3. Pass to gateway (e.g., SSLCommerz `value_c` parameter)
 4. On callback, verify token and restore session via `Auth_model->getUserSessionData($userId)`
 
-**Reference implementation:** `src/modules/billing/controllers/Pay.php`
+**Reference implementation:** `src/modules/invoicing/controllers/Pay.php`
 - `sslcommerz_init()` / `bkash_init()` / `payhere_init()` - generate and store token
 - `sslcommerz_success/fail/cancel()`, `bkash_callback()`, `payhere_return/cancel()` - call `_restoreSessionFromTransaction()`
 - `_restoreSessionFromTransaction()` - verifies token (returns bool; gate any state mutation on it so a stranger who learns a transaction uuid can't cancel an in-flight payment), restores session
@@ -878,9 +887,9 @@ Settings
 └── Software Releases
 ```
 
-**Billing** dropdown contains:
+**Invoicing** dropdown contains:
 ```
-Billing
+Invoicing
 ├── View Invoices
 ├── Transactions
 └── Webhook Logs
@@ -1095,4 +1104,4 @@ setTimeout(function() {
 }, 100);
 ```
 
-**Reference:** `src/modules/billing/views/billing_pay.php`
+**Reference:** `src/modules/invoicing/views/invoicing_pay.php`

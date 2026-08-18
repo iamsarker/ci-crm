@@ -177,7 +177,7 @@
 							</div>
 							<div class="pd-l-15 flex-grow-1">
 								<p class="item-title mg-b-0">
-									<a href="{{baseurl}}billing/view_invoice/{{obj.invoice_uuid}}">Invoice #{{obj.invoice_no}}</a>
+									<a href="{{baseurl}}invoicing/view_invoice/{{obj.invoice_uuid}}">Invoice #{{obj.invoice_no}}</a>
 								</p>
 								<span class="item-subtitle">{{obj.currency_code}} {{obj.total}}</span>
 							</div>

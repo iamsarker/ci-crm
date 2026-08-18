@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-class Billing extends WHMAZ_Controller
+class Invoicing extends WHMAZ_Controller
 {
 	var $img_path;
 	var $upload_dir;
@@ -33,7 +33,7 @@ class Billing extends WHMAZ_Controller
 		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
 		$data['results'] = $this->Billing_model->loadInvoiceList($companyId, -1);
 
-		$this->load->view('billing_invoices', $data);
+		$this->load->view('invoicing_invoices', $data);
 	}
 
 
@@ -46,7 +46,7 @@ class Billing extends WHMAZ_Controller
 		// Check if invoice exists
 		if (empty($data['invoice']) || empty($data['invoice']['id'])) {
 			$this->session->set_flashdata('alert_error', 'Invoice not found.');
-			redirect('billing/invoices');
+			redirect('invoicing/invoices');
 			return;
 		}
 
@@ -56,10 +56,10 @@ class Billing extends WHMAZ_Controller
 		$data['txnHistory'] = array();
 		$data['viewMode'] = "HTML";
 
-		$htmlData = $this->load->view('billing_invoice_pdf_html', $data, TRUE);
+		$htmlData = $this->load->view('invoicing_invoice_pdf_html', $data, TRUE);
 		$data['htmlData'] = $htmlData;
 
-		$this->load->view('billing_viewinvoice', $data);
+		$this->load->view('invoicing_viewinvoice', $data);
 	}
 
 	public function download_invoice($invoice_uuid)
@@ -75,7 +75,7 @@ class Billing extends WHMAZ_Controller
 		// Check if invoice exists
 		if (empty($data['invoice']) || empty($data['invoice']['id'])) {
 			$this->session->set_flashdata('alert_error', 'Invoice not found.');
-			redirect('billing/invoices');
+			redirect('invoicing/invoices');
 			return;
 		}
 
@@ -85,7 +85,7 @@ class Billing extends WHMAZ_Controller
 		$data['txnHistory'] = array();
 		$data['viewMode'] = "PDF";
 
-		$this->pdf->download_view('billing_invoice_pdf_html', $data, "Invoice-".$data['invoice']['invoice_no'].".pdf");
+		$this->pdf->download_view('invoicing_invoice_pdf_html', $data, "Invoice-".$data['invoice']['invoice_no'].".pdf");
 	}
 
 }

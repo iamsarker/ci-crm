@@ -40,17 +40,17 @@
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb breadcrumb-style1 mg-b-0">
                                     <li class="breadcrumb-item"><a href="<?= base_url() ?>clientarea">Portal home</a></li>
-                                    <li class="breadcrumb-item"><a href="<?= base_url() ?>billing/invoices">Invoices</a></li>
+                                    <li class="breadcrumb-item"><a href="<?= base_url() ?>invoicing/invoices">Invoices</a></li>
                                     <li class="breadcrumb-item active"><a>View Invoice</a></li>
                                 </ol>
                             </nav>
                         </div>
                         <div class="header-actions mt-2 mt-md-0">
-                            <a href="<?= base_url() ?>billing/download_invoice/<?= htmlspecialchars($invoice['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-light btn-sm">
+                            <a href="<?= base_url() ?>invoicing/download_invoice/<?= htmlspecialchars($invoice['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-light btn-sm">
                                 <i class="fa fa-file-pdf text-danger mg-r-5"></i>Download PDF
                             </a>
                             <?php if(strtoupper($invoice['pay_status'] ?? '') != 'PAID'): ?>
-                            <a href="<?= base_url() ?>billing/pay/invoice/<?= htmlspecialchars($invoice['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-success btn-sm">
+                            <a href="<?= base_url() ?>invoicing/pay/invoice/<?= htmlspecialchars($invoice['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-success btn-sm">
                                 <i class="fa fa-credit-card mg-r-5"></i>Pay Now
                             </a>
                             <?php endif; ?>

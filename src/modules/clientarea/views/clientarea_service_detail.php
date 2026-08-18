@@ -72,7 +72,7 @@
                             <a href="<?=base_url()?>tickets/newticket" class="btn btn-outline-primary btn-sm">
                                 <i class="fa fa-headset mg-r-5"></i> Open Support Ticket
                             </a>
-                            <a href="<?=base_url()?>billing/invoices" class="btn btn-outline-info btn-sm">
+                            <a href="<?=base_url()?>invoicing/invoices" class="btn btn-outline-info btn-sm">
                                 <i class="fa fa-file-invoice mg-r-5"></i> View Invoices
                             </a>
                         </div>

@@ -7,7 +7,7 @@
   </div><!-- card-header -->
   <ul class="list-group list-group-flush">
 	  <li class="list-group-item">
-		  <a href="<?=base_url()?>billing/invoices" class="nav-sub-link"><i class="fas fa-file-alt"></i>&nbsp;Invoices</a>
+		  <a href="<?=base_url()?>invoicing/invoices" class="nav-sub-link"><i class="fas fa-file-alt"></i>&nbsp;Invoices</a>
 	  </li>
 	  <li class="list-group-item">
 		  <a href="<?=base_url()?>clientarea/services" class="nav-sub-link"><i class="fas fa-list"></i>&nbsp;Services</a>

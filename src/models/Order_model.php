@@ -368,7 +368,7 @@ class Order_model extends CI_Model{
 			'{order_items}' => $orderItemsHtml,
 			'{company_name}' => $appSettings->company_name,
 			'{site_name}' => $appSettings->company_name,
-			'{invoice_url}' => base_url() . 'billing/pay/' . $invoice['invoice_uuid'],
+			'{invoice_url}' => base_url() . 'invoicing/pay/' . $invoice['invoice_uuid'],
 			'{admin_order_url}' => base_url() . 'whmazadmin/order/view/' . $order['order_uuid'],
 			'{admin_invoice_url}' => base_url() . 'whmazadmin/invoice/view/' . $order['company_id'] . '/' . $invoice['invoice_uuid']
 		);
@@ -406,7 +406,7 @@ class Order_model extends CI_Model{
 			$order['company_id'], 'order',
 			'Order #' . $order['order_no'] . ' placed',
 			'Your order has been created. Invoice #' . $invoice['invoice_no'] . ' — ' . $currencySymbol . number_format($invoice['total'], 2) . '.',
-			base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'],
+			base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid'],
 			'fa-shopping-cart'
 		);
 		if ($notifyAdmin) {

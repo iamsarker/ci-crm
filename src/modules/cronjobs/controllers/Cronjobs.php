@@ -402,7 +402,7 @@ class Cronjobs extends WHMAZ_Controller
 			}
 
 			// Build invoice URL
-			$invoiceUrl = base_url() . "billing/view_invoice/{$invoice['invoice_uuid']}";
+			$invoiceUrl = base_url() . "invoicing/view_invoice/{$invoice['invoice_uuid']}";
 
 			// Replace placeholders in template
 			$subject = $template['subject'];
@@ -568,7 +568,7 @@ class Cronjobs extends WHMAZ_Controller
 				$customerName = $row['company_name_customer'] ?? 'Customer';
 			}
 
-			$invoiceUrl = base_url() . "billing/view_invoice/{$row['invoice_uuid']}";
+			$invoiceUrl = base_url() . "invoicing/view_invoice/{$row['invoice_uuid']}";
 			$currencySymbol = !empty($row['currency_symbol']) ? $row['currency_symbol'] : ($row['currency_code'] ?? '');
 
 			$placeholders = array(
@@ -729,7 +729,7 @@ class Cronjobs extends WHMAZ_Controller
 				$customerName = $row['company_name_customer'] ?? 'Customer';
 			}
 
-			$invoiceUrl = base_url() . "billing/view_invoice/{$row['invoice_uuid']}";
+			$invoiceUrl = base_url() . "invoicing/view_invoice/{$row['invoice_uuid']}";
 			$currencySymbol = !empty($row['currency_symbol']) ? $row['currency_symbol'] : ($row['currency_code'] ?? '');
 
 			$placeholders = array(
@@ -883,7 +883,7 @@ class Cronjobs extends WHMAZ_Controller
 				$customerName = $row['company_name_customer'] ?? 'Customer';
 			}
 
-			$invoiceUrl = base_url() . "billing/view_invoice/{$row['invoice_uuid']}";
+			$invoiceUrl = base_url() . "invoicing/view_invoice/{$row['invoice_uuid']}";
 			$currencySymbol = !empty($row['currency_symbol']) ? $row['currency_symbol'] : ($row['currency_code'] ?? '');
 
 			$placeholders = array(

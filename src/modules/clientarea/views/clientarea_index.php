@@ -92,7 +92,7 @@
                 </a>
             </div>
             <div class="col-sm-6 col-lg-3 mg-t-10 mg-lg-t-0">
-                <a href="<?=base_url()?>billing/invoices" class="dashboard-stat-card stat-invoices">
+                <a href="<?=base_url()?>invoicing/invoices" class="dashboard-stat-card stat-invoices">
                     <div class="stat-icon">
                         <i class="fa fa-file-invoice-dollar"></i>
                     </div>
@@ -167,7 +167,7 @@
                                 <i class="fa fa-file-invoice"></i>
                             </div>
                             <div class="item-content">
-                                <a href="{{baseurl}}billing/view_invoice/{{obj.invoice_uuid}}" class="item-title">Invoice #{{obj.invoice_no}}</a>
+                                <a href="{{baseurl}}invoicing/view_invoice/{{obj.invoice_uuid}}" class="item-title">Invoice #{{obj.invoice_no}}</a>
                                 <span class="item-amount"><strong>{{obj.currency_code}}</strong> {{obj.total}}</span>
                             </div>
                             <div class="item-status">
@@ -184,7 +184,7 @@
                         </li>
                     </ul>
                     <div class="card-footer dashboard-card-footer">
-                        <a href="<?=base_url()?>billing/invoices" class="view-all-link">
+                        <a href="<?=base_url()?>invoicing/invoices" class="view-all-link">
                             View All Invoices <i class="fa fa-arrow-right mg-l-5"></i>
                         </a>
                     </div>

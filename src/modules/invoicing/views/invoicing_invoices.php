@@ -129,7 +129,7 @@
                                                 <i class="fa fa-file-pdf"></i>
                                             </button>
                                             <?php if(strtoupper($row['pay_status']) != 'PAID'): ?>
-                                            <a href="<?=base_url()?>billing/pay/invoice/<?= htmlspecialchars($row['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-sm btn-success" title="Pay Now">
+                                            <a href="<?=base_url()?>invoicing/pay/invoice/<?= htmlspecialchars($row['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>" class="btn btn-sm btn-success" title="Pay Now">
                                                 <i class="fa fa-credit-card"></i>
                                             </a>
                                             <?php endif; ?>
@@ -167,11 +167,11 @@ $(function(){
 });
 
 function viewInvoiceDetail(invoice_uuid) {
-    window.location = "<?=base_url()?>billing/view_invoice/" + invoice_uuid;
+    window.location = "<?=base_url()?>invoicing/view_invoice/" + invoice_uuid;
 }
 
 function downloadInvoiceDetail(invoice_uuid) {
-    window.location = "<?=base_url()?>billing/download_invoice/" + invoice_uuid;
+    window.location = "<?=base_url()?>invoicing/download_invoice/" + invoice_uuid;
 }
 </script>
 <?php $this->load->view('templates/customer/footer');?>

@@ -26,7 +26,7 @@ class Pay extends WHMAZ_Controller
         $companyId = getCompanyId();
 
         if ($companyId <= 0) {
-            redirect(base_url() . 'auth/login?redirect-url=' . urlencode(base_url() . 'billing/pay/invoice/' . $invoice_uuid));
+            redirect(base_url() . 'auth/login?redirect-url=' . urlencode(base_url() . 'invoicing/pay/invoice/' . $invoice_uuid));
             return;
         }
 
@@ -35,14 +35,14 @@ class Pay extends WHMAZ_Controller
 
         if (empty($invoice)) {
             $this->session->set_flashdata('alert_error', 'Invoice not found.');
-            redirect(base_url() . 'billing/invoices');
+            redirect(base_url() . 'invoicing/invoices');
             return;
         }
 
         // Check if already paid
         if (strtoupper($invoice['pay_status']) === 'PAID') {
             $this->session->set_flashdata('alert_success', 'This invoice has already been paid.');
-            redirect(base_url() . 'billing/view_invoice/' . $invoice_uuid);
+            redirect(base_url() . 'invoicing/view_invoice/' . $invoice_uuid);
             return;
         }
 
@@ -87,7 +87,7 @@ class Pay extends WHMAZ_Controller
             $data['paddle_environment'] = $isTest ? 'sandbox' : 'production';
         }
 
-        $this->load->view('billing_pay', $data);
+        $this->load->view('invoicing_pay', $data);
     }
 
     /**
@@ -227,7 +227,7 @@ class Pay extends WHMAZ_Controller
 
         if (!$transaction) {
             $this->session->set_flashdata('alert_error', 'Transaction not found.');
-            redirect(base_url() . 'billing/invoices');
+            redirect(base_url() . 'invoicing/invoices');
             return;
         }
 
@@ -260,7 +260,7 @@ class Pay extends WHMAZ_Controller
                 $this->Payment_model->recordInvoiceTxn($transaction['id']);
 
                 $this->session->set_flashdata('alert_success', 'Payment successful! Thank you for your payment.');
-                redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
+                redirect(base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid']);
                 return;
             }
         }
@@ -272,7 +272,7 @@ class Pay extends WHMAZ_Controller
             $this->session->set_flashdata('alert_info', 'Payment is being processed. You will receive a confirmation email shortly.');
         }
 
-        redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
+        redirect(base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid']);
     }
 
     /**
@@ -495,9 +495,9 @@ class Pay extends WHMAZ_Controller
 
             $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
             $this->session->set_flashdata('alert_info', 'Payment was cancelled.');
-            redirect(base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid']);
+            redirect(base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid']);
         } else {
-            redirect(base_url() . 'billing/invoices');
+            redirect(base_url() . 'invoicing/invoices');
         }
     }
 
@@ -592,7 +592,7 @@ class Pay extends WHMAZ_Controller
 
         if (!$transaction) {
             $this->session->set_flashdata('alert_error', 'Transaction not found.');
-            redirect(base_url() . 'billing/invoices');
+            redirect(base_url() . 'invoicing/invoices');
             return;
         }
 
@@ -606,7 +606,7 @@ class Pay extends WHMAZ_Controller
         $data['invoice'] = $invoice;
         $data['gateway'] = $gateway;
 
-        $this->load->view('billing_pay_pending', $data);
+        $this->load->view('invoicing_pay_pending', $data);
     }
 
     /**
@@ -710,9 +710,9 @@ class Pay extends WHMAZ_Controller
                 'amount' => $totalAmount,
                 'currency' => $invoice['currency_code'] === 'BDT' ? 'BDT' : 'USD',
                 'transaction_id' => $transaction['transaction_uuid'],
-                'success_url' => base_url() . 'billing/pay/sslcommerz_success',
-                'fail_url' => base_url() . 'billing/pay/sslcommerz_fail',
-                'cancel_url' => base_url() . 'billing/pay/sslcommerz_cancel',
+                'success_url' => base_url() . 'invoicing/pay/sslcommerz_success',
+                'fail_url' => base_url() . 'invoicing/pay/sslcommerz_fail',
+                'cancel_url' => base_url() . 'invoicing/pay/sslcommerz_cancel',
                 'ipn_url' => base_url() . 'webhook/sslcommerz',
                 'customer_name' => $customer['company_name'] ?? 'Customer',
                 'customer_email' => $customer['email'] ?? '',
@@ -778,7 +778,7 @@ class Pay extends WHMAZ_Controller
         $paymentToken = $this->input->post('value_c') ?? $this->input->get('value_c');
 
         // Default redirect URL
-        $redirectUrl = base_url() . 'billing/invoices';
+        $redirectUrl = base_url() . 'invoicing/invoices';
         $alertType = 'error';
         $alertMessage = 'Invalid payment response.';
 
@@ -787,7 +787,7 @@ class Pay extends WHMAZ_Controller
 
             if ($transaction) {
                 $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-                $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
+                $redirectUrl = base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid'];
 
                 // Restore user session using secure token
                 $this->_restoreSessionFromTransaction($transaction, $paymentToken);
@@ -856,7 +856,7 @@ class Pay extends WHMAZ_Controller
     {
         $transactionUuid = $this->input->post('value_a') ?? $this->input->get('value_a');
         $paymentToken = $this->input->post('value_c') ?? $this->input->get('value_c');
-        $redirectUrl = base_url() . 'billing/invoices';
+        $redirectUrl = base_url() . 'invoicing/invoices';
         $alertMessage = 'Payment failed.';
 
         if (!empty($transactionUuid)) {
@@ -870,7 +870,7 @@ class Pay extends WHMAZ_Controller
                 ));
 
                 $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-                $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
+                $redirectUrl = base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid'];
                 $alertMessage = 'Payment failed. Please try again.';
             }
         }
@@ -887,7 +887,7 @@ class Pay extends WHMAZ_Controller
     {
         $transactionUuid = $this->input->post('value_a') ?? $this->input->get('value_a');
         $paymentToken = $this->input->post('value_c') ?? $this->input->get('value_c');
-        $redirectUrl = base_url() . 'billing/invoices';
+        $redirectUrl = base_url() . 'invoicing/invoices';
         $alertMessage = 'Payment was cancelled.';
 
         if (!empty($transactionUuid)) {
@@ -899,7 +899,7 @@ class Pay extends WHMAZ_Controller
                 $this->Payment_model->updateTransactionStatus($transaction['id'], 'cancelled');
 
                 $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-                $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
+                $redirectUrl = base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid'];
             }
         }
 
@@ -998,7 +998,7 @@ class Pay extends WHMAZ_Controller
             ));
 
             // Callback carries our own reference + session-restore token back to us
-            $callbackUrl = base_url() . 'billing/pay/bkash_callback?value_a='
+            $callbackUrl = base_url() . 'invoicing/pay/bkash_callback?value_a='
                 . urlencode($transaction['transaction_uuid'])
                 . '&value_c=' . urlencode($paymentToken);
 
@@ -1060,7 +1060,7 @@ class Pay extends WHMAZ_Controller
         $paymentId = $this->input->get('paymentID');
         $status = strtolower($this->input->get('status') ?? '');
 
-        $redirectUrl = base_url() . 'billing/invoices';
+        $redirectUrl = base_url() . 'invoicing/invoices';
         $alertType = 'error';
         $alertMessage = 'Invalid payment response.';
 
@@ -1079,7 +1079,7 @@ class Pay extends WHMAZ_Controller
         }
 
         $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-        $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
+        $redirectUrl = base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid'];
 
         // Restore session using the secure token (return value gates state mutation below)
         $sessionOk = $this->_restoreSessionFromTransaction($transaction, $paymentToken);
@@ -1394,9 +1394,9 @@ class Pay extends WHMAZ_Controller
             $this->load->library('Payhere');
 
             // Carry uuid + session token on the browser return URLs
-            $returnUrl = base_url() . 'billing/pay/payhere_return?value_a='
+            $returnUrl = base_url() . 'invoicing/pay/payhere_return?value_a='
                 . urlencode($transaction['transaction_uuid']) . '&value_c=' . urlencode($paymentToken);
-            $cancelUrl = base_url() . 'billing/pay/payhere_cancel?value_a='
+            $cancelUrl = base_url() . 'invoicing/pay/payhere_cancel?value_a='
                 . urlencode($transaction['transaction_uuid']) . '&value_c=' . urlencode($paymentToken);
 
             $result = $this->payhere->buildCheckoutParams(array(
@@ -1464,7 +1464,7 @@ class Pay extends WHMAZ_Controller
         $transactionUuid = $this->input->get('value_a');
         $paymentToken = $this->input->get('value_c');
 
-        $redirectUrl = base_url() . 'billing/invoices';
+        $redirectUrl = base_url() . 'invoicing/invoices';
 
         if (empty($transactionUuid)) {
             $this->session->set_flashdata('alert_info', 'Payment is being verified. You will receive confirmation shortly.');
@@ -1481,7 +1481,7 @@ class Pay extends WHMAZ_Controller
         }
 
         $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-        $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
+        $redirectUrl = base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid'];
 
         $this->_restoreSessionFromTransaction($transaction, $paymentToken);
 
@@ -1502,7 +1502,7 @@ class Pay extends WHMAZ_Controller
         $transactionUuid = $this->input->get('value_a');
         $paymentToken = $this->input->get('value_c');
 
-        $redirectUrl = base_url() . 'billing/invoices';
+        $redirectUrl = base_url() . 'invoicing/invoices';
 
         if (!empty($transactionUuid)) {
             $transaction = $this->Payment_model->getTransactionByUuid($transactionUuid);
@@ -1516,7 +1516,7 @@ class Pay extends WHMAZ_Controller
                 }
 
                 $invoice = $this->db->where('id', $transaction['invoice_id'])->get('invoices')->row_array();
-                $redirectUrl = base_url() . 'billing/view_invoice/' . $invoice['invoice_uuid'];
+                $redirectUrl = base_url() . 'invoicing/view_invoice/' . $invoice['invoice_uuid'];
             }
         }
 

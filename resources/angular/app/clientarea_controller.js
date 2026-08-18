@@ -31,7 +31,7 @@ app.controller('ClientareaCtrl', function ($scope, $http, $timeout, $rootScope, 
 
 	$scope.getRecentInvoices = function(){
 		$scope.invoices = [];
-		var req = Communication.request("POST", BASE_URL + 'billing/invoice_list_api', {"limit":5});
+		var req = Communication.request("POST", BASE_URL + 'invoicing/invoice_list_api', {"limit":5});
 		req.then(function (resp) {
 			$scope.invoices = resp;
 		}, function (err) {

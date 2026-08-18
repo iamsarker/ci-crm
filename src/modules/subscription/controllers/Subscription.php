@@ -344,7 +344,7 @@ class Subscription extends WHMAZ_Controller
 
 		$this->Orderlicense_model->setPendingPlanChange($licenseId, (int) $target['plan_id'], (int) $license['billing_cycle_id'], $invoiceId);
 
-		redirect('/billing/pay/invoice/' . $invoiceUuid, 'refresh');
+		redirect('/invoicing/pay/invoice/' . $invoiceUuid, 'refresh');
 	}
 
 	/** Active plans with merged feature maps (JSON). */

@@ -41,10 +41,10 @@
                     </ul>
                 </li>
 
-                <!-- Billing Dropdown -->
+                <!-- Invoicing Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fas fa-file-invoice-dollar me-1"></i> Billing
+                        <i class="fas fa-file-invoice-dollar me-1"></i> Invoicing
                     </a>
                     <ul class="dropdown-menu">
                         <li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/invoice/index"><i class="fas fa-file-alt me-2"></i>View Invoices</a></li>

@@ -268,7 +268,7 @@
         </div>
 
         <div class="footer-center">
-            <a href="<?php echo base_url(); ?>billing/view_invoice/<?php echo $invoice['invoice_uuid']; ?>" class="btn btn-secondary">
+            <a href="<?php echo base_url(); ?>invoicing/view_invoice/<?php echo $invoice['invoice_uuid']; ?>" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Back to Invoice
             </a>
         </div>
@@ -444,7 +444,7 @@ document.getElementById('stripe-pay-btn').addEventListener('click', function() {
     hideError();
 
     // First, create PaymentIntent
-    fetch('<?php echo base_url(); ?>billing/pay/stripe_init', {
+    fetch('<?php echo base_url(); ?>invoicing/pay/stripe_init', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -473,7 +473,7 @@ document.getElementById('stripe-pay-btn').addEventListener('click', function() {
 
         // Payment succeeded
         showProcessing();
-        window.location.href = '<?php echo base_url(); ?>billing/pay/stripe_success/' + data.transactionUuid;
+        window.location.href = '<?php echo base_url(); ?>invoicing/pay/stripe_success/' + data.transactionUuid;
     })
     .catch(function(error) {
         showError(error.message);
@@ -492,7 +492,7 @@ document.querySelectorAll('.btn-offline-pay').forEach(function(btn) {
         this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         hideError();
 
-        fetch('<?php echo base_url(); ?>billing/pay/offline_confirm', {
+        fetch('<?php echo base_url(); ?>invoicing/pay/offline_confirm', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -504,7 +504,7 @@ document.querySelectorAll('.btn-offline-pay').forEach(function(btn) {
             if (!data.success) {
                 throw new Error(data.error || 'Failed to process request');
             }
-            window.location.href = '<?php echo base_url(); ?>billing/pay/pending/' + data.transaction_uuid;
+            window.location.href = '<?php echo base_url(); ?>invoicing/pay/pending/' + data.transaction_uuid;
         })
         .catch(function(error) {
             showError(error.message);
@@ -523,7 +523,7 @@ if (sslcommerzBtn) {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
         hideError();
 
-        fetch('<?php echo base_url(); ?>billing/pay/sslcommerz_init', {
+        fetch('<?php echo base_url(); ?>invoicing/pay/sslcommerz_init', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -555,7 +555,7 @@ if (bkashBtn) {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
         hideError();
 
-        fetch('<?php echo base_url(); ?>billing/pay/bkash_init', {
+        fetch('<?php echo base_url(); ?>invoicing/pay/bkash_init', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -593,7 +593,7 @@ function initPaddle() {
             if (ev && ev.name === 'checkout.completed') {
                 showProcessing();
                 // Confirmation is finalized by the webhook; land on the invoice
-                window.location.href = '<?php echo base_url(); ?>billing/view_invoice/' + invoiceUuid + '?paid=1';
+                window.location.href = '<?php echo base_url(); ?>invoicing/view_invoice/' + invoiceUuid + '?paid=1';
             }
         }
     });
@@ -613,7 +613,7 @@ if (paddleBtn) {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening checkout...';
         hideError();
 
-        fetch('<?php echo base_url(); ?>billing/pay/paddle_init', {
+        fetch('<?php echo base_url(); ?>invoicing/pay/paddle_init', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -652,7 +652,7 @@ if (payhereBtn) {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting...';
         hideError();
 
-        fetch('<?php echo base_url(); ?>billing/pay/payhere_init', {
+        fetch('<?php echo base_url(); ?>invoicing/pay/payhere_init', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -695,7 +695,7 @@ if (razorpayBtn) {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         hideError();
 
-        fetch('<?php echo base_url(); ?>billing/pay/razorpay_init', {
+        fetch('<?php echo base_url(); ?>invoicing/pay/razorpay_init', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -717,7 +717,7 @@ if (razorpayBtn) {
                 order_id: data.order_id,
                 handler: function(response) {
                     showProcessing();
-                    window.location.href = '<?php echo base_url(); ?>billing/pay/razorpay_success?payment_id=' + response.razorpay_payment_id + '&order_id=' + response.razorpay_order_id + '&signature=' + response.razorpay_signature + '&transaction_uuid=' + data.transaction_uuid;
+                    window.location.href = '<?php echo base_url(); ?>invoicing/pay/razorpay_success?payment_id=' + response.razorpay_payment_id + '&order_id=' + response.razorpay_order_id + '&signature=' + response.razorpay_signature + '&transaction_uuid=' + data.transaction_uuid;
                 },
                 prefill: {
                     email: '<?php echo addslashes($invoice['email'] ?? ''); ?>',
@@ -753,7 +753,7 @@ if (paystackBtn) {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         hideError();
 
-        fetch('<?php echo base_url(); ?>billing/pay/paystack_init', {
+        fetch('<?php echo base_url(); ?>invoicing/pay/paystack_init', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -787,7 +787,7 @@ function initPayPalButtons() {
 
     paypal.Buttons({
         createOrder: function(data, actions) {
-            return fetch('<?php echo base_url(); ?>billing/pay/paypal_init', {
+            return fetch('<?php echo base_url(); ?>invoicing/pay/paypal_init', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -806,7 +806,7 @@ function initPayPalButtons() {
         onApprove: function(data, actions) {
             showProcessing();
 
-            return fetch('<?php echo base_url(); ?>billing/pay/paypal_capture', {
+            return fetch('<?php echo base_url(); ?>invoicing/pay/paypal_capture', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -818,7 +818,7 @@ function initPayPalButtons() {
                 if (!captureData.success) {
                     throw new Error(captureData.error);
                 }
-                window.location.href = '<?php echo base_url(); ?>billing/pay/stripe_success/' + transactionUuid;
+                window.location.href = '<?php echo base_url(); ?>invoicing/pay/stripe_success/' + transactionUuid;
             })
             .catch(function(error) {
                 hideProcessing();
@@ -827,7 +827,7 @@ function initPayPalButtons() {
         },
         onCancel: function(data) {
             if (transactionUuid) {
-                window.location.href = '<?php echo base_url(); ?>billing/pay/paypal_cancel/' + transactionUuid;
+                window.location.href = '<?php echo base_url(); ?>invoicing/pay/paypal_cancel/' + transactionUuid;
             }
         },
         onError: function(err) {
