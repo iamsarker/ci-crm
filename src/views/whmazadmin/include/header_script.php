@@ -29,7 +29,8 @@
 <?=csrf_meta()?>
 
 <!-- Favicon -->
-<link rel="shortcut icon" type="image/x-icon" href="<?=base_url()?>resources/assets/img/favicon.png">
+<link rel="shortcut icon" type="image/x-icon" href="<?=base_url()?>resources/assets/img/favicon.ico">
+<link rel="icon" type="image/png" href="<?=base_url()?>resources/assets/img/favicon.png">
 
 <title>WHMAZ Admin - Web Host Manager A to Z</title>
 

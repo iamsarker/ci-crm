@@ -52,6 +52,16 @@ body {
     font-size: 32px;
 }
 
+/* The wordmark is dark navy, so it sits on a light chip over the gradient */
+.installer-header .logo img {
+    height: 46px;
+    width: auto;
+    max-width: 100%;
+    background: #fff;
+    border-radius: 10px;
+    padding: 8px 14px;
+}
+
 .installer-header .logo span {
     font-size: 28px;
     font-weight: 700;
@@ -653,6 +663,11 @@ body {
 
     .installer-header .logo i {
         font-size: 24px;
+    }
+
+    .installer-header .logo img {
+        height: 36px;
+        padding: 6px 10px;
     }
 
     .installer-header .logo span {

@@ -173,7 +173,8 @@
 						</div>
 					</div>
 
-					<!-- Order Actions -->
+					<!-- Order Actions - only an active order can be cancelled -->
+					<?php if ($order['status'] == 1): ?>
 					<div class="order-card mb-4">
 						<div class="card-header">
 							<div class="header-icon"><i class="fas fa-tools"></i></div>
@@ -185,6 +186,7 @@
 							</button>
 						</div>
 					</div>
+					<?php endif; ?>
 				</div>
 
 				<!-- Right Column -->

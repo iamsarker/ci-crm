@@ -5135,3 +5135,34 @@ h6 i {
 .epp-code-status {
 	display: none;
 }
+
+/* Brand Logo (client portal navbar) */
+.app-header .navbar-brand .brand-logo-img {
+	height: 30px;
+	width: auto;
+	max-width: 190px;
+}
+
+@media (max-width: 575.98px) {
+	.app-header .navbar-brand .brand-logo-img {
+		height: 26px;
+		max-width: 150px;
+	}
+}
+
+/* Angular Material progress dialog (DialogBox.showProgress) over Bootstrap modals.
+   Material ships md-dialog-container at z-index 80 / its backdrop at 79, both below
+   Bootstrap 5's .modal (1055) and .modal-backdrop (1050) — so the spinner rendered
+   behind any open modal (e.g. the hosting Domain Information modal on cart/services).
+   Kept under the ngToast wrapper (1080) so toasts still show above the spinner.
+   position:fixed because the container is appended to <body> as position:absolute,
+   which centers it at the top of the document instead of the viewport when scrolled. */
+md-dialog-container {
+	position: fixed;
+	z-index: 1070;
+}
+
+md-backdrop.md-dialog-backdrop {
+	position: fixed;
+	z-index: 1065;
+}

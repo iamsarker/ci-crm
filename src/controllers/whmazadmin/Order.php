@@ -416,19 +416,12 @@ class Order extends WHMAZADMIN_Controller
 		}
 	}
 
-	public function delete_records($id_val)
-	{
-		$entity = $this->Expensecategory_model->getDetail(safe_decode($id_val));
-		$entity["status"] = 0;
-		$entity["deleted_on"] = getDateTime();
-		$entity["deleted_by"] = getAdminId();
-
-		$this->Expensecategory_model->saveData($entity);
-		$this->session->set_flashdata('admin_success', 'Order has been deleted successfully.');
-
-		redirect('whmazadmin/order/index');
-	}
-
+	/**
+	 * Orders are never hard/soft deleted - they are cancelled via cancel_order_api(),
+	 * which also cancels the order's domains, services and unpaid invoices.
+	 * The old delete_records() acted on the expense_types table (copy-paste) and
+	 * never touched the order, so it has been removed.
+	 */
 
 	public function ssp_list_api($tmpCompanyId=null)
 	{

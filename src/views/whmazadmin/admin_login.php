@@ -10,7 +10,7 @@
 		<div class="admin-auth-branding">
 			<div class="branding-content">
 				<div class="brand-logo">
-					<i class="fas fa-shield-alt"></i>
+					<img src="<?=base_url()?>resources/assets/img/logo.png" alt="WHMAZ">
 				</div>
 				<h2>Admin Portal</h2>
 				<p>Secure access to your management dashboard</p>

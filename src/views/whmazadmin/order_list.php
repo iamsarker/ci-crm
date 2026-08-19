@@ -89,10 +89,12 @@
 <?php $this->load->view('whmazadmin/include/footer_script');?>
 
 <script>
+var orderListTable = null;
+
 $(function(){
 	'use strict'
 
-	$('#orderListDt').DataTable({
+	orderListTable = $('#orderListDt').DataTable({
 		"responsive": true,
 		"processing": true,
 		"serverSide": true,
@@ -212,10 +214,16 @@ $(function(){
 				"searchable": false,
 				"render": function(data, type, row) {
 					let idVal = safe_encode(data);
-					return '<button type="button" class="btn btn-action btn-manage" onclick="openManage(\''+idVal+'\')" title="Manage Order">' +
-							'<i class="fa fa-cog"></i></button> ' +
-						   '<button type="button" class="btn btn-action btn-delete" onclick="deleteRow(\''+idVal+'\', \''+escapeXSS(row['order_no'])+'\')" title="Delete Order">' +
-							'<i class="fa fa-trash"></i></button>';
+					let buttons = '<button type="button" class="btn btn-action btn-manage" onclick="openManage(\''+idVal+'\')" title="Manage Order">' +
+							'<i class="fa fa-cog"></i></button>';
+
+					// Only an active order can be cancelled — hide the action once it is cancelled
+					if (row.status == 1) {
+						buttons += ' <button type="button" class="btn btn-action btn-delete" onclick="cancelOrder(\''+idVal+'\', \''+escapeXSS(row['order_no'])+'\')" title="Cancel Entire Order">' +
+							'<i class="fa fa-times-circle"></i></button>';
+					}
+
+					return buttons;
 				}
 			}
 		]
@@ -234,28 +242,62 @@ function openManage(id) {
 	window.location = "<?=base_url()?>whmazadmin/order/manage/" + id;
 }
 
-function deleteRow(id, title) {
+// Cancel Entire Order - same action as the Manage page
+function cancelOrder(id, title) {
 	Swal.fire({
-		title: 'Delete Order?',
-		html: 'Are you sure you want to delete order <strong>' + title + '</strong>?<br><small class="text-muted">This action cannot be undone.</small>',
+		title: 'Cancel Entire Order',
+		html: '<p>This will cancel all domains and services in order <strong>' + title + '</strong>.</p>' +
+			  '<div class="text-start">' +
+			  '<div class="mb-3"><label class="form-label">Cancellation Type</label>' +
+			  '<select id="swal_cancel_type" class="form-select">' +
+			  '<option value="immediate">Immediate - Cancel everything now</option>' +
+			  '<option value="end_of_period">End of Period - Cancel items at their expiry</option>' +
+			  '</select></div>' +
+			  '<div class="mb-3"><label class="form-label">Reason (optional)</label>' +
+			  '<textarea id="swal_cancel_reason" class="form-control" rows="2"></textarea></div>' +
+			  '</div>',
 		icon: 'warning',
 		showCancelButton: true,
 		confirmButtonColor: '#d33',
 		cancelButtonColor: '#6c757d',
-		confirmButtonText: '<i class="fa fa-trash me-1"></i> Yes, Delete',
-		cancelButtonText: 'Cancel',
-		reverseButtons: true
+		confirmButtonText: 'Cancel Order',
+		cancelButtonText: 'Close',
+		preConfirm: () => {
+			return {
+				cancelType: document.getElementById('swal_cancel_type').value,
+				reason: document.getElementById('swal_cancel_reason').value
+			};
+		}
 	}).then((result) => {
 		if (result.isConfirmed) {
 			Swal.fire({
-				title: 'Deleting...',
+				title: 'Cancelling...',
 				text: 'Please wait',
 				allowOutsideClick: false,
 				allowEscapeKey: false,
 				showConfirmButton: false,
 				didOpen: () => { Swal.showLoading(); }
 			});
-			window.location = "<?=base_url()?>whmazadmin/order/delete_records/" + id;
+
+			$.post("<?=base_url()?>whmazadmin/order/cancel_order_api", {
+				order_id: id,
+				cancel_type: result.value.cancelType,
+				reason: result.value.reason
+			}, function(response) {
+				if (response.success) {
+					Swal.fire({
+						icon: 'success',
+						title: 'Success',
+						text: response.message,
+						timer: 2000,
+						showConfirmButton: false
+					}).then(() => {
+						if (orderListTable) { orderListTable.ajax.reload(null, false); }
+					});
+				} else {
+					Swal.fire({ icon: 'error', title: 'Error', text: response.message });
+				}
+			}, 'json');
 		}
 	});
 }

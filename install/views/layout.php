@@ -6,6 +6,9 @@
     <meta name="robots" content="noindex, nofollow">
     <title>WHMAZ Installation - Step <?= $currentStep ?></title>
 
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="../resources/assets/img/favicon.ico">
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -20,8 +23,7 @@
         <!-- Header -->
         <div class="installer-header">
             <div class="logo">
-                <i class="fas fa-server"></i>
-                <span>WHMAZ</span>
+                <img src="../resources/assets/img/logo.png" alt="WHMAZ">
             </div>
             <h1>Installation Wizard</h1>
         </div>

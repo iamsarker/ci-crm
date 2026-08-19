@@ -29,6 +29,27 @@ class Invoice extends WHMAZADMIN_Controller
 		$this->load->view('whmazadmin/invoice_list', $data);
 	}
 
+	/**
+	 * Resolve the logo shown on invoices (view + PDF) as a base64 data URI.
+	 * Prefers the logo uploaded in Settings -> General; falls back to the
+	 * bundled resources/assets/img/logo.png so invoices are never logo-less.
+	 *
+	 * @param  array  $companyInfo app_settings row
+	 * @return string data URI, or '' when no readable logo exists
+	 */
+	private function _invoiceLogoBase64($companyInfo)
+	{
+		// Use basename() to prevent path traversal attacks
+		$logoFilename = !empty($companyInfo['logo']) ? basename($companyInfo['logo']) : '';
+		$logoPath = !empty($logoFilename) ? $this->upload_dir . '/mics/' . $logoFilename : '';
+
+		if (empty($logoPath) || !file_exists($logoPath)) {
+			$logoPath = realpath(APPPATH . '../resources/assets/img/logo.png');
+		}
+
+		return (!empty($logoPath) && file_exists($logoPath)) ? convertImageToBase65($logoPath) : '';
+	}
+
 
 	public function view_invoice($companyId, $invoice_uuid)
 	{
@@ -36,10 +57,7 @@ class Invoice extends WHMAZADMIN_Controller
 		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
 		$data['invoice'] = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
 		$data['invoiceItems'] = $this->Billing_model->getInvoiceItems($data['invoice']['id']);
-		// Use basename() to prevent path traversal attacks
-		$logoFilename = !empty($data['companyInfo']['logo']) ? basename($data['companyInfo']['logo']) : '';
-		$logoPath = !empty($logoFilename) ? $this->upload_dir.'/mics/'.$logoFilename : '';
-		$data['logoBase64'] = !empty($logoPath) && file_exists($logoPath) ? convertImageToBase65($logoPath) : '';
+		$data['logoBase64'] = $this->_invoiceLogoBase64($data['companyInfo']);
 		$data['txnHistory'] = array();
 		$data['viewMode'] = "HTML";
 
@@ -59,10 +77,7 @@ class Invoice extends WHMAZADMIN_Controller
 		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
 		$data['invoice'] = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
 		$data['invoiceItems'] = $this->Billing_model->getInvoiceItems($data['invoice']['id']);
-		// Use basename() to prevent path traversal attacks
-		$logoFilename = !empty($data['companyInfo']['logo']) ? basename($data['companyInfo']['logo']) : '';
-		$logoPath = !empty($logoFilename) ? $this->upload_dir.'/mics/'.$logoFilename : '';
-		$data['logoBase64'] = !empty($logoPath) && file_exists($logoPath) ? convertImageToBase65($logoPath) : '';
+		$data['logoBase64'] = $this->_invoiceLogoBase64($data['companyInfo']);
 		$data['txnHistory'] = array();
 		$data['viewMode'] = "PDF";
 

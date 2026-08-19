@@ -710,15 +710,23 @@ footer.footer {
 }
 
 .brand-logo {
-	width: 80px;
-	height: 80px;
-	background: rgba(255, 255, 255, 0.2);
-	border-radius: 20px;
-	display: flex;
+	width: auto;
+	max-width: 260px;
+	height: auto;
+	background: #fff;
+	border-radius: 14px;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	padding: 12px 18px;
 	margin-bottom: 30px;
-	backdrop-filter: blur(10px);
+}
+
+.brand-logo img {
+	width: 100%;
+	max-width: 220px;
+	height: auto;
+	display: block;
 }
 
 .brand-logo i {

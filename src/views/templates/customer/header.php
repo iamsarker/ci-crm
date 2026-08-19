@@ -33,7 +33,8 @@
     <?=csrf_meta()?>
 
     <!-- Favicon -->
-    <link rel="shortcut icon" type="image/x-icon" href="<?=base_url()?>resources/assets/img/favicon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="<?=base_url()?>resources/assets/img/favicon.ico">
+    <link rel="icon" type="image/png" href="<?=base_url()?>resources/assets/img/favicon.png">
 
     <title>WHMAZ - Web Host Manager A to Z solutions</title>
 
@@ -122,7 +123,7 @@
         <div class="container">
           <!-- Brand -->
           <a href="<?=base_url()?>clientarea" class="navbar-brand">
-            <span class="brand-text fw-bold text-primary">WHM<span class="text-secondary">A-Z</span></span>
+            <img src="<?=base_url()?>resources/assets/img/logo.png" alt="WHMAZ" class="brand-logo-img" height="30" />
           </a>
 
           <!-- Mobile Toggle Button -->
