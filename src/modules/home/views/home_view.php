@@ -146,8 +146,8 @@
     <div class="col-md-6 col-lg-4">
       <div class="home-feature-card">
         <div class="home-feature-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-        <h5 class="fw-bold">Billing &amp; Invoices</h5>
-        <p class="text-muted mb-0">View invoices, track payments and keep your billing details up to date.</p>
+        <h5 class="fw-bold">Invoicing</h5>
+        <p class="text-muted mb-0">View invoices, track dues & payments and keep your invoicing details up to date.</p>
       </div>
     </div>
     <div class="col-md-6 col-lg-4">
