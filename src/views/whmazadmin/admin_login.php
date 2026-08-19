@@ -9,8 +9,28 @@
 		<!-- Left Panel - Branding -->
 		<div class="admin-auth-branding">
 			<div class="branding-content">
+				<?php
+				  // Branding gate: without the branding_removal entitlement the portal
+				  // shows the WHMAZ logo served from whmaz.com (so it cannot simply be
+				  // overwritten locally). Licensed installs use the logo uploaded in
+				  // Settings -> General, falling back to the bundled logo if none.
+				  $brandLogoUrl = 'https://whmaz.com/img/logo.png';
+				  $brandLogoAlt = 'WHMAZ';
+				  if (feature_enabled('branding_removal')) {
+				    $brandSettings = getAppSettings();
+				    $brandLogoFile = ( ! empty($brandSettings->logo)) ? basename($brandSettings->logo) : '';
+				    if ($brandLogoFile !== '' && file_exists(FCPATH.'uploadedfiles/mics/'.$brandLogoFile)) {
+				      $brandLogoUrl = base_url().'uploadedfiles/mics/'.rawurlencode($brandLogoFile);
+				    } else {
+				      $brandLogoUrl = base_url().'resources/assets/img/logo.png';
+				    }
+				    if ( ! empty($brandSettings->company_name)) {
+				      $brandLogoAlt = $brandSettings->company_name;
+				    }
+				  }
+				?>
 				<div class="brand-logo">
-					<img src="<?=base_url()?>resources/assets/img/logo.png" alt="WHMAZ">
+					<img src="<?=htmlspecialchars($brandLogoUrl, ENT_QUOTES, 'UTF-8')?>" alt="<?=htmlspecialchars($brandLogoAlt, ENT_QUOTES, 'UTF-8')?>">
 				</div>
 				<h2>Admin Portal</h2>
 				<p>Secure access to your management dashboard</p>

@@ -39,7 +39,7 @@
 			</thead>
 			<tbody>
 			<tr>
-				<td colspan="2"><?php if(!empty($logoBase64)) { ?><img src="<?=$logoBase64?>" style="width: 200px;" alt="logo"><?php } ?></td>
+				<td colspan="2"><?php if(!empty($logoBase64)) { ?><img src="<?=$logoBase64?>" style="height: 60px;" alt="logo"><?php } ?></td>
 				<td colspan="2" style="text-align: right;">
 					<h3 style="text-align: right; width: 100%;">
 						<?php echo htmlspecialchars($companyInfo['company_name'] ?? '', ENT_QUOTES, 'UTF-8');?>

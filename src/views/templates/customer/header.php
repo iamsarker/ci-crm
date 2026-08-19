@@ -122,8 +122,28 @@
       <nav class="app-header navbar navbar-expand-lg navbar-light bg-white shadow-sm">
         <div class="container">
           <!-- Brand -->
+          <?php
+            // Branding gate: without the branding_removal entitlement the portal
+            // shows the WHMAZ logo served from whmaz.com (so it cannot simply be
+            // overwritten locally). Licensed installs use the logo uploaded in
+            // Settings -> General, falling back to the bundled logo if none.
+            $brandLogoUrl = 'https://whmaz.com/img/logo.png';
+            $brandLogoAlt = 'WHMAZ';
+            if (feature_enabled('branding_removal')) {
+              $brandSettings = getAppSettings();
+              $brandLogoFile = ( ! empty($brandSettings->logo)) ? basename($brandSettings->logo) : '';
+              if ($brandLogoFile !== '' && file_exists(FCPATH.'uploadedfiles/mics/'.$brandLogoFile)) {
+                $brandLogoUrl = base_url().'uploadedfiles/mics/'.rawurlencode($brandLogoFile);
+              } else {
+                $brandLogoUrl = base_url().'resources/assets/img/logo.png';
+              }
+              if ( ! empty($brandSettings->company_name)) {
+                $brandLogoAlt = $brandSettings->company_name;
+              }
+            }
+          ?>
           <a href="<?=base_url()?>clientarea" class="navbar-brand">
-            <img src="<?=base_url()?>resources/assets/img/logo.png" alt="WHMAZ" class="brand-logo-img" height="30" />
+            <img src="<?=htmlspecialchars($brandLogoUrl, ENT_QUOTES, 'UTF-8')?>" alt="<?=htmlspecialchars($brandLogoAlt, ENT_QUOTES, 'UTF-8')?>" class="brand-logo-img" height="30" />
           </a>
 
           <!-- Mobile Toggle Button -->
