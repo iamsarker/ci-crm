@@ -169,23 +169,10 @@
     color: #fff !important;
     font-weight: 600;
     font-size: 1.25rem;
-    display: flex;
-    align-items: center;
-    gap: 10px;
 }
 
-/* The wordmark is dark navy, so it sits on a light chip over the dark navbar */
-.admin-navbar .navbar-brand .brand-logo-img {
-    height: 30px;
-    width: auto;
-    background: #fff;
-    border-radius: 6px;
-    padding: 3px 8px;
-}
-
-.admin-navbar .navbar-brand .brand-suffix {
+.admin-navbar .navbar-brand span {
     color: #63b3ed;
-    font-weight: 600;
 }
 
 .admin-navbar .nav-link {

@@ -9,7 +9,7 @@
 		<!-- Left Panel - Branding -->
 		<div class="admin-auth-branding">
 			<div class="branding-content">
-				<div class="brand-logo">
+				<div class="brand-logo" style="background: none;">
 					<img src="<?=base_url()?>resources/assets/img/logo.png" alt="WHMAZ">
 				</div>
 				<h2>Admin Portal</h2>

@@ -3,8 +3,7 @@
     <div class="container-fluid">
         <!-- Brand -->
         <a href="<?=base_url()?>whmazadmin/dashboard/index" class="navbar-brand">
-            <img src="<?=base_url()?>resources/assets/img/logo.png" alt="WHMAZ" class="brand-logo-img">
-            <span class="brand-suffix">Admin</span>
+            <span class="brand-text">WHM<span>A-Z</span> Admin</span>
         </a>
 
         <!-- Mobile Toggle Button -->
