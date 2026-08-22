@@ -216,6 +216,16 @@ class Provisioning_model extends CI_Model
             return false;
         }
 
+        // Authoritative: the renewal cronjob stamps every item it creates with
+        // is_renewal = 1. When the flag is set there is nothing to infer — the
+        // item was written by createDomainRenewalInvoice() / createServiceRenewalInvoice()
+        // / createLicenseRenewalInvoice() / createCombinedRenewalInvoice(), all of
+        // which only ever bill a later term for something that already exists.
+        // The heuristics below stay for items predating the flag.
+        if (isset($item['is_renewal']) && (int) $item['is_renewal'] === 1) {
+            return true;
+        }
+
         $earlier = $this->db
             ->select('ii.id')
             ->from('invoice_items ii')

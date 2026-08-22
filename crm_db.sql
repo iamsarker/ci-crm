@@ -1293,6 +1293,7 @@ CREATE TABLE `invoice_items` (
   `total` decimal(15,2) NOT NULL DEFAULT 0.00,
   `billing_period_start` date DEFAULT NULL COMMENT 'Start of billing period (NULL for one-time)',
   `billing_period_end` date DEFAULT NULL COMMENT 'End of billing period (NULL for one-time)',
+  `is_renewal` tinyint(1) NOT NULL DEFAULT 0 COMMENT '1 = later-term renewal written by the renewal cronjob; provisioning renews instead of registering/creating',
   `inserted_on` datetime DEFAULT NULL,
   `inserted_by` int(11) DEFAULT NULL,
   `updated_on` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),

@@ -241,6 +241,7 @@ class Cronjob_model extends CI_Model
 				'item' => 'Domain Renewal',
 				'item_desc' => $domainItemDesc,
 				'item_type' => 1,
+				'is_renewal' => 1,
 				'ref_id' => $domain['id'],
 				'billing_cycle_id' => $this->getYearlyBillingCycleId(),
 				'quantity' => $yearsToRenew,
@@ -269,6 +270,7 @@ class Cronjob_model extends CI_Model
 				'item' => 'Service Renewal',
 				'item_desc' => $serviceItemDesc,
 				'item_type' => 2,
+				'is_renewal' => 1,
 				'ref_id' => $service['id'],
 				'billing_cycle_id' => $service['billing_cycle_id'],
 				'quantity' => 1,
@@ -362,6 +364,7 @@ class Cronjob_model extends CI_Model
 				'item' => 'Service Renewal',
 				'item_desc' => $itemDesc,
 				'item_type' => 2, // 2 = service
+				'is_renewal' => 1,
 				'ref_id' => $service['id'],
 				'billing_cycle_id' => $service['billing_cycle_id'],
 				'quantity' => 1,
@@ -450,6 +453,7 @@ class Cronjob_model extends CI_Model
 				'item' => 'Software Renewal',
 				'item_desc' => $itemDesc,
 				'item_type' => 3, // 3 = license/software
+				'is_renewal' => 1,
 				'ref_id' => $license['id'],
 				'billing_cycle_id' => $license['billing_cycle_id'],
 				'quantity' => 1,
@@ -540,6 +544,7 @@ class Cronjob_model extends CI_Model
 				'item' => 'Domain Renewal',
 				'item_desc' => $itemDesc,
 				'item_type' => 1, // 1 = domain
+				'is_renewal' => 1,
 				'ref_id' => $domain['id'],
 				'billing_cycle_id' => $this->getYearlyBillingCycleId(),
 				'quantity' => $yearsToRenew,
