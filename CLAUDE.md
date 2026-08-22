@@ -124,11 +124,33 @@ resources/assets/css/
 | Support System | `sys_cnf` | Settings → Support |
 
 **Stored in .env file (environment-specific):**
-- Database credentials (DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD)
-- Encryption key
-- Session configuration
-- CSRF settings
-- Environment mode (development/production)
+
+⚠️ **Only these variables are actually read by the code.** `.env` is ~8.7KB of
+mostly decorative keys — `grep -rhoE "env\('[A-Z_]+'" src/ index.php` returns the
+complete list, and it is short. Editing anything not on it has **no effect**:
+
+| Variable | Read by |
+|----------|---------|
+| `DB_HOSTNAME` / `DB_USERNAME` / `DB_PASSWORD` / `DB_DATABASE` | `src/config/database.php` |
+| `LICENSE_KEY` / `LICENSE_SERVER_URL` / `IS_LICENSE_MASTER` | `src/libraries/License_client.php` |
+| `RECAPTCHA_VERIFY_URL` | `src/config/constants.php` |
+| `COOKIE_SECURE` | `src/config/config.php` (added 2026-08-22) |
+
+Everything else in the file — `APP_ENV`, `APP_URL`, `APP_DEBUG`, `LOG_LEVEL`,
+`CSRF_*`, `SESSION_*`, `MAINTENANCE_MODE`, `BACKUP_*`, … — is inert. The real
+values live in `src/config/config.php` (hardcoded) or come from the server.
+
+**⚠️ `APP_ENV` does NOT set the environment.** `index.php:113` reads
+`ENVIRONMENT` from `$_SERVER['CI_ENV']`, defaulting to `development`, and `.env`
+is not loaded until line 122 — nine lines *later* — so `APP_ENV` cannot possibly
+influence it. `ENVIRONMENT` is set by **`SetEnvIf Host … CI_ENV=production` in
+`.htaccess`** (host-matched so one committed file serves both local and live).
+This matters beyond error display: `Paddle.php` (and other API callers) only
+enable `CURLOPT_SSL_VERIFYPEER` when `ENVIRONMENT === 'production'`, so getting
+this wrong sends live API keys over unverified connections.
+
+`base_url` is auto-detected from `$_SERVER['HTTP_HOST']` (`config.php:27-35`),
+not from `APP_URL` — so `APP_URL` being wrong is harmless.
 
 **DO NOT put in .env:**
 - Payment gateway API keys (use Admin Portal)
@@ -155,9 +177,23 @@ $billingConfig = $this->Syscnf_model->getByGroup('BILLING');
 ```
 
 ### Security
-- **Content Security Policy (CSP)**: `src/config/config.php` (line ~627)
-  - Add external script domains here for payment gateways, analytics, etc.
-  - **Paddle** overlay needs `https://cdn.paddle.com` (script-src) + `*.paddle.com` (frame-src/connect-src) — already added. Redirect gateways (bKash/PayHere/SSLCommerz) load no external script, so they need no CSP entry.
+- **Content Security Policy (CSP)** — ⚠️ **defined in TWO places that must be kept in sync:**
+  1. `src/config/config.php` (~line 636) — a PHP `header()` call
+  2. **`.htaccess` (~line 40)** — a `Header set Content-Security-Policy` directive
+
+  **Under LiteSpeed (which production runs) the `.htaccess` header WINS.** A domain
+  added only to `config.php` is silently *not* enforced — the file looks correct
+  while the browser receives the other policy. This cost real debugging time on
+  2026-08-22: `cdn.paddle.com` was present in `config.php` but absent from
+  `.htaccess`, so `paddle.js` was blocked on live and the Paddle overlay could
+  never open, while every credential was valid. **Verify with the browser, not the
+  source:** `curl -sI https://<host>/ | grep -i content-security-policy`.
+
+  - Add external script domains to **both** files for payment gateways, analytics, etc.
+  - **Paddle** overlay needs `https://cdn.paddle.com` (script-src), `api.paddle.com` +
+    `checkout-service.paddle.com` (connect-src), `buy.paddle.com` (frame-src) — present
+    in both files. Redirect gateways (bKash/PayHere/SSLCommerz) load no external script,
+    so they need no CSP entry.
 
 
 ### Webhook Configuration
@@ -172,6 +208,14 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
 | Paddle | `https://yourdomain.com/webhook/paddle` (register as a Paddle notification destination; event `transaction.completed`) |
 
 > **bKash has no webhook** — its browser callback `invoicing/pay/bkash_callback` calls the execute API and confirms the payment synchronously. **PayHere & Paddle webhook POSTs must be publicly reachable**, and both are CSRF-excluded in `config.php` (`csrf_exclude_uris`).
+
+**Paddle "Default payment link"** (Paddle → Checkout → Checkout settings) — a *separate* setting from the webhook, and easily confused with it. Paddle appends `?_ptxn=<transaction id>` to this URL for links **it** originates (abandoned-checkout recovery, manually-collected invoices), so it must be a page that loads Paddle.js and opens the overlay on that id:
+
+```
+https://<host>/invoicing/pay/resume     → Pay::resume()
+```
+
+The normal pay page **cannot** serve this: it keys off *our* invoice uuid, not Paddle's transaction id, and `Pay::invoice()` redirects to login — fatal for an emailed link. `resume()` is therefore GET-only and session-free. It needs **no `csrf_exclude_uris` entry** — `Security::csrf_verify()` returns early for any non-POST request. The `_ptxn` value is validated against `/^txn_[A-Za-z0-9]+$/` before it reaches the page's JS. Putting the *webhook* URL or a plain homepage here does not work: the former returns JSON to a browser, the latter has no Paddle.js.
 
 **Database Fields (payment_gateway table):**
 | Field | Description |
@@ -194,10 +238,23 @@ Payment webhooks are handled by `src/modules/webhook/controllers/Webhook.php`
 - Stripe: Signature verification via `Stripe::verifyWebhook()`
 - SSLCommerz: IPN validation
 - PayHere: MD5 `md5sig` verification via `Payhere::verifyNotification()`; also rejects unless the paid amount/currency match the transaction before completing
-- Paddle: HMAC-SHA256 `Paddle-Signature` verification via `Paddle::verifyWebhookSignature()`; acts only on `transaction.completed`, verifies amount (allows Paddle's MoR tax on top), and refuses to resurrect a `refunded`/`cancelled` transaction
+- Paddle: HMAC-SHA256 `Paddle-Signature` verification via `Paddle::verifyWebhookSignature()`; acts only on `transaction.completed`, and refuses to resurrect a `refunded`/`cancelled` transaction.
+  **Then confirms the payment with Paddle directly** — `getTransaction()` (`GET /transactions/{id}`), with the API response, not the delivered payload, used as the authority for status and amount (overage allowed for Paddle's MoR tax; underpayment rejected). The signature alone is the usual stopping point, but acting on this event registers domains (real registrar money) and releases downloadable software — neither reversible — so a forgery must be caught *before* provisioning, which also rules out after-the-fact reconciliation. An attacker would need the webhook secret **and** the API key.
+  ⚠️ **The IP allowlist fails OPEN** (`paddleWebhookIpAllowed()` returns true when Paddle's CIDR list can't be fetched), so it is defence-in-depth, not a gate. Keep `src/cache/` writable by the web server or the list is refetched on every delivery.
+  ⚠️ **The "Paddle unreachable" path must NOT call `markWebhookProcessed()`** — it sets `processed=1` unconditionally and `isWebhookProcessed()` keys only on that flag, so marking would make Paddle's retry skip as a duplicate and the payment would never land. It returns **503** instead so Paddle redelivers (backoff over ~3 days). Only the definitive rejections (wrong status, wrong amount) mark and return 200.
 - All webhooks logged to `webhook_logs` table
 - Duplicate event detection via `Payment_model::isWebhookProcessed()` (keyed on Stripe `id` / Paddle `event_id`; `logWebhook()` extracts both)
 - All amount checks matter because `processSuccessfulPayment()` trusts the **local** transaction amount — a gateway confirming a smaller real payment must not mark the full invoice PAID
+
+**Where transaction detail lives — `payment_transactions`, not `invoice_txn`:**
+
+`invoice_txn` is deliberately a thin **accounting ledger**: one row per money movement against an invoice (date, amount, currency, type, status, reference), written by `Payment_model::recordInvoiceTxn()`. It also records refunds and credits that never had a card. Don't add gateway detail columns to it — it carries `payment_transaction_id`, so the rich data is one join away.
+
+`payment_transactions` is where gateway detail belongs, and it **already has columns for everything**: `card_brand`, `card_last4`, `card_exp_month/year`, `payer_name/email/phone`, `payment_method`, `fee_amount`, `net_amount`, `gateway_response`, `webhook_payload`, `metadata`, `ip_address`. Populating them is a webhook-handler job — Stripe does it via `Stripe::extractCardDetails()`, Paddle via `Paddle::extractCardDetails()`.
+
+- ⚠️ Paddle's `data.payments[]` holds **every attempt**, not just the successful one (a real payload carried a captured Visa alongside an `action_required` Google Pay entry). Match on `status === 'captured'`; never take index `[0]`.
+- Paddle uniquely reports **`details.totals.fee` and `.earnings`** — minor units, as strings — which turn gross figures into real revenue (a $1.00 sale returned fee `55`, earnings `32`). Written only when present; Paddle finalises them at payout for some transactions and storing `0.00` would understate revenue.
+- `gateway_response`, `webhook_payload` **and `metadata`** all carry a `json_valid()` CHECK constraint. `Payment_model::updateTransactionStatus()` json-encodes all three — an array reaching the driver unencoded stringifies to `"Array"` and violates the constraint.
 
 **Payment Confirmation Emails:**
 - Sent automatically when invoice is marked as PAID
