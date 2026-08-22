@@ -741,13 +741,66 @@ class Webhook extends WHMAZ_Controller
             return;
         }
 
+        // ---------------------------------------------------------------------
+        // Confirm the payment with Paddle directly before acting on it.
+        //
+        // The HMAC signature already proves the payload came from Paddle, and for
+        // most integrations that is where verification stops. It is not enough
+        // here: acting on this event registers domains (real money at the
+        // registrar) and releases downloadable software, neither of which can be
+        // undone. Detecting a forgery afterwards is worthless once the ZIP is
+        // downloaded, so the check has to happen before provisioning, not after.
+        //
+        // This costs one API call on the payment path, and it closes the gap that
+        // would otherwise open if the webhook secret ever leaked — the API key is
+        // a separate credential, so an attacker needs both.
+        //
+        // Note the IP allowlist deliberately fails OPEN (see
+        // paddleWebhookIpAllowed), so it cannot be relied on as a second gate.
+        $confirm = $this->paddle->getTransaction($details['transaction_id']);
+
+        if (empty($confirm['success'])) {
+            // Could not reach Paddle, or the transaction id does not exist there.
+            // Fail CLOSED: provision nothing. Deliberately NOT marked processed —
+            // markWebhookProcessed() sets processed=1 unconditionally and
+            // isWebhookProcessed() keys only on that flag, so marking here would
+            // make the retry skip as a duplicate and the payment would never land.
+            // A 5xx makes Paddle redeliver (retries with backoff for ~3 days), so
+            // a transient outage self-heals instead of stranding a paid invoice.
+            log_message('error', 'Paddle verification failed for ' . $details['transaction_id']
+                . ' (transaction ' . $transaction['transaction_uuid'] . '): '
+                . ($confirm['error'] ?? 'unknown error') . ' — not provisioning; awaiting redelivery');
+            $this->sendResponse(503, 'Verification unavailable, retry');
+            return;
+        }
+
+        // Trust the API response over the payload from here on: it is the one
+        // thing an attacker holding only the webhook secret cannot influence.
+        $apiTxn      = $confirm['data'];
+        $apiStatus   = $apiTxn['status'] ?? '';
+        $apiTotals   = $apiTxn['details']['totals'] ?? array();
+        $apiCurrency = $apiTotals['currency_code'] ?? ($apiTxn['currency_code'] ?? '');
+        $apiAmount   = isset($apiTotals['grand_total'])
+            ? $this->paddle->minorToMajor($apiTotals['grand_total'], $apiCurrency)
+            : 0.0;
+
+        if ($apiStatus !== 'completed' && $apiStatus !== 'paid') {
+            log_message('error', 'Paddle reports transaction ' . $details['transaction_id']
+                . ' as "' . $apiStatus . '", not completed — refusing to provision for '
+                . $transaction['transaction_uuid']);
+            $this->Payment_model->markWebhookProcessed($webhookId, false, 'Paddle status: ' . $apiStatus);
+            $this->sendResponse(200, 'Transaction not completed at Paddle');
+            return;
+        }
+
         // Anti-tamper: reject underpayment. Paddle is a Merchant of Record and may add
         // sales tax/VAT on top of our amount, so grand_total can legitimately exceed it —
         // only a payment for LESS than the transaction amount is suspicious.
-        if ((float) $details['amount'] + 0.01 < (float) $transaction['amount']
-            || strtoupper($details['currency']) !== strtoupper($transaction['currency_code'])) {
+        // Checked against the API figures, not the delivered payload.
+        if ($apiAmount + 0.01 < (float) $transaction['amount']
+            || strtoupper($apiCurrency) !== strtoupper($transaction['currency_code'])) {
             log_message('error', 'Paddle amount/currency mismatch for ' . $transaction['transaction_uuid']
-                . ': charged ' . $details['amount'] . ' ' . $details['currency']
+                . ': Paddle reports ' . $apiAmount . ' ' . $apiCurrency
                 . ', expected ' . $transaction['amount'] . ' ' . $transaction['currency_code']);
             $this->Payment_model->markWebhookProcessed($webhookId, false, 'Amount/currency mismatch');
             $this->sendResponse(200, 'Amount mismatch');

@@ -287,6 +287,16 @@ class Paddle
     }
 
     /**
+     * Convert a Paddle minor-unit amount (string or int) to major units.
+     * Public so callers verifying against the API response use the same
+     * zero-decimal table as the webhook payload path, rather than repeating it.
+     */
+    public function minorToMajor($amount, $currency)
+    {
+        return ((float) $amount) / $this->minorUnitFactor($currency);
+    }
+
+    /**
      * Minor-unit factor for a currency: zero-decimal currencies (e.g. JPY, KRW)
      * have no minor unit so the factor is 1; everything else is 100.
      * Used for BOTH outbound (major->minor) and inbound (minor->major) conversion
