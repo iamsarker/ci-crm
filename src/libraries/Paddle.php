@@ -210,14 +210,79 @@ class Paddle
         $totals = $data['details']['totals'] ?? array();
         $currency = $totals['currency_code'] ?? ($data['currency_code'] ?? 'USD');
 
+        $factor = $this->minorUnitFactor($currency);
+
         return array(
             'transaction_id' => $data['id'] ?? '',
             'status'         => $data['status'] ?? '',
-            'amount'         => isset($totals['grand_total']) ? ($totals['grand_total'] / $this->minorUnitFactor($currency)) : 0,
+            'amount'         => isset($totals['grand_total']) ? ($totals['grand_total'] / $factor) : 0,
             'currency'       => $currency,
             'custom_data'    => $data['custom_data'] ?? array(),
             'event_id'       => $event['event_id'] ?? '',
-            'event_type'     => $event['event_type'] ?? ''
+            'event_type'     => $event['event_type'] ?? '',
+
+            // Paddle's own references — the pairing an accountant needs to
+            // reconcile our invoice against Paddle's payout statement.
+            'paddle_invoice_id'     => $data['invoice_id'] ?? '',
+            'paddle_invoice_number' => $data['invoice_number'] ?? '',
+            'paddle_customer_id'    => $data['customer_id'] ?? '',
+            'billed_at'             => $data['billed_at'] ?? '',
+
+            // Merchant-of-Record economics. Paddle reports these in minor units
+            // AS STRINGS ('55' = $0.55). They are what actually lands in the
+            // payout, so storing them turns gross figures into real revenue.
+            // Null (not zero) when absent — on some transactions Paddle only
+            // finalises these at payout time, and 0.00 would be a lie.
+            'fee'      => isset($totals['fee'])      ? ($totals['fee'] / $factor)      : null,
+            'earnings' => isset($totals['earnings']) ? ($totals['earnings'] / $factor) : null,
+            'tax'      => isset($totals['tax'])      ? ($totals['tax'] / $factor)      : null,
+        );
+    }
+
+    /**
+     * Pull card/payment-method details out of a transaction webhook payload.
+     * Mirrors Stripe::extractCardDetails() so both webhooks populate the same
+     * payment_transactions columns.
+     *
+     * ⚠️ data.payments[] holds EVERY attempt, not just the successful one — a
+     * real payload here carried a captured Visa alongside an 'action_required'
+     * Google Pay entry. Selecting [0] would be right by luck at best, so the
+     * captured payment is matched by status.
+     *
+     * @return array card_brand, card_last4, card_exp_month, card_exp_year,
+     *               cardholder_name, method_type — empty array if none captured.
+     */
+    public function extractCardDetails($event)
+    {
+        $data     = $event['data'] ?? $event;
+        $payments = $data['payments'] ?? array();
+        if (!is_array($payments) || empty($payments)) {
+            return array();
+        }
+
+        $chosen = null;
+        foreach ($payments as $payment) {
+            $status = $payment['status'] ?? '';
+            if ($status === 'captured' || $status === 'completed') {
+                $chosen = $payment;
+                break;
+            }
+        }
+
+        if ($chosen === null) {
+            return array();
+        }
+
+        $details = $chosen['method_details'] ?? array();
+        $card    = $details['card'] ?? array();
+
+        return array(
+            'method_type'      => $details['type'] ?? '',
+            'card_brand'       => $card['type'] ?? '',
+            'card_last4'       => $card['last4'] ?? '',
+            'card_exp_month'   => $card['expiry_month'] ?? null,
+            'card_exp_year'    => $card['expiry_year'] ?? null,
+            'cardholder_name'  => $card['cardholder_name'] ?? '',
         );
     }
 

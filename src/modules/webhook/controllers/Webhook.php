@@ -754,11 +754,49 @@ class Webhook extends WHMAZ_Controller
             return;
         }
 
-        $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', array(
+        $updateData = array(
             'gateway_transaction_id' => $details['transaction_id'],
             'payment_method' => 'paddle',
-            'gateway_response' => $event['data'] ?? $event
-        ));
+            'gateway_response' => $event['data'] ?? $event,
+            'webhook_payload' => $event
+        );
+
+        // Card / payment-method details, same columns Stripe populates.
+        $card = $this->paddle->extractCardDetails($event);
+        if (!empty($card)) {
+            // The real instrument ('card', 'google_pay', 'paypal'…) rather than
+            // the gateway name, matching this column's documented values. Only
+            // ever displayed (email placeholder + admin table), never branched on.
+            if (!empty($card['method_type'])) {
+                $updateData['payment_method'] = $card['method_type'];
+            }
+            if (!empty($card['card_brand']))      { $updateData['card_brand']     = $card['card_brand']; }
+            if (!empty($card['card_last4']))      { $updateData['card_last4']     = $card['card_last4']; }
+            if (!empty($card['card_exp_month']))  { $updateData['card_exp_month'] = $card['card_exp_month']; }
+            if (!empty($card['card_exp_year']))   { $updateData['card_exp_year']  = $card['card_exp_year']; }
+            if (!empty($card['cardholder_name'])) { $updateData['payer_name']     = $card['cardholder_name']; }
+        }
+
+        // Merchant-of-Record economics: what Paddle kept vs what we actually
+        // earn. Written only when Paddle reports them — on some transactions
+        // these are finalised at payout, and storing 0.00 would misstate revenue.
+        if ($details['fee'] !== null)      { $updateData['fee_amount'] = $details['fee']; }
+        if ($details['earnings'] !== null) { $updateData['net_amount'] = $details['earnings']; }
+
+        // Paddle's own invoice/customer references, for reconciling our records
+        // against Paddle's payout statements.
+        $meta = array_filter(array(
+            'paddle_invoice_id'     => $details['paddle_invoice_id'],
+            'paddle_invoice_number' => $details['paddle_invoice_number'],
+            'paddle_customer_id'    => $details['paddle_customer_id'],
+            'billed_at'             => $details['billed_at'],
+            'tax_withheld'          => $details['tax'],
+        ), function ($v) { return $v !== null && $v !== ''; });
+        if (!empty($meta)) {
+            $updateData['metadata'] = $meta;
+        }
+
+        $this->Payment_model->updateTransactionStatus($transaction['id'], 'completed', $updateData);
 
         $this->Payment_model->processSuccessfulPayment($transaction['id']);
         $this->Payment_model->recordInvoiceTxn($transaction['id']);

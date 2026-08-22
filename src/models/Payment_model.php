@@ -76,12 +76,13 @@ class Payment_model extends CI_Model
         // Merge additional data
         $updateData = array_merge($updateData, $additionalData);
 
-        // Handle JSON fields
-        if (isset($updateData['gateway_response']) && is_array($updateData['gateway_response'])) {
-            $updateData['gateway_response'] = json_encode($updateData['gateway_response']);
-        }
-        if (isset($updateData['webhook_payload']) && is_array($updateData['webhook_payload'])) {
-            $updateData['webhook_payload'] = json_encode($updateData['webhook_payload']);
+        // Handle JSON fields. All three columns carry a json_valid() CHECK
+        // constraint, so an array reaching the driver unencoded would stringify
+        // to "Array" and violate it — metadata was previously omitted here.
+        foreach (array('gateway_response', 'webhook_payload', 'metadata') as $jsonField) {
+            if (isset($updateData[$jsonField]) && is_array($updateData[$jsonField])) {
+                $updateData[$jsonField] = json_encode($updateData[$jsonField]);
+            }
         }
 
         $this->db->where('id', $transactionId);
