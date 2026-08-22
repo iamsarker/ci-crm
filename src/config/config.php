@@ -414,8 +414,10 @@ $config['sess_regenerate_destroy'] = FALSE;
 $config['cookie_prefix']	= '';
 $config['cookie_domain']	= '';
 $config['cookie_path']		= '/';
-// SECURITY NOTE: Set cookie_secure to TRUE in production if using HTTPS
-$config['cookie_secure']	= FALSE;
+// SECURITY NOTE: Set COOKIE_SECURE=true in .env for production (HTTPS).
+// env() already casts the string "true"/"false" to a real boolean; the FALSE
+// default keeps plain-HTTP local development working when the var is absent.
+$config['cookie_secure']	= (bool) env('COOKIE_SECURE', FALSE);
 // SECURITY FIX: Enable httponly to prevent JavaScript access to cookies
 $config['cookie_httponly'] 	= TRUE;
 

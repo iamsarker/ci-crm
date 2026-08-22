@@ -91,6 +91,56 @@ class Pay extends WHMAZ_Controller
     }
 
     /**
+     * Paddle default payment link target.
+     * URL: /invoicing/pay/resume?_ptxn={paddle_transaction_id}
+     *
+     * Set this URL as the "Default payment link" under Paddle > Checkout >
+     * Checkout settings. Paddle appends ?_ptxn=<transaction id> to it whenever
+     * IT originates a payment link — abandoned-checkout recovery being the main
+     * case for this install, since renewals are invoiced by our own cronjob.
+     *
+     * This is the mirror image of invoice(): that method starts from OUR invoice
+     * uuid and asks Paddle to create a transaction; this one starts from PADDLE's
+     * transaction id and just reopens the overlay on it.
+     *
+     * Deliberately NOT login-gated — the customer arrives from an email, and
+     * bouncing them to a login form is what makes recovery links useless. This
+     * is safe because the page reads no session and mutates nothing: the id is
+     * Paddle's own, the amount lives on Paddle's transaction, and payment is
+     * still confirmed solely by the HMAC-verified webhook. The worst a stranger
+     * with a guessed id achieves is opening a checkout they must pay themselves.
+     */
+    public function resume()
+    {
+        // Paddle sends the id as `_ptxn`; accept `ptxn` too in case a link is
+        // ever hand-built without the underscore.
+        $txnId = $this->input->get('_ptxn');
+        if (empty($txnId)) {
+            $txnId = $this->input->get('ptxn');
+        }
+        $txnId = trim((string) $txnId);
+
+        // Paddle transaction ids look like txn_01hxyz... — validate the shape so
+        // nothing arbitrary is echoed into the page's JS.
+        if ($txnId !== '' && !preg_match('/^txn_[A-Za-z0-9]+$/', $txnId)) {
+            $txnId = '';
+        }
+
+        $data['paddle_transaction_id'] = $txnId;
+        $data['paddle_client_token']   = '';
+        $data['paddle_environment']    = 'production';
+
+        $paddleGateway = $this->PaymentGateway_model->getByCode('paddle');
+        if ($paddleGateway && $paddleGateway['status'] == 1) {
+            $isTest = $paddleGateway['is_test_mode'] == 1;
+            $data['paddle_client_token'] = $isTest ? $paddleGateway['test_public_key'] : $paddleGateway['public_key'];
+            $data['paddle_environment']  = $isTest ? 'sandbox' : 'production';
+        }
+
+        $this->load->view('invoicing_pay_resume', $data);
+    }
+
+    /**
      * Initiate Stripe payment (AJAX)
      * Creates PaymentIntent and returns client_secret
      */

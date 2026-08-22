@@ -38,15 +38,19 @@ class Paddle
             if ($gateway) {
                 $this->is_test_mode = $gateway['is_test_mode'] == 1;
 
+                // trim(): a key pasted into the admin form commonly carries a
+                // trailing newline or space. That lands in the Authorization
+                // header verbatim and Paddle rejects the whole request with
+                // "Authentication header included, but incorrectly formatted."
                 if ($this->is_test_mode) {
-                    $this->client_token   = $gateway['test_public_key'] ?? '';
-                    $this->api_key        = $gateway['test_secret_key'] ?? '';
-                    $this->webhook_secret = $gateway['test_webhook_secret'] ?? '';
+                    $this->client_token   = trim($gateway['test_public_key'] ?? '');
+                    $this->api_key        = trim($gateway['test_secret_key'] ?? '');
+                    $this->webhook_secret = trim($gateway['test_webhook_secret'] ?? '');
                     $this->api_url        = self::SANDBOX_URL;
                 } else {
-                    $this->client_token   = $gateway['public_key'] ?? '';
-                    $this->api_key        = $gateway['secret_key'] ?? '';
-                    $this->webhook_secret = $gateway['webhook_secret'] ?? '';
+                    $this->client_token   = trim($gateway['public_key'] ?? '');
+                    $this->api_key        = trim($gateway['secret_key'] ?? '');
+                    $this->webhook_secret = trim($gateway['webhook_secret'] ?? '');
                     $this->api_url        = self::LIVE_URL;
                 }
             }
@@ -134,6 +138,16 @@ class Paddle
         }
 
         $error = $this->extractApiError($response);
+
+        // Log the machine-readable code alongside the human detail — the code
+        // (e.g. authentication_malformed vs authentication_missing vs
+        // invalid_credentials) is what distinguishes a bad header from a bad
+        // key, and the customer-facing banner only ever shows the detail.
+        log_message('error', 'Paddle createTransaction failed ['
+            . ($response['error']['code'] ?? 'unknown') . '] mode='
+            . $this->getEnvironment() . ' api_key_len=' . strlen($this->api_key)
+            . ' detail=' . $error);
+
         return array('success' => false, 'error' => $error, 'data' => $response);
     }
 
