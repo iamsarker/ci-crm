@@ -9,12 +9,17 @@ require_once APPPATH . "third_party/MX/Controller.php";
 class WHMAZ_Controller extends MX_Controller
 {
 
-	function __construct() 
+	function __construct()
 	{
 		parent::__construct();
 		$this->load->model('Auth_model');
 		$this->load->model('Cart_model');
 		$this->loadDefaultCurrency();
+
+		// Same reason as the admin base controller: csrf_regenerate rotates the
+		// cookie on every POST, so hand each response the live token or the
+		// page's second AJAX POST 403s.
+		$this->sendCsrfHeaders();
 	}
 
 	public function loadDefaultCurrency(){

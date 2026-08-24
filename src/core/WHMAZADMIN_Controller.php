@@ -9,10 +9,18 @@ require_once APPPATH . "third_party/MX/Controller.php";
 class WHMAZADMIN_Controller extends MX_Controller
 {
 
-	function __construct() 
+	function __construct()
 	{
 		parent::__construct();
 		$this->load->model('Adminauth_model');
+
+		// csrf_regenerate is TRUE, so EVERY POST rotates the cookie. A page only
+		// knows the token it was rendered with, so without this the second AJAX
+		// POST from any page posts a dead token and 403s — the first one works,
+		// which is what makes it look intermittent. Sent on every response (not
+		// just processRestCall) so the $.ajaxSetup `complete` handler in
+		// include/footer_script.php can keep the page's token in step.
+		$this->sendCsrfHeaders();
 	}
 
 	function isLogin(){

@@ -588,6 +588,12 @@
 									<li>Paste the generated entries at the end of the file</li>
 									<li>Save and exit</li>
 								</ol>
+								<p class="mb-0 mt-3 text-muted small">
+									<i class="fa fa-info-circle"></i>
+									Seeing "security token had expired"? Your token is renewed after every
+									action, so a page left open for a while sends an old one. Click the
+									button again &mdash; if it still fails, reload this page and retry.
+								</p>
 							</div>
 						</div>
 
@@ -1030,10 +1036,30 @@ function toggleCronjob(id) {
 	});
 }
 
+// Turn a failed request into something an admin can act on. "Server error" tells
+// nobody anything, and the two cases that actually happen here have very
+// different fixes: an expired CSRF token (just click again) vs the endpoint not
+// existing on this build (needs updating).
+function cronAjaxError(xhr) {
+	if (xhr.status === 403) {
+		var msg = 'Your security token had expired, so this action was blocked. It has been refreshed — please click the button once more.';
+		try {
+			var resp = JSON.parse(xhr.responseText);
+			if (resp && resp.message) { msg = resp.message; }
+		} catch (e) {}
+		return msg;
+	}
+	if (xhr.status === 404) {
+		return 'This action is not available on this installation. Please update to the latest build, then try again.';
+	}
+	return 'Server error (' + (xhr.status || 'no response') + '). Please try again, or use the manual installation steps below.';
+}
+
 function showCrontabPreview() {
 	$.ajax({
 		url: '<?=base_url()?>whmazadmin/general_setting/generate_crontab',
-		type: 'GET',
+		type: 'POST',
+		data: { <?=$this->security->get_csrf_token_name()?>: '<?=$this->security->get_csrf_hash()?>' },
 		dataType: 'json',
 		success: function(resp) {
 			if (resp.success == 1) {
@@ -1043,8 +1069,8 @@ function showCrontabPreview() {
 				toastError(resp.message || 'Failed to generate crontab.');
 			}
 		},
-		error: function() {
-			toastError('Server error. Please try again.');
+		error: function(xhr) {
+			toastError(cronAjaxError(xhr));
 		}
 	});
 }
@@ -1086,8 +1112,8 @@ function installCrontab() {
 						Swal.fire('Failed', resp.message || 'Failed to install crontab. Try manual installation.', 'error');
 					}
 				},
-				error: function() {
-					Swal.fire('Error', 'Server error. Please try manual installation.', 'error');
+				error: function(xhr) {
+					Swal.fire(xhr.status === 403 ? 'Please try again' : 'Error', cronAjaxError(xhr), xhr.status === 403 ? 'warning' : 'error');
 				}
 			});
 		}

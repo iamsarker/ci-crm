@@ -133,7 +133,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Save dunning rule (AJAX)
 	 */
 	public function save_dunning_rule() {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 
@@ -176,7 +179,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Get dunning rule detail (AJAX)
 	 */
 	public function get_dunning_rule($id = 0) {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 
@@ -194,7 +200,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Delete dunning rule (AJAX)
 	 */
 	public function delete_dunning_rule($id = 0) {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 
@@ -212,7 +221,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Get all dunning rules as JSON (AJAX)
 	 */
 	public function get_dunning_rules() {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 
@@ -224,7 +236,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Update system config value (AJAX)
 	 */
 	public function update_sysconfig() {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 
@@ -255,7 +270,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Get system config detail (AJAX)
 	 */
 	public function get_sysconfig($id = 0) {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 
@@ -273,7 +291,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Update cronjob schedule (AJAX)
 	 */
 	public function update_cronjob() {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 
@@ -335,7 +356,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Toggle cronjob active status (AJAX)
 	 */
 	public function toggle_cronjob($id = 0) {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 
@@ -354,7 +378,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Get cronjob schedule detail (AJAX)
 	 */
 	public function get_cronjob($id = 0) {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 
@@ -374,7 +401,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Generate crontab content (AJAX)
 	 */
 	public function generate_crontab() {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 
@@ -401,7 +431,10 @@ class General_setting extends WHMAZADMIN_Controller {
 	 * Install crontab to system (AJAX)
 	 */
 	public function install_crontab() {
-		if (!$this->input->is_ajax_request() || !$this->input->post()) {
+		// Gate on the request METHOD, not on $this->input->post(): csrf_verify()
+		// unsets the token from $_POST, so an AJAX POST carrying only the CSRF
+		// token arrives with an empty $_POST. Each endpoint validates its own input.
+		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 			show_404();
 		}
 

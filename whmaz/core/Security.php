@@ -304,6 +304,30 @@ class CI_Security {
 	 */
 	public function csrf_show_error()
 	{
+		// csrf_verify() has already rotated the cookie by the time we get here, so
+		// hand the caller the NEW token. Without this an AJAX page is stuck: the
+		// 403 is raised before any controller runs, so the usual refresh headers
+		// (WHMAZ*_Controller::__construct) never fire, the page keeps posting the
+		// token it was rendered with, and EVERY later action 403s until a reload.
+		@header('X-CSRF-TOKEN-NAME: '.$this->get_csrf_token_name());
+		@header('X-CSRF-TOKEN-HASH: '.$this->get_csrf_hash());
+
+		// An AJAX caller cannot read CI's HTML error page — it just sees "failed".
+		// Give it JSON it can show verbatim, flagged so the UI can say "try again"
+		// rather than "server error" (the retry now works: the token above is live).
+		if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])
+			&& strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest')
+		{
+			set_status_header(403);
+			@header('Content-Type: application/json; charset=UTF-8');
+			echo json_encode(array(
+				'success'      => 0,
+				'csrf_expired' => TRUE,
+				'message'      => 'Your security token had expired, so this action was blocked. It has been refreshed — please click the button once more.'
+			));
+			exit;
+		}
+
 		show_error('The action you have requested is not allowed.', 403);
 	}
 
