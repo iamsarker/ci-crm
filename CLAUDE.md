@@ -783,6 +783,25 @@ The customer module `billing` is now **`invoicing`** (controller class `Invoicin
 
 ## Known Gotchas
 
+### CSRF: `!$this->input->post()` is NOT a "is this a POST" check
+`Security::csrf_verify()` **unsets the token from `$_POST`** once it has checked it (`whmaz/core/Security.php` — *"we don't want to pollute the _POST array"*). An endpoint whose request carries **only** the CSRF token therefore sees an **empty `$_POST`**, and `$this->input->post()` returns `[]` — falsy. So this guard rejects every legitimate call:
+
+```php
+// BAD — 404s on every request, including correct AJAX POSTs
+if (!$this->input->is_ajax_request() || !$this->input->post()) { show_404(); }
+// GOOD — gate on the method; let the endpoint validate its own input
+if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') { show_404(); }
+```
+
+(Bit this on `General_setting::generate_crontab()` / `install_crontab()` — the crontab buttons need nothing but the token, so they 404'd 100% of the time while looking correct.)
+
+### CSRF: the token rotates on EVERY POST — hand it back or the 2nd action 403s
+`csrf_regenerate = TRUE` (`config.php`), so `csrf_verify()` issues a new cookie on every POST, **valid or not**. A page only knows the token it was rendered with, so unless the response tells it otherwise, the *first* AJAX POST works and every one after it fails with 403 — which reads as "intermittent" rather than "broken".
+
+- `WHMAZADMIN_Controller` / `WHMAZ_Controller` constructors call `sendCsrfHeaders()` on **every** response (`X-CSRF-TOKEN-NAME` / `X-CSRF-TOKEN-HASH`); the `$.ajaxSetup` `complete` handler in `whmazadmin/include/footer_script.php` + `templates/customer/footer_script.php` reads them and updates the page. ⚠️ Before 2026-08-24 this was only called from `processRestCall()` (Angular) and three `Dashboard` methods, which is exactly why non-Angular admin pages broke on their second action.
+- `Security::csrf_show_error()` also emits the rotated token and answers AJAX with **JSON** (`csrf_expired: true`) instead of CI's HTML 403 page, so a page that does hit a stale token recovers on the next click. The 403 is raised **before any controller runs**, so without this the page can never learn the new token.
+- Debugging with `curl`: a hand-copied token is single-use. Fetch a page into a cookie jar, read the fresh `csrf_cookie_name` cookie, and post *that* — otherwise you get a 403 that has nothing to do with the bug you're chasing.
+
 ### Query Builder lacks where_group_start()/where_group_end()
 This project's bundled CI (system folder `whmaz/`) ships a **trimmed query builder that does NOT have `where_group_start()` / `where_group_end()`**. Calling them fatals with `Call to undefined method CI_DB_mysqli_driver::where_group_start()`. Write OR-groups inline in a raw parameterized query instead:
 ```php
