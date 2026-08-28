@@ -57,7 +57,7 @@ class Install
 
     // Fixed vendor license server. Every install is a master copy that enforces
     // its LICENSE_KEY against this host via the admin-login gate.
-    const LICENSE_SERVER_URL = 'https://whmaz.com';
+    const LICENSE_SERVER_URL = 'https://www.whmaz.com';
 
     /**
      * Constructor

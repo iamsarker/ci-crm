@@ -38,8 +38,13 @@ class License_client {
 	const GRACE_DAYS           = 7;   // serve last-good verdict while unreachable
 	const HTTP_TIMEOUT         = 8;   // seconds
 
-	/** Hard-coded anti-piracy verification endpoint (admin-login gate). */
-	const ADMIN_VERIFY_URL = 'https://whmaz.com/api/verify-license.php';
+	/**
+	 * Hard-coded anti-piracy verification endpoint (admin-login gate).
+	 * Must be the canonical www host: the bare domain answers 301, and a
+	 * redirect that is not followed reads here as "unverified", which locks
+	 * every admin out of every install.
+	 */
+	const ADMIN_VERIFY_URL = 'https://www.whmaz.com/api/verify-license.php';
 
 	/** @var CI_Controller */
 	protected $CI;
@@ -84,9 +89,18 @@ class License_client {
 			CURLOPT_CONNECTTIMEOUT => self::HTTP_TIMEOUT,
 			CURLOPT_SSL_VERIFYPEER => false,
 			CURLOPT_SSL_VERIFYHOST => false,
+			// A host that redirects (bare domain -> www, http -> https) returns
+			// an empty body otherwise, which would fail every login silently.
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_MAXREDIRS      => 3,
 		));
 		$body = curl_exec($ch);
+		$err  = curl_errno($ch);
 		curl_close($ch);
+
+		if ($err) {
+			return false;
+		}
 
 		$data = json_decode((string) $body, true);
 		if ( ! is_array($data)) {
@@ -237,6 +251,11 @@ class License_client {
 			CURLOPT_SSL_VERIFYPEER => false,
 			CURLOPT_SSL_VERIFYHOST => false,
 			CURLOPT_USERAGENT      => 'WHMAZ-License-Client/1.0',
+			// Same redirect trap as the admin gate. POSTREDIR keeps this a POST
+			// across 301/302/303 instead of curl downgrading it to a GET.
+			CURLOPT_FOLLOWLOCATION => true,
+			CURLOPT_MAXREDIRS      => 3,
+			CURLOPT_POSTREDIR      => 7,
 		));
 		$body = curl_exec($ch);
 		$err  = curl_errno($ch);
