@@ -52,14 +52,25 @@
 					// Always send CSRF token in header for JSON requests
 					xhr.setRequestHeader('X-CSRF-TOKEN', csrfHash);
 
-					// For non-JSON requests, also add to data
+					// For non-JSON requests, also put the token in the body.
+					// jQuery has ALREADY serialised settings.data to a string (and
+					// decided the Content-Type) by the time beforeSend runs, so an
+					// object assigned back here is sent as the literal string
+					// "[object Object]" with Content-Type text/plain — $_POST comes
+					// out empty and the call 403s. Two rules: keep it a string, and
+					// when there was no body at all (e.g. $.post(url, {})) set the
+					// form Content-Type ourselves, since jQuery skips that header
+					// for an empty body and PHP will not populate $_POST without it.
+					// Bodies we must not touch (FormData, processData:false) stay as
+					// they are — the X-CSRF-TOKEN header above covers them.
 					var contentType = settings.contentType || '';
-					if (contentType.indexOf('application/json') === -1) {
-						settings.data = settings.data || {};
-						if (typeof settings.data === 'string') {
-							settings.data += '&' + csrfName + '=' + csrfHash;
-						} else if (typeof settings.data === 'object') {
-							settings.data[csrfName] = csrfHash;
+					if (contentType.indexOf('application/json') === -1 && typeof settings.data !== 'object') {
+						var csrfPair = encodeURIComponent(csrfName) + '=' + encodeURIComponent(csrfHash);
+						if (typeof settings.data === 'string' && settings.data !== '') {
+							settings.data += '&' + csrfPair;
+						} else {
+							settings.data = csrfPair;
+							xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 						}
 					}
 				}
