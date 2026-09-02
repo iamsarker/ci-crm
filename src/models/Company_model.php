@@ -46,6 +46,85 @@ class Company_model extends CI_Model{
 		}
 	}
 
+	/**
+	 * Move a customer from one reseller to another (v2.0.0 req. 9).
+	 *
+	 * Rewrites companies.parent_company_id, which changes who bills the
+	 * customer and — once the wallet lands — whose credit is debited. That is a
+	 * money-affecting change with no other trace, so it also writes a
+	 * company_transfers audit row.
+	 *
+	 * Transfer moves FUTURE billing only. Existing order_* rows keep the prices
+	 * frozen on them at checkout, and any in-flight wallet debit stays with the
+	 * old reseller; nothing is re-priced retroactively.
+	 *
+	 * @param int $companyId          Customer being moved
+	 * @param int $newResellerId      Target reseller's companies.id; 0 = back to platform-direct
+	 * @param string $notes
+	 * @return array ['success' => bool, 'message' => string]
+	 */
+	function transferToReseller($companyId, $newResellerId, $notes = '') {
+		$companyId     = intval($companyId);
+		$newResellerId = intval($newResellerId);
+
+		$company = $this->db->query(
+			"SELECT id, name, parent_company_id, is_reseller FROM companies WHERE id = ? AND status = 1 LIMIT 1",
+			array($companyId)
+		)->row_array();
+
+		if (empty($company)) {
+			return array('success' => false, 'message' => 'Customer not found.');
+		}
+		// Req. 6: no sub-resellers. A reseller cannot be parked under another.
+		if (intval($company['is_reseller']) === 1) {
+			return array('success' => false, 'message' => 'A reseller cannot be moved under another reseller.');
+		}
+		if ($newResellerId === $companyId) {
+			return array('success' => false, 'message' => 'A customer cannot be its own reseller.');
+		}
+
+		if ($newResellerId > 0) {
+			$target = $this->db->query(
+				"SELECT c.id FROM companies c
+				   JOIN reseller_profiles rp ON rp.company_id = c.id
+				  WHERE c.id = ? AND c.status = 1 AND c.is_reseller = 1 AND rp.status = 1 LIMIT 1",
+				array($newResellerId)
+			)->row_array();
+			if (empty($target)) {
+				return array('success' => false, 'message' => 'Target is not an active reseller.');
+			}
+		}
+
+		$from = intval($company['parent_company_id']);
+		if ($from === $newResellerId) {
+			return array('success' => false, 'message' => 'That customer already belongs to this reseller.');
+		}
+
+		$this->db->trans_start();
+
+		$this->db->query(
+			"UPDATE companies SET parent_company_id = ?, updated_on = ?, updated_by = ? WHERE id = ?",
+			array($newResellerId, getDateTime(), getAdminId(), $companyId)
+		);
+
+		$this->db->insert('company_transfers', array(
+			'company_id'      => $companyId,
+			'from_company_id' => $from,
+			'to_company_id'   => $newResellerId,
+			'notes'           => substr((string) $notes, 0, 255),
+			'status'          => 1,
+			'inserted_on'     => getDateTime(),
+			'inserted_by'     => getAdminId(),
+		));
+
+		$this->db->trans_complete();
+
+		if ($this->db->trans_status() === FALSE) {
+			return array('success' => false, 'message' => 'Transfer failed.');
+		}
+		return array('success' => true, 'message' => 'Customer transferred successfully.');
+	}
+
 	function saveData($data) {
 		$return['id'] = 0;
 
@@ -85,7 +164,12 @@ class Company_model extends CI_Model{
 
 	function countDataTableTotalRecords() {
 		try {
-			$query = $this->db->query("SELECT COUNT(id) as cnt FROM ".$this->table." WHERE status=1");
+			// SECURITY: bypasses the $where that ssp_sql_query() scopes. Note the
+			// scope column for `companies` is `id` (the reseller row itself plus
+			// its sub-customers), not `company_id`.
+			$scope = adminScopeSql('id');
+			$scope = ($scope !== '') ? " AND {$scope}" : '';
+			$query = $this->db->query("SELECT COUNT(id) as cnt FROM ".$this->table." WHERE status=1 {$scope}");
 			$data = $query->result_array();
 			return !empty($data) ? $data[0]['cnt'] : 0;
 		} catch (Exception $e) {
@@ -114,13 +198,17 @@ class Company_model extends CI_Model{
 	 */
 	function getCompanyStats() {
 		try {
+			// SECURITY: this query has no WHERE at all, so before scoping it
+			// counted every company on the platform regardless of tenant.
+			$scope = adminScopeSql('id');
+			$scope = ($scope !== '') ? " WHERE {$scope}" : '';
 			$query = $this->db->query("
 				SELECT
 					COUNT(*) as total_companies,
 					SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as active_companies,
 					SUM(CASE WHEN status = 1 AND YEAR(inserted_on) = YEAR(CURDATE()) AND MONTH(inserted_on) = MONTH(CURDATE()) THEN 1 ELSE 0 END) as this_month_companies,
 					COUNT(DISTINCT CASE WHEN status = 1 AND country IS NOT NULL AND country != '' THEN country END) as countries_count
-				FROM ".$this->table."
+				FROM ".$this->table." {$scope}
 			");
 			$data = $query->row_array();
 			return array(

@@ -121,6 +121,8 @@ CREATE TABLE `admin_roles` (
 CREATE TABLE `admin_users` (
   `id` int(11) NOT NULL,
   `admin_role_id` int(11) NOT NULL,
+  `admin_type` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0=platform staff, 1=reseller admin',
+  `company_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'reseller companies.id when admin_type=1; 0 for platform staff',
   `first_name` varchar(150) NOT NULL,
   `last_name` varchar(150) NOT NULL,
   `username` text NOT NULL,
@@ -362,6 +364,32 @@ CREATE TABLE `companies` (
 
 INSERT INTO `companies` (`id`, `name`, `mobile`, `phone`, `email`, `address`, `city`, `state`, `zip_code`, `first_name`, `last_name`, `country`, `registrar_customer_id`, `kam_id`, `kam_name`, `lead_id`, `opportunity_id`, `quotation_id`, `status`, `inserted_on`, `inserted_by`, `updated_on`, `updated_by`, `deleted_on`, `deleted_by`) VALUES
 (1, 'Demo Client', '+94788888888', '+94788888888', 'client@whmaz.com', '201 Shanti Villa, Silk house Street', 'KANDY', 'KANDY', '20000', 'A. L', 'Perera', 'Sri Lanka', 'NC_4c37fc5fb1d2c4873ce6b69c6ff87772', 0, '', NULL, NULL, NULL, 1, '2014-02-21 15:11:42', 1, '2026-03-18 14:57:40', 1, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `company_transfers`
+-- Audit trail for moving a customer between resellers (v2.0.0 req. 9).
+-- Rewriting companies.parent_company_id silently changes who bills the
+-- customer and whose wallet is debited, so the change gets its own row.
+-- Transfer moves FUTURE billing only -- existing order_* rows keep their
+-- frozen prices and in-flight wallet debits stay with the old reseller.
+--
+
+CREATE TABLE `company_transfers` (
+  `id` bigint(20) NOT NULL,
+  `company_id` bigint(20) NOT NULL COMMENT 'the customer being moved',
+  `from_company_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'previous parent_company_id; 0 = was platform-direct',
+  `to_company_id` bigint(20) NOT NULL DEFAULT 0 COMMENT 'new parent_company_id; 0 = moved back to platform-direct',
+  `notes` varchar(255) DEFAULT NULL,
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1=active, 0=soft deleted',
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` datetime DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `deleted_on` datetime DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -2942,7 +2970,8 @@ ALTER TABLE `admin_roles`
 -- Indexes for table `admin_users`
 --
 ALTER TABLE `admin_users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_admin_tenant` (`admin_type`,`company_id`);
 
 --
 -- Indexes for table `alerts`
@@ -2979,6 +3008,14 @@ ALTER TABLE `billing_cycle`
 --
 ALTER TABLE `companies`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `company_transfers`
+--
+ALTER TABLE `company_transfers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_transfer_company` (`company_id`),
+  ADD KEY `idx_transfer_to` (`to_company_id`);
 
 --
 -- Indexes for table `countries`
@@ -3441,6 +3478,12 @@ ALTER TABLE `billing_cycle`
 --
 ALTER TABLE `companies`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `company_transfers`
+--
+ALTER TABLE `company_transfers`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `countries`

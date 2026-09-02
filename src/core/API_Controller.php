@@ -138,16 +138,17 @@ class API_Controller extends MX_Controller
 		}
 	}
 
-	/** Company ids this key may see: the reseller + its sub-customers. */
+	/**
+	 * Company ids this key may see: the reseller + its sub-customers.
+	 *
+	 * Delegates to tenant_scope_ids_for() (src/helpers/tenant_helper.php) so
+	 * the API and the admin portal share ONE definition of tenant scope. That
+	 * helper also request-caches, which this method never did — ownsCompany()
+	 * calls it on every check.
+	 */
 	protected function scopedCompanyIds()
 	{
-		$rows = $this->db->query(
-			"SELECT id FROM companies WHERE (id = ? OR parent_company_id = ?) AND status = 1",
-			array($this->company_id, $this->company_id)
-		)->result_array();
-		$ids = array_map('intval', array_column($rows, 'id'));
-		if (empty($ids)) $ids = array($this->company_id);
-		return $ids;
+		return tenant_scope_ids_for($this->company_id);
 	}
 
 	/** True if $companyId belongs to this reseller's scope. */

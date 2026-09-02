@@ -12,7 +12,11 @@ class Invoice_model extends CI_Model{
 	}
 
 	function countDataTableTotalRecords() {
-		$query = $this->db->query("select count(id) as cnt from invoice_view where status=1");
+		// SECURITY: bypasses the $where that ssp_sql_query() scopes — see the
+		// matching note in Order_model::countDataTableTotalRecords().
+		$scope = adminScopeSql('company_id');
+		$scope = ($scope !== '') ? " AND {$scope}" : '';
+		$query = $this->db->query("select count(id) as cnt from invoice_view where status=1 {$scope}");
 		$data = $query->result_array();
 		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
@@ -29,6 +33,10 @@ class Invoice_model extends CI_Model{
 	 * @return array Stats including total, paid, due counts and total amount
 	 */
 	function getInvoiceStats() {
+		// SECURITY: total_amount is platform-wide billings. Same leak shape as
+		// Order_model::getOrderStats() — scoped here, not by the caller.
+		$scope = adminScopeSql('company_id');
+		$scope = ($scope !== '') ? " AND {$scope}" : '';
 		$query = $this->db->query("
 			SELECT
 				COUNT(*) as total_invoices,
@@ -36,7 +44,7 @@ class Invoice_model extends CI_Model{
 				SUM(CASE WHEN pay_status = 'DUE' THEN 1 ELSE 0 END) as due_invoices,
 				COALESCE(SUM(total), 0) as total_amount
 			FROM invoice_view
-			WHERE status = 1
+			WHERE status = 1 {$scope}
 		");
 		$data = $query->row_array();
 		return array(

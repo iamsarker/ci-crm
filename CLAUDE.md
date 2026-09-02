@@ -531,7 +531,8 @@ Two connected features (the CRM's first account hierarchy + a public REST API).
 
 Key facts at a glance:
 
-- **Reseller = a `companies` row with `is_reseller=1`** that owns sub-customers (`companies.parent_company_id = reseller's company id`) and one `reseller_profiles` row (`discount_type`/`discount_value` applied to its orders, `credit_balance` informational, `allow_api` gates API keys). This is the first hierarchy on the previously-flat `companies` table.
+- **Reseller = a `companies` row with `is_reseller=1`** that owns sub-customers (`companies.parent_company_id = reseller's company id`) and one `reseller_profiles` row (`allow_api` gates API keys). This is the first hierarchy on the previously-flat `companies` table.
+  ⚠️ **`discount_type`/`discount_value` are NOT applied to anything.** They are stored, rendered in the admin form (whose helper text *"Applied to this reseller's own orders"* is wrong), and echoed by `GET /api/v1/me` — but no code reads them for pricing. The only discount engine at checkout is the promo code (`Cart.php:158-193`), so reseller orders, including API-placed ones, pay full retail. v2.0.0 Phase 2 turns them into the fallback cost basis in `Pricing_model::resolve()`. `credit_balance` is likewise an admin-typed number with no ledger, no debit and no top-up (Phase 3). Note the vocabulary mismatch: `promo_codes.discount_type` is `enum('fixed','percentage')` while `reseller_profiles` uses `'percent'`.
 - **API auth = key + secret**, stateless. `api_keys.key_id` (public, header `X-Api-Key`) + secret (`X-Api-Secret`, or `Authorization: Bearer key_id:secret`) whose `password_hash()` is in `secret_hash` — the secret is shown **once** at creation/regenerate. Per-key `scopes` (JSON), `ip_whitelist` (blank=any, supports CIDR), `rate_limit` (req/min), `expires_at`, `status` (1=active,2=revoked,0=deleted). `api_request_logs` = audit + rate-limit window.
 - **New tables:** `reseller_profiles`, `api_keys`, `api_request_logs`; **views** `reseller_view`, `api_key_view`. Migration `reseller_api_migration.sql` (+ `src/migrations/20260703120000_create_reseller_api.php`); `crm_db.sql`/`crm_db_views.sql` carry them for fresh installs.
 - **Admin:** Settings → **Reseller Management** (`whmazadmin/reseller`) and **API Keys** (`whmazadmin/apikey`) — mirror the Promocode CRUD pattern (list/manage/delete_records/ssp_list_api).
@@ -542,6 +543,27 @@ Key facts at a glance:
 - The read endpoints are a **thin authenticated layer over existing models** (`Order_model`, `Provisioning_model`, `Invoice_model`, `Orderlicense_model`, `Company_model`, `Plan_model`, `Common_model`, `Cart_model`). `Apikey_model` is the single source of truth for scopes + `authenticate()`. Added public `Provisioning_model::unsuspendService()` for `hosting:write`.
 
 **Full documentation:** `../ci-crm-docs/docs/RESELLER_API.md`
+
+### Admin Portal Tenancy (v2.0.0 Phase 1)
+
+Resellers log in through the **admin** login page (`whmazadmin/authenticate/login`) and see only their own customers. Before this the admin portal had **no authorization layer at all**: every controller carried exactly one `if (!$this->isLogin())` guard, `isLogin()` returned a bare bool, and `admin_roles` was dead scaffolding (zero rows, zero PHP references — `admin_role_id` is SELECTed by `Adminauth_model` and never copied into the session, which is why it does nothing).
+
+**Identity.** `admin_users.admin_type` (0=platform staff, 1=reseller) + `admin_users.company_id`, both added to the login `SELECT` **and the `$resp` session payload** in `Adminauth_model::doLogin()`. `admin_type` is a binary *tenancy* discriminator, not a role — do not revive `admin_roles` for it. Migration: `reseller_v2_phase1_migration.sql`. ⚠️ **Run it before deploying `Adminauth_model.php`** or the login query dies on `Unknown column 'admin_type'` and *nobody* can reach the admin portal.
+
+**Scope helpers** — `src/helpers/tenant_helper.php` (autoloaded, deliberately **not** in `whmaz_helper.php`, which is encoded and loaded on both portals): `isResellerAdmin()`, `adminCompanyId()`, `adminScopeIds()`, `adminScopeSql($col)`, `adminOwnsCompany()`, `admin_can()`, `tenant_deny()`. `tenant_scope_ids_for($companyId)` is **the** definition of tenant scope; `API_Controller::scopedCompanyIds()` now delegates to it, so admin and API share one predicate. Request-cached, **never session-cached** — a customer transfer must take effect on the next request.
+
+**Enforcement is three layers, all fail-closed:**
+1. **Controller access** — `src/hooks/RequestGuard.php`, a second `post_controller_constructor` hook (`enable_hooks = TRUE`; `Hooks::call_hook()` loops when the config value is an array of handlers — **don't collapse `hooks.php` back to a single assoc array** or the guard silently stops running). It checks `src/config/capabilities.php`, an **allowlist**: a controller not listed is denied to resellers, so anything added later ships blocked rather than exposed. Platform admins return early — zero behaviour change.
+2. **List rows** — `ssp_tenant_scope()` inside `ssp_sql_query()` (`ssp_helper.php`) appends a `company_id IN (...)` predicate for all 16 DataTable call sites. `$where`/`$bindings` are by-reference so filtered counts inherit it. Unmapped tables return ` 1 = 0 `. Hand-written stats/count methods bypass `$where` entirely and are scoped individually in their models — `Order_model::getOrderStats()` was leaking **platform-wide `SUM(total_amount)`** into the `stats` key of a scoped list.
+3. **By-id records** — `WHMAZADMIN_Controller::guardCompany()` / `guardRecord()` / `guardRecordBy()` (for uuid-addressed rows), ~41 call sites. The hook knows class+method but not which record a positional id names, so there is no central choke point for these.
+
+⚠️ **Never use the `$tmpCompanyId` mechanism for scoping** (`Order.php` / `Invoice.php` / `Company.php`). It writes the company filter into `columns[n][search][value]`, which `ssp_filter()` reads **straight from the query string** — a reseller can overwrite it in the AJAX URL. It is a convenience filter; the security boundary is `$extraWhere`.
+
+⚠️ **Deactivation.** `admin_logins.active` is never set to 0 anywhere, so `countDbSession()` really means "has ever logged in" and cannot revoke a session. `isLogin()` therefore re-checks reseller liveness (company active + `is_reseller=1` + profile active) on every request; without that clause "deactivate reseller" is cosmetic until session expiry.
+
+**Also fixed here:** `Reseller_model::getByCompany()` no longer filters `status = 1`. `delete_records()` soft-deletes but keeps the row while `uniq_reseller_company` is a real UNIQUE index, so a status-filtered lookup found nothing, `manage()` took the INSERT branch, and re-adding a removed reseller died on a duplicate key. It now reactivates instead.
+
+**Customer transfer (req. 9)** — `Company_model::transferToReseller()` + `company_transfers` audit table, exposed at `whmazadmin/company/transfer_reseller` and **platform-admin only** (a reseller could otherwise pull another tenant's customer into their own scope). Moves **future billing only**: existing `order_*` rows keep their frozen prices.
 
 ### Admin Order Management
 

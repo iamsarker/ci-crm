@@ -20,6 +20,11 @@ class Support_model extends CI_Model{
 			$this->db->where('tk.company_id', intval($companyId));
 		}
 
+		// SECURITY: the admin dashboard widget calls this with companyId = -1
+		// ("all tickets"). No-op outside a reseller admin session.
+		$scope = adminScopeSql('tk.company_id');
+		if ($scope !== '') { $this->db->where($scope, null, false); }
+
 		$this->db->order_by('tk.updated_on', 'DESC');
 
 		if (is_numeric($limit) && $limit > 0) {
@@ -38,7 +43,11 @@ class Support_model extends CI_Model{
 	}
 
 	function countDataTableTotalRecords() {
-		$query = $this->db->query("select count(id) as cnt from ticket_view where status=1");
+		// SECURITY: bypasses the $where that ssp_sql_query() scopes — see the
+		// matching note in Order_model::countDataTableTotalRecords().
+		$scope = adminScopeSql('company_id');
+		$scope = ($scope !== '') ? " AND {$scope}" : '';
+		$query = $this->db->query("select count(id) as cnt from ticket_view where status=1 {$scope}");
 		$data = $query->result_array();
 		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
@@ -55,6 +64,10 @@ class Support_model extends CI_Model{
 	 * @return array Stats including total, open, awaiting reply, and closed counts
 	 */
 	function getTicketStats() {
+		// SECURITY: scoped here, not by the caller — these counts ride in the
+		// same DataTables JSON as the (already scoped) rows.
+		$scope = adminScopeSql('company_id');
+		$scope = ($scope !== '') ? " AND {$scope}" : '';
 		$query = $this->db->query("
 			SELECT
 				COUNT(*) as total_tickets,
@@ -62,7 +75,7 @@ class Support_model extends CI_Model{
 				SUM(CASE WHEN flag = 3 THEN 1 ELSE 0 END) as awaiting_reply,
 				SUM(CASE WHEN flag = 4 THEN 1 ELSE 0 END) as closed_tickets
 			FROM ticket_view
-			WHERE status = 1
+			WHERE status = 1 {$scope}
 		");
 		$data = $query->row_array();
 		return array(

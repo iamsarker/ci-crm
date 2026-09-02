@@ -39,11 +39,20 @@ class Reseller extends WHMAZADMIN_Controller {
 				$companyId = intval($this->input->post('company_id'));
 
 				// Guard: one profile per company.
+				// getByCompany() now returns soft-deleted rows too, because
+				// `uniq_reseller_company` is a real UNIQUE index: a previously
+				// removed reseller still occupies the slot. Re-adding one must
+				// REACTIVATE that row, not insert a second and hit a duplicate
+				// key with a generic "Failed to save reseller."
 				$existing = $this->Reseller_model->getByCompany($companyId);
 				if (!empty($existing) && intval($existing['id']) !== $pkId) {
-					$this->session->set_flashdata('admin_error', 'This company is already a reseller.');
-					redirect('whmazadmin/reseller/manage' . ($pkId > 0 ? '/' . safe_encode($pkId) : ''));
-					return;
+					if (intval($existing['status']) === 1) {
+						$this->session->set_flashdata('admin_error', 'This company is already a reseller.');
+						redirect('whmazadmin/reseller/manage' . ($pkId > 0 ? '/' . safe_encode($pkId) : ''));
+						return;
+					}
+					// Soft-deleted: adopt the existing row and bring it back.
+					$pkId = intval($existing['id']);
 				}
 
 				$form_data = array(
@@ -60,10 +69,16 @@ class Reseller extends WHMAZADMIN_Controller {
 
 				if ($pkId > 0) {
 					$old = $this->Reseller_model->getDetail($pkId);
+					// getDetail() filters status = 1, so a reactivated row reads
+					// back empty — fall back to the row we already looked up.
+					if (empty($old)) { $old = $existing; }
 					$form_data['updated_on']  = getDateTime();
 					$form_data['updated_by']  = getAdminId();
-					$form_data['inserted_on'] = $old['inserted_on'];
-					$form_data['inserted_by'] = $old['inserted_by'];
+					$form_data['inserted_on'] = !empty($old['inserted_on']) ? $old['inserted_on'] : getDateTime();
+					$form_data['inserted_by'] = !empty($old['inserted_by']) ? $old['inserted_by'] : getAdminId();
+					// status => 1 above already revives it; clear the tombstone.
+					$form_data['deleted_on']  = null;
+					$form_data['deleted_by']  = null;
 				} else {
 					$form_data['inserted_on'] = getDateTime();
 					$form_data['inserted_by'] = getAdminId();
@@ -76,7 +91,11 @@ class Reseller extends WHMAZADMIN_Controller {
 					$subCustomers = $this->input->post('sub_customer_ids') ?: array();
 					$this->Reseller_model->assignSubCustomers($companyId, $subCustomers);
 
-					$this->session->set_flashdata('admin_success', 'Reseller has been saved successfully.');
+					// The reseller signs in through the ADMIN login page, so it
+					// needs an admin_users row bound to its company.
+					$loginMsg = $this->_provisionResellerLogin($companyId);
+
+					$this->session->set_flashdata('admin_success', 'Reseller has been saved successfully.' . $loginMsg);
 					redirect('whmazadmin/reseller/index');
 					return;
 				}
@@ -103,24 +122,116 @@ class Reseller extends WHMAZADMIN_Controller {
 		$data['assignable_companies'] = $this->Reseller_model->getAssignableCompanies($currentCompanyId);
 		$data['currencies']           = $this->Reseller_model->getCurrencies();
 
+		// Existing admin login for this reseller, so the form can prefill.
+		$data['adminLogin'] = !empty($data['detail']['company_id'])
+			? $this->Reseller_model->getAdminUser($data['detail']['company_id'])
+			: array();
+
 		$this->load->view('whmazadmin/reseller_manage', $data);
 	}
 
 	public function delete_records($id_val) {
 		$entity = $this->Reseller_model->getDetail(safe_decode($id_val));
 		if (!empty($entity)) {
-			// Soft-delete the profile, drop the reseller flag, and detach subs.
+			// Deactivate as one unit. Leaving any of these three behind is a
+			// live hole: a disabled profile with an enabled admin_users row
+			// still logs in, and is_reseller=1 with no profile fails the
+			// liveness check in a confusing way.
+			$this->db->trans_start();
+
 			$this->Reseller_model->assignSubCustomers($entity['company_id'], array());
 			$this->Reseller_model->setResellerFlag($entity['company_id'], 0);
+			// Kills the admin login. WHMAZADMIN_Controller::isLogin() re-checks
+			// reseller liveness on every request, so any session they already
+			// hold dies on their next click rather than at session expiry.
+			$this->Reseller_model->setAdminUsersStatus($entity['company_id'], 0);
 			$this->Reseller_model->saveData(array(
 				'id'         => $entity['id'],
 				'status'     => 0,
 				'deleted_on' => getDateTime(),
 				'deleted_by' => getAdminId(),
 			));
+
+			$this->db->trans_complete();
+
 			$this->session->set_flashdata('admin_success', 'Reseller has been removed successfully.');
 		}
 		redirect('whmazadmin/reseller/index');
+	}
+
+	/**
+	 * Create or update the reseller's admin_users login.
+	 *
+	 * Mirrors how Company::manage() provisions a customer's `users` owner row:
+	 * generate a password, save, and flash it back once. On edit the password
+	 * is only rewritten when a new one was actually typed.
+	 *
+	 * @return string Message fragment appended to the success toast.
+	 */
+	private function _provisionResellerLogin($companyId) {
+		$company = $this->db->query(
+			"SELECT name, email, first_name, last_name, mobile, phone FROM companies WHERE id = ? LIMIT 1",
+			array(intval($companyId))
+		)->row_array();
+		if (empty($company)) return '';
+
+		$existing = $this->Reseller_model->getAdminUser($companyId);
+
+		$username = trim((string) $this->input->post('admin_username'));
+		$email    = trim((string) $this->input->post('admin_email'));
+		$password = (string) $this->input->post('admin_password');
+
+		if ($email === '')    { $email    = $company['email']; }
+		if ($username === '') { $username = !empty($existing['username']) ? $existing['username'] : $email; }
+		if ($username === '' || $email === '') {
+			return ' (no admin login created — the company has no email address)';
+		}
+
+		if ($this->Reseller_model->adminLoginExists($username, $email, !empty($existing['id']) ? $existing['id'] : 0)) {
+			return ' (admin login NOT created — that username or email is already in use)';
+		}
+
+		$row = array(
+			'admin_type'  => 1,
+			'company_id'  => intval($companyId),
+			'first_name'  => !empty($company['first_name']) ? $company['first_name'] : $company['name'],
+			'last_name'   => (string) $company['last_name'],
+			'username'    => $username,
+			'email'       => $email,
+			'mobile'      => $company['mobile'],
+			'phone'       => $company['phone'],
+			'designation' => 'Reseller',
+			'status'      => 1,
+		);
+
+		if (!empty($existing['id'])) {
+			$row['id']         = $existing['id'];
+			$row['updated_on'] = getDateTime();
+			$row['updated_by'] = getAdminId();
+			// Only rewrite the password when one was actually typed, so simply
+			// re-saving the reseller does not silently lock them out.
+			if ($password !== '') {
+				$row['password'] = password_hash($password, PASSWORD_DEFAULT);
+			}
+			$this->Reseller_model->saveAdminUser($row);
+			return ($password !== '') ? ' Admin password updated.' : '';
+		}
+
+		$plain = ($password !== '') ? $password : generate_secure_password(12, true);
+		$row['password']    = password_hash($plain, PASSWORD_DEFAULT);
+		$row['admin_role_id'] = 0;
+		$row['inserted_on'] = getDateTime();
+		$row['inserted_by'] = getAdminId();
+		$this->Reseller_model->saveAdminUser($row);
+
+		// Shown once, same pattern as Company::manage()'s new_user_credentials.
+		$this->session->set_flashdata('new_reseller_credentials', array(
+			'username' => $username,
+			'email'    => $email,
+			'password' => $plain,
+			'company'  => $company['name'],
+		));
+		return ' Admin login created — copy the password now.';
 	}
 
 	public function ssp_list_api() {

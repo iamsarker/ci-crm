@@ -33,6 +33,14 @@ class Dashboard extends WHMAZADMIN_Controller
 		$this->sendCsrfHeaders();
 		header('Content-Type: application/json');
 
+		// SECURITY: this is the PLATFORM's wholesale TLD price list. A reseller
+		// must see their own cost, not ours. Until the pricing resolver lands
+		// (Phase 2) they see nothing rather than our margin.
+		if (isResellerAdmin()) {
+			echo json_encode(array());
+			return;
+		}
+
 		$limit = $this->input->post('limit') ? intval($this->input->post('limit')) : 10;
 		$data = $this->Dashboard_model->getDomainPrices($limit);
 
@@ -45,6 +53,16 @@ class Dashboard extends WHMAZADMIN_Controller
 	public function expenses_chart_api() {
 		$this->sendCsrfHeaders();
 		header('Content-Type: application/json');
+
+		// SECURITY: `expenses` is the PLATFORM OPERATOR's own P&L — it has no
+		// company_id and no reseller-scoped meaning at all. Refuse outright
+		// rather than filtering: a "scoped" version would just be an empty
+		// chart that invites a support ticket. The widget is also hidden in
+		// dashboard_index.php so it never asks.
+		if (isResellerAdmin()) {
+			echo json_encode(array('labels' => array(), 'amounts' => array()));
+			return;
+		}
 
 		$data = $this->Dashboard_model->getLast12MonthsExpenses();
 

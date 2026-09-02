@@ -53,6 +53,10 @@ class Invoice extends WHMAZADMIN_Controller
 
 	public function view_invoice($companyId, $invoice_uuid)
 	{
+		// SECURITY: both ids come from the URL. getInvoiceByUuid() pairs them,
+		// so guarding the company is what actually protects the record.
+		$this->guardCompany($companyId);
+
 		$data['companyInfo'] = $this->Appsetting_model->getSettings();
 		$data['summary'] = $this->Billing_model->invoiceSummary($companyId)[0];
 		$data['invoice'] = $this->Billing_model->getInvoiceByUuid($invoice_uuid, $companyId);
@@ -71,6 +75,9 @@ class Invoice extends WHMAZADMIN_Controller
 
 	public function download_invoice($companyId, $invoice_uuid)
 	{
+		// SECURITY: same exposure as view_invoice(), as a PDF.
+		$this->guardCompany($companyId);
+
 		$this->load->library('Pdf');
 
 		$data['companyInfo'] = $this->Appsetting_model->getSettings();
@@ -165,6 +172,11 @@ class Invoice extends WHMAZADMIN_Controller
 				));
 				exit;
 			}
+
+			// SECURITY: addressed by uuid, not id. Marking another tenant's
+			// invoice paid triggers provisioning — registrar spend and live
+			// hosting accounts — so guard before it reaches the model.
+			$this->guardRecordBy('invoices', 'invoice_uuid', $invoice_uuid);
 
 			// Update invoice status to PAID
 			$updated = $this->Invoice_model->updateInvoiceStatus($invoice_uuid, 'PAID', getAdminId());

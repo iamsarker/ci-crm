@@ -47,6 +47,9 @@ class Apikey extends WHMAZADMIN_Controller {
 				);
 
 				if ($pkId > 0) {
+					// SECURITY: the id is a POST field.
+					$this->guardRecord('api_keys', $pkId);
+
 					// Edit: never touch company_id / secret here.
 					$form_data['id']         = $pkId;
 					$form_data['updated_on'] = getDateTime();
@@ -58,6 +61,10 @@ class Apikey extends WHMAZADMIN_Controller {
 				}
 
 				// Create: generate credentials and reveal the secret once.
+				// SECURITY: company_id is a POST field. Unguarded, a reseller
+				// could mint a working API key scoped to another tenant.
+				$this->guardCompany(intval($this->input->post('company_id')));
+
 				$cred = $this->Apikey_model->generateCredentials();
 				$form_data['company_id']     = intval($this->input->post('company_id'));
 				$form_data['key_id']         = $cred['key_id'];
@@ -104,6 +111,9 @@ class Apikey extends WHMAZADMIN_Controller {
 
 	public function regenerate($id_val) {
 		$id  = safe_decode($id_val);
+		// SECURITY: mints a new secret for the key and shows it once. Against
+		// another tenant's key that is a full credential handover.
+		$this->guardRecord('api_keys', $id);
 		$key = $this->Apikey_model->getDetail($id);
 		if (!empty($key)) {
 			$secret = $this->Apikey_model->regenerateSecret($id);
@@ -118,12 +128,14 @@ class Apikey extends WHMAZADMIN_Controller {
 	}
 
 	public function revoke($id_val) {
+		$this->guardRecord('api_keys', safe_decode($id_val));
 		$this->Apikey_model->setStatus(safe_decode($id_val), 2);
 		$this->session->set_flashdata('admin_success', 'API key revoked.');
 		redirect('whmazadmin/apikey/index');
 	}
 
 	public function activate($id_val) {
+		$this->guardRecord('api_keys', safe_decode($id_val));
 		$this->Apikey_model->setStatus(safe_decode($id_val), 1);
 		$this->session->set_flashdata('admin_success', 'API key re-activated.');
 		redirect('whmazadmin/apikey/index');
@@ -131,6 +143,7 @@ class Apikey extends WHMAZADMIN_Controller {
 
 	public function delete_records($id_val) {
 		$id = safe_decode($id_val);
+		$this->guardRecord('api_keys', $id);
 		$this->Apikey_model->saveData(array(
 			'id'         => $id,
 			'status'     => 0,

@@ -587,6 +587,7 @@ class Install
             'ticket_depts',
             // --- Reseller / API ---
             'reseller_profiles', 'api_keys', 'api_request_logs',
+            'company_transfers',
             // --- Logs, history & queues ---
             'provisioning_logs', 'webhook_logs', 'cron_jobs',
             'admin_logins', 'user_logins', 'login_attempts', 'password_resets',

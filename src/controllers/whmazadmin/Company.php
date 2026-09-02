@@ -64,6 +64,11 @@ class Company extends WHMAZADMIN_Controller {
 				);
 
 				if( strlen($form_data['id']) > 0 ){
+					// SECURITY: the id comes from a POST field, so guard it —
+					// otherwise a reseller can overwrite any tenant's customer
+					// record by editing the hidden input.
+					$this->guardCompany($form_data['id']);
+
 					$oldEntity = $this->Company_model->getDetail(safe_decode($id_val));
 					$form_data['updated_on'] = getDateTime();
 					$form_data['updated_by'] = getAdminId();
@@ -73,6 +78,15 @@ class Company extends WHMAZADMIN_Controller {
 				} else {
 					$form_data['inserted_on'] = getDateTime();
 					$form_data['inserted_by'] = getAdminId();
+
+					// A customer created by a reseller belongs to that reseller.
+					// Without this the new company lands with parent_company_id = 0
+					// (platform-direct) and immediately falls outside its own
+					// creator's scope — invisible the moment the page reloads.
+					if( isResellerAdmin() ){
+						$form_data['parent_company_id'] = adminCompanyId();
+						$form_data['is_reseller']       = 0;   // req. 6: no sub-resellers
+					}
 				}
 
 				$resp = $this->Company_model->saveData($form_data);
@@ -115,6 +129,9 @@ class Company extends WHMAZADMIN_Controller {
 		}
 
 		if( !empty($id_val) ){
+			// SECURITY: guard the edit form itself, not just the save — the
+			// form renders the customer's full contact record.
+			$this->guardCompany(safe_decode($id_val));
 			$data['detail'] = $this->Company_model->getDetail(safe_decode($id_val));
 		} else {
 			$data['detail'] = array();
@@ -127,6 +144,11 @@ class Company extends WHMAZADMIN_Controller {
 
 	public function delete_records($id_val)
 	{
+		// SECURITY: a customer's own id IS the scope key here (companies.id),
+		// so guard before loading. Without it a reseller could soft-delete any
+		// tenant's customer by id.
+		$this->guardCompany(safe_decode($id_val));
+
 		$entity = $this->Company_model->getDetail(safe_decode($id_val));
 		$entity["status"] = 0;
 		$entity["deleted_on"] = getDateTime();
@@ -136,6 +158,38 @@ class Company extends WHMAZADMIN_Controller {
 		$this->session->set_flashdata('admin_success', 'Customer has been deleted successfully.');
 
 		redirect('whmazadmin/company/index');
+	}
+
+	/**
+	 * Transfer a customer between resellers (v2.0.0 req. 9).
+	 *
+	 * POST: company_id, reseller_company_id (0 = back to platform-direct), notes
+	 *
+	 * PLATFORM ADMINS ONLY. A reseller must not be able to pull another
+	 * tenant's customer into their own scope — which is exactly what this
+	 * endpoint would let them do, since it rewrites parent_company_id.
+	 * RequestGuard allows the `company` controller for resellers, so the
+	 * restriction has to be stated here.
+	 */
+	public function transfer_reseller()
+	{
+		header('Content-Type: application/json');
+
+		if (isResellerAdmin()) {
+			tenant_deny('Only platform staff can transfer customers between resellers.');
+		}
+
+		$companyId  = intval($this->input->post('company_id'));
+		$resellerId = intval($this->input->post('reseller_company_id'));
+		$notes      = (string) $this->input->post('notes');
+
+		if ($companyId <= 0) {
+			echo json_encode(array('success' => false, 'message' => 'Customer is required'));
+			return;
+		}
+
+		$result = $this->Company_model->transferToReseller($companyId, $resellerId, $notes);
+		echo json_encode($result);
 	}
 
 	public function ssp_list_api()
@@ -198,6 +252,18 @@ class Company extends WHMAZADMIN_Controller {
 			$params = $this->input->get();
 			$companyId = !empty($tmpCompanyId) ? safe_decode($tmpCompanyId) : 0;
 
+			// SECURITY: defence in depth. ssp_tenant_scope() inside
+			// ssp_sql_query() already restricts the rows, so an out-of-scope id
+			// would simply return nothing — but refuse outright so probing for
+			// other tenants' company ids is a 403 rather than a silent empty
+			// list. The injection below is a convenience filter, NOT a security
+			// boundary: it writes into columns[i][search][value], which
+			// ssp_filter() reads straight from the query string and the client
+			// can overwrite at will.
+			if ($companyId > 0) {
+				$this->guardCompany($companyId);
+			}
+
 			// Inject company_id filter
 			if ($companyId > 0) {
 				for ($i = 0; $i < count($params["columns"]); $i++) {
@@ -252,6 +318,18 @@ class Company extends WHMAZADMIN_Controller {
 		try {
 			$params = $this->input->get();
 			$companyId = !empty($tmpCompanyId) ? safe_decode($tmpCompanyId) : 0;
+
+			// SECURITY: defence in depth. ssp_tenant_scope() inside
+			// ssp_sql_query() already restricts the rows, so an out-of-scope id
+			// would simply return nothing — but refuse outright so probing for
+			// other tenants' company ids is a 403 rather than a silent empty
+			// list. The injection below is a convenience filter, NOT a security
+			// boundary: it writes into columns[i][search][value], which
+			// ssp_filter() reads straight from the query string and the client
+			// can overwrite at will.
+			if ($companyId > 0) {
+				$this->guardCompany($companyId);
+			}
 
 			// Inject company_id filter
 			if ($companyId > 0) {
@@ -310,6 +388,13 @@ class Company extends WHMAZADMIN_Controller {
 			exit;
 		}
 
+		// SECURITY: guard BOTH ids. getServiceDetail() matches the service to
+		// the company, so guarding the company alone would be enough today —
+		// but guarding the service too keeps this correct if that model method
+		// ever loosens.
+		$this->guardCompany($companyId);
+		$this->guardRecord('order_services', $serviceId);
+
 		try {
 			$service = $this->Company_model->getServiceDetail($serviceId, $companyId);
 
@@ -339,6 +424,12 @@ class Company extends WHMAZADMIN_Controller {
 			echo json_encode(array('success' => false, 'message' => 'Invalid service ID'));
 			exit;
 		}
+
+		// SECURITY: the RequestGuard hook lets resellers into this controller,
+		// but it cannot know whose service $serviceId names. Without this a
+		// reseller could suspend or TERMINATE another tenant's hosting account
+		// just by guessing an integer. Never returns if out of scope.
+		$this->guardRecord('order_services', $serviceId);
 
 		$cpUsername = $this->input->post('cp_username');
 		$status = $this->input->post('status');
@@ -391,6 +482,12 @@ class Company extends WHMAZADMIN_Controller {
 			echo json_encode(array('success' => false, 'message' => 'Invalid service ID'));
 			exit;
 		}
+
+		// SECURITY: the RequestGuard hook lets resellers into this controller,
+		// but it cannot know whose service $serviceId names. Without this a
+		// reseller could suspend or TERMINATE another tenant's hosting account
+		// just by guessing an integer. Never returns if out of scope.
+		$this->guardRecord('order_services', $serviceId);
 
 		$cpUsername = $this->input->post('cp_username');
 
@@ -501,6 +598,12 @@ class Company extends WHMAZADMIN_Controller {
 			exit;
 		}
 
+		// SECURITY: the RequestGuard hook lets resellers into this controller,
+		// but it cannot know whose service $serviceId names. Without this a
+		// reseller could suspend or TERMINATE another tenant's hosting account
+		// just by guessing an integer. Never returns if out of scope.
+		$this->guardRecord('order_services', $serviceId);
+
 		try {
 			// Get service details
 			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
@@ -583,6 +686,12 @@ class Company extends WHMAZADMIN_Controller {
 			exit;
 		}
 
+		// SECURITY: the RequestGuard hook lets resellers into this controller,
+		// but it cannot know whose service $serviceId names. Without this a
+		// reseller could suspend or TERMINATE another tenant's hosting account
+		// just by guessing an integer. Never returns if out of scope.
+		$this->guardRecord('order_services', $serviceId);
+
 		try {
 			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
 
@@ -638,6 +747,12 @@ class Company extends WHMAZADMIN_Controller {
 			exit;
 		}
 
+		// SECURITY: the RequestGuard hook lets resellers into this controller,
+		// but it cannot know whose service $serviceId names. Without this a
+		// reseller could suspend or TERMINATE another tenant's hosting account
+		// just by guessing an integer. Never returns if out of scope.
+		$this->guardRecord('order_services', $serviceId);
+
 		try {
 			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);
 
@@ -692,6 +807,12 @@ class Company extends WHMAZADMIN_Controller {
 			echo json_encode(array('success' => false, 'message' => 'Invalid service ID'));
 			exit;
 		}
+
+		// SECURITY: the RequestGuard hook lets resellers into this controller,
+		// but it cannot know whose service $serviceId names. Without this a
+		// reseller could suspend or TERMINATE another tenant's hosting account
+		// just by guessing an integer. Never returns if out of scope.
+		$this->guardRecord('order_services', $serviceId);
 
 		try {
 			$service = $this->Company_model->getServiceDetailForCpanel($serviceId);

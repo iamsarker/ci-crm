@@ -96,6 +96,10 @@ class Ticket extends WHMAZADMIN_Controller {
 
 	public function viewticket($tid)
 	{
+            // SECURITY: ticket id comes from the URL — guard before rendering
+            // the thread, which contains the customer's correspondence.
+            $this->guardRecord('tickets', $tid);
+
             $data['ticket'] = $this->Support_model->getTicketDetail($tid);
             $data['replies'] = $this->Support_model->viewTicketReplies($tid);
             $data['tid'] = $tid;
@@ -115,6 +119,9 @@ class Ticket extends WHMAZADMIN_Controller {
 			redirect("whmazadmin/ticket/viewticket/" . $tid);
 			return;
 		}
+
+		// SECURITY: attachments are customer-uploaded files on the ticket.
+		$this->guardRecord('tickets', $tid);
 
 		// Validate ticket exists
 		$ticket = $this->Support_model->getTicketDetail($tid);
@@ -164,6 +171,9 @@ class Ticket extends WHMAZADMIN_Controller {
         
 	public function likereplies($tid, $trid, $val)
 	{
+            // SECURITY: writes a rating onto a reply of ticket $tid.
+            $this->guardRecord('tickets', $tid);
+
             $tdata = array();
             $tdata['updated_by'] = getCustomerId();
             $tdata['rating'] = floatval($val);
@@ -179,6 +189,10 @@ class Ticket extends WHMAZADMIN_Controller {
 	}
         
         public function replyticket($ticket_id){
+
+			// SECURITY: posting into another tenant's ticket also emails their
+			// customer, so this leaks outward as well as inward.
+			$this->guardRecord('tickets', $ticket_id);
 
 			$ticketDetail = $this->Support_model->getTicketDetail($ticket_id);
 

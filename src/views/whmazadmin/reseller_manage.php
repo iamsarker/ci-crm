@@ -68,6 +68,45 @@
 							</div>
 						</div>
 
+						<!-- Admin Login -->
+						<div class="company-form-section">
+							<div class="section-title"><i class="fa fa-user-shield"></i> Reseller Admin Login</div>
+							<p class="text-muted mb-3">
+								A reseller signs in through the <strong>admin login page</strong>, not the client portal,
+								and sees only its own customers, orders, invoices and tickets.
+								<?php if (!empty($detail['id'])): ?>
+									Leave the password blank to keep the current one.
+								<?php else: ?>
+									Leave the password blank and one will be generated and shown once.
+								<?php endif; ?>
+							</p>
+							<div class="row">
+								<div class="col-md-4">
+									<div class="form-group">
+										<label class="form-label" for="admin_username"><i class="fa fa-user"></i> Username</label>
+										<input name="admin_username" type="text" class="form-control" id="admin_username" autocomplete="off"
+											placeholder="Defaults to the email address"
+											value="<?= htmlspecialchars($adminLogin['username'] ?? '', ENT_QUOTES, 'UTF-8') ?>" />
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<label class="form-label" for="admin_email"><i class="fa fa-envelope"></i> Login Email</label>
+										<input name="admin_email" type="email" class="form-control" id="admin_email" autocomplete="off"
+											placeholder="Defaults to the company email"
+											value="<?= htmlspecialchars($adminLogin['email'] ?? '', ENT_QUOTES, 'UTF-8') ?>" />
+									</div>
+								</div>
+								<div class="col-md-4">
+									<div class="form-group">
+										<label class="form-label" for="admin_password"><i class="fa fa-key"></i> Password</label>
+										<input name="admin_password" type="password" class="form-control" id="admin_password" autocomplete="new-password"
+											placeholder="<?= !empty($adminLogin['id']) ? 'Leave blank to keep current' : 'Leave blank to auto-generate' ?>" />
+									</div>
+								</div>
+							</div>
+						</div>
+
 						<!-- Pricing -->
 						<div class="company-form-section">
 							<div class="section-title"><i class="fa fa-percentage"></i> Reseller Pricing</div>

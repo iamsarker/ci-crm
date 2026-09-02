@@ -200,6 +200,12 @@
 		<!-- Chart & Domain Pricing Row -->
 		<div class="row row-xs">
 			<!-- Expenses Chart -->
+			<?php /* SECURITY: `expenses` is the platform operator's own P&L.
+			         It has no company_id and no reseller-scoped meaning, so the
+			         widget is removed for resellers rather than filtered — a
+			         permanently empty chart just invites a support ticket.
+			         Dashboard::expenses_chart_api() refuses it server-side too. */ ?>
+			<?php if (!isResellerAdmin()): ?>
 			<div class="col-sm-12 col-md-8 col-xl-8 mb-3" ng-init="getExpensesChart()">
 				<div class="card dashboard-card chart-card ht-100p">
 					<div class="card-header d-flex align-items-center justify-content-between">
@@ -234,8 +240,14 @@
 					</div>
 				</div>
 			</div>
+			<?php endif; ?>
 
 			<!-- Domain Pricing -->
+			<?php /* SECURITY: this lists the PLATFORM's wholesale TLD prices —
+			         i.e. our margin. A reseller should see their own cost here
+			         instead; until the pricing resolver lands, show nothing.
+			         The footer link also points at a controller they cannot open. */ ?>
+			<?php if (!isResellerAdmin()): ?>
 			<div class="col-sm-12 col-md-4 col-xl-4 mb-3" ng-init="getDomainPrices()">
 				<div class="card dashboard-card ht-100p">
 					<div class="card-header d-flex align-items-center justify-content-between">
@@ -281,6 +293,7 @@
 					</div>
 				</div>
 			</div>
+			<?php endif; ?>
 		</div>
 
 

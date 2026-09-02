@@ -33,13 +33,25 @@ class Cancellation extends WHMAZADMIN_Controller
             return $stats;
         }
 
-        $stats['total'] = $this->db->count_all('domain_cancellation_requests');
-        $this->db->where('status', 0);
-        $stats['pending'] = $this->db->count_all_results('domain_cancellation_requests');
-        $this->db->where('status', 1);
-        $stats['processed'] = $this->db->count_all_results('domain_cancellation_requests');
-        $this->db->where('status', 2);
-        $stats['dismissed'] = $this->db->count_all_results('domain_cancellation_requests');
+        // SECURITY: shown on the reseller's own page, so must not aggregate
+        // other tenants' cancellation requests.
+        $scope = adminScopeSql('dcr.company_id');
+        $scopeWhere = ($scope !== '') ? " AND " . $scope : '';
+
+        $row = $this->db->query(
+            "SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN dcr.status = 0 THEN 1 ELSE 0 END) AS pending,
+                SUM(CASE WHEN dcr.status = 1 THEN 1 ELSE 0 END) AS processed,
+                SUM(CASE WHEN dcr.status = 2 THEN 1 ELSE 0 END) AS dismissed
+             FROM domain_cancellation_requests dcr
+             WHERE 1=1 {$scopeWhere}"
+        )->row_array();
+
+        $stats['total']     = intval($row['total'] ?? 0);
+        $stats['pending']   = intval($row['pending'] ?? 0);
+        $stats['processed'] = intval($row['processed'] ?? 0);
+        $stats['dismissed'] = intval($row['dismissed'] ?? 0);
 
         return $stats;
     }
@@ -63,6 +75,12 @@ class Cancellation extends WHMAZADMIN_Controller
             $params = $this->input->get();
             $bindings = array();
             $where = "WHERE 1=1";
+
+            // SECURITY: reseller tenant scope.
+            $tenantScope = adminScopeSql('dcr.company_id');
+            if ($tenantScope !== '') {
+                $where .= " AND " . $tenantScope;
+            }
 
             if (isset($params['status']) && $params['status'] !== '') {
                 $where .= " AND dcr.status = ?";
@@ -104,7 +122,15 @@ class Cancellation extends WHMAZADMIN_Controller
 
             $data = $this->db->query($sql, $bindings)->result_array();
 
-            $totalRecords = $this->db->count_all('domain_cancellation_requests');
+            // SECURITY: count_all() ignores $where, so the unfiltered total has
+            // to be scoped separately or it reports a platform-wide figure.
+            if ($tenantScope !== '') {
+                $totalRecords = (int) $this->db->query(
+                    "SELECT COUNT(*) as cnt FROM domain_cancellation_requests dcr WHERE " . $tenantScope
+                )->row()->cnt;
+            } else {
+                $totalRecords = $this->db->count_all('domain_cancellation_requests');
+            }
 
             $countSql = "SELECT COUNT(*) as cnt
                          FROM domain_cancellation_requests dcr
@@ -156,6 +182,10 @@ class Cancellation extends WHMAZADMIN_Controller
             echo json_encode(array('success' => false, 'message' => 'This request has already been handled'));
             return;
         }
+
+        // SECURITY: the request id comes from the client. process() cancels a
+        // live domain at the registrar, so guard before acting.
+        $this->guardCompany($req['company_id']);
 
         $reasonSuffix = $note !== '' ? (': ' . $note) : (!empty($req['reason']) ? (': ' . $req['reason']) : '');
         $reason = 'Customer cancellation request' . $reasonSuffix;
@@ -213,6 +243,10 @@ class Cancellation extends WHMAZADMIN_Controller
             echo json_encode(array('success' => false, 'message' => 'This request has already been handled'));
             return;
         }
+
+        // SECURITY: the request id comes from the client. process() cancels a
+        // live domain at the registrar, so guard before acting.
+        $this->guardCompany($req['company_id']);
 
         $this->db->query(
             "UPDATE domain_cancellation_requests SET status = 2, admin_note = ?, processed_on = ?, processed_by = ? WHERE id = ?",

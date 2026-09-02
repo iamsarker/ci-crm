@@ -37,8 +37,18 @@ class Reseller_model extends CI_Model {
 		return !empty($data) ? $data[0] : array();
 	}
 
+	/**
+	 * Profile for a company, INCLUDING soft-deleted ones (status = 0).
+	 *
+	 * ⚠️ Deliberately not filtered on status. delete_records() soft-deletes the
+	 * row but keeps it, and `uniq_reseller_company` is a real UNIQUE index — so
+	 * a status-filtered lookup finds nothing, manage() takes the INSERT branch,
+	 * and re-adding a previously removed reseller dies on a duplicate key.
+	 * Callers that need "is this an ACTIVE reseller" must check status
+	 * themselves; manage() reactivates instead of inserting.
+	 */
 	function getByCompany($companyId) {
-		$sql = "SELECT * FROM {$this->table} WHERE company_id = ? AND status = 1";
+		$sql = "SELECT * FROM {$this->table} WHERE company_id = ?";
 		$data = $this->db->query($sql, array(intval($companyId)))->result_array();
 		return !empty($data) ? $data[0] : array();
 	}
@@ -185,5 +195,57 @@ class Reseller_model extends CI_Model {
 	function getCurrencies() {
 		$sql = "SELECT id, code AS currency_code, symbol AS currency_name FROM currencies WHERE status = 1 ORDER BY code";
 		return $this->db->query($sql)->result_array();
+	}
+
+	// ─── Reseller admin login (v2.0.0) ───────────────────────
+	//
+	// A reseller signs in through the ADMIN login page, so it needs an
+	// `admin_users` row bound to its company via admin_type=1 + company_id.
+	// That binding is what every tenant scope check reads.
+
+	/** The reseller admin row for a company, whatever its status. */
+	function getAdminUser($companyId) {
+		$sql = "SELECT * FROM admin_users WHERE admin_type = 1 AND company_id = ? ORDER BY id ASC LIMIT 1";
+		$data = $this->db->query($sql, array(intval($companyId)))->result_array();
+		return !empty($data) ? $data[0] : array();
+	}
+
+	/**
+	 * Is this username/email already taken by a DIFFERENT admin?
+	 * admin_users.username and .email are TEXT columns with no unique index, so
+	 * uniqueness has to be enforced here or two admins can share a login and
+	 * doLogin()'s `(username = ? or email = ?)` picks whichever sorts first.
+	 */
+	function adminLoginExists($username, $email, $excludeId = 0) {
+		$sql = "SELECT id FROM admin_users
+				WHERE (username = ? OR email = ?) AND id <> ? LIMIT 1";
+		$data = $this->db->query($sql, array($username, $email, intval($excludeId)))->result_array();
+		return !empty($data);
+	}
+
+	/** Insert or update a reseller's admin login. Returns the admin_users.id. */
+	function saveAdminUser($data) {
+		if (!empty($data['id']) && intval($data['id']) > 0) {
+			$id = intval($data['id']);
+			unset($data['id']);
+			$this->db->where('id', $id);
+			$this->db->update('admin_users', $data);
+			return $id;
+		}
+		$this->db->insert('admin_users', $data);
+		return $this->db->insert_id();
+	}
+
+	/**
+	 * Activate / deactivate every admin login belonging to a reseller.
+	 * Paired with WHMAZADMIN_Controller::isLogin(), which re-checks liveness on
+	 * each request, this is what makes "deactivate reseller" take effect
+	 * immediately rather than whenever the session happens to expire.
+	 */
+	function setAdminUsersStatus($companyId, $status) {
+		$this->db->query(
+			"UPDATE admin_users SET status = ?, updated_on = ? WHERE admin_type = 1 AND company_id = ?",
+			array(intval($status), getDateTime(), intval($companyId))
+		);
 	}
 }

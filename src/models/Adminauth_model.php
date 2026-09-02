@@ -33,7 +33,7 @@ class Adminauth_model extends CI_Model{
 		}
 
 		// SECURITY FIX: Use prepared statement to prevent SQL injection in admin login
-		$sql = "SELECT id, admin_role_id, first_name, last_name, username, password, email, mobile, phone, designation, signature, support_depts, profile_pic FROM admin_users WHERE (username = ? or email = ?) and status = 1";
+		$sql = "SELECT id, admin_role_id, admin_type, company_id, first_name, last_name, username, password, email, mobile, phone, designation, signature, support_depts, profile_pic FROM admin_users WHERE (username = ? or email = ?) and status = 1";
 		$query = $this->db->query($sql, array($email, $email));
 		if ($query->num_rows() == 0){
 			// SECURITY: Record failed attempt
@@ -50,6 +50,11 @@ class Adminauth_model extends CI_Model{
 
 			$resp = array();
 			$resp['id'] = $userdata->id;
+			// Tenancy. These MUST reach the session — admin_role_id is selected
+			// above and never copied here, which is exactly why it has always
+			// been dead. Everything in tenant_helper.php reads these two keys.
+			$resp['admin_type'] = (int) $userdata->admin_type;   // 0=platform, 1=reseller
+			$resp['company_id'] = (int) $userdata->company_id;   // reseller's companies.id; 0 for platform
 			$resp['first_name'] = $userdata->first_name;
 			$resp['last_name'] = $userdata->last_name;
 			$resp['email'] = $userdata->email;

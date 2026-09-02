@@ -8,13 +8,22 @@ class Dashboard_model extends CI_Model{
 
 	function loadSummaryData() {
 
-		$sql = "SELECT COUNT(id) cnt FROM companies WHERE status=1 UNION ALL
-				SELECT COUNT(id) cnt FROM orders WHERE status=1 UNION ALL 
-				SELECT COUNT(id) cnt FROM tickets WHERE status=1 UNION ALL 
-				SELECT COUNT(id) cnt FROM invoices WHERE status=1 ";
+		// SECURITY: these four counts head the admin dashboard. Unscoped they
+		// are platform-wide totals, so a reseller would see how many customers,
+		// orders, tickets and invoices every other tenant has.
+		// Note `companies` is keyed on `id`; the other three on `company_id`.
+		$byId      = adminScopeSql('id');
+		$byCompany = adminScopeSql('company_id');
+		$scopeId   = ($byId      !== '') ? " AND {$byId}"      : '';
+		$scopeCo   = ($byCompany !== '') ? " AND {$byCompany}" : '';
+
+		$sql = "SELECT COUNT(id) cnt FROM companies WHERE status=1 {$scopeId} UNION ALL
+				SELECT COUNT(id) cnt FROM orders WHERE status=1 {$scopeCo} UNION ALL
+				SELECT COUNT(id) cnt FROM tickets WHERE status=1 {$scopeCo} UNION ALL
+				SELECT COUNT(id) cnt FROM invoices WHERE status=1 {$scopeCo} ";
 
 		$data = $this->db->query($sql)->result_array();
-		
+
 		return $data;
  	}
 

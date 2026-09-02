@@ -17,6 +17,11 @@ class Billing_model extends CI_Model{
 			$bindings[] = intval($companyId);
 		}
 
+		// SECURITY: the admin dashboard widget calls this with companyId = -1
+		// ("all invoices"). No-op outside a reseller admin session.
+		$scope = adminScopeSql('company_id');
+		if ($scope !== '') { $sql .= " AND " . $scope; }
+
 		$sql .= " ORDER BY updated_on DESC ";
 
 		if (is_numeric($limit) && $limit > 0) {

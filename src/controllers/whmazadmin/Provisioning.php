@@ -46,20 +46,29 @@ class Provisioning extends WHMAZADMIN_Controller
             return $stats;
         }
 
-        // Total logs
-        $stats['total'] = $this->db->count_all_results('provisioning_logs');
+        // SECURITY: these four counts are rendered on the reseller's own
+        // provisioning page, so they must not aggregate other tenants.
+        // provisioning_logs carries no company_id — ownership comes from the
+        // joined invoice, exactly as in logs_list_api().
+        $scope = adminScopeSql('inv.company_id');
+        $scopeWhere = ($scope !== '') ? " AND " . $scope : '';
 
-        // Success count
-        $this->db->where('success', 1);
-        $stats['success'] = $this->db->count_all_results('provisioning_logs');
+        $row = $this->db->query(
+            "SELECT
+                COUNT(*) AS total,
+                SUM(CASE WHEN pl.success = 1 THEN 1 ELSE 0 END) AS success,
+                SUM(CASE WHEN pl.success = 0 THEN 1 ELSE 0 END) AS failed,
+                SUM(CASE WHEN DATE(pl.inserted_on) = ? THEN 1 ELSE 0 END) AS today
+             FROM provisioning_logs pl
+             LEFT JOIN invoices inv ON pl.invoice_id = inv.id
+             WHERE 1=1 {$scopeWhere}",
+            array(date('Y-m-d'))
+        )->row_array();
 
-        // Failed count
-        $this->db->where('success', 0);
-        $stats['failed'] = $this->db->count_all_results('provisioning_logs');
-
-        // Today's count
-        $this->db->where('DATE(inserted_on)', date('Y-m-d'));
-        $stats['today'] = $this->db->count_all_results('provisioning_logs');
+        $stats['total']   = intval($row['total'] ?? 0);
+        $stats['success'] = intval($row['success'] ?? 0);
+        $stats['failed']  = intval($row['failed'] ?? 0);
+        $stats['today']   = intval($row['today'] ?? 0);
 
         return $stats;
     }
@@ -89,6 +98,15 @@ class Provisioning extends WHMAZADMIN_Controller
             // Build query
             $bindings = array();
             $where = "WHERE 1=1";
+
+            // SECURITY: reseller tenant scope. provisioning_logs has no
+            // company_id of its own, so ownership comes from the joined
+            // invoice. Rows with no invoice_id are therefore invisible to a
+            // reseller — correct, since ownership cannot be established.
+            $tenantScope = adminScopeSql('inv.company_id');
+            if ($tenantScope !== '') {
+                $where .= " AND " . $tenantScope;
+            }
 
             // Filter by success status
             if (isset($params['success']) && $params['success'] !== '') {
@@ -162,7 +180,19 @@ class Provisioning extends WHMAZADMIN_Controller
             $data = $this->db->query($sql, $bindings)->result_array();
 
             // Count total records
-            $totalRecords = $this->db->count_all('provisioning_logs');
+            // SECURITY: count_all() ignores $where entirely, so a reseller's
+            // filtered rows would have been reported against a platform-wide
+            // total. Use the same join when scoped.
+            if ($tenantScope !== '') {
+                $totalRecords = (int) $this->db->query(
+                    "SELECT COUNT(*) as cnt
+                       FROM provisioning_logs pl
+                       LEFT JOIN invoices inv ON pl.invoice_id = inv.id
+                      WHERE " . $tenantScope
+                )->row()->cnt;
+            } else {
+                $totalRecords = $this->db->count_all('provisioning_logs');
+            }
 
             // Count filtered records
             $countSql = "SELECT COUNT(*) as cnt
@@ -194,6 +224,11 @@ class Provisioning extends WHMAZADMIN_Controller
     public function log_detail($id)
     {
         header('Content-Type: application/json');
+
+        // SECURITY: provisioning_logs has no company_id — ownership comes from
+        // the invoice it references. The detail modal shows the raw registrar /
+        // control-panel API response, so this must not cross tenants.
+        $this->guardProvisioningLog($id);
 
         $sql = "SELECT pl.*,
                        inv.invoice_no,
@@ -249,6 +284,10 @@ class Provisioning extends WHMAZADMIN_Controller
             return;
         }
 
+        // SECURITY: re-runs provisioning — registers domains and creates
+        // hosting accounts, i.e. spends real money at the registrar.
+        $this->guardCompany($invoice->company_id);
+
         // Run provisioning
         $results = $this->Invoice_model->retryProvisioning($invoiceId);
 
@@ -289,6 +328,9 @@ class Provisioning extends WHMAZADMIN_Controller
             echo json_encode(array('success' => false, 'message' => 'Log not found'));
             return;
         }
+
+        // SECURITY: same registrar/control-panel spend as retry(), per item.
+        $this->guardProvisioningLog($logId);
 
         // Get the invoice item
         $invoiceItem = $this->db->where('id', $log['invoice_item_id'])->get('invoice_items')->row_array();
@@ -345,6 +387,32 @@ class Provisioning extends WHMAZADMIN_Controller
     /**
      * Get failed provisioning count (for dashboard widget)
      */
+    /**
+     * Guard a provisioning_logs row by the company on its invoice.
+     *
+     * provisioning_logs carries invoice_id but no company_id, so ownership has
+     * to be resolved one hop away. A log with no resolvable invoice is refused
+     * for resellers rather than allowed.
+     */
+    private function guardProvisioningLog($logId)
+    {
+        if (!isResellerAdmin()) return;
+
+        $row = $this->db->query(
+            "SELECT inv.company_id
+               FROM provisioning_logs pl
+               LEFT JOIN invoices inv ON pl.invoice_id = inv.id
+              WHERE pl.id = ? LIMIT 1",
+            array((int) $logId)
+        )->row_array();
+
+        if (empty($row) || $row['company_id'] === null) {
+            tenant_deny('That record does not belong to your account.');
+        }
+
+        $this->guardCompany($row['company_id']);
+    }
+
     public function failed_count_api()
     {
         header('Content-Type: application/json');

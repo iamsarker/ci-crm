@@ -61,6 +61,12 @@ class Order_model extends CI_Model{
 			$this->db->where('company_id', intval($companyId));
 		}
 
+		// SECURITY: the admin dashboard widget calls this with companyId = -1
+		// ("all orders"). Without this, a reseller's "recent orders" panel would
+		// list every tenant's orders. No-op outside an admin session.
+		$scope = adminScopeSql('company_id');
+		if ($scope !== '') { $this->db->where($scope, null, false); }
+
 		$this->db->order_by('id', 'DESC');
 
 		if( is_numeric($limit) && $limit > 0 ){
@@ -191,7 +197,12 @@ class Order_model extends CI_Model{
 	}
 
 	function countDataTableTotalRecords() {
-		$query = $this->db->query("select count(id) as cnt from order_view where status=1");
+		// SECURITY: this bypasses the $where that ssp_sql_query() scopes, so the
+		// tenant restriction has to be applied here too — otherwise a reseller's
+		// list shows their own rows above a platform-wide total.
+		$scope = adminScopeSql('company_id');
+		$scope = ($scope !== '') ? " AND {$scope}" : '';
+		$query = $this->db->query("select count(id) as cnt from order_view where status=1 {$scope}");
 		$data = $query->result_array();
 		return !empty($data) ? $data[0]['cnt'] : 0;
 	}
@@ -208,6 +219,12 @@ class Order_model extends CI_Model{
 	 * @return array Stats including total, active, this month counts and total revenue
 	 */
 	function getOrderStats() {
+		// SECURITY: total_revenue here is the PLATFORM's revenue. This block is
+		// returned in the "stats" key of the same DataTables JSON that carries
+		// the (correctly scoped) rows, so without this clause a reseller sees
+		// every tenant's revenue in a payload nobody thinks to inspect.
+		$scope = adminScopeSql('company_id');
+		$scope = ($scope !== '') ? " AND {$scope}" : '';
 		$query = $this->db->query("
 			SELECT
 				COUNT(*) as total_orders,
@@ -215,7 +232,7 @@ class Order_model extends CI_Model{
 				SUM(CASE WHEN YEAR(order_date) = YEAR(CURDATE()) AND MONTH(order_date) = MONTH(CURDATE()) THEN 1 ELSE 0 END) as this_month_orders,
 				COALESCE(SUM(total_amount), 0) as total_revenue
 			FROM orders
-			WHERE status = 1
+			WHERE status = 1 {$scope}
 		");
 		$data = $query->row_array();
 		return array(

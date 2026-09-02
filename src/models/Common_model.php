@@ -36,6 +36,19 @@ class Common_model extends CI_Model {
 			$this->db->from($table);
 			$this->db->order_by($id, 'DESC');
 			$this->db->where("status", 1);
+
+			// SECURITY: reseller tenant scope for company pickers. Applied here
+			// rather than at each call site so every dropdown built from
+			// `companies` is covered — notably the customer selector on
+			// whmazadmin/order/new_order, which otherwise lists every tenant's
+			// customers AND lets a reseller raise an order against one of them.
+			if ($table === 'companies') {
+				$scope = adminScopeSql('id');
+				if ($scope !== '') {
+					$this->db->where($scope, null, false);
+				}
+			}
+
 			$query = $this->db->get();
 
 			foreach ($query->result_array() AS $rows) {

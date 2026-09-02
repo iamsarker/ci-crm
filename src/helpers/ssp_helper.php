@@ -82,6 +82,48 @@
 		return $where;
 	}
 
+	/**
+	 * Reseller tenant restriction for a DataTable source table.
+	 *
+	 * Returns '' for platform staff (no restriction). For a reseller admin it
+	 * returns a `col IN (ids)` fragment, or ' 1 = 0 ' for any table not in the
+	 * map below.
+	 *
+	 * ⚠️ Unmapped tables deny rather than allow. A reseller should never reach
+	 * an unmapped table — RequestGuard blocks those controllers — so arriving
+	 * here means a capability was granted without a scope rule. Returning an
+	 * empty result set is a loud, safe, debuggable failure; returning
+	 * everything would be a silent cross-tenant leak.
+	 *
+	 * All 16 ssp_sql_query() call sites live in src/controllers/whmazadmin/, so
+	 * this never touches the customer portal.
+	 */
+	function ssp_tenant_scope ( $table )
+	{
+		if ( ! function_exists('isResellerAdmin') || ! isResellerAdmin() ) return '';
+
+		// table => column naming the owning company
+		$scopeCol = array(
+			'companies'      => 'id',              // the reseller row itself + its sub-customers
+			'order_view'     => 'company_id',
+			'invoice_view'   => 'company_id',
+			'ticket_view'    => 'company_id',
+			'api_key_view'   => 'company_id',
+			'order_services' => 'company_id',
+			'order_domains'  => 'company_id',
+			// Added in later phases, alongside the schema that makes them ownable:
+			// 'promo_codes' => 'company_id',   // Phase 4, needs promo_codes.company_id
+		);
+
+		if ( ! isset($scopeCol[$table]) ) {
+			log_message('error', 'ssp_tenant_scope: no scope rule for table "' . $table
+				. '" reached by reseller admin #' . getAdminId() . ' — denying.');
+			return ' 1 = 0 ';
+		}
+
+		return adminScopeSql('`' . $scopeCol[$table] . '`');
+	}
+
 	function ssp_sql_query ( $request, $table, &$bindings, &$where, $extraWhere = '', $statusCond = " `status` = 1 " )
 	{
 		// Build the SQL query string from the request
@@ -105,6 +147,24 @@
 		// Add extra where conditions (e.g., soft delete filter)
 		if ( $extraWhere !== '' ) {
 			$where .= " AND " . $extraWhere;
+		}
+
+		// SECURITY: reseller tenant scope. Appended last and never merged into
+		// $extraWhere, because callers pass their own (Email_template.php) and
+		// overwriting theirs would drop a soft-delete filter.
+		//
+		// ⚠️ This is the ONLY place tenant scope may be applied to these lists.
+		// Do NOT use the $tmpCompanyId trick in Order.php / Invoice.php: that
+		// injects a filter into $request['columns'][i]['search']['value'], which
+		// ssp_filter() reads straight from the query string, so a reseller can
+		// simply overwrite it in the AJAX URL. It is a convenience filter, not
+		// a security boundary.
+		//
+		// $where is by-reference, so countDataTableFilterRecords($where, ...)
+		// inherits this automatically and the filtered COUNT stays scoped too.
+		$tenantWhere = ssp_tenant_scope( $table );
+		if ( $tenantWhere !== '' ) {
+			$where .= " AND " . $tenantWhere;
 		}
 
 		// Main query to actually get the data

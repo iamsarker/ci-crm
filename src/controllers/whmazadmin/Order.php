@@ -102,6 +102,12 @@ class Order extends WHMAZADMIN_Controller
 					'hosting_exp_date'		=> $this->input->post('hosting_exp_date'),
 				);
 
+				// SECURITY: company_id is a POST field. The picker is scoped by
+				// Common_model::generate_dropdown(), but a reseller can still
+				// post any id by hand — which would raise an order (and later a
+				// wallet debit) against another tenant's customer.
+				$this->guardCompany($form_data['company_id']);
+
 				$order = $this->saveOrderTable($form_data);
 				$savedItemIds = $this->saveOrderItemTable($order, $form_data);
 
@@ -133,7 +139,13 @@ class Order extends WHMAZADMIN_Controller
 		$data['companies'] = $this->Common_model->generate_dropdown('companies', 'id', "name", "first_name", "last_name");
 		$data['currencies'] = $this->Common_model->generate_dropdown('currencies', 'id', "code");
 		$data['billing_cycles'] = $this->Common_model->generate_dropdown('billing_cycle', 'id', "cycle_name");
-		$data['servers'] = $this->Common_model->generate_dropdown('servers', 'id', "name", "hostname");
+		// SECURITY: requirement 8 ("reseller cannot manage servers") is a
+		// disclosure rule as well as a CRUD one — a reseller has no business
+		// knowing the fleet's hostnames. They still need to pick a server so a
+		// package can be resolved, so show the friendly name only.
+		$data['servers'] = isResellerAdmin()
+			? $this->Common_model->generate_dropdown('servers', 'id', "name")
+			: $this->Common_model->generate_dropdown('servers', 'id', "name", "hostname");
 		$data['modules'] = $this->Common_model->generate_dropdown('server_modules', 'id', "module_name");
 		$data['service_groups'] = $this->Common_model->generate_dropdown('product_service_groups', 'id', "group_name");
 		$data['payment_gateways'] = $this->Common_model->generate_dropdown('payment_gateway', 'id', "name");
@@ -508,6 +520,10 @@ class Order extends WHMAZADMIN_Controller
 			redirect('whmazadmin/order/index');
 		}
 
+		// SECURITY: the order id arrives in the URL. Without this a reseller
+		// can open any tenant's order management page by guessing an id.
+		$this->guardRecord('orders', $orderId);
+
 		$data['order'] = $this->Order_model->getOrderWithItems($orderId);
 		if (empty($data['order'])) {
 			$this->session->set_flashdata('admin_error', 'Order not found');
@@ -561,6 +577,10 @@ class Order extends WHMAZADMIN_Controller
 		}
 
 		$orderId = safe_decode($id_val);
+
+		// SECURITY: same exposure as manage(), via AJAX.
+		$this->guardRecord('orders', $orderId);
+
 		$order = $this->Order_model->getOrderWithItems($orderId);
 
 		if (empty($order)) {
@@ -586,6 +606,9 @@ class Order extends WHMAZADMIN_Controller
 			echo json_encode(array('success' => false, 'message' => 'Domain ID and Registrar ID are required'));
 			return;
 		}
+
+		// SECURITY: domain_id is a POST field naming another tenant's row if guessed.
+		$this->guardRecord('order_domains', safe_decode($domainId));
 
 		$result = $this->Order_model->updateDomainRegistrar(safe_decode($domainId), $registrarId);
 
@@ -619,6 +642,9 @@ class Order extends WHMAZADMIN_Controller
 			echo json_encode(array('success' => false, 'message' => 'Service ID is required'));
 			return;
 		}
+
+		// SECURITY: service_id is a POST field naming another tenant's row if guessed.
+		$this->guardRecord('order_services', safe_decode($serviceId));
 
 		// A package without its pricing row leaves recurring_amount and billing_cycle_id
 		// on the old package, so renewal invoices keep billing the old price.
@@ -704,6 +730,9 @@ class Order extends WHMAZADMIN_Controller
 			$cancelType = 'immediate';
 		}
 
+		// SECURITY: cancelling another tenant's domain is irreversible.
+		$this->guardRecord('order_domains', safe_decode($domainId));
+
 		$result = $this->Order_model->cancelDomain(safe_decode($domainId), $cancelType, $reason);
 
 		echo json_encode(array(
@@ -728,6 +757,10 @@ class Order extends WHMAZADMIN_Controller
 			echo json_encode(array('success' => false, 'message' => 'Service ID is required'));
 			return;
 		}
+
+		// SECURITY: irreversible — with delete_cpanel this removes the remote
+		// hosting account, not just the local record.
+		$this->guardRecord('order_services', safe_decode($serviceId));
 
 		if (!in_array($cancelType, array('immediate', 'end_of_period'))) {
 			$cancelType = 'immediate';
@@ -766,6 +799,9 @@ class Order extends WHMAZADMIN_Controller
 			echo json_encode(array('success' => false, 'message' => 'Order ID is required'));
 			return;
 		}
+
+		// SECURITY: cancels every item on the order AND its unpaid invoices.
+		$this->guardRecord('orders', safe_decode($orderId));
 
 		if (!in_array($cancelType, array('immediate', 'end_of_period'))) {
 			$cancelType = 'immediate';

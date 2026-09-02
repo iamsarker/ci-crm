@@ -6,6 +6,48 @@
 
 		<p class="mt-4">&nbsp;</p>
 
+		<?php /* Show-once admin credentials, mirroring company_list.php's
+		         new_user_credentials block. The password is never stored in
+		         plaintext, so this is the only chance to copy it. */ ?>
+		<?php if ($this->session->flashdata('new_reseller_credentials')) {
+			$rc = $this->session->flashdata('new_reseller_credentials');
+		?>
+		<div class="credentials-alert mb-4">
+			<div class="d-flex align-items-center mb-3">
+				<div class="stats-icon warning me-3">
+					<i class="fa fa-key"></i>
+				</div>
+				<div>
+					<div class="alert-title"><i class="fa fa-exclamation-triangle me-1"></i> Reseller Admin Login Created - Save These Credentials!</div>
+					<small class="text-muted">This password is shown once. The reseller signs in at the <strong>admin</strong> login page.</small>
+				</div>
+			</div>
+
+			<div class="credential-item">
+				<span class="credential-label"><i class="fa fa-building me-2"></i>Reseller</span>
+				<span class="credential-value"><?= htmlspecialchars($rc['company'], ENT_QUOTES, 'UTF-8'); ?></span>
+			</div>
+			<div class="credential-item">
+				<span class="credential-label"><i class="fa fa-user me-2"></i>Username</span>
+				<span class="credential-value"><?= htmlspecialchars($rc['username'], ENT_QUOTES, 'UTF-8'); ?></span>
+			</div>
+			<div class="credential-item">
+				<span class="credential-label"><i class="fa fa-envelope me-2"></i>Login Email</span>
+				<span class="credential-value"><?= htmlspecialchars($rc['email'], ENT_QUOTES, 'UTF-8'); ?></span>
+			</div>
+			<div class="credential-item">
+				<span class="credential-label"><i class="fa fa-lock me-2"></i>Temporary Password</span>
+				<div>
+					<span class="password-value"><?= htmlspecialchars($rc['password'], ENT_QUOTES, 'UTF-8'); ?></span>
+				</div>
+			</div>
+			<div class="credential-item">
+				<span class="credential-label"><i class="fa fa-sign-in-alt me-2"></i>Login URL</span>
+				<span class="credential-value"><?=base_url()?>whmazadmin/authenticate/login</span>
+			</div>
+		</div>
+		<?php } ?>
+
 		<!-- Stats Cards -->
 		<div class="row mb-4 mt-4" id="statsRow">
 			<div class="col-xl-3 col-md-6 mb-3">
