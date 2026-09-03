@@ -45,6 +45,29 @@ class Domainpricing_model extends CI_Model{
 		return $return;
 	}
 
+	/**
+	 * The row for one (extension, currency, reg_period), or null.
+	 *
+	 * dom_pricing gained a UNIQUE key on that triple in Phase 2, because
+	 * price_overrides is keyed on dom_pricing.id -- duplicates would carry two
+	 * ids and therefore two independent override sets, and the resolver would
+	 * price from whichever the optimiser happened to return first.
+	 *
+	 * saveData() uses REPLACE INTO, which on a unique-key collision DELETES the
+	 * colliding row and inserts a new one under a different id. That would
+	 * orphan every order_domains.dom_pricing_id and price_overrides.pricing_id
+	 * pointing at the old row. The controller calls this first and refuses,
+	 * rather than letting REPLACE resolve the conflict destructively.
+	 */
+	function findByKey($extensionId, $currencyId, $regPeriod) {
+		$row = $this->db->query(
+			"SELECT id FROM {$this->table}
+			 WHERE dom_extension_id = ? AND currency_id = ? AND reg_period = ? LIMIT 1",
+			array((int) $extensionId, (int) $currencyId, (int) $regPeriod)
+		)->row_array();
+		return !empty($row) ? $row : null;
+	}
+
 	// Get all active domain extensions for dropdown
 	function getAllExtensions() {
 		$sql = "SELECT id, extension FROM dom_extensions WHERE status=1 ORDER BY extension";

@@ -166,12 +166,25 @@
 													if (isset($pricing_matrix[$currency['id']][$cycle['id']])) {
 														$existingPrice = $pricing_matrix[$currency['id']][$cycle['id']];
 													}
+													$existingCost = '';
+													if (isset($cost_matrix[$currency['id']][$cycle['id']])) {
+														$existingCost = $cost_matrix[$currency['id']][$cycle['id']];
+													}
 												?>
 												<input type="number"
 													   name="pricing[<?= intval($currency['id']) ?>][<?= intval($cycle['id']) ?>]"
 													   class="form-control text-end"
 													   value="<?= htmlspecialchars($existingPrice) ?>"
 													   placeholder="0.00"
+													   step="0.01"
+													   min="0">
+												<input type="number"
+													   name="cost[<?= intval($currency['id']) ?>][<?= intval($cycle['id']) ?>]"
+													   class="form-control form-control-sm text-end mt-1"
+													   style="background:#fff8e1;"
+													   value="<?= htmlspecialchars($existingCost) ?>"
+													   placeholder="cost"
+													   title="Reseller cost. Blank = no cost set."
 													   step="0.01"
 													   min="0">
 											</td>
@@ -181,7 +194,13 @@
 									</tbody>
 								</table>
 							</div>
-							<small class="text-muted"><i class="fa fa-info-circle"></i> Leave empty for billing cycles you don't want to offer. Use the <strong>One Time</strong> cycle for a perpetual (non-recurring) license.</small>
+							<small class="text-muted d-block"><i class="fa fa-info-circle"></i> Leave empty for billing cycles you don't want to offer. Use the <strong>One Time</strong> cycle for a perpetual (non-recurring) license.</small>
+							<small class="text-muted d-block mt-1">
+								<span style="display:inline-block;width:12px;height:12px;background:#fff8e1;border:1px solid #ccc;vertical-align:middle;"></span>
+								The shaded field under each price is the <strong>reseller cost</strong> &mdash; what resellers pay you.
+								The price above it is your public retail price and is what direct customers are charged.
+								Blank cost = resellers fall back to the discount on their profile, then to retail.
+							</small>
 							<?php else: ?>
 							<p class="text-muted mb-0">No currencies or billing cycles configured yet.</p>
 							<?php endif; ?>

@@ -7,6 +7,7 @@ class Domain_pricing extends WHMAZADMIN_Controller {
 		parent::__construct();
 		$this->load->model('Domainpricing_model');
 		$this->load->model('Common_model');
+		$this->load->model('Pricing_model');
 		if (!$this->isLogin()) {
 			redirect('/whmazadmin/authenticate/login', 'refresh');
 		}
@@ -81,6 +82,24 @@ class Domain_pricing extends WHMAZADMIN_Controller {
 
 			if ($this->form_validation->run() == true){
 
+				// dom_pricing carries a UNIQUE key on (extension, currency,
+				// reg_period) as of Phase 2, and saveData() uses REPLACE INTO.
+				// On a collision REPLACE would DELETE the existing row and
+				// insert a new one under a different id, orphaning every
+				// order_domains.dom_pricing_id and price_overrides.pricing_id
+				// that pointed at it. Refuse instead.
+				$editingId = intval(safe_decode($this->input->post('id')));
+				$clash = $this->Domainpricing_model->findByKey(
+					$this->input->post('dom_extension_id'),
+					$this->input->post('currency_id'),
+					$this->input->post('reg_period')
+				);
+				if (!empty($clash) && intval($clash['id']) !== $editingId) {
+					$this->session->set_flashdata('admin_error', 'A price for that extension, currency and registration period already exists. Edit that row instead.');
+					redirect('whmazadmin/domain_pricing/index');
+					return;
+				}
+
 				$form_data = array(
 					'id'				=> safe_decode($this->input->post('id')),
 					'dom_extension_id'	=> $this->input->post('dom_extension_id'),
@@ -105,7 +124,42 @@ class Domain_pricing extends WHMAZADMIN_Controller {
 				}
 
 				if($this->Domainpricing_model->saveData($form_data)){
-					$this->session->set_flashdata('admin_success', 'Domain pricing has been saved successfully.');
+
+					// Reseller cost lives in price_overrides, never in
+					// dom_pricing -- that table stays "platform retail" so the
+					// direct-customer price path is provably untouched.
+					// owner_company_id 0 = the default cost every reseller
+					// inherits unless they have a negotiated one.
+					$pricingId = intval($form_data['id']) > 0
+						? intval($form_data['id'])
+						: (int) $this->db->insert_id();
+					if ($pricingId <= 0) {
+						$row = $this->Domainpricing_model->findByKey(
+							$form_data['dom_extension_id'], $form_data['currency_id'], $form_data['reg_period']
+						);
+						$pricingId = !empty($row) ? (int) $row['id'] : 0;
+					}
+
+					$costMsg = '';
+					if ($pricingId > 0) {
+						$res = $this->Pricing_model->saveCostOverride(1, $pricingId, 0, array(
+							'price'          => $this->input->post('cost_price'),
+							'transfer_price' => $this->input->post('cost_transfer'),
+							'renewal_price'  => $this->input->post('cost_renewal'),
+						));
+						if (empty($res['success'])) {
+							$costMsg = ' Reseller cost was not saved: ' . $res['message'];
+						} elseif (!empty($res['lifted'])) {
+							// A cost RISE can strand reseller selling prices
+							// below the new floor. They were lifted; say so,
+							// and tell the affected resellers by email.
+							$n = count($res['lifted']);
+							$this->Pricing_model->notifyLiftedResellers($res['lifted'], 1, $pricingId);
+							$costMsg = ' ' . $n . ' reseller selling price(s) were below the new cost and have been raised to it; those resellers have been emailed.';
+						}
+					}
+
+					$this->session->set_flashdata('admin_success', 'Domain pricing has been saved successfully.' . $costMsg);
 					redirect("whmazadmin/domain_pricing/index");
 				}else {
 					$this->session->set_flashdata('admin_error', 'Something went wrong. Try again');
@@ -123,6 +177,16 @@ class Domain_pricing extends WHMAZADMIN_Controller {
 		// Load dropdown data
 		$data['extensions'] = $this->Domainpricing_model->getAllExtensions();
 		$data['currencies'] = $this->Domainpricing_model->getAllCurrencies();
+
+		// Existing platform-wide reseller cost for this row, if any. Blank
+		// means "no cost set" -- the resolver then falls back to the reseller's
+		// profile discount, and finally to retail.
+		$data['cost'] = array();
+		if (!empty($data['detail']['id'])) {
+			$overrides = $this->Pricing_model->overridesFor(1, 0, 1); // item=domain, owner=platform, audience=cost
+			$pid = (int) $data['detail']['id'];
+			if (isset($overrides[$pid])) $data['cost'] = $overrides[$pid];
+		}
 
 		$this->load->view('whmazadmin/domain_pricing_manage', $data);
 	}
@@ -153,7 +217,19 @@ class Domain_pricing extends WHMAZADMIN_Controller {
 		} else {
 			$extension = "";
 		}
-		echo json_encode(buildSuccessResponse($this->Common_model->getDomainPrices($rqData['currency_id'], $rqData['reg_period'], $extension), "OK"));
+		// Quote the selected CUSTOMER's price so the new-order form agrees with
+		// what saveOrderItemTable() writes. company_id is attacker-controlled,
+		// so anything outside the caller's tenant scope is refused outright
+		// rather than quietly answered with platform retail.
+		$companyId = !empty($rqData['company_id']) ? (int) $rqData['company_id'] : 0;
+		if ($companyId > 0) {
+			$this->guardCompany($companyId);
+		}
+
+		echo json_encode(buildSuccessResponse(
+			$this->Common_model->getDomainPrices($rqData['currency_id'], $rqData['reg_period'], $extension, $companyId),
+			"OK"
+		));
 	}
 
 }

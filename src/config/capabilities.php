@@ -26,7 +26,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 |   domain_register              — registrar API keys, a hard secret leak
 |   general_setting              — app settings, sys_cnf, install_crontab()
 |   currency, paymentgateway     — gateway credentials + platform-wide config
-|   domain_pricing               — platform wholesale pricing
+|   domain_pricing (CRUD)        — platform wholesale pricing (a reseller sets
+|                                  their own prices on reseller_pricing instead);
+|                                  only the prices() lookup is granted, below
 |   service_category/group/product, software, softwareproduct — global catalog
 |   email_template               — no owner column; per-reseller templates are
 |                                  a later release (see the plan, Phase 4)
@@ -61,9 +63,21 @@ $config['reseller'] = array(
 	// ("reseller cannot manage servers") is a disclosure rule, not just a CRUD one.
 	'package'       => array('filter_api', 'prices'),
 
+	// Domain price lookup for that same form -- the METHOD only, never the
+	// domain_pricing CRUD screens, which are platform wholesale. Without this
+	// a reseller's new-order form silently fails to price any domain.
+	// Both lookups resolve for the selected customer and guardCompany() the
+	// posted company_id, so neither can be used to read another tenant's price.
+	'domain_pricing' => array('prices'),
+
+	// --- Own selling prices (Phase 2) ---
+	// The controller pins a reseller to their OWN company id and ignores the
+	// ?reseller= parameter entirely, and save_cost() refuses resellers outright,
+	// so '*' here does not let one reseller price another's catalog.
+	'reseller_pricing' => array('*'),
+
 	// --- Added in later phases; keep commented so they stay denied until built ---
 	// 'promocode'        => array('*'),   // Phase 4: needs promo_codes.company_id first,
 	//                                     // or a reseller edits PLATFORM promo codes
-	// 'reseller_pricing' => array('*'),   // Phase 2
 	// 'reseller_wallet'  => array('*'),   // Phase 3
 );

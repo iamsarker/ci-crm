@@ -410,6 +410,77 @@ class Plan_model extends CI_Model {
 		}
 	}
 
+	/**
+	 * Reseller COST matrix: [currency_id][billing_cycle_id] => cost.
+	 * Cost lives in price_overrides, never in software_pricing -- that table
+	 * stays "platform retail" so the direct-customer path is untouched.
+	 */
+	function getCostMatrix($productId)
+	{
+		$productId = (int) $productId;
+		if ($productId <= 0) {
+			return array();
+		}
+		$rows = $this->db->query(
+			"SELECT sp.currency_id, sp.billing_cycle_id, po.price
+			 FROM software_pricing sp
+			 JOIN price_overrides po
+			   ON po.item_type = 3 AND po.pricing_id = sp.id
+			  AND po.owner_company_id = 0 AND po.audience = 1
+			  AND po.is_active = 1 AND po.status = 1
+			 WHERE sp.product_id = ? AND sp.status = 1",
+			array($productId)
+		)->result_array();
+
+		$matrix = array();
+		foreach ($rows as $row) {
+			$matrix[$row['currency_id']][$row['billing_cycle_id']] = $row['price'];
+		}
+		return $matrix;
+	}
+
+	/**
+	 * Save the reseller cost matrix. A blank cell clears the cost rather than
+	 * setting it to zero -- giving software away is never what an empty field
+	 * is meant to say.
+	 *
+	 * @return array [company_id => lifted components] for resellers whose
+	 *               selling price had to be raised to the new floor.
+	 */
+	function saveCostMatrix($productId, $costData)
+	{
+		$lifted = array();
+		$productId = (int) $productId;
+		if ($productId <= 0 || !is_array($costData)) {
+			return $lifted;
+		}
+		$this->load->model('Pricing_model');
+
+		foreach ($costData as $currencyId => $cycles) {
+			if (!is_array($cycles)) continue;
+			foreach ($cycles as $cycleId => $cost) {
+				$row = $this->db->query(
+					"SELECT id FROM software_pricing
+					 WHERE product_id = ? AND currency_id = ? AND billing_cycle_id = ? AND status = 1 LIMIT 1",
+					array($productId, (int) $currencyId, (int) $cycleId)
+				)->row_array();
+				// No retail row means the product is not sold on that
+				// currency/cycle, so there is nothing to attach a cost to.
+				if (empty($row)) continue;
+
+				$res = $this->Pricing_model->saveCostOverride(3, $row['id'], 0, array('price' => $cost));
+				if (!empty($res['lifted'])) {
+					foreach ($res['lifted'] as $companyId => $changes) {
+						$lifted[$companyId] = array_merge(
+							isset($lifted[$companyId]) ? $lifted[$companyId] : array(), $changes
+						);
+					}
+				}
+			}
+		}
+		return $lifted;
+	}
+
 	// ─── admin: features (plan_features) ─────────────────────────────────
 
 	/** Raw stored feature rows for a product: feature_key => feature_value. */

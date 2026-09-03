@@ -109,6 +109,46 @@
 							</div>
 						</div>
 
+						<!-- Reseller Cost Section (v2.0.0 Phase 2) -->
+						<div class="company-form-section">
+							<div class="section-title">
+								<i class="fa fa-handshake"></i> Reseller Cost <small class="text-muted">(optional)</small>
+							</div>
+							<p class="text-muted mb-3" style="font-size:13px;">
+								What <strong>resellers</strong> pay you for this extension. The prices above stay
+								your public retail price and are what direct customers are charged &mdash; nothing here
+								affects them. Leave the registration cost blank to clear the cost entirely: resellers
+								then fall back to the discount on their own profile, and finally to retail.
+								A reseller can never sell below these numbers.
+							</p>
+							<div class="row">
+								<div class="col-md-3"></div>
+								<div class="col-md-3">
+									<div class="form-group">
+										<label class="form-label" for="cost_price"><i class="fa fa-plus-circle"></i> Registration Cost</label>
+										<input name="cost_price" type="text" class="form-control" id="cost_price" value="<?= htmlspecialchars($cost['price'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Blank = no cost set"/>
+									</div>
+								</div>
+								<div class="col-md-3">
+									<div class="form-group">
+										<label class="form-label" for="cost_transfer"><i class="fa fa-exchange-alt"></i> Transfer Cost</label>
+										<input name="cost_transfer" type="text" class="form-control" id="cost_transfer" value="<?= htmlspecialchars($cost['transfer_price'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Blank = same as registration"/>
+									</div>
+								</div>
+								<div class="col-md-3">
+									<div class="form-group">
+										<label class="form-label" for="cost_renewal"><i class="fa fa-sync"></i> Renewal Cost</label>
+										<input name="cost_renewal" type="text" class="form-control" id="cost_renewal" value="<?= htmlspecialchars($cost['renewal_price'] ?? '', ENT_QUOTES, 'UTF-8') ?>" placeholder="Blank = same as registration"/>
+									</div>
+								</div>
+							</div>
+							<div class="alert alert-warning mb-0" style="font-size:13px;">
+								<i class="fa fa-exclamation-triangle"></i>
+								Raising a cost above a reseller's current selling price will <strong>raise their price</strong>
+								to match, and email them. Lowering it changes nothing they have already set.
+							</div>
+						</div>
+
 						<!-- Submit Button -->
 						<div class="form-group mt-4">
 							<button type="submit" class="btn btn-save-company">

@@ -7,6 +7,12 @@ class Cart_model extends CI_Model
 	{
 		parent::__construct();
 		$this->load->database();
+		// Two-tier pricing (v2.0.0 Phase 2). Every price this model hands out
+		// goes through the resolver so a reseller's sub-customer sees the
+		// reseller's price, not the platform's. For a buyer with no reseller
+		// above them the resolver short-circuits to the native table, so the
+		// direct-customer path is unchanged.
+		$this->load->model('Pricing_model');
 	}
 
 	function getServiceTypes()
@@ -32,7 +38,7 @@ class Cart_model extends CI_Model
 		return $data;
 	}
 
-	function getProductServiceItems($stype)
+	function getProductServiceItems($stype, $companyId = null)
 	{
 		$cId = getCurrencyId();
 		// SQL Injection Fix: Cast to integer and use parameterized query
@@ -47,6 +53,22 @@ class Cart_model extends CI_Model
 				WHERE ps.product_service_group_id=? and psp.currency_id=? AND psp.status=1  and ps.is_hidden=0 and ps.status=1
 				GROUP BY ps.id ";
 		$data = $this->db->query($sql, array($stype, $cId))->result_array();
+
+		// The billing blob is built by GROUP_CONCAT in SQL, so the resolver
+		// cannot reach it there -- rewrite each embedded price after the fact.
+		foreach ($data as &$row) {
+			$plans = json_decode($row['billing'], true);
+			if (!is_array($plans)) continue;
+			foreach ($plans as &$plan) {
+				if (empty($plan['service_pricing_id'])) continue;
+				$r = $this->Pricing_model->resolve(2, $plan['service_pricing_id'], $companyId);
+				if (!empty($r)) $plan['price'] = $r['price'];
+			}
+			unset($plan);
+			$row['billing'] = json_encode($plans);
+		}
+		unset($row);
+
 		return $data;
 	}
 
@@ -87,7 +109,7 @@ class Cart_model extends CI_Model
 	}
 
 
-	function getDomPricing()
+	function getDomPricing($companyId = null)
 	{
 		// SQL Injection Fix: Cast to integer and use parameterized query
 		$cId = (int)getCurrencyId();
@@ -98,6 +120,21 @@ class Cart_model extends CI_Model
 			WHERE dp.status=1 AND dp.reg_period=1 AND dp.currency_id=? AND de.status=1 ";
 
 		$data = $this->db->query($sql, array($cId))->result_array();
+
+		// This is the TLD grid: every extension the platform sells, on the
+		// storefront's first paint. resolveMany() collapses the override
+		// lookups into one query per audience -- resolving row by row here
+		// would be a visible regression, not a micro-optimisation.
+		$resolved = $this->Pricing_model->resolveMany(1, $data, $companyId);
+		foreach ($data as &$row) {
+			$r = isset($resolved[(int)$row['id']]) ? $resolved[(int)$row['id']] : null;
+			if (empty($r)) continue;
+			$row['price']    = $r['price'];
+			$row['transfer'] = $r['transfer'];
+			$row['renewal']  = $r['renewal'];
+		}
+		unset($row);
+
 		return $data;
 	}
 
@@ -108,7 +145,7 @@ class Cart_model extends CI_Model
 		return !empty($data) ? $data[0] : array();
 	}
 
-	function getCartServicePrice($id)
+	function getCartServicePrice($id, $companyId = null)
 	{
 		// SQL Injection Fix: Cast to integer and use parameterized query
 		$id = (int)$id;
@@ -118,14 +155,25 @@ class Cart_model extends CI_Model
 			JOIN billing_cycle bc on psp.billing_cycle_id=bc.id
 			WHERE psp.id=? and psp.status=1 ";
 		$data = $this->db->query($sql, array($id))->result_array();
-		return !empty($data) ? $data[0] : array();
+		if (empty($data)) return array();
+
+		$row = $data[0];
+		// item_price is overwritten in place and cost_amount is added: the
+		// return shape every caller already destructures stays the same, and
+		// checkout gets the cost basis it must freeze onto order_services.
+		$r = $this->Pricing_model->resolve(2, $id, $companyId);
+		if (!empty($r)) {
+			$row['item_price']  = $r['price'];
+			$row['cost_amount'] = $r['cost_price'];
+		}
+		return $row;
 	}
 
 	/**
 	 * Software plan pricing for the cart (item_type=3). Mirrors getCartServicePrice.
 	 * item_price = first_pay_amount (what the first invoice bills).
 	 */
-	function getCartSoftwarePrice($id)
+	function getCartSoftwarePrice($id, $companyId = null)
 	{
 		$id = (int) $id;
 
@@ -137,17 +185,44 @@ class Cart_model extends CI_Model
 				JOIN billing_cycle bc ON sp.billing_cycle_id = bc.id
 				WHERE sp.id=? AND sp.status=1 AND p.is_active=1";
 		$data = $this->db->query($sql, array($id))->result_array();
-		return !empty($data) ? $data[0] : array();
+		if (empty($data)) return array();
+
+		$row = $data[0];
+		// Software has no transfer/renewal split: the resolver maps first_pay
+		// onto price and recurring onto renewal, so both stay in step here.
+		$r = $this->Pricing_model->resolve(3, $id, $companyId);
+		if (!empty($r)) {
+			$row['item_price']       = $r['price'];
+			$row['first_pay_amount'] = $r['price'];
+			$row['recurring_amount'] = $r['renewal'];
+			$row['cost_amount']      = $r['cost_price'];
+		}
+		return $row;
 	}
 
-	function getCartDomainPrice($id)
+	function getCartDomainPrice($id, $companyId = null)
 	{
 		// SQL Injection Fix: Cast to integer and use parameterized query
 		$id = (int)$id;
 
 		$sql = "SELECT dp.price as item_price, dp.transfer, dp.renewal, dp.currency_id, dp.reg_period FROM dom_pricing dp WHERE dp.id=? and dp.status=1 ";
 		$data = $this->db->query($sql, array($id))->result_array();
-		return !empty($data) ? $data[0] : array();
+		if (empty($data)) return array();
+
+		$row = $data[0];
+		// All three components resolve independently -- a reseller may price
+		// registration above cost and still be underwater on renewal, and the
+		// renewal is the one that repeats for the life of the domain.
+		$r = $this->Pricing_model->resolve(1, $id, $companyId);
+		if (!empty($r)) {
+			$row['item_price']    = $r['price'];
+			$row['transfer']      = $r['transfer'];
+			$row['renewal']       = $r['renewal'];
+			$row['cost_amount']   = $r['cost_price'];
+			$row['cost_transfer'] = $r['cost_transfer'];
+			$row['cost_renewal']  = $r['cost_renewal'];
+		}
+		return $row;
 	}
 
 	function saveCart($data)
@@ -249,7 +324,7 @@ class Cart_model extends CI_Model
 	/**
 	 * Get domain pricing by ID
 	 */
-	function getDomPricingById($domPricingId)
+	function getDomPricingById($domPricingId, $companyId = null)
 	{
 		$domPricingId = (int)$domPricingId;
 		$sql = "SELECT dp.*, de.extension, bc.cycle_name, bc.cycle_days
@@ -257,13 +332,26 @@ class Cart_model extends CI_Model
 				JOIN dom_extensions de ON dp.dom_extension_id = de.id
 				LEFT JOIN billing_cycle bc ON bc.id = 1
 				WHERE dp.id = ?";
-		return $this->db->query($sql, array($domPricingId))->row_array();
+		$row = $this->db->query($sql, array($domPricingId))->row_array();
+		if (empty($row)) return $row;
+
+		// dp.* means price/transfer/renewal arrive under their native names;
+		// overwrite those same keys so callers reading $row['price'] get the
+		// buyer's price rather than platform retail.
+		$r = $this->Pricing_model->resolve(1, $domPricingId, $companyId);
+		if (!empty($r)) {
+			$row['price']       = $r['price'];
+			$row['transfer']    = $r['transfer'];
+			$row['renewal']     = $r['renewal'];
+			$row['cost_amount'] = $r['cost_price'];
+		}
+		return $row;
 	}
 
 	/**
 	 * Get product service pricing by ID with details
 	 */
-	function getProductServicePricingById($pricingId)
+	function getProductServicePricingById($pricingId, $companyId = null)
 	{
 		$pricingId = (int)$pricingId;
 		$sql = "SELECT psp.*, ps.product_name, ps.product_desc,
@@ -274,7 +362,15 @@ class Cart_model extends CI_Model
 				JOIN product_service_types pst ON ps.product_service_type_id = pst.id
 				JOIN billing_cycle bc ON psp.billing_cycle_id = bc.id
 				WHERE psp.id = ?";
-		return $this->db->query($sql, array($pricingId))->row_array();
+		$row = $this->db->query($sql, array($pricingId))->row_array();
+		if (empty($row)) return $row;
+
+		$r = $this->Pricing_model->resolve(2, $pricingId, $companyId);
+		if (!empty($r)) {
+			$row['price']       = $r['price'];
+			$row['cost_amount'] = $r['cost_price'];
+		}
+		return $row;
 	}
 
 }

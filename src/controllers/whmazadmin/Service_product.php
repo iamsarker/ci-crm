@@ -117,12 +117,20 @@ class Service_product extends WHMAZADMIN_Controller {
 					$oneTimeCycleId = $this->Serviceproduct_model->getCycleIdByKey('ONE_TIME');
 					$freeCycleId = $this->Serviceproduct_model->getCycleIdByKey('FREE');
 
+					// Reseller cost is applied AFTER the retail matrix, because
+					// saveCostMatrix() looks the cost up against the retail row
+					// that was just written -- a brand-new currency/cycle cell
+					// has no product_service_pricing.id to key an override on
+					// until savePricingMatrix() has created it.
+					$lifted = array();
+
 					if ($pricingType === 'recurring') {
 						$pricingData = $this->input->post('pricing');
 						if (!empty($pricingData) && is_array($pricingData)) {
 							$this->Serviceproduct_model->savePricingMatrix($productId, $pricingData);
 						}
 						$this->Serviceproduct_model->deletePricingExcept($productId, $recurringCycleIds);
+						$lifted = $this->Serviceproduct_model->saveCostMatrix($productId, $this->input->post('cost'));
 
 					} else if ($pricingType === 'onetime') {
 						$pricingData = $this->input->post('pricing');
@@ -131,6 +139,7 @@ class Service_product extends WHMAZADMIN_Controller {
 						}
 						$keepIds = $oneTimeCycleId ? array($oneTimeCycleId) : array();
 						$this->Serviceproduct_model->deletePricingExcept($productId, $keepIds);
+						$lifted = $this->Serviceproduct_model->saveCostMatrix($productId, $this->input->post('cost'));
 
 					} else if ($pricingType === 'free') {
 						$currencies = $this->Serviceproduct_model->getCurrencies();
@@ -139,7 +148,20 @@ class Service_product extends WHMAZADMIN_Controller {
 						$this->Serviceproduct_model->deletePricingExcept($productId, $keepIds);
 					}
 
-					$this->session->set_flashdata('admin_success', 'Service product has been saved successfully.');
+					$costMsg = '';
+					if (!empty($lifted)) {
+						// Raising a cost above a reseller's selling price lifts
+						// that price to the new floor. Tell the admin here and
+						// the reseller by email -- a silent rewrite of a number
+						// they typed is what turns into a support ticket.
+						$this->load->model('Pricing_model');
+						foreach ($lifted as $companyId => $changes) {
+							$this->Pricing_model->notifyLiftedResellers(array($companyId => $changes), 2, 0);
+						}
+						$costMsg = ' ' . count($lifted) . ' reseller selling price(s) were below the new cost and have been raised to it; those resellers have been emailed.';
+					}
+
+					$this->session->set_flashdata('admin_success', 'Service product has been saved successfully.' . $costMsg);
 					redirect("whmazadmin/service_product/index");
 				}else {
 					$this->session->set_flashdata('admin_error', 'Something went wrong. Try again');
@@ -168,8 +190,10 @@ class Service_product extends WHMAZADMIN_Controller {
 		$data['currencies'] = $this->Serviceproduct_model->getCurrencies();
 		$data['one_time_cycle_id'] = $this->Serviceproduct_model->getCycleIdByKey('ONE_TIME');
 		$data['pricing_matrix'] = array();
+		$data['cost_matrix'] = array();
 		if (!empty($id_val)) {
 			$data['pricing_matrix'] = $this->Serviceproduct_model->getPricingMatrix(safe_decode($id_val));
+			$data['cost_matrix'] = $this->Serviceproduct_model->getCostMatrix(safe_decode($id_val));
 		}
 
 		$this->load->view('whmazadmin/service_product_manage', $data);

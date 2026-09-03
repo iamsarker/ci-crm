@@ -274,6 +274,34 @@ class API_Controller extends MX_Controller
 	 * a company within this reseller's scope (the reseller or a sub-customer).
 	 * Omit it to act as the reseller's own owner user.
 	 */
+	/**
+	 * Which company's prices a read-only catalog endpoint should quote.
+	 *
+	 * Order placement gets this for free -- actAsCustomer() sets a CUSTOMER
+	 * session and Cart_model reads getCompanyId() off it. The catalog endpoints
+	 * are stateless, so they have to say who they are pricing for explicitly.
+	 *
+	 * Default is the reseller's own company, i.e. their COST -- the number they
+	 * will actually be charged when the order provisions. Pass customer_id to
+	 * ask instead what that customer would be quoted.
+	 *
+	 * @return int companies.id, always inside this key's scope.
+	 */
+	protected function pricingCompanyId()
+	{
+		$userId = intval($this->param('customer_id'));
+		if ($userId <= 0) return intval($this->company_id);
+
+		$u = $this->db->query(
+			"SELECT company_id FROM users WHERE id = ? AND status = 1 LIMIT 1",
+			array($userId)
+		)->row_array();
+		if (empty($u) || !$this->ownsCompany($u['company_id'])) {
+			$this->fail(403, 'customer_id is not within your account scope.', 'forbidden');
+		}
+		return intval($u['company_id']);
+	}
+
 	protected function actAsCustomer()
 	{
 		$userId = intval($this->param('customer_id'));

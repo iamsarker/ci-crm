@@ -20,9 +20,17 @@ class ApiProducts extends API_Controller
 		$this->load->model('Plan_model');
 	}
 
-	/** Software products (plans) with the full pricing matrix. */
+	/**
+	 * Software products (plans) with the full pricing matrix.
+	 *
+	 * Prices are resolved for pricingCompanyId(): the reseller's own cost by
+	 * default, or what a given customer_id would be quoted.
+	 */
 	public function software()
 	{
+		$this->load->model('Pricing_model');
+		$buyer = $this->pricingCompanyId();
+
 		$plans = $this->Plan_model->get_active_plans();
 		$out = array();
 		foreach ($plans as $p) {
@@ -36,6 +44,14 @@ class ApiProducts extends API_Controller
 				 WHERE sp.product_id = ? AND sp.status = 1",
 				array($p['id'])
 			)->result_array();
+
+			foreach ($pricing as &$pr) {
+				$r = $this->Pricing_model->resolve(3, $pr['software_pricing_id'], $buyer);
+				if (empty($r)) continue;
+				$pr['first_pay_amount'] = $r['price'];
+				$pr['recurring_amount'] = $r['renewal'];
+			}
+			unset($pr);
 
 			$out[] = array(
 				'id'           => intval($p['id']),
@@ -58,9 +74,12 @@ class ApiProducts extends API_Controller
 		$this->ok(array('software' => $out));
 	}
 
-	/** Hosting packages with type + server. */
+	/** Hosting packages with type + server. Prices per pricingCompanyId(). */
 	public function hosting()
 	{
+		$this->load->model('Pricing_model');
+		$buyer = $this->pricingCompanyId();
+
 		$rows = $this->db->query(
 			"SELECT ps.id, ps.product_name, pst.servce_type_name AS type_name,
 			        pst.key_name AS type_key, ps.server_id
@@ -81,6 +100,12 @@ class ApiProducts extends API_Controller
 				 WHERE psp.product_service_id = ? AND psp.status = 1",
 				array($r['id'])
 			)->result_array();
+
+			foreach ($pricing as &$pr) {
+				$res = $this->Pricing_model->resolve(2, $pr['product_service_pricing_id'], $buyer);
+				if (!empty($res)) $pr['price'] = $res['price'];
+			}
+			unset($pr);
 
 			$out[] = array(
 				'id'        => intval($r['id']),

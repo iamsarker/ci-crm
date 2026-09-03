@@ -137,7 +137,36 @@ class Cronjob_model extends CI_Model
 				)
 				ORDER BY od.next_renewal_date ASC";
 
-		return $this->db->query($sql, array($targetDate, $today))->result_array();
+		$rows = $this->db->query($sql, array($targetDate, $today))->result_array();
+
+		// ---------------------------------------------------------------
+		// LIVE pricing for domain renewals (v2.0.0 Phase 2).
+		//
+		// dp.renewal above is the PLATFORM's renewal price. Billing a
+		// reseller's customer from it is a straight revenue leak the moment
+		// resellers exist -- the reseller sets the price, the platform must
+		// not quietly bill the customer its own.
+		//
+		// The join stays as a FILTER (it is what requires a price row in the
+		// order's currency, and it supplies de.extension); only the price it
+		// produced is replaced. Ripping the join out would silently change
+		// which domains get invoiced at all.
+		//
+		// Domains are priced LIVE, unlike hosting and software which renew
+		// from their frozen recurring_amount -- registrar wholesale moves have
+		// to pass through, and both parties expect a price change to apply at
+		// the next renewal rather than a year later.
+		// ---------------------------------------------------------------
+		$this->load->model('Pricing_model');
+		foreach ($rows as &$row) {
+			$r = $this->Pricing_model->resolve(1, $row['dom_pricing_id'], $row['company_id']);
+			if (empty($r)) continue;
+			$row['renewal_price'] = $r['renewal'];
+			$row['renewal_cost']  = $r['cost_renewal'];
+		}
+		unset($row);
+
+		return $rows;
 	}
 
 	/**
@@ -285,6 +314,12 @@ class Cronjob_model extends CI_Model
 				'inserted_on' => date('Y-m-d H:i:s'),
 				'inserted_by' => 0
 			));
+
+			// Only the DOMAIN line re-freezes its cost: domains renew live
+			// through the resolver, while the service renews from its frozen
+			// recurring_amount and its checkout-time cost still stands.
+			$renewalCost = round(floatval(isset($domain['renewal_cost']) ? $domain['renewal_cost'] : 0) * $yearsToRenew, 2);
+			$this->db->where('id', $domain['id'])->update('order_domains', array('cost_amount' => $renewalCost));
 
 			$this->db->trans_complete();
 
@@ -561,6 +596,15 @@ class Cronjob_model extends CI_Model
 			);
 
 			$this->db->insert('invoice_items', $invoiceItem);
+
+			// Re-freeze the cost basis for the term now being billed. Phase 3
+			// debits the reseller's wallet from order_domains.cost_amount, and
+			// a renewal does not cost what the registration cost -- leaving the
+			// original snapshot in place would debit a first-year price on
+			// every renewal for the life of the domain.
+			$renewalCost = round(floatval(isset($domain['renewal_cost']) ? $domain['renewal_cost'] : 0) * $yearsToRenew, 2);
+			$this->db->where('id', $domain['id'])->update('order_domains', array('cost_amount' => $renewalCost));
+
 
 			$this->db->trans_complete();
 

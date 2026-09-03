@@ -124,7 +124,11 @@
 									<div class="form-group">
 										<label class="form-label" for="discount_value"><i class="fa fa-tag"></i> Discount Value</label>
 										<input name="discount_value" type="number" step="0.01" min="0" class="form-control" id="discount_value" placeholder="0.00" value="<?= htmlspecialchars($detail['discount_value'] ?? '0', ENT_QUOTES, 'UTF-8') ?>" required />
-										<small class="text-muted">Applied to this reseller's own orders.</small>
+										<small class="text-muted">
+											Fallback cost basis: applied to the platform's retail price to work out what this
+											reseller pays, but <strong>only where no explicit cost is set</strong> for the item
+											(Reseller Pricing, or the cost field on the product itself). Not a discount at checkout.
+										</small>
 										<?php echo form_error('discount_value', '<div class="error">', '</div>'); ?>
 									</div>
 								</div>

@@ -1122,7 +1122,8 @@ INSERT INTO `email_templates` (`id`, `template_key`, `template_name`, `subject`,
 (15, 'ticket_reply_to_customer', 'Ticket Reply - Customer Notification', 'Reply to Your Ticket #{ticket_id} - {ticket_subject}', '<p>Dear {client_name},</p>\r\n<p>Our support team has replied to your ticket.</p>\r\n<h3>Ticket Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Ticket ID:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{ticket_id}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Subject:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{ticket_subject}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Department:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{department_name}</td></tr>\r\n</table>\r\n<h3>Reply:</h3>\r\n<div style=\"padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0;\">\r\n{reply_message}\r\n</div>\r\n<p style=\"margin-top: 20px;\">You can view the full conversation and reply by logging into your account.</p>\r\n<p><a href=\"{ticket_url}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">View Ticket</a></p>\r\n<p>Best Regards,<br>{company_name}</p>', '{client_name}, {ticket_id}, {ticket_subject}, {department_name}, {reply_message}, {ticket_url}, {company_name}', 'TICKET', 1, '2026-02-21 16:38:55', 1, '2026-02-21 22:38:55', 1, NULL, NULL),
 (16, 'ticket_reply_to_department', 'Ticket Reply - Department Notification', 'Customer Reply - Ticket #{ticket_id} - {ticket_subject}', '<p>A customer has replied to a support ticket.</p>\r\n<h3>Ticket Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Ticket ID:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{ticket_id}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Subject:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{ticket_subject}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Priority:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{ticket_priority}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Department:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{department_name}</td></tr>\r\n</table>\r\n<h3>Customer:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Name:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_name}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Email:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_email}</td></tr>\r\n</table>\r\n<h3>Reply:</h3>\r\n<div style=\"padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0;\">\r\n{reply_message}\r\n</div>\r\n<p style=\"margin-top: 20px;\"><a href=\"{admin_ticket_url}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">View & Reply to Ticket</a></p>', '{ticket_id}, {ticket_subject}, {ticket_priority}, {department_name}, {client_name}, {client_email}, {reply_message}, {admin_ticket_url}', 'TICKET', 1, '2026-02-21 16:38:55', 1, '2026-02-21 22:38:55', 1, NULL, NULL),
 (18, 'admin_order_notification', 'Admin Order Notification', 'New Order Received - #{order_no} - {currency_symbol}{total_amount}', '<p>A new order has been placed.</p>\r\n<h3>Customer Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Customer Name:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_name}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Company:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{company_name_customer}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Email:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_email}</td></tr>\r\n</table>\r\n<h3>Order Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Order Number:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{order_no}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Order Date:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{order_date}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Invoice Number:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{invoice_no}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Total Amount:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{currency_symbol}{total_amount}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Payment Status:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{pay_status}</td></tr>\r\n</table>\r\n<h3>Order Items:</h3>\r\n{order_items}\r\n<p style=\"margin-top: 20px;\">\r\n<a href=\"{admin_order_url}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-right: 10px;\">View Order</a>\r\n<a href=\"{admin_invoice_url}\" style=\"background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">View Invoice</a>\r\n</p>', '{client_name}, {company_name_customer}, {client_email}, {order_no}, {order_date}, {invoice_no}, {total_amount}, {currency_symbol}, {pay_status}, {order_items}, {admin_order_url}, {admin_invoice_url}', 'ORDER', 1, '2026-02-21 16:39:58', 1, '2026-02-21 22:39:58', 1, NULL, NULL),
-(19, 'email_verification', 'Email Verification', 'Verify your email address - {site_name}', '<p>Dear {client_name},</p><p>Thank you for registering with <strong>{site_name}</strong>. Please verify your email address to activate your account.</p><p><a href=\"{verification_link}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;\">Verify My Email</a></p><p>Or copy and paste this link into your browser:</p><p>{verification_link}</p><p>If you did not create this account, please ignore this email.</p><p>Regards,<br>{site_name}</p>', '{client_name}, {site_name}, {site_url}, {verification_link}', 'AUTH', 1, '2026-02-21 16:39:58', 1, '2026-02-21 22:39:58', 1, NULL, NULL);
+(19, 'email_verification', 'Email Verification', 'Verify your email address - {site_name}', '<p>Dear {client_name},</p><p>Thank you for registering with <strong>{site_name}</strong>. Please verify your email address to activate your account.</p><p><a href=\"{verification_link}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;\">Verify My Email</a></p><p>Or copy and paste this link into your browser:</p><p>{verification_link}</p><p>If you did not create this account, please ignore this email.</p><p>Regards,<br>{site_name}</p>', '{client_name}, {site_name}, {site_url}, {verification_link}', 'AUTH', 1, '2026-02-21 16:39:58', 1, '2026-02-21 22:39:58', 1, NULL, NULL),
+(20, 'reseller_price_lifted', 'Reseller - Selling Price Auto-Adjusted', 'Your selling price for {item_name} was adjusted', '<p>Dear {reseller_name},</p><p>Our cost for <strong>{item_name}</strong> has increased, and your selling price was below the new cost. To make sure you are never selling at a loss, it has been raised to the minimum allowed:</p>{price_changes}<p>This is the floor, not a recommendation &mdash; you can set a higher price at any time from your portal.</p><p>Regards,<br>{site_name}</p>', '{reseller_name}, {item_name}, {price_changes}, {site_name}, {company_name}, {site_url}', 'GENERAL', 1, '2026-09-03 10:00:00', NULL, '2026-09-03 10:00:00', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1622,6 +1623,7 @@ CREATE TABLE `order_domains` (
   `linked_service_id` bigint(20) DEFAULT NULL COMMENT 'Links to order_services.id when hosting is purchased with domain',
   `first_pay_amount` decimal(15,2) NOT NULL,
   `recurring_amount` decimal(15,2) NOT NULL,
+  `cost_amount` decimal(15,2) NOT NULL DEFAULT 0.00 COMMENT 'reseller cost frozen at checkout; 0.00 for direct customers',
   `reg_date` date NOT NULL,
   `reg_period` int(2) NOT NULL DEFAULT 1 COMMENT 'year',
   `exp_date` date DEFAULT NULL,
@@ -1693,6 +1695,7 @@ CREATE TABLE `order_licenses` (
   `currency_code` varchar(3) DEFAULT NULL,
   `first_pay_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
   `recurring_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `cost_amount` decimal(15,2) NOT NULL DEFAULT 0.00 COMMENT 'reseller cost frozen at checkout; 0.00 for direct customers',
   `license_key` varchar(255) DEFAULT NULL COMMENT 'Issued on activation',
   `paddle_subscription_id` varchar(100) DEFAULT NULL COMMENT 'Paddle (MoR) subscription id',
   `auto_renew` tinyint(1) NOT NULL DEFAULT 1,
@@ -1758,6 +1761,7 @@ CREATE TABLE `order_services` (
   `description` text DEFAULT NULL,
   `first_pay_amount` decimal(15,2) NOT NULL,
   `recurring_amount` decimal(15,2) NOT NULL,
+  `cost_amount` decimal(15,2) NOT NULL DEFAULT 0.00 COMMENT 'reseller cost frozen at checkout; 0.00 for direct customers',
   `hosting_domain` varchar(200) DEFAULT NULL,
   `linked_domain_id` bigint(20) DEFAULT NULL COMMENT 'Links to order_domains.id when domain is purchased with hosting',
   `license_key` varchar(255) DEFAULT NULL COMMENT 'Software license key',
@@ -2091,6 +2095,63 @@ CREATE TABLE `pending_executions` (
   `is_completed` tinyint(4) NOT NULL DEFAULT 0,
   `completed_on` datetime DEFAULT NULL,
   `inserted_on` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `price_overrides`
+-- Two-tier pricing (v2.0.0 Phase 2). The three native pricing tables
+-- (dom_pricing, product_service_pricing, software_pricing) keep meaning
+-- "platform retail" and are never written here; an override row layers a
+-- reseller cost or a reseller's own selling price on top of one of them.
+-- pricing_id already implies product + currency + cycle, so nothing is
+-- denormalised. A buyer with no parent_company_id never reads this table,
+-- which is what keeps the direct-customer price path unchanged.
+--
+
+CREATE TABLE `price_overrides` (
+  `id` bigint(20) NOT NULL,
+  `item_type` tinyint(4) NOT NULL COMMENT '1=domain (dom_pricing.id), 2=service (product_service_pricing.id), 3=software (software_pricing.id)',
+  `pricing_id` bigint(20) NOT NULL COMMENT 'row id in the native pricing table named by item_type',
+  `owner_company_id` bigint(20) NOT NULL DEFAULT 0 COMMENT '0 = platform-wide; otherwise the reseller companies.id',
+  `audience` tinyint(4) NOT NULL COMMENT '1 = reseller cost, 2 = end-customer retail',
+  `price` decimal(15,2) NOT NULL DEFAULT 0.00 COMMENT 'registration / first-term price',
+  `transfer_price` decimal(15,2) DEFAULT NULL COMMENT 'domain only; NULL = fall back to price',
+  `renewal_price` decimal(15,2) DEFAULT NULL COMMENT 'NULL = fall back to price',
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1=active, 0=soft deleted',
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` datetime DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `deleted_on` datetime DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `price_override_audits`
+-- Trail for the one price change a reseller did not make themselves:
+-- when the platform raises their cost, retail overrides sitting below the
+-- new cost are auto-lifted to the floor. That rewrites a number they
+-- typed, so it has to leave something they can be pointed at.
+--
+
+CREATE TABLE `price_override_audits` (
+  `id` bigint(20) NOT NULL,
+  `price_override_id` bigint(20) NOT NULL,
+  `owner_company_id` bigint(20) NOT NULL DEFAULT 0,
+  `item_type` tinyint(4) NOT NULL,
+  `pricing_id` bigint(20) NOT NULL,
+  `component` varchar(20) NOT NULL COMMENT 'price | transfer_price | renewal_price',
+  `old_value` decimal(15,2) DEFAULT NULL,
+  `new_value` decimal(15,2) DEFAULT NULL,
+  `reason` varchar(60) NOT NULL COMMENT 'auto_lift_floor | manual | cost_change',
+  `note` varchar(255) DEFAULT NULL,
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -3056,6 +3117,7 @@ ALTER TABLE `dom_extensions`
 --
 ALTER TABLE `dom_pricing`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_dom_pricing` (`dom_extension_id`,`currency_id`,`reg_period`),
   ADD KEY `dom_extension_id` (`dom_extension_id`);
 
 --
@@ -3266,6 +3328,23 @@ ALTER TABLE `pending_executions`
   ADD KEY `order_id` (`order_id`),
   ADD KEY `invoice_id` (`invoice_id`),
   ADD KEY `is_completed` (`is_completed`);
+
+--
+-- Indexes for table `price_overrides`
+--
+ALTER TABLE `price_overrides`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_price_override` (`item_type`,`pricing_id`,`owner_company_id`,`audience`),
+  ADD KEY `idx_po_owner` (`owner_company_id`,`audience`),
+  ADD KEY `idx_po_lookup` (`item_type`,`pricing_id`,`audience`);
+
+--
+-- Indexes for table `price_override_audits`
+--
+ALTER TABLE `price_override_audits`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_poa_override` (`price_override_id`),
+  ADD KEY `idx_poa_owner` (`owner_company_id`,`id`);
 
 --
 -- Indexes for table `plans`
@@ -3543,7 +3622,7 @@ ALTER TABLE `dunning_rules`
 -- AUTO_INCREMENT for table `email_templates`
 --
 ALTER TABLE `email_templates`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `expenses`
@@ -3675,6 +3754,18 @@ ALTER TABLE `payment_transactions`
 -- AUTO_INCREMENT for table `pending_executions`
 --
 ALTER TABLE `pending_executions`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `price_overrides`
+--
+ALTER TABLE `price_overrides`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `price_override_audits`
+--
+ALTER TABLE `price_override_audits`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --

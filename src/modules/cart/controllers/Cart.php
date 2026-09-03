@@ -293,6 +293,39 @@ class Cart extends WHMAZ_Controller
 	 * Process a single cart item (domain or hosting service)
 	 * @return int The saved order item ID (order_domains.id or order_services.id)
 	 */
+	/**
+	 * Per-line reseller cost for one cart row, at checkout-time prices.
+	 *
+	 * Mirrors how the sell price was computed: the same resolver, the same
+	 * component (a transfer is costed at transfer, not registration), times the
+	 * same quantity. Returns 0.00 whenever no reseller sits above the buyer.
+	 */
+	private function _resolveCostAmount($row, $companyId)
+	{
+		$this->load->model('Pricing_model');
+		$qty = !empty($row['quantity']) ? intval($row['quantity']) : 1;
+
+		if ($row['item_type'] == 1) {
+			if (empty($row['dom_pricing_id'])) return 0.00;
+			$r = $this->Pricing_model->resolve(1, $row['dom_pricing_id'], $companyId);
+			if (empty($r)) return 0.00;
+			// dns_update registers nothing at the registrar, so it costs nothing.
+			$action = !empty($row['domain_action']) ? $row['domain_action'] : 'register';
+			if ($action == 'dns_update') return 0.00;
+			$unit = ($action == 'transfer') ? $r['cost_transfer'] : $r['cost_price'];
+		} elseif ($row['item_type'] == 3) {
+			if (empty($row['product_service_pricing_id'])) return 0.00;
+			$r = $this->Pricing_model->resolve(3, $row['product_service_pricing_id'], $companyId);
+			$unit = empty($r) ? 0.00 : $r['cost_price'];
+		} else {
+			if (empty($row['product_service_pricing_id'])) return 0.00;
+			$r = $this->Pricing_model->resolve(2, $row['product_service_pricing_id'], $companyId);
+			$unit = empty($r) ? 0.00 : $r['cost_price'];
+		}
+
+		return round((float) $unit * $qty, 2);
+	}
+
 	private function _processCartItem($row, $orderId, $invoiceId, $companyId, $userId)
 	{
 		$billingCycle = $this->Common_model->get_data_by_id("billing_cycle", $row['billing_cycle_id']);
@@ -303,6 +336,16 @@ class Cart extends WHMAZ_Controller
 		$item['company_id'] = $companyId;
 		$item['first_pay_amount'] = $row['total'];
 		$item['recurring_amount'] = $row['total'];
+
+		// FREEZE THE COST BASIS alongside the sell price (v2.0.0 Phase 2).
+		//
+		// Phase 3 debits the reseller's wallet at cost when provisioning fires,
+		// which can be days after checkout. Recomputing cost then would let a
+		// price change in between silently rewrite what the reseller is billed
+		// for an order they already quoted, so it is snapshotted here in the
+		// same INSERT as the sell price. 0.00 for direct customers -- they have
+		// no reseller above them and therefore no cost basis.
+		$item['cost_amount'] = $this->_resolveCostAmount($row, $companyId);
 		$item['is_synced'] = 1;
 		$item['remarks'] = "";
 		$item['reg_date'] = getDateAddDay(0);
@@ -843,6 +886,17 @@ class Cart extends WHMAZ_Controller
 			$cartArr['billing_cycle_id'] = 1; // Yearly billing cycle
 			$regPeriod = !empty($itemPrice['reg_period']) ? $itemPrice['reg_period'] : 1;
 			$cartArr['billing_cycle'] = $regPeriod . ' Year' . ($regPeriod > 1 ? 's' : '');
+
+			// A transfer is billed at the transfer price, not the registration
+			// price. linkDomainToHosting() and addDomainToCart() have always
+			// branched on this; this path did not, so every transfer added
+			// through the generic addToCartAjax route was charged the register
+			// price -- a live billing bug independent of reseller pricing, and
+			// one that would have quietly become a two-tier money bug.
+			$hdt = !empty($postData['hosting_domain_type']) ? intval($postData['hosting_domain_type']) : 0;
+			if ($hdt == 2 && !empty($itemPrice['transfer'])) {
+				$itemPrice['item_price'] = $itemPrice['transfer'];
+			}
 		}
 
 		$quantity = !empty($postData['quantity']) ? intval($postData['quantity']) : 1;

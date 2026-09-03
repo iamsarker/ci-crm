@@ -101,6 +101,11 @@ class Softwareproduct extends WHMAZADMIN_Controller {
 						$this->Plan_model->savePricingMatrix($productId, $pricingData);
 					}
 
+					// Reseller cost, applied AFTER retail: a brand-new cell has
+					// no software_pricing.id to key an override on until
+					// savePricingMatrix() has created it.
+					$lifted = $this->Plan_model->saveCostMatrix($productId, $this->input->post('cost'));
+
 					// Features: parallel feature_key[] / feature_value[] arrays.
 					$keys   = (array) $this->input->post('feature_key');
 					$values = (array) $this->input->post('feature_value');
@@ -114,7 +119,16 @@ class Softwareproduct extends WHMAZADMIN_Controller {
 					}
 					$this->Plan_model->saveFeatures($productId, $features);
 
-					$this->session->set_flashdata('admin_success', 'Software product has been saved successfully.');
+					$costMsg = '';
+					if (!empty($lifted)) {
+						$this->load->model('Pricing_model');
+						foreach ($lifted as $companyId => $changes) {
+							$this->Pricing_model->notifyLiftedResellers(array($companyId => $changes), 3, 0);
+						}
+						$costMsg = ' ' . count($lifted) . ' reseller selling price(s) were below the new cost and have been raised to it; those resellers have been emailed.';
+					}
+
+					$this->session->set_flashdata('admin_success', 'Software product has been saved successfully.' . $costMsg);
 					redirect('whmazadmin/softwareproduct/index');
 					return;
 				}
@@ -134,6 +148,7 @@ class Softwareproduct extends WHMAZADMIN_Controller {
 		$data['currencies']     = $this->Plan_model->getCurrencies();
 		$data['families']       = $this->Plan_model->getAllFamilies();
 		$data['pricing_matrix'] = $productId ? $this->Plan_model->getPricingMatrix($productId) : array();
+		$data['cost_matrix']    = $productId ? $this->Plan_model->getCostMatrix($productId) : array();
 		$data['features']       = $productId ? $this->Plan_model->getStoredFeatures($productId) : array();
 		$data['releases']       = $this->Software_model->getReleases($productId);
 

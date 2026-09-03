@@ -60,13 +60,27 @@ class Package extends WHMAZADMIN_Controller {
 		$currency_id = isset($_POST['currency_id']) ? intval($_POST['currency_id']) : 0;
 		$billing_cycle_id = isset($_POST['billing_cycle_id']) ? intval($_POST['billing_cycle_id']) : 0;
 		$product_service_id = isset($_POST['product_service_id']) ? intval($_POST['product_service_id']) : 0;
+		// Whose price to quote. The form posts the selected customer so the
+		// figure it fills in matches what saveOrderItemTable() will actually
+		// write -- that path resolves for the buyer, and a form showing
+		// platform retail while the saved order carries the reseller's price
+		// is worse than either number on its own.
+		$company_id = isset($_POST['company_id']) ? intval($_POST['company_id']) : 0;
 
 		if ($currency_id <= 0 || $billing_cycle_id <= 0 || $product_service_id <= 0) {
 			echo json_encode(array('code' => 400, 'data' => null));
 			return;
 		}
 
-		$this->db->select('price');
+		// company_id is a POST field, so it is attacker-controlled. Anything
+		// outside the caller's tenant scope is refused rather than silently
+		// downgraded to platform retail -- a reseller must not be able to
+		// probe another tenant's negotiated pricing.
+		if ($company_id > 0) {
+			$this->guardCompany($company_id);
+		}
+
+		$this->db->select('id, price');
 		$this->db->from('product_service_pricing');
 		$this->db->where('product_service_id', $product_service_id);
 		$this->db->where('currency_id', $currency_id);
@@ -76,6 +90,11 @@ class Package extends WHMAZADMIN_Controller {
 		$result = $this->db->get()->row_array();
 
 		if (!empty($result)) {
+			$this->load->model('Pricing_model');
+			$r = $this->Pricing_model->resolve(2, $result['id'], $company_id);
+			if (!empty($r)) {
+				$result['price'] = $r['price'];
+			}
 			echo json_encode(array('code' => 200, 'data' => $result));
 		} else {
 			echo json_encode(array('code' => 404, 'data' => null));

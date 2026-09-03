@@ -459,7 +459,10 @@ function loadHostingPrice(){
 		const data = {
 			"currency_id": currency_id,
 			"billing_cycle_id": billing_cycle_id,
-			"product_service_id": product_service_id
+			"product_service_id": product_service_id,
+			// Quote the selected CUSTOMER's price, so the amount filled in here
+			// is the one saveOrderItemTable() will write.
+			"company_id": $("select#company_id").val() || 0
 		};
 
 		$.ajax("<?=base_url()?>whmazadmin/package/prices", {
@@ -505,7 +508,9 @@ function loadDomainPrice(){
 		const data = {
 			"currency_id": currency_id,
 			"reg_period": reg_period,
-			"domain": domain
+			"domain": domain,
+			// As with the package lookup: quote the selected customer.
+			"company_id": $("select#company_id").val() || 0
 		};
 
 		$.ajax("<?=base_url()?>whmazadmin/domain_pricing/prices", {

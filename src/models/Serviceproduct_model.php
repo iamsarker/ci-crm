@@ -157,6 +157,80 @@ class Serviceproduct_model extends CI_Model{
 	}
 
 	/**
+	 * Reseller COST matrix for a product: [currency_id][billing_cycle_id] => cost.
+	 *
+	 * Cost never lives in product_service_pricing -- that table stays "platform
+	 * retail" so the direct-customer price path is provably unchanged. It is
+	 * read back out of price_overrides and re-keyed by (currency, cycle) so the
+	 * admin grid can render it beside the retail cell it belongs to.
+	 *
+	 * owner_company_id 0 = the default cost every reseller inherits. Per-reseller
+	 * negotiated costs are edited on the Reseller Pricing screen, not here.
+	 */
+	function getCostMatrix($productId) {
+		if (!is_numeric($productId) || $productId <= 0) {
+			return array();
+		}
+		$rows = $this->db->query(
+			"SELECT psp.currency_id, psp.billing_cycle_id, po.price
+			 FROM product_service_pricing psp
+			 JOIN price_overrides po
+			   ON po.item_type = 2 AND po.pricing_id = psp.id
+			  AND po.owner_company_id = 0 AND po.audience = 1
+			  AND po.is_active = 1 AND po.status = 1
+			 WHERE psp.product_service_id = ? AND psp.status = 1",
+			array(intval($productId))
+		)->result_array();
+
+		$matrix = array();
+		foreach ($rows as $row) {
+			$matrix[$row['currency_id']][$row['billing_cycle_id']] = $row['price'];
+		}
+		return $matrix;
+	}
+
+	/**
+	 * Save the reseller cost matrix. Mirrors savePricingMatrix()'s rule that a
+	 * blank cell is a deletion, not a zero -- a 0.00 cost would mean the
+	 * platform gives the package away, which is never what a cleared field means.
+	 *
+	 * @return array [company_id => lifted components] for every reseller whose
+	 *               selling price had to be raised to the new floor, so the
+	 *               caller can email them.
+	 */
+	function saveCostMatrix($productId, $costData) {
+		$lifted = array();
+		if (!is_numeric($productId) || $productId <= 0 || !is_array($costData)) {
+			return $lifted;
+		}
+		$this->load->model('Pricing_model');
+
+		foreach ($costData as $currencyId => $cycles) {
+			if (!is_array($cycles)) continue;
+			foreach ($cycles as $cycleId => $cost) {
+				$row = $this->db->query(
+					"SELECT id FROM product_service_pricing
+					 WHERE product_service_id = ? AND currency_id = ? AND billing_cycle_id = ? AND status = 1 LIMIT 1",
+					array(intval($productId), intval($currencyId), intval($cycleId))
+				)->row_array();
+				// No retail price for this cell means the package is not sold on
+				// that currency/cycle at all, so there is nothing to cost.
+				if (empty($row)) continue;
+
+				$res = $this->Pricing_model->saveCostOverride(2, $row['id'], 0, array('price' => $cost));
+				if (!empty($res['lifted'])) {
+					foreach ($res['lifted'] as $companyId => $changes) {
+						$lifted[$companyId] = array_merge(
+							isset($lifted[$companyId]) ? $lifted[$companyId] : array(), $changes
+						);
+					}
+				}
+			}
+		}
+		return $lifted;
+	}
+
+	/**
 	 * Save pricing matrix using upsert (INSERT ... ON DUPLICATE KEY UPDATE)
 	 */
 	function savePricingMatrix($productId, $pricingData) {

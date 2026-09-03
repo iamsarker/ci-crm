@@ -258,7 +258,11 @@ class Order extends WHMAZADMIN_Controller
 			$extension = "";
 		}
 
-		$domain_prices = !empty($domain_name) ? $this->Common_model->getDomainPrices($form_data['currency_id'], $form_data['reg_period'], $extension) : array();
+		// Price for the CUSTOMER the order is being raised for, not for the
+		// admin placing it: a reseller's sub-customer must be quoted the
+		// reseller's price even when a platform admin keys the order in.
+		$buyerCompanyId = (int) $order['company_id'];
+		$domain_prices = !empty($domain_name) ? $this->Common_model->getDomainPrices($form_data['currency_id'], $form_data['reg_period'], $extension, $buyerCompanyId) : array();
 
 		if( !empty($form_data['domain']) && $form_data['order_type'] != 3 ){ // order_domain (skip for "No Domain")
 			$domain_arr = $item;
@@ -273,6 +277,17 @@ class Order extends WHMAZADMIN_Controller
 			$domain_arr['dom_pricing_id'] = !empty($domain_prices) ? $domain_prices['id'] : 0;
 			$domain_arr['recurring_amount'] = !empty($domain_prices) ? $domain_prices['renewal'] : 0;
 			$domain_arr['first_pay_amount'] = $form_data['domain_amount'];
+			// Cost basis frozen with the sell price -- same rule as the
+			// storefront (Cart::_resolveCostAmount): transfers cost the
+			// transfer price, and order_type 3 (DNS only) / 4 (import) never
+			// touch the registrar, so they cost nothing.
+			if (in_array((int) $form_data['order_type'], array(3, 4), true)) {
+				$domain_arr['cost_amount'] = 0.00;
+			} else if ((int) $form_data['order_type'] === 2) {
+				$domain_arr['cost_amount'] = !empty($domain_prices['cost_transfer']) ? $domain_prices['cost_transfer'] : (!empty($domain_prices['cost_amount']) ? $domain_prices['cost_amount'] : 0.00);
+			} else {
+				$domain_arr['cost_amount'] = !empty($domain_prices['cost_amount']) ? $domain_prices['cost_amount'] : 0.00;
+			}
 
 			 // domain status; 0=pending reg, 1=active, 2=expired, 3=grace, 4=cancelled, 5=pending transfer
 
@@ -305,7 +320,7 @@ class Order extends WHMAZADMIN_Controller
 		if ( !empty($form_data['product_service_id']) ){
 			$service_arr = $item;
 
-			$hostingPrices = $this->Common_model->getHostingPrices($form_data['currency_id'], $form_data['product_service_id'], $form_data['billing_cycle_id']);
+			$hostingPrices = $this->Common_model->getHostingPrices($form_data['currency_id'], $form_data['product_service_id'], $form_data['billing_cycle_id'], $buyerCompanyId);
 
 			$service_arr['reg_date'] = $hostingRegDate;
 			$service_arr['exp_date'] = $hostingExpDate;
@@ -319,6 +334,9 @@ class Order extends WHMAZADMIN_Controller
 			$service_arr['product_service_pricing_id'] = !empty($hostingPrices['id']) ? $hostingPrices['id'] : 0;
 			$service_arr['product_service_id'] = $form_data['product_service_id'];
 			$service_arr['product_service_type_key'] = $this->Common_model->getProductServiceTypeKeyByPricingId(!empty($hostingPrices['id']) ? $hostingPrices['id'] : 0);
+			// An imported service was already provisioned elsewhere, so the
+			// platform incurs no cost for it.
+			$service_arr['cost_amount'] = ($isExistingHosting || empty($hostingPrices['cost_amount'])) ? 0.00 : $hostingPrices['cost_amount'];
 
 			if ($isExistingHosting) {
 				// Already configured - import as active

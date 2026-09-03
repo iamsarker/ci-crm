@@ -191,13 +191,29 @@ class ApiDomains extends API_Controller
 	 */
 	private function _domPricing($currencyId)
 	{
-		return $this->db->query(
+		$rows = $this->db->query(
 			"SELECT dp.id, dp.currency_id, dp.price, dp.transfer, dp.renewal, de.extension
 			 FROM dom_pricing dp
 			 JOIN dom_extensions de ON dp.dom_extension_id = de.id
 			 WHERE dp.status = 1 AND dp.reg_period = 1 AND dp.currency_id = ? AND de.status = 1",
 			array(intval($currencyId))
 		)->result_array();
+
+		// Two-tier pricing: quote pricingCompanyId() -- the reseller's cost by
+		// default, or a named customer_id's price. resolveMany() keeps this to
+		// one extra query for the whole TLD list.
+		$this->load->model('Pricing_model');
+		$resolved = $this->Pricing_model->resolveMany(1, $rows, $this->pricingCompanyId());
+		foreach ($rows as &$row) {
+			$r = isset($resolved[(int) $row['id']]) ? $resolved[(int) $row['id']] : null;
+			if (empty($r)) continue;
+			$row['price']    = $r['price'];
+			$row['transfer'] = $r['transfer'];
+			$row['renewal']  = $r['renewal'];
+		}
+		unset($row);
+
+		return $rows;
 	}
 
 	private function _priceFor($priceList, $ext, $currencyId)

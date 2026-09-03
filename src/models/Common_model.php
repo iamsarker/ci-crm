@@ -193,7 +193,14 @@ class Common_model extends CI_Model {
 		}
 	}
 
-	public function getDomainPrices($currency_id, $reg_period, $extension) {
+	/**
+	 * @param int|null $companyId the BUYING company. Both callers are admin
+	 *        screens acting for a customer, so there is no CUSTOMER session to
+	 *        infer it from -- passing 0 (the default) resolves platform retail,
+	 *        which is the correct answer for a direct customer and the safe one
+	 *        for a reseller's customer (never below the reseller's own price).
+	 */
+	public function getDomainPrices($currency_id, $reg_period, $extension, $companyId = 0) {
 		try {
 			$sql = "SELECT dp.id, de.extension, dp.price, dp.transfer, dp.renewal
 				FROM dom_pricing dp
@@ -201,7 +208,22 @@ class Common_model extends CI_Model {
 				WHERE dp.currency_id=? and dp.reg_period=? and de.extension=? and dp.status=1 and de.status=1;";
 
 			$data = $this->db->query($sql, array($currency_id, $reg_period, $extension) )->result_array();
-			return !empty($data) ? $data[0] : array();
+			if (empty($data)) return array();
+
+			$row = $data[0];
+			$this->load->model('Pricing_model');
+			$r = $this->Pricing_model->resolve(1, $row['id'], $companyId);
+			if (!empty($r)) {
+				$row['price']         = $r['price'];
+				$row['transfer']      = $r['transfer'];
+				$row['renewal']       = $r['renewal'];
+				// All three cost components, not just registration: the admin
+				// new-order path freezes the transfer cost for a transfer order.
+				$row['cost_amount']   = $r['cost_price'];
+				$row['cost_transfer'] = $r['cost_transfer'];
+				$row['cost_renewal']  = $r['cost_renewal'];
+			}
+			return $row;
 		} catch (Exception $e) {
 			// SECURITY: Log database error
 			ErrorHandler::log_database_error('getDomainPrices', $this->db->last_query(), $e->getMessage());
@@ -209,12 +231,21 @@ class Common_model extends CI_Model {
 		}
 	}
 
-	function getHostingPrices($currency_id, $product_service_id, $billing_cycle_id) {
+	/** @param int|null $companyId the BUYING company; see getDomainPrices(). */
+	function getHostingPrices($currency_id, $product_service_id, $billing_cycle_id, $companyId = 0) {
 		try {
 			$sql = "SELECT * FROM product_service_pricing WHERE currency_id=? and product_service_id=? and billing_cycle_id=? and status=1 ";
 			$data = $this->db->query($sql, array($currency_id, $product_service_id, $billing_cycle_id))->result_array();
+			if (empty($data)) return array();
 
-			return !empty($data) ? $data[0] : array();
+			$row = $data[0];
+			$this->load->model('Pricing_model');
+			$r = $this->Pricing_model->resolve(2, $row['id'], $companyId);
+			if (!empty($r)) {
+				$row['price']       = $r['price'];
+				$row['cost_amount'] = $r['cost_price'];
+			}
+			return $row;
 		} catch (Exception $e) {
 			// SECURITY: Log database error
 			ErrorHandler::log_database_error('getHostingPrices', $this->db->last_query(), $e->getMessage());

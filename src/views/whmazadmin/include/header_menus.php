@@ -105,6 +105,7 @@
                         <?php if (admin_can('promocode')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/promocode/index"><i class="fas fa-tags me-2"></i>Promo Codes</a></li><?php endif; ?>
                         <?php if (!isResellerAdmin()): ?><li><hr class="dropdown-divider"></li><?php endif; ?>
                         <?php if (admin_can('reseller')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/reseller/index"><i class="fas fa-user-tie me-2"></i>Reseller Management</a></li><?php endif; ?>
+                        <?php if (admin_can('reseller_pricing')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/reseller_pricing/index"><i class="fas fa-tags me-2"></i><?= isResellerAdmin() ? 'My Selling Prices' : 'Reseller Pricing' ?></a></li><?php endif; ?>
                         <?php if (admin_can('apikey')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/apikey/index"><i class="fas fa-key me-2"></i>API Keys</a></li><?php endif; ?>
                         <?php if (!isResellerAdmin()): ?><li><hr class="dropdown-divider"></li><?php endif; ?>
                         <?php if (admin_can('service_category')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_category/index"><i class="fas fa-folder me-2"></i>Service Categories</a></li><?php endif; ?>
