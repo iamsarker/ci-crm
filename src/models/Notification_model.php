@@ -128,10 +128,14 @@ class Notification_model extends CI_Model
         $this->db->where('recipient_type', (int) $recipientType);
         $this->db->where('recipient_id', (int) $recipientId);
         $this->db->where('is_read', 0);
-        return $this->db->update($this->table, array(
+        $this->db->update($this->table, array(
             'is_read' => 1,
             'read_on' => date('Y-m-d H:i:s')
         ));
+        // affected_rows, not the update() bool: update() returns TRUE for a
+        // query that matched nothing, so callers could never tell "marked" from
+        // "that id was not yours / already read".
+        return $this->db->affected_rows();
     }
 
     /**
@@ -142,9 +146,10 @@ class Notification_model extends CI_Model
         $this->db->where('recipient_type', (int) $recipientType);
         $this->db->where('recipient_id', (int) $recipientId);
         $this->db->where('is_read', 0);
-        return $this->db->update($this->table, array(
+        $this->db->update($this->table, array(
             'is_read' => 1,
             'read_on' => date('Y-m-d H:i:s')
         ));
+        return $this->db->affected_rows();
     }
 }

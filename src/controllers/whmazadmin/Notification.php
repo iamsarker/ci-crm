@@ -58,8 +58,10 @@ class Notification extends WHMAZADMIN_Controller {
     {
         header('Content-Type: application/json');
         $id = (int) $this->input->post('id');
-        $this->Notification_model->markRead($id, Notification_model::RECIPIENT_ADMIN, getAdminId());
-        echo json_encode(array('success' => true));
+        $marked = $this->Notification_model->markRead($id, Notification_model::RECIPIENT_ADMIN, getAdminId());
+        // 'marked' distinguishes a real write from a no-op (already read,
+        // or an id belonging to someone else). 'success' alone hid both.
+        echo json_encode(array('success' => true, 'marked' => (int) $marked));
         exit;
     }
 
@@ -69,8 +71,8 @@ class Notification extends WHMAZADMIN_Controller {
     public function mark_all_read()
     {
         header('Content-Type: application/json');
-        $this->Notification_model->markAllRead(Notification_model::RECIPIENT_ADMIN, getAdminId());
-        echo json_encode(array('success' => true));
+        $marked = $this->Notification_model->markAllRead(Notification_model::RECIPIENT_ADMIN, getAdminId());
+        echo json_encode(array('success' => true, 'marked' => (int) $marked));
         exit;
     }
 }

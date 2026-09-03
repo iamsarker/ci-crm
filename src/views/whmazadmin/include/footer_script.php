@@ -167,8 +167,34 @@ $(function(){
 
 	$list.on('click', '.notif-item', function(e){
 		var $item = $(this), id = $item.data('id'), url = $item.attr('href');
-		$.post(NOTIF_BASE + 'mark_read', { id: id }, function(){ $item.removeClass('unread'); loadCount(); });
-		if(!url || url === '#'){ e.preventDefault(); }
+		var hasUrl = url && url !== '#';
+
+		// Every notification this app creates carries a URL, so the old code
+		// took the navigate path 100% of the time: it fired mark_read and then
+		// let the <a> follow its href, the browser tore the page down, and the
+		// in-flight XHR was aborted before the server ever saw it. The row was
+		// never marked read — which looked like "mark as read is broken" but
+		// was really "the request never arrived".
+		//
+		// So: hold the navigation, wait for the write, then go. .always() and
+		// not .done() — if marking read fails the user must still reach the
+		// thing they clicked, rather than being trapped on the dropdown.
+		//
+		// A modified click (ctrl/cmd/shift = new tab or window) does NOT unload
+		// this page, so the XHR completes on its own; leave those to the
+		// browser or we break open-in-new-tab.
+		var newTab = e.ctrlKey || e.metaKey || e.shiftKey || e.which === 2;
+		if (!newTab) { e.preventDefault(); }
+
+		$.post(NOTIF_BASE + 'mark_read', { id: id }).always(function(){
+			$item.removeClass('unread');
+			loadCount();
+			// Only ever follow a same-origin-looking path or http(s) URL:
+			// assigning window.location a javascript:/data: URI executes it.
+			if (!newTab && hasUrl && /^(https?:\/\/|\/|[^:]*$)/i.test(url)) {
+				window.location.href = url;
+			}
+		});
 	});
 
 	$('#notif-mark-all').on('click', function(e){
