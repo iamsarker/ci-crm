@@ -86,6 +86,25 @@
 
                 <?php endif; /* end Expenses */ ?>
 
+                <!-- Resellers Dropdown -->
+                <?php /* Its own top-level menu rather than two entries buried in
+                        Settings: for a reseller admin this is most of what they
+                        can reach, and for platform staff it is a distinct job
+                        (who resells for us, and at what price) rather than
+                        configuration. Both items are admin_can()-gated, so the
+                        dropdown renders only when at least one survives. */ ?>
+                <?php if (admin_can('reseller') || admin_can('reseller_pricing')): ?>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-tie me-1"></i> Resellers
+                    </a>
+                    <ul class="dropdown-menu">
+                        <?php if (admin_can('reseller')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/reseller/index"><i class="fas fa-user-tie me-2"></i>Reseller Management</a></li><?php endif; ?>
+                        <?php if (admin_can('reseller_pricing')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/reseller_pricing/index"><i class="fas fa-tags me-2"></i><?= isResellerAdmin() ? 'My Selling Prices' : 'Reseller Pricing' ?></a></li><?php endif; ?>
+                    </ul>
+                </li>
+                <?php endif; /* end Resellers */ ?>
+
                 <!-- Settings Dropdown -->
                 <?php /* Of the 18 Settings entries a reseller may reach only
                         API Keys today, so hide the dropdown entirely unless at
@@ -104,8 +123,6 @@
                         <?php if (admin_can('paymentgateway')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/paymentgateway/index"><i class="fas fa-credit-card me-2"></i>Payment Gateways</a></li><?php endif; ?>
                         <?php if (admin_can('promocode')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/promocode/index"><i class="fas fa-tags me-2"></i>Promo Codes</a></li><?php endif; ?>
                         <?php if (!isResellerAdmin()): ?><li><hr class="dropdown-divider"></li><?php endif; ?>
-                        <?php if (admin_can('reseller')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/reseller/index"><i class="fas fa-user-tie me-2"></i>Reseller Management</a></li><?php endif; ?>
-                        <?php if (admin_can('reseller_pricing')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/reseller_pricing/index"><i class="fas fa-tags me-2"></i><?= isResellerAdmin() ? 'My Selling Prices' : 'Reseller Pricing' ?></a></li><?php endif; ?>
                         <?php if (admin_can('apikey')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/apikey/index"><i class="fas fa-key me-2"></i>API Keys</a></li><?php endif; ?>
                         <?php if (!isResellerAdmin()): ?><li><hr class="dropdown-divider"></li><?php endif; ?>
                         <?php if (admin_can('service_category')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/service_category/index"><i class="fas fa-folder me-2"></i>Service Categories</a></li><?php endif; ?>

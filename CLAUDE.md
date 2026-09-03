@@ -1013,8 +1013,6 @@ Settings
 ├── Payment Gateways
 ├── Promo Codes
 ├── [divider]
-├── Reseller Management
-├── Reseller Pricing        (reseller admins see "My Selling Prices")
 ├── API Keys
 ├── [divider]
 ├── Service Categories
@@ -1029,6 +1027,14 @@ Settings
 ├── [divider]
 └── Software Releases
 ```
+
+**Resellers** is its own top-level dropdown (not under Settings):
+```
+Resellers
+├── Reseller Management
+└── Reseller Pricing        (reseller admins see this as "My Selling Prices")
+```
+The whole dropdown is wrapped in `admin_can('reseller') || admin_can('reseller_pricing')`, so it disappears rather than rendering empty for an admin who can reach neither.
 
 **Invoicing** dropdown contains:
 ```
