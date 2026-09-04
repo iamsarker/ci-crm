@@ -8,7 +8,7 @@
           Maintain by <a href="https://whmaz.com/" target="_blank">WHMAZ</a>
         </div>
         <?php endif; ?>
-        <strong>&copy; 2014-<?=date("Y")?> WHMAZ v1.0.0</strong>
+        <strong>&copy; 2018-<?=date("Y")?> WHMAZ v2.1.0</strong>
       </footer>
 
     </div><!-- /.app-wrapper -->

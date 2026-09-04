@@ -70,36 +70,46 @@
                             </thead>
                             <tbody>
                                 <?php foreach($results as $row): ?>
+                                <?php
+                                // Every cell below renders HTML (icon + <span>), and DataTables
+                                // sorts DOM tables on the cell's innerHTML. Without an explicit
+                                // data-order the dates sort alphabetically ("Apr 02, 2026" before
+                                // "Jan 05, 2025"), the amounts sort as strings ("900.00" above
+                                // "1,234.00") and the status sorts by CSS class. These give each
+                                // column a real sort key. Invoice # sorts on id, which is the same
+                                // sequence as invoice_no but is an integer -- invoice_no is a
+                                // varchar, so "999" would otherwise beat "1000".
+                                $payStatus = strtoupper($row['pay_status'] ?? '');
+                                ?>
                                 <tr>
-                                    <td>
+                                    <td data-order="<?= (int)$row['id'] ?>">
                                         <a href="javascript:void(0);" onclick="viewInvoiceDetail('<?= htmlspecialchars($row['invoice_uuid'], ENT_QUOTES, 'UTF-8') ?>')" class="invoice-link">
                                             <i class="fa fa-file-invoice"></i>
                                             #<?= htmlspecialchars($row['invoice_no'], ENT_QUOTES, 'UTF-8') ?>
                                         </a>
                                     </td>
-                                    <td>
+                                    <td data-order="<?= (float)$row['total'] ?>">
                                         <span class="amount-cell">
                                             <strong><?= htmlspecialchars($row['currency_code'], ENT_QUOTES, 'UTF-8') ?></strong>
                                             <?= number_format((float)$row['total'], 2) ?>
                                         </span>
                                     </td>
-                                    <td>
+                                    <td data-order="<?= !empty($row['order_date']) ? (int)strtotime($row['order_date']) : 0 ?>">
                                         <span class="date-cell">
                                             <i class="fa fa-calendar-alt"></i>
                                             <?= !empty($row['order_date']) ? date('M d, Y', strtotime($row['order_date'])) : '-' ?>
                                         </span>
                                     </td>
-                                    <td>
+                                    <td data-order="<?= !empty($row['due_date']) ? (int)strtotime($row['due_date']) : 0 ?>">
                                         <span class="date-cell">
                                             <i class="fa fa-calendar-check"></i>
                                             <?= !empty($row['due_date']) ? date('M d, Y', strtotime($row['due_date'])) : '-' ?>
                                         </span>
                                     </td>
-                                    <td>
+                                    <td data-order="<?= htmlspecialchars($payStatus, ENT_QUOTES, 'UTF-8') ?>">
                                         <?php
                                         $statusClass = 'bg-secondary';
                                         $statusIcon = 'fa-question-circle';
-                                        $payStatus = strtoupper($row['pay_status'] ?? '');
 
                                         if ($payStatus == 'PAID') {
                                             $statusClass = 'bg-success';
@@ -153,8 +163,12 @@ $(function(){
     'use strict';
 
     $('#example1').DataTable({
+        // Keep the server's order (invoices.id DESC = newest invoice first),
+        // same as My Services / My Domains. NOTE: "order" cannot be used
+        // alongside "aaSorting" -- they are the same option, and DataTables
+        // keeps the Hungarian name when both are supplied, so an "order" here
+        // would be silently ignored.
         "aaSorting": [],
-        "order": [[2, "desc"]],
         language: {
             searchPlaceholder: 'Search invoices...',
             sSearch: '',

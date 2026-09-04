@@ -21,22 +21,22 @@
 <script src="<?=base_url()?>resources/lib/chart.js/Chart.bundle.min.js"></script>
 
 <!-- AngularJS -->
-<script src="<?=base_url()?>resources/angular/angular.min.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/angular-ui-router.min.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/angular-animate.min.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/angular-aria.min.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/angular-messages.min.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/angular-sanitize.min.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/angular-material.min.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/ngDialog.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/ngToast.js?v=1.0.0"></script>
+<script src="<?=base_url()?>resources/angular/angular.min.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/angular/angular-ui-router.min.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/angular/angular-animate.min.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/angular/angular-aria.min.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/angular/angular-messages.min.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/angular/angular-sanitize.min.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/angular/angular-material.min.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/angular/ngDialog.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/angular/ngToast.js?v=2.1.0"></script>
 
 <!-- Toast Notifications -->
-<script src="<?=base_url()?>resources/assets/js/jquery.toast.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/assets/js/toastcode.js?v=1.0.0"></script>
+<script src="<?=base_url()?>resources/assets/js/jquery.toast.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/assets/js/toastcode.js?v=2.1.0"></script>
 
 <!-- Custom JS -->
-<script src="<?=base_url()?>resources/assets/js/custom.js?v=1.0.0"></script>
+<script src="<?=base_url()?>resources/assets/js/custom.js?v=2.1.0"></script>
 
 <script>
 	$(function(){

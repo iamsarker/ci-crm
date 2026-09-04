@@ -22,7 +22,13 @@ class Billing_model extends CI_Model{
 		$scope = adminScopeSql('company_id');
 		if ($scope !== '') { $sql .= " AND " . $scope; }
 
-		$sql .= " ORDER BY updated_on DESC ";
+		// Order by the invoice sequence, NOT updated_on. `updated_on` is an
+		// ON UPDATE CURRENT_TIMESTAMP column, so any later touch (payment,
+		// status change, cancellation) pushes an old invoice back to the top
+		// and the list stops matching the invoice numbering. id DESC is the
+		// creation sequence and is 1:1 with invoice_no (which is a varchar,
+		// so it must not be sorted on directly -- "999" would beat "1000").
+		$sql .= " ORDER BY id DESC ";
 
 		if (is_numeric($limit) && $limit > 0) {
 			$sql .= " LIMIT " . intval($limit);

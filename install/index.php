@@ -5,7 +5,7 @@
  * Main entry point for the installation wizard
  *
  * @package WHMAZ
- * @version 1.0.0
+ * @version 2.1.0
  */
 
 // Error reporting for debugging (disable in production)

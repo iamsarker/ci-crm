@@ -293,7 +293,7 @@
         updateCartTotal();
     }
 </script>
-<script src="<?=base_url()?>resources/angular/app/app.directives.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/app/app.services.js?v=1.0.0"></script>
-<script src="<?=base_url()?>resources/angular/app/services_controller.js?v=1.0.0"></script>
+<script src="<?=base_url()?>resources/angular/app/app.directives.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/angular/app/app.services.js?v=2.1.0"></script>
+<script src="<?=base_url()?>resources/angular/app/services_controller.js?v=2.1.0"></script>
 <?php $this->load->view('templates/customer/footer'); ?>

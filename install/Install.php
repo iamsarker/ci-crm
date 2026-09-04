@@ -5,7 +5,7 @@
  * Main installer class handling all installation logic
  *
  * @package WHMAZ
- * @version 1.0.0
+ * @version 2.1.0
  */
 
 class Install

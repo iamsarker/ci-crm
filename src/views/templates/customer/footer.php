@@ -10,7 +10,7 @@
             <a href="<?=page_url('refund-policy')?>" class="nav-link" target="_blank">Refund Policy</a>
           </nav>
         </div>
-        <strong>&copy; 2014-<?=date("Y")?> WHMAZ v1.0.0</strong>
+        <strong>&copy; 2018-<?=date("Y")?> WHMAZ v2.1.0</strong>
         <?php if ( ! feature_enabled('branding_removal')): ?>
         <span class="ms-2">Maintain by <a href="https://whmaz.com/" target="_blank">WHMAZ</a></span>
         <?php endif; ?>
