@@ -16,6 +16,14 @@ class Provisioning_model extends CI_Model
 {
     private $logTable = 'provisioning_logs';
 
+    /**
+     * provisioning_logs.action for an item withheld pending reseller credit
+     * (v2.0.0 Phase 3). A constant because holdInvoiceItems() writes it and
+     * getHeldInvoices() matches on it -- a typo across those two would leave
+     * paid orders parked forever with nothing looking for them.
+     */
+    const ACTION_HELD = 'held_insufficient_credit';
+
     function __construct()
     {
         parent::__construct();
@@ -55,6 +63,20 @@ class Provisioning_model extends CI_Model
         }
 
         foreach ($items as $item) {
+            // Reseller wallet top-up (v2.0.0 Phase 3): money, not a service.
+            // It is credited by Resellercredit_model::creditWalletTopups() when
+            // the invoice is marked PAID, and there is nothing here to
+            // provision.
+            //
+            // getInvoiceItemsForProvisioning() already filters these out (a
+            // top-up line carries ref_id NULL), so this is unreachable today.
+            // It exists so that if that WHERE clause is ever relaxed a top-up
+            // is skipped silently, rather than falling through to the "unknown
+            // item type" branch and marking a perfectly good payment as a
+            // provisioning failure. Skipped before items_processed++ so it
+            // cannot appear in the totals as a processed-but-unaccounted item.
+            if ($item['item_type'] == 4) continue;
+
             $results['items_processed']++;
 
             if ($item['item_type'] == 1) {
@@ -94,6 +116,107 @@ class Provisioning_model extends CI_Model
             ', Failed: ' . $results['items_failed']);
 
         return $results;
+    }
+
+    /**
+     * Park an invoice's items instead of provisioning them (v2.0.0 Phase 3).
+     *
+     * Called when the reseller's wallet could not cover the invoice, or the
+     * invoice is in a currency their wallet does not hold. The sub-customer has
+     * already paid at this point, so nothing is refunded or cancelled -- the
+     * registrar / control-panel calls are simply not made yet.
+     *
+     * Recorded through the ordinary provisioning_logs machinery rather than a
+     * new status column: the admin Provisioning Logs page, the failed-count
+     * dashboard widget and the existing Retry button then all understand a held
+     * item for free, and releaseHeldProvisioning() finds them with a query
+     * against a table that is already indexed by invoice.
+     *
+     * Returns the same shape as provisionInvoiceItems(), so every caller --
+     * webhook, admin "mark as paid", retry -- needs no branching.
+     */
+    function holdInvoiceItems($invoiceId, $reason)
+    {
+        $results = array(
+            'success' => false,
+            'held' => true,
+            'items_processed' => 0,
+            'items_success' => 0,
+            'items_failed' => 0,
+            'details' => array()
+        );
+
+        $items = $this->getInvoiceItemsForProvisioning($invoiceId);
+        if (empty($items)) {
+            // Nothing to hold. Not a failure: an invoice with no provisionable
+            // items (a pure top-up) legitimately reaches here.
+            $results['success'] = true;
+            return $results;
+        }
+
+        $result = array(
+            'success' => false,
+            'action'  => self::ACTION_HELD,
+            'error'   => $reason,
+        );
+
+        foreach ($items as $item) {
+            if ($item['item_type'] == 4) continue;
+
+            $results['items_processed']++;
+            $results['items_failed']++;
+
+            $this->logProvisioning($invoiceId, $item, $result);
+
+            $results['details'][] = array(
+                'item_id'   => $item['id'],
+                'item_type' => $item['item_type'],
+                'ref_id'    => $item['ref_id'],
+                'result'    => $result
+            );
+        }
+
+        log_message('error', 'Provisioning HELD for invoice #' . $invoiceId
+            . ' (' . $results['items_processed'] . ' items) - ' . $reason);
+
+        return $results;
+    }
+
+    /**
+     * Invoices whose provisioning is currently held for credit.
+     *
+     * "Currently" is the whole difficulty: provisioning_logs is append-only, so
+     * a held item that was later released still has its old held row. An
+     * invoice therefore counts as held only while its MOST RECENT log row for
+     * every held item is still the held one -- expressed here as "has a held
+     * row with no later successful row for the same invoice_item_id".
+     *
+     * Without that NOT EXISTS the release pass would re-provision every invoice
+     * that was ever held, forever -- buying a second year of every domain it
+     * had once queued.
+     */
+    function getHeldInvoices($limit = 100)
+    {
+        if (!$this->db->table_exists($this->logTable)) {
+            return array();
+        }
+
+        $sql = "SELECT DISTINCT l.invoice_id, inv.company_id, inv.invoice_no, inv.currency_id
+                FROM {$this->logTable} l
+                JOIN invoices inv ON inv.id = l.invoice_id
+                WHERE l.action = ?
+                  AND inv.pay_status = 'PAID'
+                  AND inv.status = 1
+                  AND NOT EXISTS (
+                      SELECT 1 FROM {$this->logTable} l2
+                      WHERE l2.invoice_item_id = l.invoice_item_id
+                        AND l2.success = 1
+                        AND l2.id > l.id
+                  )
+                ORDER BY l.invoice_id
+                LIMIT ?";
+
+        return $this->db->query($sql, array(self::ACTION_HELD, (int) $limit))->result_array();
     }
 
     /**
@@ -213,6 +336,15 @@ class Provisioning_model extends CI_Model
     private function isRenewalInvoiceItem($item, $itemType)
     {
         if (empty($item['ref_id']) || empty($item['invoice_id'])) {
+            return false;
+        }
+
+        // A wallet top-up is never a renewal of anything (v2.0.0 Phase 3).
+        // It cannot reach here today -- it has no ref_id, so the guard above
+        // already returned -- but this function is the gate in front of the
+        // registrar dispatcher, and "is this a renewal?" answered wrongly for
+        // a money line is how a top-up would end up calling a registrar.
+        if (isset($item['item_type']) && (int) $item['item_type'] === 4) {
             return false;
         }
 

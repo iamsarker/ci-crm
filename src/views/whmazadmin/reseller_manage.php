@@ -134,8 +134,22 @@
 								</div>
 								<div class="col-md-3">
 									<div class="form-group">
-										<label class="form-label" for="credit_balance"><i class="fa fa-wallet"></i> Credit Balance</label>
-										<input name="credit_balance" type="number" step="0.01" class="form-control" id="credit_balance" placeholder="0.00" value="<?= htmlspecialchars($detail['credit_balance'] ?? '0', ENT_QUOTES, 'UTF-8') ?>" />
+										<label class="form-label"><i class="fa fa-wallet"></i> Credit Balance</label>
+										<?php /* Read-only on purpose (v2.0.0 Phase 3): this is a cache of the
+										        credit ledger, not an editable field. Typing over it would put the
+										        balance and its own transaction history out of step. Adjustments go
+										        through Reseller Wallet, which records who changed it and why. */ ?>
+										<input type="text" class="form-control-plaintext ps-2 fw-bold" readonly
+										       value="<?= number_format((float) ($detail['credit_balance'] ?? 0), 2) ?>" />
+										<small class="text-muted">
+											<?php if (!empty($detail['company_id'])): ?>
+												Adjust it on
+												<a href="<?=base_url()?>whmazadmin/reseller_wallet/index?reseller=<?= (int) $detail['company_id'] ?>">Reseller Wallet</a>,
+												which writes an audited entry.
+											<?php else: ?>
+												Set once the reseller is saved, from Reseller Wallet.
+											<?php endif; ?>
+										</small>
 									</div>
 								</div>
 								<div class="col-md-3">

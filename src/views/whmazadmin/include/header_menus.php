@@ -93,7 +93,7 @@
                         (who resells for us, and at what price) rather than
                         configuration. Both items are admin_can()-gated, so the
                         dropdown renders only when at least one survives. */ ?>
-                <?php if (admin_can('reseller') || admin_can('reseller_pricing')): ?>
+                <?php if (admin_can('reseller') || admin_can('reseller_pricing') || admin_can('reseller_wallet')): ?>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-user-tie me-1"></i> Resellers
@@ -101,6 +101,7 @@
                     <ul class="dropdown-menu">
                         <?php if (admin_can('reseller')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/reseller/index"><i class="fas fa-user-tie me-2"></i>Reseller Management</a></li><?php endif; ?>
                         <?php if (admin_can('reseller_pricing')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/reseller_pricing/index"><i class="fas fa-tags me-2"></i><?= isResellerAdmin() ? 'My Selling Prices' : 'Reseller Pricing' ?></a></li><?php endif; ?>
+                        <?php if (admin_can('reseller_wallet')): ?><li><a class="dropdown-item" href="<?=base_url()?>whmazadmin/reseller_wallet/index"><i class="fas fa-wallet me-2"></i><?= isResellerAdmin() ? 'My Account Credit' : 'Reseller Wallet' ?></a></li><?php endif; ?>
                     </ul>
                 </li>
                 <?php endif; /* end Resellers */ ?>

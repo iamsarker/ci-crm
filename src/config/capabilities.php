@@ -76,8 +76,15 @@ $config['reseller'] = array(
 	// so '*' here does not let one reseller price another's catalog.
 	'reseller_pricing' => array('*'),
 
+	// --- Own prepaid credit account (Phase 3) ---
+	// Like reseller_pricing, the controller pins a reseller admin to their own
+	// company and ignores ?reseller=, so '*' cannot reach another tenant's
+	// wallet. adjust() refuses resellers outright (only platform staff may post
+	// a manual correction) and pay() refuses PLATFORM staff outright (it is
+	// impersonation, and they have a non-impersonating route via Invoice).
+	'reseller_wallet' => array('*'),
+
 	// --- Added in later phases; keep commented so they stay denied until built ---
 	// 'promocode'        => array('*'),   // Phase 4: needs promo_codes.company_id first,
 	//                                     // or a reseller edits PLATFORM promo codes
-	// 'reseller_wallet'  => array('*'),   // Phase 3
 );

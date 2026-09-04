@@ -361,6 +361,21 @@ class Payment_model extends CI_Model
                 'updated_on' => date('Y-m-d H:i:s')
             ));
 
+            // Credit any reseller wallet top-up lines (v2.0.0 Phase 3).
+            //
+            // Must run BEFORE provisionPaidServices(): that call debits the
+            // wallet for anything provisionable on this invoice, and a top-up
+            // that landed after the debit would not be counted toward covering
+            // it. In practice an invoice is one or the other, but ordering it
+            // this way means a mixed invoice behaves sensibly rather than
+            // holding an order the customer just funded.
+            //
+            // Idempotent on topup:invoice:{id} -- this whole branch re-runs on
+            // every webhook redelivery, so the unique index is what stops a
+            // Paddle retry from crediting the wallet twice.
+            $this->load->model('Resellercredit_model');
+            $this->Resellercredit_model->creditWalletTopups($invoiceId);
+
             // Trigger service provisioning
             $this->Invoice_model->provisionPaidServices($invoiceId);
 
@@ -371,7 +386,14 @@ class Payment_model extends CI_Model
             return true;
 
         } elseif ($totalPaid > 0) {
-            // Partial payment
+            // Partial payment.
+            //
+            // Deliberately no wallet activity here (v2.0.0 Phase 3), stated
+            // explicitly so the silence is not read as an oversight: a PARTIAL
+            // invoice does not provision, so there is no cost incurred to debit
+            // a reseller for; and crediting a fraction of a top-up would let
+            // someone fund a wallet with a part payment they never complete.
+            // Both happen when the invoice reaches PAID, and not before.
             $this->db->where('id', $invoiceId);
             $this->db->update('invoices', array(
                 'pay_status' => 'PARTIAL',

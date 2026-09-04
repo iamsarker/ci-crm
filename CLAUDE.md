@@ -603,6 +603,52 @@ Domains resolve **register / transfer / renewal independently**; services and so
 
 **Verification harness:** `node tests/pricingcheck.mjs`. The assertions live in `src/controllers/whmazadmin/Pricingcheck.php` (CLI-only) because they must exercise the real `Pricing_model`; the JS driver purges fixture rows from any killed earlier run in one round trip, runs the harness under a timeout, and asserts the database was left clean. It builds its own reseller + sub-customer and rolls them back, so it proves the reseller paths on a database that has no reseller. 44 checks; the headline one is the direct-customer no-op across every row of all three item types. ⚠️ **Both files are development-only — delete them before a release build.** ⚠️ The dev DB is **remote**, so the run takes minutes; that is latency, not a hang (see `[[project_dev_db_is_remote]]`).
 
+### Reseller Prepaid Wallet (v2.0.0 Phase 3)
+
+Resellers pay from a prepaid balance. Sub-customer orders debit the reseller at **cost**; the reseller tops up through the normal invoice/gateway flow. Migration: `reseller_v2_phase3_migration.sql`. ⚠️ **Run it before the code deploy** and **after Phase 2's** — the debit reads `order_*.cost_amount`, which Phase 2 adds.
+
+**`reseller_credit_transactions` is the ledger and it is append-only.** `reseller_profiles.credit_balance` stops being a free-text admin field and becomes a **cache of `SUM(amount)`** that only `Resellercredit_model` writes. `amount` is signed (+ credit, − debit) so the balance is a plain `SUM()`; `balance_after` is the running total as of the row. The migration seeds an `opening:company:{id}` row for every non-zero legacy balance so the invariant holds from day one. `Resellercredit_model::reconcile()` is that invariant as a query and must always return empty — a hit means something wrote `credit_balance` directly.
+
+**Locking.** `record()` does: fast-path key check (no lock) → `trans_begin()` → `SELECT … FOR UPDATE` on the profile row → **re-check the key inside the lock** → derive `balance_after` from the locked read → insert → update the cache → commit.
+- The in-lock check is a plain `SELECT` and that is correct *because of the ordering*: `FOR UPDATE` is a locking read, so it opens no REPEATABLE READ snapshot; the key check is the first consistent read and its snapshot is taken after the lock is held. ⚠️ **Never add a plain SELECT between `trans_begin()` and the `FOR UPDATE`** — it would open the snapshot early and the check would read a pre-lock version of the table.
+- `db_debug` is suppressed around the insert. It is `TRUE` outside production and CI's driver calls `display_error()` → `exit` on a query error, which mid-webhook would abort the payment and leave the gateway retrying into the same wall.
+- The post-failure re-read uses `LOCK IN SHARE MODE` **before** the rollback — a plain read there would be served from the snapshot that by definition lacked the row.
+- ⚠️ **`uq_credit_idem` is the entire re-entrancy defence.** `Payment_model::processSuccessfulPayment()` has no already-PAID guard and re-fires on every webhook redelivery across all 11 call sites (Paddle retries ~3 days). A PHP status check cannot protect the ledger; only the constraint is evaluated under concurrency. A duplicate-key error is the fix working, not a bug to index away.
+
+**Nesting.** Callers are usually already inside a transaction (`Pay.php` wraps payment handling). CI's `trans_begin()` then only increments depth, so the real COMMIT belongs to the outer transaction — correct, since the debit and the invoice status change should land together. `FOR UPDATE` still holds.
+
+**Credit — top-up is a real invoice.** `createTopupInvoice()` raises a normal invoice (`order_id = 0`) with one `invoice_items` line of **`item_type = 4`, `ref_id` NULL**, paid at `invoicing/pay/{uuid}`. Every gateway, signature check, Paddle API re-confirmation, retry rule, card capture and receipt email is inherited. `creditWalletTopups()` is called from **two** independent PAID routes, and neither is a subset of the other:
+- `Payment_model::processSuccessfulPayment()` — gateway payments.
+- `Invoice_model::updateInvoiceStatus()` — admin "Mark as Paid" and the API's `POST /invoices/pay`. **This is the bank-transfer path**, i.e. how a reseller without a card tops up; without the hook there those top-ups are marked paid and silently never credited.
+
+Both are idempotent on `topup:invoice:{id}`.
+
+**Debit — at provisioning, not checkout.** `debitForInvoice()` runs at the top of `Invoice_model::provisionPaidServices()`. Checkout creates a DUE invoice that may never be paid, so debiting there lets abandoned carts drain a balance; provisioning is when the platform actually incurs the registrar/server cost. It sums the **frozen** `order_*.cost_amount` (never recomputed — a cost change between checkout and payment must not rewrite what the reseller is billed). **`R == 0` → returns `wallet = false` and does nothing at all**, the same short circuit that makes Phase 2 a no-op for direct customers.
+
+The `PARTIAL` branch deliberately does neither credit nor debit — it does not provision, so there is no cost to charge, and crediting a fraction of a top-up would let someone fund a wallet with a part payment they never complete.
+
+**Insufficient funds = soft block.** A shortfall does **not** block the debit: the sub-customer has already paid, and refusing to record the movement leaves a PAID invoice with no service *and* no ledger trace — strictly worse than a negative balance. So the debit is written, the balance goes negative, and **provisioning** is held. `credit_limit` defaults to `0.00`, so "no overdraft" is still the default; it only changes how a shortfall is handled. Cross-currency invoices are held too (single-currency wallets in v2.0.0; converting needs an FX table this app lacks).
+
+**Hold & release.** `Provisioning_model::holdInvoiceItems()` logs each item to `provisioning_logs` with `action = ACTION_HELD` (`held_insufficient_credit`) and returns the same shape as `provisionInvoiceItems()`, so webhook/admin/retry callers need no branching — and the admin Provisioning Logs page, failed-count widget and Retry button understand a held item for free. `getHeldInvoices()` finds them with **"has a held row with no later successful row for the same `invoice_item_id`"** — ⚠️ without that `NOT EXISTS` the release pass would re-provision every invoice ever held, buying a second year of every domain it once queued. `Cronjobs::releaseHeldProvisioning()` (step 3b of `/cronjobs/run`, also standalone at `/cronjobs/releaseHeldProvisioning?key=SECRET`) re-enters `provisionPaidServices()`, which re-runs the idempotent debit and either provisions or re-holds — so the "can we afford it now" logic lives in one place.
+
+**Notifications are non-fatal by design.** `notifyTopup()` / `notifyInsufficientCredit()` are wrapped in `try/catch (Throwable)`. The money is already committed when they run, inside `processSuccessfulPayment()`; letting a dead SMTP server or a missing `mbstring` throw would abort the caller *before* provisioning, turning "the receipt did not send" into "the customer paid and got nothing". In-app notices go to the reseller's own `admin_users` rows **plus platform staff only** — ⚠️ **not** `Notification_model::notifyAdmins()`, which posts to every row in `admin_users` and since Phase 1 that includes every *other* reseller's admin login.
+
+**`actAsCompanyCustomer()`** (`WHMAZADMIN_Controller`) mints a CUSTOMER session so admin-portal code can hand off to the storefront payment flow — ported from `API_Controller::actAsCustomer()`, same owner-user selection (`ORDER BY user_type ASC, id ASC`). ⚠️ Callers **must** `guardCompany()` first; it deliberately does not, because a platform admin also uses this path. ⚠️ The reseller's `users` owner row **must stay `status = 1`**: `Auth_model::getUserSessionData()` filters `u.status = 1` and is IonCube-encoded. Retiring client-portal access by zeroing that row breaks top-up payments, and the symptom is a silent failure at the Pay click. Block the *login*; don't overload `status`.
+
+**Deploy scope: `src/` plus the two SQL files, nothing else.** Phase 3 touches no `resources/` asset and no `whmaz/` system file — the wallet view reuses `admin.manage_view.css`'s existing classes (`company-page-header`, `manage-form-card`, `company-form-section`) and stock Bootstrap, so there is no new CSS to keep in sync with the encoded build, and its only JS is a few inline lines for the reseller selector.
+
+**Verification harness:** `php index.php whmazadmin/walletcheck run` — 77 checks, including a render pass over all five branches of the wallet view (reseller, platform, empty-wallet, drift warning, held-orders panel), since a view fatal is the one thing `php -l` cannot catch. Builds a reseller + sub-customer, exercises credit/debit/replay/top-up, and rolls everything back, so it proves the wallet on a database that has no reseller. The headline checks are the replay pair (a repeated key must not double the balance) and the direct-customer no-op. ⚠️ **`src/controllers/whmazadmin/Walletcheck.php` is development-only — delete it before a release build**, like `Pricingcheck.php`.
+
+**Admin UI — `whmazadmin/reseller_wallet`.** One screen for both audiences, like `reseller_pricing`: a reseller admin sees their own balance, statement and top-up form; platform staff get a reseller selector and a manual-adjustment panel. The controller **pins a reseller admin to their own company and ignores `?reseller=`** — the capability hook knows class+method but not which company an id names.
+- `topup()` raises the invoice, then behaves differently by audience: a reseller is sent straight to the payment page; **platform staff are not**, because `pay()` is impersonation. They get the invoice to email or mark paid, which credits through the same hook.
+- `pay()` is **reseller-admin only**. It calls `actAsCompanyCustomer()` *after* `guardRecord('invoices', …)` — that helper does not check scope on purpose, so the guard has to be at the call site. A platform admin doing it would be silently logged into the client portal as that reseller, and they already have a non-impersonating route (mark the invoice paid).
+- `adjust()` is **platform-staff only** and **requires a reason** — an unexplained adjustment is exactly the v1 behaviour this screen exists to end.
+- The page renders a **reconciliation warning** instead of a balance if `reconcile()` returns drift. It should be unreachable; if it fires, the number cannot be trusted and saying so beats displaying it as fact.
+
+**`credit_balance` is no longer form-writable.** It is dropped from `Reseller::manage()`'s `$form_data` and read-only on `reseller_manage.php`, which now links to the wallet. It is a cache of `SUM(ledger)`; a form write would break the invariant, and the old field accepted any value including a negative one with no author, reason or trail.
+
+⚠️ **`reseller_wallet.php` joins the encode set** under rule (d) ("every top-level admin view") — **86 → 87**. `header_menus.php` and `reseller_manage.php` also changed. All three are synced to `plainfile/` and logged in `pending-reencode.txt`. (The manifest's headline counts were stale from Phase 2 — it still said 85/66 — and are now corrected to 87/68 against the real `plainfile/` contents.)
+
 ### Admin Order Management
 
 **Order Management Page:**
@@ -862,6 +908,33 @@ if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
 - `Security::csrf_show_error()` also emits the rotated token and answers AJAX with **JSON** (`csrf_expired: true`) instead of CI's HTML 403 page, so a page that does hit a stale token recovers on the next click. The 403 is raised **before any controller runs**, so without this the page can never learn the new token.
 - Debugging with `curl`: a hand-copied token is single-use. Fetch a page into a cookie jar, read the fresh `csrf_cookie_name` cookie, and post *that* — otherwise you get a 403 that has nothing to do with the bug you're chasing.
 
+### Adding seed rows to `crm_db.sql`? Bump the table's AUTO_INCREMENT
+`crm_db.sql` is a mysqldump: explicit-id `INSERT`s come first, and the
+`ALTER TABLE … MODIFY id … AUTO_INCREMENT=N` statements sit in a block at the
+**end** of the file. Appending a seed row without raising `N` leaves the two
+disagreeing.
+
+InnoDB clamps the counter to `max(id)+1` when the declared value is lower, so a
+fresh install usually survives — which is exactly why this rots unnoticed. It is
+still wrong: it makes the file's correctness depend on engine behaviour rather
+than on the file, and if the ALTER ever ran ahead of the INSERT the next row the
+admin UI creates would collide on the primary key.
+
+Bit this twice already, both times on `email_templates`: Phase 2 added id 20 and
+Phase 3 added 21–22 while the dump still declared `AUTO_INCREMENT=21`. After
+adding rows, check with:
+
+```bash
+awk '/^INSERT INTO `email_templates`/{f=1;next} /^-- Table structure|^CREATE TABLE/{f=0} \
+     f && /^\([0-9]+, /{match($0,/^\(([0-9]+),/,a); if(a[1]+0>m) m=a[1]+0} \
+     END{print "max id:", m}' crm_db.sql
+grep -A3 'AUTO_INCREMENT for table `email_templates`' crm_db.sql | tail -1
+```
+
+⚠️ Don't parse an `INSERT` block by finding the next `;` — template bodies
+contain HTML entities like `&mdash;`, and the semicolon inside one truncates the
+block, so the max id reads far too low.
+
 ### Query Builder lacks where_group_start()/where_group_end()
 This project's bundled CI (system folder `whmaz/`) ships a **trimmed query builder that does NOT have `where_group_start()` / `where_group_end()`**. Calling them fatals with `Call to undefined method CI_DB_mysqli_driver::where_group_start()`. Write OR-groups inline in a raw parameterized query instead:
 ```php
@@ -1032,9 +1105,10 @@ Settings
 ```
 Resellers
 ├── Reseller Management
-└── Reseller Pricing        (reseller admins see this as "My Selling Prices")
+├── Reseller Pricing        (reseller admins see this as "My Selling Prices")
+└── Reseller Wallet         (reseller admins see this as "My Account Credit")
 ```
-The whole dropdown is wrapped in `admin_can('reseller') || admin_can('reseller_pricing')`, so it disappears rather than rendering empty for an admin who can reach neither.
+The whole dropdown is wrapped in `admin_can('reseller') || admin_can('reseller_pricing') || admin_can('reseller_wallet')`, so it disappears rather than rendering empty for an admin who can reach none of them.
 
 **Invoicing** dropdown contains:
 ```

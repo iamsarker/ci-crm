@@ -456,7 +456,9 @@ CREATE TABLE `reseller_profiles` (
   `status` tinyint(4) NOT NULL DEFAULT 1,
   `discount_type` varchar(20) NOT NULL DEFAULT 'percent',
   `discount_value` decimal(12,2) NOT NULL DEFAULT 0.00,
-  `credit_balance` decimal(14,2) NOT NULL DEFAULT 0.00,
+  `credit_balance` decimal(14,2) NOT NULL DEFAULT 0.00 COMMENT 'CACHE of SUM(reseller_credit_transactions.amount); written only by Resellercredit_model',
+  `credit_limit` decimal(14,2) NOT NULL DEFAULT 0.00 COMMENT 'permitted overdraft; 0.00 = none',
+  `payment_mode` tinyint(4) NOT NULL DEFAULT 0 COMMENT '0=reseller collects & marks paid, 1=sub-customers pay via platform gateways',
   `currency_id` int(11) DEFAULT NULL,
   `allow_api` tinyint(4) NOT NULL DEFAULT 1,
   `notes` text DEFAULT NULL,
@@ -469,6 +471,48 @@ CREATE TABLE `reseller_profiles` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_reseller_company` (`company_id`),
   KEY `idx_reseller_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `reseller_credit_transactions`
+-- The reseller prepaid wallet ledger (v2.0.0 Phase 3). Append-only: every
+-- movement of wallet money is a row here, and reseller_profiles.credit_balance
+-- is a cache of SUM(amount) that only Resellercredit_model writes. `amount` is
+-- signed (+ credit, - debit) so the balance is a plain SUM; `balance_after` is
+-- the running total as of the row, derived inside a FOR UPDATE lock on the
+-- profile.
+--
+-- uq_credit_idem is the re-entrancy defence, and it is load-bearing:
+-- Payment_model::processSuccessfulPayment() has no already-PAID guard and
+-- re-fires on every webhook redelivery, so only a database constraint can stop
+-- a double credit. Keys: topup:invoice:{id}, debit:invoice:{id},
+-- adjust:{adminId}:{companyId}:{amount}:{ts}, opening:company:{id}.
+--
+
+CREATE TABLE `reseller_credit_transactions` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `company_id` bigint(20) NOT NULL COMMENT 'the RESELLER companies.id that owns the wallet, never the sub-customer',
+  `currency_id` int(11) NOT NULL DEFAULT 0 COMMENT 'wallet currency; 0 = reseller_profiles.currency_id was unset when written',
+  `txn_type` varchar(20) NOT NULL COMMENT 'topup | debit | refund | adjustment',
+  `amount` decimal(15,2) NOT NULL COMMENT 'SIGNED: positive credits the wallet, negative debits it',
+  `balance_after` decimal(15,2) NOT NULL COMMENT 'running balance as of this row, derived inside the row lock',
+  `ref_type` varchar(30) DEFAULT NULL COMMENT 'invoice | order | manual',
+  `ref_id` bigint(20) DEFAULT NULL COMMENT 'id in the table named by ref_type',
+  `idempotency_key` varchar(120) DEFAULT NULL COMMENT 'natural key for this movement; UNIQUE',
+  `description` varchar(255) DEFAULT NULL,
+  `status` tinyint(4) NOT NULL DEFAULT 1 COMMENT '1=active, 0=soft deleted',
+  `inserted_on` datetime DEFAULT NULL,
+  `inserted_by` int(11) DEFAULT NULL,
+  `updated_on` datetime DEFAULT NULL,
+  `updated_by` int(11) DEFAULT NULL,
+  `deleted_on` datetime DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_credit_idem` (`idempotency_key`),
+  KEY `idx_credit_company` (`company_id`,`id`),
+  KEY `idx_credit_ref` (`ref_type`,`ref_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -1123,7 +1167,9 @@ INSERT INTO `email_templates` (`id`, `template_key`, `template_name`, `subject`,
 (16, 'ticket_reply_to_department', 'Ticket Reply - Department Notification', 'Customer Reply - Ticket #{ticket_id} - {ticket_subject}', '<p>A customer has replied to a support ticket.</p>\r\n<h3>Ticket Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Ticket ID:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{ticket_id}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Subject:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{ticket_subject}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Priority:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{ticket_priority}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Department:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{department_name}</td></tr>\r\n</table>\r\n<h3>Customer:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Name:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_name}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Email:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_email}</td></tr>\r\n</table>\r\n<h3>Reply:</h3>\r\n<div style=\"padding: 15px; background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0;\">\r\n{reply_message}\r\n</div>\r\n<p style=\"margin-top: 20px;\"><a href=\"{admin_ticket_url}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">View & Reply to Ticket</a></p>', '{ticket_id}, {ticket_subject}, {ticket_priority}, {department_name}, {client_name}, {client_email}, {reply_message}, {admin_ticket_url}', 'TICKET', 1, '2026-02-21 16:38:55', 1, '2026-02-21 22:38:55', 1, NULL, NULL),
 (18, 'admin_order_notification', 'Admin Order Notification', 'New Order Received - #{order_no} - {currency_symbol}{total_amount}', '<p>A new order has been placed.</p>\r\n<h3>Customer Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Customer Name:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_name}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Company:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{company_name_customer}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Email:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{client_email}</td></tr>\r\n</table>\r\n<h3>Order Details:</h3>\r\n<table style=\"border-collapse: collapse; width: 100%; max-width: 500px;\">\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Order Number:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{order_no}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Order Date:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{order_date}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Invoice Number:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">#{invoice_no}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Total Amount:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{currency_symbol}{total_amount}</td></tr>\r\n<tr><td style=\"padding: 8px; border: 1px solid #ddd; background: #f5f5f5;\"><strong>Payment Status:</strong></td><td style=\"padding: 8px; border: 1px solid #ddd;\">{pay_status}</td></tr>\r\n</table>\r\n<h3>Order Items:</h3>\r\n{order_items}\r\n<p style=\"margin-top: 20px;\">\r\n<a href=\"{admin_order_url}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-right: 10px;\">View Order</a>\r\n<a href=\"{admin_invoice_url}\" style=\"background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;\">View Invoice</a>\r\n</p>', '{client_name}, {company_name_customer}, {client_email}, {order_no}, {order_date}, {invoice_no}, {total_amount}, {currency_symbol}, {pay_status}, {order_items}, {admin_order_url}, {admin_invoice_url}', 'ORDER', 1, '2026-02-21 16:39:58', 1, '2026-02-21 22:39:58', 1, NULL, NULL),
 (19, 'email_verification', 'Email Verification', 'Verify your email address - {site_name}', '<p>Dear {client_name},</p><p>Thank you for registering with <strong>{site_name}</strong>. Please verify your email address to activate your account.</p><p><a href=\"{verification_link}\" style=\"background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;\">Verify My Email</a></p><p>Or copy and paste this link into your browser:</p><p>{verification_link}</p><p>If you did not create this account, please ignore this email.</p><p>Regards,<br>{site_name}</p>', '{client_name}, {site_name}, {site_url}, {verification_link}', 'AUTH', 1, '2026-02-21 16:39:58', 1, '2026-02-21 22:39:58', 1, NULL, NULL),
-(20, 'reseller_price_lifted', 'Reseller - Selling Price Auto-Adjusted', 'Your selling price for {item_name} was adjusted', '<p>Dear {reseller_name},</p><p>Our cost for <strong>{item_name}</strong> has increased, and your selling price was below the new cost. To make sure you are never selling at a loss, it has been raised to the minimum allowed:</p>{price_changes}<p>This is the floor, not a recommendation &mdash; you can set a higher price at any time from your portal.</p><p>Regards,<br>{site_name}</p>', '{reseller_name}, {item_name}, {price_changes}, {site_name}, {company_name}, {site_url}', 'GENERAL', 1, '2026-09-03 10:00:00', NULL, '2026-09-03 10:00:00', NULL, NULL, NULL);
+(20, 'reseller_price_lifted', 'Reseller - Selling Price Auto-Adjusted', 'Your selling price for {item_name} was adjusted', '<p>Dear {reseller_name},</p><p>Our cost for <strong>{item_name}</strong> has increased, and your selling price was below the new cost. To make sure you are never selling at a loss, it has been raised to the minimum allowed:</p>{price_changes}<p>This is the floor, not a recommendation &mdash; you can set a higher price at any time from your portal.</p><p>Regards,<br>{site_name}</p>', '{reseller_name}, {item_name}, {price_changes}, {site_name}, {company_name}, {site_url}', 'GENERAL', 1, '2026-09-03 10:00:00', NULL, '2026-09-03 10:00:00', NULL, NULL, NULL),
+(21, 'reseller_wallet_topup', 'Reseller - Wallet Topped Up', 'Your account has been credited with {currency_symbol}{amount}', '<p>Dear {reseller_name},</p><p>We have received your payment for invoice <strong>#{invoice_no}</strong> and credited your account.</p><p>Amount credited: <strong>{currency_symbol}{amount}</strong><br>New balance: <strong>{currency_symbol}{balance}</strong></p><p>This balance is used automatically when your customers\' orders are provisioned.</p><p>Regards,<br>{site_name}</p>', '{reseller_name}, {amount}, {balance}, {currency}, {currency_symbol}, {invoice_no}, {invoice_url}, {site_name}, {company_name}, {site_url}', 'INVOICE', 1, '2026-09-04 10:00:00', NULL, '2026-09-04 10:00:00', NULL, NULL, NULL),
+(22, 'reseller_wallet_insufficient', 'Reseller - Insufficient Credit, Order Held', 'Action required: order held, your balance is {currency_symbol}{balance}', '<p>Dear {reseller_name},</p><p>An order on invoice <strong>#{invoice_no}</strong> could not be provisioned because your account balance does not cover its cost.</p><p>Cost required: <strong>{currency_symbol}{amount}</strong><br>Current balance: <strong>{currency_symbol}{balance}</strong></p><p><strong>The order has been held, not cancelled.</strong> Top up your account and it will be provisioned automatically on the next scheduled run.</p><p><a href=\"{topup_url}\">Click here to top up your account</a></p><p>Regards,<br>{site_name}</p>', '{reseller_name}, {amount}, {balance}, {currency}, {currency_symbol}, {invoice_no}, {invoice_url}, {topup_url}, {site_name}, {company_name}, {site_url}', 'DUNNING', 1, '2026-09-04 10:00:00', NULL, '2026-09-04 10:00:00', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1309,8 +1355,8 @@ CREATE TABLE `invoice_items` (
   `invoice_id` bigint(20) NOT NULL,
   `item` text NOT NULL,
   `item_desc` text NOT NULL,
-  `item_type` tinyint(4) NOT NULL COMMENT '1=domain, 2=product_service',
-  `ref_id` bigint(20) DEFAULT NULL COMMENT 'FK to order_domains.id or order_services.id',
+  `item_type` tinyint(4) NOT NULL COMMENT '1=domain, 2=product_service, 3=software/license, 4=reseller wallet top-up (ref_id NULL)',
+  `ref_id` bigint(20) DEFAULT NULL COMMENT 'FK to order_domains.id or order_services.id; NULL for a wallet top-up line',
   `billing_cycle_id` int(11) DEFAULT NULL COMMENT 'Billing cycle from the source order item',
   `note` text DEFAULT NULL,
   `quantity` int(11) NOT NULL DEFAULT 1,
@@ -3622,7 +3668,7 @@ ALTER TABLE `dunning_rules`
 -- AUTO_INCREMENT for table `email_templates`
 --
 ALTER TABLE `email_templates`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `expenses`

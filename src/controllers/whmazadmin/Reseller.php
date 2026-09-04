@@ -60,7 +60,15 @@ class Reseller extends WHMAZADMIN_Controller {
 					'company_id'     => $companyId,
 					'discount_type'  => $this->input->post('discount_type') === 'fixed' ? 'fixed' : 'percent',
 					'discount_value' => floatval($this->input->post('discount_value')),
-					'credit_balance' => floatval($this->input->post('credit_balance')),
+					// credit_balance is deliberately NOT in this array (v2.0.0
+					// Phase 3). It is now a CACHE of the reseller_credit_transactions
+					// ledger, written only by Resellercredit_model inside a row
+					// lock. Setting it from a form field would silently break the
+					// invariant that balance == SUM(ledger) -- and it was never
+					// safe anyway: it accepted any value, including a negative
+					// one, with no author, no reason and no trail.
+					// Corrections now go through Reseller Wallet -> Manual
+					// Adjustment, which writes an audited ledger row.
 					'currency_id'    => $this->input->post('currency_id') ?: null,
 					'allow_api'      => $this->input->post('allow_api') ? 1 : 0,
 					'notes'          => $this->input->post('notes'),

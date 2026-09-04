@@ -142,6 +142,72 @@ class WHMAZADMIN_Controller extends MX_Controller
 		return (int)$row['owner_company_id'];
 	}
 
+	/**
+	 * Mint a CUSTOMER session for a company's owner user, so admin-portal code
+	 * can hand off to the storefront payment flow (v2.0.0 Phase 3).
+	 *
+	 * Why this is needed at all: Phase 1 moved resellers onto the ADMIN login,
+	 * and the whole payment stack -- invoicing/pay/*, every gateway init, the
+	 * SameSite token restore -- reads getCustomerId()/getCompanyId() off a
+	 * CUSTOMER session that a reseller admin therefore does not have. Rather
+	 * than teach the payment stack about admin sessions (six gateways, each
+	 * with its own return path), mint the session the stack already expects.
+	 *
+	 * Ported from API_Controller::actAsCustomer(), which solved the identical
+	 * problem for stateless API requests. Same owner-user selection --
+	 * ORDER BY user_type ASC, id ASC -- so the admin portal and the API act as
+	 * the same user for the same company.
+	 *
+	 * ⚠️ This is why the reseller's `users` owner row must survive the move to
+	 * admin-only login: it is the identity every company_id join and the payment
+	 * session hang off.
+	 *
+	 * ⚠️ AND IT MUST STAY status = 1. Auth_model::getUserSessionData() -- which
+	 * builds the session, and which is IonCube-encoded so it is not casually
+	 * changed -- filters `u.status = 1 AND c.status = 1`. Retiring the
+	 * reseller's client-portal access by setting their user row to status 0
+	 * would therefore break top-up payments, and the symptom would be a silent
+	 * failure at the Pay click rather than anything naming the user row. Block
+	 * the client-portal LOGIN if that is wanted; do not overload status, which
+	 * a dozen joins already read as "does this row count at all".
+	 *
+	 * ⚠️ SCOPE. Callers MUST guardCompany($companyId) first. This method
+	 * deliberately does not, because it is also the path a platform admin uses
+	 * to pay on a reseller's behalf; enforcing scope here would either block
+	 * that or silently widen it. Impersonation without a guard in front of it
+	 * is a tenancy hole.
+	 *
+	 * @param  int $companyId companies.id to act as
+	 * @return int            users.id now in session, or 0 on failure
+	 */
+	protected function actAsCompanyCustomer($companyId){
+		$companyId = (int) $companyId;
+		if( $companyId <= 0 ) return 0;
+
+		// status = 1 mirrors API_Controller::actAsCustomer() exactly, and is
+		// also forced by getUserSessionData() below -- selecting a disabled
+		// user here would just fail one step later with a vaguer message.
+		$owner = $this->db->query(
+			"SELECT id FROM users WHERE company_id = ? AND status = 1 ORDER BY user_type ASC, id ASC LIMIT 1",
+			array($companyId)
+		)->row_array();
+
+		if( empty($owner) ){
+			log_message('error', 'actAsCompanyCustomer: company #' . $companyId . ' has no active user row to act as.');
+			return 0;
+		}
+
+		$this->load->model('Auth_model');
+		$userData = $this->Auth_model->getUserSessionData((int) $owner['id']);
+		if( empty($userData) ){
+			log_message('error', 'actAsCompanyCustomer: could not build a session for user #' . $owner['id']);
+			return 0;
+		}
+
+		$this->session->set_userdata('CUSTOMER', $userData);
+		return (int) $owner['id'];
+	}
+
 	function processRestCall(){
 		$_POST = json_decode(file_get_contents('php://input'), true);
 

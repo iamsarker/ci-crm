@@ -128,6 +128,10 @@ class Cronjobs extends WHMAZ_Controller
 		$licenseSuspensionResult = $this->suspendOverdueLicenses();
 		$output['license_suspensions'] = $licenseSuspensionResult;
 
+		// 3b. Release orders held for reseller credit (v2.0.0 Phase 3)
+		$releaseResult = $this->releaseHeldProvisioning();
+		$output['held_releases'] = $releaseResult;
+
 		// 4. Future: Process dunning rules
 		// $dunningResult = $this->processDunning();
 		// $output['dunning'] = $dunningResult;
@@ -176,10 +180,106 @@ class Cronjobs extends WHMAZ_Controller
 			if (!empty($licenseSuspensionResult['errors'])) {
 				echo "  Errors: " . count($licenseSuspensionResult['errors']) . "\n";
 			}
+			echo "\nHeld Order Releases:\n";
+			echo "  Invoices checked: {$releaseResult['invoices_checked']}\n";
+			echo "  Released: {$releaseResult['released']}\n";
+			echo "  Still held: {$releaseResult['still_held']}\n";
+			if (!empty($releaseResult['errors'])) {
+				echo "  Errors: " . count($releaseResult['errors']) . "\n";
+			}
 		} else {
 			header('Content-Type: application/json');
 			echo json_encode($output, JSON_PRETTY_PRINT);
 		}
+	}
+
+	/**
+	 * Release orders that were held because the reseller could not cover their
+	 * cost (v2.0.0 Phase 3).
+	 * URL: /cronjobs/releaseHeldProvisioning?key=YOUR_SECRET_KEY
+	 *
+	 * The customer on a held order has already paid; only the registrar /
+	 * control-panel call was withheld. This pass is what completes them once
+	 * the reseller tops up, so a held order is a delay rather than a loss.
+	 *
+	 * It re-enters Invoice_model::provisionPaidServices(), which re-runs the
+	 * debit first. That is deliberate and safe: the debit is idempotent on
+	 * debit:invoice:{id}, so a second attempt re-reads the CURRENT balance
+	 * without charging again, and either provisions or re-holds. All the "can
+	 * we afford this now" logic therefore lives in exactly one place instead of
+	 * being restated here and drifting.
+	 *
+	 * @return array result counters
+	 */
+	function releaseHeldProvisioning()
+	{
+		// Security check
+		if (!$this->validateCronAccess()) {
+			$this->denyAccess();
+		}
+
+		$result = array(
+			'invoices_checked' => 0,
+			'released' => 0,
+			'still_held' => 0,
+			'errors' => array()
+		);
+
+		// Honor the global cron toggle
+		if ((int)$this->Cronjob_model->getSysConfig('cron_enabled', 1) !== 1) {
+			log_message('info', 'releaseHeldProvisioning skipped: cron_enabled=0');
+			return $result;
+		}
+
+		$this->load->model('Provisioning_model');
+		$this->load->model('Invoice_model');
+		$this->load->model('Resellercredit_model');
+
+		$held = $this->Provisioning_model->getHeldInvoices(100);
+
+		foreach ($held as $row) {
+			$invoiceId = (int) $row['invoice_id'];
+			$result['invoices_checked']++;
+
+			try {
+				// Cheap pre-check so a reseller who is still short does not cost
+				// a full provisioning attempt on every run. provisionPaidServices()
+				// would reach the same verdict; this just gets there without the
+				// work, and without a second held log row per item per day.
+				$reseller = $this->Resellercredit_model->walletOwnerFor($row['company_id']);
+				if ($reseller > 0) {
+					$balance = $this->Resellercredit_model->getBalance($reseller);
+					$limit   = $this->Resellercredit_model->getCreditLimit($reseller);
+					if ($balance < -$limit) {
+						$result['still_held']++;
+						continue;
+					}
+				}
+
+				$res = $this->Invoice_model->provisionPaidServices($invoiceId);
+
+				if (!empty($res['held'])) {
+					$result['still_held']++;
+				} elseif (!empty($res['items_success'])) {
+					$result['released']++;
+					log_message('info', 'releaseHeldProvisioning: invoice #' . $invoiceId
+						. ' released - ' . $res['items_success'] . '/' . $res['items_processed'] . ' items');
+				} else {
+					// Provisioning ran but every item failed for some reason
+					// other than credit (registrar down, bad credentials). Not a
+					// hold -- the existing Provisioning Logs page owns that.
+					$result['errors'][] = 'Invoice #' . $invoiceId . ': provisioning attempted, no items succeeded';
+				}
+			} catch (Exception $e) {
+				$result['errors'][] = 'Invoice #' . $invoiceId . ': ' . $e->getMessage();
+				log_message('error', 'releaseHeldProvisioning: invoice #' . $invoiceId . ' - ' . $e->getMessage());
+			}
+		}
+
+		log_message('info', 'releaseHeldProvisioning: checked ' . $result['invoices_checked']
+			. ', released ' . $result['released'] . ', still held ' . $result['still_held']);
+
+		return $result;
 	}
 
 	/**
@@ -1001,6 +1101,7 @@ class Cronjobs extends WHMAZ_Controller
 				'/cronjobs/generateRenewalInvoices?key=YOUR_KEY' => 'Generate renewal invoices only',
 				'/cronjobs/suspendOverdueServices?key=YOUR_KEY' => 'Suspend overdue hosting services only',
 				'/cronjobs/terminateOverdueServices?key=YOUR_KEY' => 'Terminate services suspended past the grace period',
+				'/cronjobs/releaseHeldProvisioning?key=YOUR_KEY' => 'Provision orders held for reseller credit, once topped up',
 				'/cronjobs/testRenewal/{days}?key=YOUR_KEY' => 'Test: preview expiring items'
 			),
 			'cron_setup' => array(

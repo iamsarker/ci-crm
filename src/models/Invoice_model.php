@@ -86,8 +86,22 @@ class Invoice_model extends CI_Model{
 
 		$result = $this->db->update('invoices', $update_data);
 
-		// If marked as PAID, trigger service provisioning
+		// If marked as PAID, credit any wallet top-up then provision.
+		//
+		// The credit call is duplicated from
+		// Payment_model::processSuccessfulPayment() on purpose: these are two
+		// INDEPENDENT routes to a PAID invoice, and this one is not a subset of
+		// the other. This is the path an admin takes when marking a bank
+		// transfer received -- which is exactly how a reseller without a card
+		// tops up -- and also the path behind the API's POST /invoices/pay.
+		// Without it those top-ups would be marked paid and silently never
+		// credited. Both calls are idempotent on topup:invoice:{id}, so an
+		// invoice that somehow travels both routes is credited once.
 		if ($result && strtoupper($pay_status) === 'PAID') {
+			$CI =& get_instance();
+			$CI->load->model('Resellercredit_model');
+			$CI->Resellercredit_model->creditWalletTopups($invoice['id']);
+
 			$this->provisionPaidServices($invoice['id']);
 		}
 
@@ -107,6 +121,29 @@ class Invoice_model extends CI_Model{
 	function provisionPaidServices($invoiceId) {
 		$CI =& get_instance();
 		$CI->load->model('Provisioning_model');
+		$CI->load->model('Resellercredit_model');
+
+		// Charge the reseller's wallet BEFORE anything is provisioned
+		// (v2.0.0 Phase 3).
+		//
+		// This is the point at which the platform actually incurs the registrar
+		// / server cost, which is why the debit lives here and not at checkout:
+		// a checkout that ends in an abandoned DUE invoice must not move money.
+		//
+		// For a DIRECT customer this returns wallet = false and does nothing at
+		// all -- no ledger read, no write. That short circuit is what makes the
+		// wallet inert for every non-reseller order.
+		$wallet = $CI->Resellercredit_model->debitForInvoice($invoiceId);
+
+		if (!empty($wallet['held'])) {
+			// The debit has already been written (the balance is allowed to go
+			// negative on purpose) -- what is being withheld is the registrar /
+			// server call, not the accounting. Park the items so the release
+			// pass can find them once the account recovers.
+			log_message('error', 'provisionPaidServices: invoice #' . $invoiceId
+				. ' HELD - ' . $wallet['hold_reason']);
+			return $CI->Provisioning_model->holdInvoiceItems($invoiceId, $wallet['hold_reason']);
+		}
 
 		$results = $CI->Provisioning_model->provisionInvoiceItems($invoiceId);
 
