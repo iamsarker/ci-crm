@@ -177,7 +177,13 @@ class Pricingcheck extends WHMAZADMIN_Controller {
 			} else {
 				$body($fx);
 			}
-		} catch (Exception $e) {
+		} catch (Throwable $e) {
+			// Throwable, not Exception. PHP 8 raises Error -- not Exception --
+			// for undefined functions and type failures, so a `catch (Exception)`
+			// here silently skips dropFixtures() and LEAKS the fixture reseller,
+			// its sub-customers and its dom_pricing rows into whatever database
+			// this ran against. That is exactly how "Pricingcheck Reseller"
+			// ended up live on the demo database.
 			$this->no("fixture run threw: " . $e->getMessage());
 		}
 
@@ -213,6 +219,10 @@ class Pricingcheck extends WHMAZADMIN_Controller {
 
 		if (!empty($ids)) {
 			$in = implode(',', array_map('intval', $ids));
+			// Phase 3 ledger rows must go BEFORE the profile and company rows,
+			// or cleaning up leaves orphan reseller_credit_transactions behind
+			// -- invisible to reconcile(), which joins through reseller_profiles.
+			$this->db->query("DELETE FROM reseller_credit_transactions WHERE company_id IN ({$in})");
 			$this->db->query("DELETE FROM reseller_profiles WHERE company_id IN ({$in})");
 			$this->db->query("DELETE FROM price_overrides WHERE owner_company_id IN ({$in})");
 			$this->db->query("DELETE FROM price_override_audits WHERE owner_company_id IN ({$in})");
