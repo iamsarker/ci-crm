@@ -149,13 +149,6 @@ class Domain_pricing extends WHMAZADMIN_Controller {
 						));
 						if (empty($res['success'])) {
 							$costMsg = ' Reseller cost was not saved: ' . $res['message'];
-						} elseif (!empty($res['lifted'])) {
-							// A cost RISE can strand reseller selling prices
-							// below the new floor. They were lifted; say so,
-							// and tell the affected resellers by email.
-							$n = count($res['lifted']);
-							$this->Pricing_model->notifyLiftedResellers($res['lifted'], 1, $pricingId);
-							$costMsg = ' ' . $n . ' reseller selling price(s) were below the new cost and have been raised to it; those resellers have been emailed.';
 						}
 					}
 

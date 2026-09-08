@@ -194,14 +194,12 @@ class Serviceproduct_model extends CI_Model{
 	 * blank cell is a deletion, not a zero -- a 0.00 cost would mean the
 	 * platform gives the package away, which is never what a cleared field means.
 	 *
-	 * @return array [company_id => lifted components] for every reseller whose
-	 *               selling price had to be raised to the new floor, so the
-	 *               caller can email them.
+	 * @return int cells written (diagnostic only; no caller reads it).
 	 */
 	function saveCostMatrix($productId, $costData) {
-		$lifted = array();
+		$saved = 0;
 		if (!is_numeric($productId) || $productId <= 0 || !is_array($costData)) {
-			return $lifted;
+			return $saved;
 		}
 		$this->load->model('Pricing_model');
 
@@ -217,17 +215,11 @@ class Serviceproduct_model extends CI_Model{
 				// that currency/cycle at all, so there is nothing to cost.
 				if (empty($row)) continue;
 
-				$res = $this->Pricing_model->saveCostOverride(2, $row['id'], 0, array('price' => $cost));
-				if (!empty($res['lifted'])) {
-					foreach ($res['lifted'] as $companyId => $changes) {
-						$lifted[$companyId] = array_merge(
-							isset($lifted[$companyId]) ? $lifted[$companyId] : array(), $changes
-						);
-					}
-				}
+				$this->Pricing_model->saveCostOverride(2, $row['id'], 0, array('price' => $cost));
+				$saved++;
 			}
 		}
-		return $lifted;
+		return $saved;
 	}
 
 	/**

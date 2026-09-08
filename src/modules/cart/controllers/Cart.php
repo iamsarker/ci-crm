@@ -133,22 +133,55 @@ class Cart extends WHMAZ_Controller
 
 			if( !empty($cartList) ){
 
+				// --- Is this a reseller buying in their own name? (v2.1) ---
+				//
+				// Since v2.1 the cart quotes platform retail to EVERY buyer,
+				// including a reseller. But provisionPaidServices() debits the
+				// reseller's wallet at cost for any invoice belonging to them or
+				// their sub-customers, so a reseller's own order would be billed
+				// twice: once on the invoice and once from the wallet.
+				//
+				// So their own order is invoiced at COST and settled straight
+				// from the wallet. No gateway step, and the invoice total then
+				// equals what actually leaves their balance -- invoicing at
+				// retail and auto-settling would book revenue nobody paid.
+				//
+				// ⚠️ isResellerBuyer(), NOT companies.is_reseller. A SUSPENDED
+				// reseller resolves to no tenant, so cost_* is 0.00; keyed on the
+				// raw column they could self-issue a 0.00 PAID invoice and be
+				// provisioned for free. Suspended falls through to the ordinary
+				// retail DUE invoice, which is the right commercial answer.
+				$this->load->model('Pricing_model');
+				$this->load->model('Resellercredit_model');
+				$atCost = $this->Pricing_model->isResellerBuyer($companyId)
+					&& $this->Resellercredit_model->hasWallet($companyId);
+
 				$vatAmount = 0.0;
 				$taxAmount = 0.0;
 				$totalAmount = 0.0;
 
 				// Calculate totals including children
 				foreach ($cartList as $key => $row) {
-					$vatAmount += $row['tax'];
-					$taxAmount += $row['vat'];
-					$totalAmount += $row['total'];
+					if ($atCost) {
+						// Wholesale is untaxed; a retail tax line on a cost
+						// invoice would not reconcile against the wallet debit.
+						$totalAmount += $this->_resolveCostAmount($row, $companyId);
+					} else {
+						$vatAmount += $row['tax'];
+						$taxAmount += $row['vat'];
+						$totalAmount += $row['total'];
+					}
 
 					// Add children totals
 					if (!empty($row['children'])) {
 						foreach ($row['children'] as $child) {
-							$vatAmount += $child['tax'];
-							$taxAmount += $child['vat'];
-							$totalAmount += $child['total'];
+							if ($atCost) {
+								$totalAmount += $this->_resolveCostAmount($child, $companyId);
+							} else {
+								$vatAmount += $child['tax'];
+								$taxAmount += $child['vat'];
+								$totalAmount += $child['total'];
+							}
 						}
 					}
 				}
@@ -159,7 +192,10 @@ class Cart extends WHMAZ_Controller
 				$promoDiscount = 0.0;
 				$promoCode = '';
 				$promoId = 0;
-				$appliedPromo = $this->session->userdata('applied_promo');
+				// A promo code is a RETAIL discount. Applying one to a wholesale
+				// invoice would leave the reseller paying less than the wallet is
+				// about to be debited, so the whole block is skipped at cost.
+				$appliedPromo = $atCost ? null : $this->session->userdata('applied_promo');
 
 				if (!empty($appliedPromo) && !empty($appliedPromo['code'])) {
 					// Re-validate to prevent stale session abuse
@@ -206,8 +242,10 @@ class Cart extends WHMAZ_Controller
 				$order['coupon_amount'] = $promoDiscount;
 				$order['discount_amount'] = $promoDiscount;
 				$order['total_amount'] = $grandTotal;
-				$order['payment_gateway_id'] = $postData['payment_gateway'];
-				$order['remarks'] = '';
+				$order['payment_gateway_id'] = $atCost ? 0 : $postData['payment_gateway'];
+				$order['remarks'] = $atCost
+					? 'Reseller self-order — billed at cost, settled from account credit.'
+					: '';
 				$order['instructions'] = $postData['instructions'];
 				$order['inserted_on'] = getDateTime();
 				$order['inserted_by'] = $userId;
@@ -229,7 +267,10 @@ class Cart extends WHMAZ_Controller
 				$invoice['order_date'] = getDateAddDay(0);
 				$invoice['due_date'] = getDateAddDay(0);
 				$invoice['status'] = 1;
-				$invoice['pay_status'] = 'DUE';
+				$invoice['pay_status'] = $atCost ? 'PAID' : 'DUE';
+				$invoice['remarks'] = $atCost
+					? 'Reseller self-order — billed at cost, settled from account credit.'
+					: null;
 				$invoice['inserted_on'] = getDateTime();
 				$invoice['inserted_by'] = $userId;
 
@@ -239,12 +280,12 @@ class Cart extends WHMAZ_Controller
 				// Process each parent item and its children
 				foreach ($cartList as $key => $row) {
 					// Process parent item
-					$parentRefId = $this->_processCartItem($row, $orderId, $invoiceId, $companyId, $userId);
+					$parentRefId = $this->_processCartItem($row, $orderId, $invoiceId, $companyId, $userId, $atCost);
 
 					// Process children (linked items) if any
 					if (!empty($row['children'])) {
 						foreach ($row['children'] as $child) {
-							$childRefId = $this->_processCartItem($child, $orderId, $invoiceId, $companyId, $userId);
+							$childRefId = $this->_processCartItem($child, $orderId, $invoiceId, $companyId, $userId, $atCost);
 
 							// Link parent and child together
 							if ($parentRefId > 0 && $childRefId > 0) {
@@ -266,12 +307,19 @@ class Cart extends WHMAZ_Controller
 				// Send order confirmation emails to customer and admin
 				$this->Order_model->sendOrderConfirmationEmails($orderId, $invoiceId);
 
+				if ($atCost) {
+					$this->_settleFromCredit($invoiceId, $invoice, $grandTotal, $userId);
+				}
+
 				// Return invoice data with UUID for redirect to payment page
 				$responseData = array(
 					'invoice_id' => $invoiceId,
 					'invoice_uuid' => $invoice['invoice_uuid'],
 					'invoice_no' => $invoice['invoice_no'],
-					'total' => $grandTotal
+					'total' => $grandTotal,
+					// The JS ignores unknown keys; this is for anyone reading a
+					// response by hand and wondering why there is no pay step.
+					'settled_from_credit' => $atCost
 				);
 				echo json_encode(buildSuccessResponse($responseData, "Order has been placed successfully"));
 
@@ -294,48 +342,121 @@ class Cart extends WHMAZ_Controller
 	 * @return int The saved order item ID (order_domains.id or order_services.id)
 	 */
 	/**
-	 * Per-line reseller cost for one cart row, at checkout-time prices.
+	 * Per-line reseller COST for one cart row, at checkout-time prices.
 	 *
-	 * Mirrors how the sell price was computed: the same resolver, the same
-	 * component (a transfer is costed at transfer, not registration), times the
-	 * same quantity. Returns 0.00 whenever no reseller sits above the buyer.
+	 * Note this is no longer a mirror of the sell price: since v2.1 the sell
+	 * price is the platform's retail number for every buyer, while cost comes
+	 * off the ladder for whichever reseller sits above them. Same resolver, same
+	 * component (a transfer is costed at transfer, not registration), same
+	 * quantity. Returns 0.00 whenever no live reseller sits above the buyer.
 	 */
 	private function _resolveCostAmount($row, $companyId)
 	{
-		$this->load->model('Pricing_model');
-		$qty = !empty($row['quantity']) ? intval($row['quantity']) : 1;
-
-		if ($row['item_type'] == 1) {
-			if (empty($row['dom_pricing_id'])) return 0.00;
-			$r = $this->Pricing_model->resolve(1, $row['dom_pricing_id'], $companyId);
-			if (empty($r)) return 0.00;
-			// dns_update registers nothing at the registrar, so it costs nothing.
-			$action = !empty($row['domain_action']) ? $row['domain_action'] : 'register';
-			if ($action == 'dns_update') return 0.00;
-			$unit = ($action == 'transfer') ? $r['cost_transfer'] : $r['cost_price'];
-		} elseif ($row['item_type'] == 3) {
-			if (empty($row['product_service_pricing_id'])) return 0.00;
-			$r = $this->Pricing_model->resolve(3, $row['product_service_pricing_id'], $companyId);
-			$unit = empty($r) ? 0.00 : $r['cost_price'];
-		} else {
-			if (empty($row['product_service_pricing_id'])) return 0.00;
-			$r = $this->Pricing_model->resolve(2, $row['product_service_pricing_id'], $companyId);
-			$unit = empty($r) ? 0.00 : $r['cost_price'];
-		}
-
-		return round((float) $unit * $qty, 2);
+		$c = $this->_lineCost($row, $companyId);
+		return $c['first'];
 	}
 
-	private function _processCartItem($row, $orderId, $invoiceId, $companyId, $userId)
+	/**
+	 * First-term AND renewal cost for one cart row, quantity-multiplied.
+	 *
+	 * Both components come from one resolve() so they can never disagree about
+	 * which buyer they were computed for. The renewal figure only matters on the
+	 * reseller self-order path, where it becomes order_*.recurring_amount --
+	 * a domain's renewal cost is not its registration cost, and hosting renews
+	 * from whatever was frozen here for the rest of its life.
+	 */
+	private function _lineCost($row, $companyId)
+	{
+		$this->load->model('Pricing_model');
+		$qty  = !empty($row['quantity']) ? intval($row['quantity']) : 1;
+		$none = array('first' => 0.00, 'renewal' => 0.00);
+
+		if ($row['item_type'] == 1) {
+			if (empty($row['dom_pricing_id'])) return $none;
+			$r = $this->Pricing_model->resolve(1, $row['dom_pricing_id'], $companyId);
+			if (empty($r)) return $none;
+			// dns_update registers nothing at the registrar, so it costs nothing.
+			$action = !empty($row['domain_action']) ? $row['domain_action'] : 'register';
+			if ($action == 'dns_update') return $none;
+			$unit    = ($action == 'transfer') ? $r['cost_transfer'] : $r['cost_price'];
+			$renewal = $r['cost_renewal'];
+		} elseif ($row['item_type'] == 3) {
+			if (empty($row['product_service_pricing_id'])) return $none;
+			$r = $this->Pricing_model->resolve(3, $row['product_service_pricing_id'], $companyId);
+			if (empty($r)) return $none;
+			$unit    = $r['cost_price'];
+			$renewal = $r['cost_renewal'];
+		} else {
+			if (empty($row['product_service_pricing_id'])) return $none;
+			$r = $this->Pricing_model->resolve(2, $row['product_service_pricing_id'], $companyId);
+			if (empty($r)) return $none;
+			$unit    = $r['cost_price'];
+			$renewal = $r['cost_renewal'];
+		}
+
+		return array(
+			'first'   => round((float) $unit    * $qty, 2),
+			'renewal' => round((float) $renewal * $qty, 2),
+		);
+	}
+
+	/**
+	 * Settle a reseller self-order invoice against their prepaid wallet.
+	 *
+	 * Deliberately NOT routed through Invoice_model::updateInvoiceStatus(): the
+	 * invoice is already written PAID, and that method would additionally run
+	 * creditWalletTopups(), which is a no-op on an order invoice but re-reads
+	 * the row to find out.
+	 *
+	 * provisionPaidServices() does the rest -- debitForInvoice() moves the money
+	 * (idempotent on debit:invoice:{id}) and either provisions or, if the balance
+	 * cannot cover it, parks the items for the release cron. A shortfall is a
+	 * soft block by design: the debit still lands, the balance goes negative, and
+	 * only the registrar/server call is withheld.
+	 */
+	private function _settleFromCredit($invoiceId, $invoice, $amount, $userId)
+	{
+		// One invoice_txn row so the invoice explains itself. invoice_txn is the
+		// accounting ledger and type 'credit' is exactly this case -- money that
+		// moved without a card. Gateway columns stay NULL.
+		$this->db->insert('invoice_txn', array(
+			'invoice_id'    => $invoiceId,
+			'txn_date'      => date('Y-m-d'),
+			'amount'        => $amount,
+			'currency_code' => $invoice['currency_code'],
+			'type'          => 'credit',
+			'status'        => 1,
+			'remarks'       => 'Settled from reseller account credit',
+			'inserted_on'   => getDateTime(),
+			'inserted_by'   => $userId,
+		));
+
+		$this->load->model('Invoice_model');
+		$this->Invoice_model->provisionPaidServices($invoiceId);
+	}
+
+	private function _processCartItem($row, $orderId, $invoiceId, $companyId, $userId, $atCost = false)
 	{
 		$billingCycle = $this->Common_model->get_data_by_id("billing_cycle", $row['billing_cycle_id']);
 		$cycleDays = !empty($billingCycle->cycle_days) ? $billingCycle->cycle_days : 365;
 
+		// Resolve the line cost once: it is both the frozen cost_amount below
+		// and, on a reseller self-order, the amount actually billed.
+		$lineCost = $this->_lineCost($row, $companyId);
+
 		$item = array();
 		$item['order_id'] = $orderId;
 		$item['company_id'] = $companyId;
-		$item['first_pay_amount'] = $row['total'];
-		$item['recurring_amount'] = $row['total'];
+		if ($atCost) {
+			// A reseller buying for themselves pays cost, and renews at the
+			// RENEWAL cost -- not the first-term one, which would bill an
+			// introductory domain price for the life of the domain.
+			$item['first_pay_amount'] = $lineCost['first'];
+			$item['recurring_amount'] = $lineCost['renewal'];
+		} else {
+			$item['first_pay_amount'] = $row['total'];
+			$item['recurring_amount'] = $row['total'];
+		}
 
 		// FREEZE THE COST BASIS alongside the sell price (v2.0.0 Phase 2).
 		//
@@ -345,7 +466,7 @@ class Cart extends WHMAZ_Controller
 		// for an order they already quoted, so it is snapshotted here in the
 		// same INSERT as the sell price. 0.00 for direct customers -- they have
 		// no reseller above them and therefore no cost basis.
-		$item['cost_amount'] = $this->_resolveCostAmount($row, $companyId);
+		$item['cost_amount'] = $lineCost['first'];
 		$item['is_synced'] = 1;
 		$item['remarks'] = "";
 		$item['reg_date'] = getDateAddDay(0);
@@ -366,10 +487,12 @@ class Cart extends WHMAZ_Controller
 		$invoiceItem['invoice_id'] = $invoiceId;
 		$invoiceItem['item'] = $row['note'];
 		$invoiceItem['item_desc'] = $row['note'] . (!empty($row['hosting_domain']) ? ' - ' . $row['hosting_domain'] : '');
-		$invoiceItem['tax'] = $row['tax'];
-		$invoiceItem['vat'] = $row['vat'];
-		$invoiceItem['sub_total'] = $row['sub_total'];
-		$invoiceItem['total'] = $row['total'];
+		// Wholesale is untaxed: a retail tax line on a cost invoice would leave
+		// the header total disagreeing with the sum of its lines.
+		$invoiceItem['tax'] = $atCost ? 0.00 : $row['tax'];
+		$invoiceItem['vat'] = $atCost ? 0.00 : $row['vat'];
+		$invoiceItem['sub_total'] = $atCost ? $lineCost['first'] : $row['sub_total'];
+		$invoiceItem['total'] = $atCost ? $lineCost['first'] : $row['total'];
 		$invoiceItem['item_type'] = $row['item_type'];
 		$invoiceItem['inserted_on'] = getDateTime();
 		$invoiceItem['inserted_by'] = $userId;
@@ -444,7 +567,8 @@ class Cart extends WHMAZ_Controller
 		$invoiceItem['ref_id'] = ($refId > 0) ? $refId : null;
 		$invoiceItem['billing_cycle_id'] = $row['billing_cycle_id'];
 		$invoiceItem['quantity'] = $qty;
-		$invoiceItem['unit_price'] = ($qty > 0) ? ($row['sub_total'] / $qty) : $row['sub_total'];
+		$lineSubTotal = $atCost ? $lineCost['first'] : $row['sub_total'];
+		$invoiceItem['unit_price'] = ($qty > 0) ? ($lineSubTotal / $qty) : $lineSubTotal;
 		$invoiceItem['discount'] = 0;
 		$invoiceItem['billing_period_start'] = getDateAddDay(0);
 		$invoiceItem['billing_period_end'] = ($cycleDays > 0) ? getDateAddDay($cycleDays) : null;
@@ -897,6 +1021,26 @@ class Cart extends WHMAZ_Controller
 			if ($hdt == 2 && !empty($itemPrice['transfer'])) {
 				$itemPrice['item_price'] = $itemPrice['transfer'];
 			}
+
+			// ...and domain_action, which this path also never wrote. It is the
+			// inverse of the hosting_domain_type mapping in
+			// linkDomainToHosting()/addDomainToCart() (0=DNS, 1=register,
+			// 2=transfer), and TWO things downstream read it, both wrongly
+			// defaulting to 'register' when it is missing:
+			//   _resolveCostAmount()  -> charged cost_price, not cost_transfer,
+			//                            so the reseller wallet under-debited
+			//                            every transfer added through here.
+			//   _processCartItem()    -> wrote order_type = 1, so a transfer was
+			//                            provisioned as a NEW REGISTRATION.
+			//
+			// Only an EXPLICIT hosting_domain_type maps; a request that omits it
+			// keeps the historic 'register' default. $hdt cannot tell 0 from
+			// absent, and quietly turning an omitted field into 'dns_update'
+			// would flip the order to order_type = 3 and a 0.00 cost.
+			$domainActions = array(0 => 'dns_update', 1 => 'register', 2 => 'transfer');
+			$cartArr['domain_action'] = isset($postData['hosting_domain_type'], $domainActions[$hdt])
+				? $domainActions[$hdt]
+				: 'register';
 		}
 
 		$quantity = !empty($postData['quantity']) ? intval($postData['quantity']) : 1;

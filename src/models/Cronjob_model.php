@@ -140,12 +140,7 @@ class Cronjob_model extends CI_Model
 		$rows = $this->db->query($sql, array($targetDate, $today))->result_array();
 
 		// ---------------------------------------------------------------
-		// LIVE pricing for domain renewals (v2.0.0 Phase 2).
-		//
-		// dp.renewal above is the PLATFORM's renewal price. Billing a
-		// reseller's customer from it is a straight revenue leak the moment
-		// resellers exist -- the reseller sets the price, the platform must
-		// not quietly bill the customer its own.
+		// LIVE pricing for domain renewals.
 		//
 		// The join stays as a FILTER (it is what requires a price row in the
 		// order's currency, and it supplies de.extension); only the price it
@@ -156,13 +151,22 @@ class Cronjob_model extends CI_Model
 		// from their frozen recurring_amount -- registrar wholesale moves have
 		// to pass through, and both parties expect a price change to apply at
 		// the next renewal rather than a year later.
+		//
+		// Since v2.1 the resolver returns platform retail to every buyer, so
+		// a reseller's CUSTOMER renews at retail exactly like a direct one.
+		// A reseller renewing their OWN domain is the one exception: they are
+		// billed at cost and the invoice is settled from their wallet, so
+		// renewal_price becomes the cost. Without this they would be invoiced
+		// retail AND debited cost for the same renewal, every year.
 		// ---------------------------------------------------------------
 		$this->load->model('Pricing_model');
 		foreach ($rows as &$row) {
 			$r = $this->Pricing_model->resolve(1, $row['dom_pricing_id'], $row['company_id']);
 			if (empty($r)) continue;
-			$row['renewal_price'] = $r['renewal'];
 			$row['renewal_cost']  = $r['cost_renewal'];
+			$row['renewal_price'] = !empty($r['is_reseller_buyer'])
+				? $r['cost_renewal']
+				: $r['renewal'];
 		}
 		unset($row);
 
@@ -216,6 +220,62 @@ class Cronjob_model extends CI_Model
 	 * @param array $service Service data from getLinkedExpiringService()
 	 * @return array Invoice data with success status
 	 */
+	/**
+	 * Settle a RESELLER's own renewal invoice from their prepaid wallet.
+	 *
+	 * A reseller's renewal is billed at cost (see getExpiringDomains(), and
+	 * hosting/software already renew from a recurring_amount that was frozen at
+	 * cost). provisionPaidServices() then debits the wallet for the same money,
+	 * so leaving the invoice DUE would charge them twice -- once through a
+	 * gateway and once from the balance. Mirrors Cart::_settleFromCredit().
+	 *
+	 * ⚠️ isResellerBuyer(), not companies.is_reseller: a SUSPENDED reseller
+	 * resolves to no tenant and would price at 0.00, so they must fall through
+	 * to an ordinary DUE invoice instead of a free auto-paid one.
+	 *
+	 * Runs OUTSIDE the creator's transaction, after trans_complete(): the debit
+	 * takes its own FOR UPDATE lock on the wallet and provisioning makes
+	 * registrar/server calls, neither of which belongs inside an invoice write.
+	 *
+	 * @return bool true when the invoice was settled from credit.
+	 */
+	private function _settleResellerRenewal($invoiceId, $invoice)
+	{
+		$companyId = (int) $invoice['company_id'];
+		if ($companyId <= 0) return false;
+
+		$this->load->model('Pricing_model');
+		$this->load->model('Resellercredit_model');
+		if (!$this->Pricing_model->isResellerBuyer($companyId)) return false;
+		if (!$this->Resellercredit_model->hasWallet($companyId)) return false;
+
+		$remark = 'Reseller renewal — billed at cost, settled from account credit.';
+
+		$this->db->where('id', (int) $invoiceId)->update('invoices', array(
+			'pay_status' => 'PAID',
+			'remarks'    => $remark,
+			'updated_on' => date('Y-m-d H:i:s'),
+		));
+
+		// invoice_txn is the accounting ledger and type 'credit' is exactly
+		// this case: money that moved without a card. Gateway columns stay NULL.
+		$this->db->insert('invoice_txn', array(
+			'invoice_id'    => (int) $invoiceId,
+			'txn_date'      => date('Y-m-d'),
+			'amount'        => $invoice['total'],
+			'currency_code' => $invoice['currency_code'],
+			'type'          => 'credit',
+			'status'        => 1,
+			'remarks'       => 'Settled from reseller account credit',
+			'inserted_on'   => date('Y-m-d H:i:s'),
+			'inserted_by'   => 0,
+		));
+
+		$this->load->model('Invoice_model');
+		$this->Invoice_model->provisionPaidServices($invoiceId);
+		return true;
+	}
+
 	function createCombinedRenewalInvoice($domain, $service)
 	{
 		$this->db->trans_start();
@@ -328,6 +388,8 @@ class Cronjob_model extends CI_Model
 			}
 
 			$invoice['id'] = $invoiceId;
+			$this->_settleResellerRenewal($invoiceId, $invoice);
+
 			return array(
 				'success' => true,
 				'invoice' => $invoice,
@@ -424,6 +486,8 @@ class Cronjob_model extends CI_Model
 			}
 
 			$invoice['id'] = $invoiceId;
+			$this->_settleResellerRenewal($invoiceId, $invoice);
+
 			return array(
 				'success' => true,
 				'invoice' => $invoice,
@@ -513,6 +577,8 @@ class Cronjob_model extends CI_Model
 			}
 
 			$invoice['id'] = $invoiceId;
+			$this->_settleResellerRenewal($invoiceId, $invoice);
+
 			return array(
 				'success' => true,
 				'invoice' => $invoice,
@@ -613,6 +679,8 @@ class Cronjob_model extends CI_Model
 			}
 
 			$invoice['id'] = $invoiceId;
+			$this->_settleResellerRenewal($invoiceId, $invoice);
+
 			return array(
 				'success' => true,
 				'invoice' => $invoice,

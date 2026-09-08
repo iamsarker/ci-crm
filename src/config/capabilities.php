@@ -21,17 +21,31 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 | Value is either array('*') for the whole controller, or an explicit list of
 | allowed method names.
 |
+| ⚠️  admin_can('x') WITH NO METHOD returns TRUE whenever the controller key
+|     exists at all -- see tenant_helper.php. So any controller listed here
+|     with an explicit method list MUST be gated in header_menus.php with its
+|     method too, e.g. admin_can('domain_pricing', 'index'). Gate it on the
+|     bare controller name and the menu item renders for resellers and then
+|     RequestGuard denies the click, which is exactly the nav/enforcement
+|     drift this file exists to prevent.
+|
 | Deliberately NOT listed, and why:
 |   server, server_module        — infrastructure; also holds root credentials
 |   domain_register              — registrar API keys, a hard secret leak
 |   general_setting              — app settings, sys_cnf, install_crontab()
 |   currency, paymentgateway     — gateway credentials + platform-wide config
-|   domain_pricing (CRUD)        — platform wholesale pricing (a reseller sets
-|                                  their own prices on reseller_pricing instead);
-|                                  only the prices() lookup is granted, below
+|   domain_pricing (CRUD)        — ALL pricing is platform-owned (v2.1); only
+|                                  the prices() lookup is granted, below
+|   promocode                    — a reseller may not create or edit promo
+|                                  codes, ever. Prices and discounts belong to
+|                                  the platform: a reseller's margin is the gap
+|                                  between platform retail and the cost the
+|                                  platform sets for them, and nothing else.
+|                                  This is a product decision, not a "not yet" —
+|                                  do not add it.
 |   service_category/group/product, software, softwareproduct — global catalog
 |   email_template               — no owner column; per-reseller templates are
-|                                  a later release (see the plan, Phase 4)
+|                                  a later release
 |   expense, expense_category, expense_vendor — the platform operator's own P&L
 |   kb, kb_category, page, announcement, ticket_department — global content
 |   reseller                     — resellers must not manage resellers (req. 6)
@@ -70,11 +84,16 @@ $config['reseller'] = array(
 	// posted company_id, so neither can be used to read another tenant's price.
 	'domain_pricing' => array('prices'),
 
-	// --- Own selling prices (Phase 2) ---
-	// The controller pins a reseller to their OWN company id and ignores the
-	// ?reseller= parameter entirely, and save_cost() refuses resellers outright,
-	// so '*' here does not let one reseller price another's catalog.
-	'reseller_pricing' => array('*'),
+	// --- Own wholesale pricing: READ-ONLY (v2.1) ---
+	// index() only. A reseller sets no price of any kind; this screen shows
+	// them platform retail, their cost and the margin between.
+	//
+	// Narrowed from '*' deliberately. save_cost() is platform-staff-only and
+	// refuses a reseller on its own account, but listing the method here means
+	// RequestGuard denies it BEFORE the controller is even constructed. The
+	// controller also pins a reseller to their own company id and ignores
+	// ?reseller=, so index() cannot read another tenant's cost.
+	'reseller_pricing' => array('index'),
 
 	// --- Own prepaid credit account (Phase 3) ---
 	// Like reseller_pricing, the controller pins a reseller admin to their own
@@ -84,7 +103,4 @@ $config['reseller'] = array(
 	// impersonation, and they have a non-impersonating route via Invoice).
 	'reseller_wallet' => array('*'),
 
-	// --- Added in later phases; keep commented so they stay denied until built ---
-	// 'promocode'        => array('*'),   // Phase 4: needs promo_codes.company_id first,
-	//                                     // or a reseller edits PLATFORM promo codes
 );

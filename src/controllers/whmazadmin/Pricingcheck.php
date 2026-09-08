@@ -2,15 +2,23 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * TEMPORARY verification harness for v2.0.0 Phase 2 pricing.
- * CLI ONLY. Delete this file once the phase is signed off.
+ * TEMPORARY verification harness for v2.1 reseller pricing.
+ * CLI ONLY. Delete this file before a release build.
  *
  *   php index.php whmazadmin/pricingcheck run
  *
- * The headline assertion is the one the whole refactor rests on: for a buyer
- * with no reseller above them, resolve() must return the native pricing table's
- * numbers unchanged, for every row of all three item types. Everything else in
- * Phase 2 is reversible; a silent price change for direct customers is not.
+ * TWO headline assertions, both about the SELL price:
+ *
+ *   checkBuyerIndependentSell()  — a guest, a direct customer, a reseller and
+ *       that reseller's sub-customer must all resolve to the SAME number, with
+ *       cost overrides and a profile discount deliberately in place. This is
+ *       what makes a stale cart harmless: there is no second price to drift to.
+ *
+ *   checkDirectCustomerNoOp()    — the stricter form of the same thing for a
+ *       buyer with no reseller: resolve() returns the native pricing table's
+ *       numbers unchanged, for every row of all three item types.
+ *
+ * Everything else here is reversible; a silent price change is not.
  */
 class Pricingcheck extends WHMAZADMIN_Controller {
 
@@ -33,7 +41,7 @@ class Pricingcheck extends WHMAZADMIN_Controller {
 
 	public function run()
 	{
-		$this->line("=== v2.0.0 Phase 2 pricing verification ===\n");
+		$this->line("=== v2.1 reseller pricing verification ===\n");
 
 		if (!$this->schemaReady()) return;
 
@@ -44,10 +52,11 @@ class Pricingcheck extends WHMAZADMIN_Controller {
 		// the ones that would be skipped -- so build them, exercise them, and
 		// roll the whole thing back. Nothing is left behind.
 		$this->withFixtures(function ($fx) {
+			$this->checkBuyerIndependentSell($fx);
 			$this->checkOverrideLayering($fx);
 			$this->checkCostPrecedence($fx);
-			$this->checkFloor($fx);
-			$this->checkAutoLift($fx);
+			$this->checkGlobalDiscount($fx);
+			$this->checkCostAboveBaseDoesNotRaiseSell($fx);
 			$this->checkProfileDiscountFallback($fx);
 			$this->checkSubCustomerRetail($fx);
 			$this->checkResolveMany($fx);
@@ -79,13 +88,33 @@ class Pricingcheck extends WHMAZADMIN_Controller {
 			$missing[] = "dom_pricing.uq_dom_pricing";
 		}
 
-		if (empty($missing)) {
-			$this->ok('schema: reseller_v2_phase2_migration.sql has been applied');
-			return true;
+		if (!empty($missing)) {
+			$this->line("SCHEMA NOT READY -- run reseller_v21_upgrade_migration.sql first.");
+			foreach ($missing as $m) $this->line("   missing: {$m}");
+			return false;
 		}
-		$this->line("SCHEMA NOT READY -- run reseller_v2_phase2_migration.sql first.");
-		foreach ($missing as $m) $this->line("   missing: {$m}");
-		return false;
+		$this->ok('schema: reseller_v21_upgrade_migration.sql -- tables and columns');
+
+		// v2.1: the retail audience is retired and the global discount exists.
+		$v21 = array();
+		$retail = $this->db->query("SELECT COUNT(*) AS c FROM price_overrides WHERE audience = 2")->row_array();
+		if ((int) $retail['c'] > 0) $v21[] = "{$retail['c']} leftover audience=2 override(s)";
+
+		$lift = $this->db->query(
+			"SELECT COUNT(*) AS c FROM price_override_audits WHERE reason = 'auto_lift_floor'"
+		)->row_array();
+		if ((int) $lift['c'] > 0) $v21[] = "{$lift['c']} leftover auto_lift_floor audit(s)";
+
+		$cnf = $this->db->query("SELECT COUNT(*) AS c FROM sys_cnf WHERE cnf_group = 'RESELLER'")->row_array();
+		if ((int) $cnf['c'] < 2) $v21[] = "sys_cnf group RESELLER (found {$cnf['c']} of 2 rows)";
+
+		if (!empty($v21)) {
+			$this->line("SCHEMA NOT READY -- run reseller_v21_upgrade_migration.sql.");
+			foreach ($v21 as $m) $this->line("   problem: {$m}");
+			return false;
+		}
+		$this->ok('schema: reseller_v21_upgrade_migration.sql -- v2.1 data cleanup');
+		return true;
 	}
 
 	/**
@@ -299,6 +328,210 @@ class Pricingcheck extends WHMAZADMIN_Controller {
 		);
 	}
 
+	/**
+	 * THE v2.1 invariant: the SELL price does not depend on the buyer.
+	 *
+	 * Run with a per-reseller cost override, a platform-wide cost override AND
+	 * a profile discount all deliberately in place, across every row of all
+	 * three item types. On a bare fixture a reintroduced buyer branch could
+	 * pass by accident; here it cannot.
+	 *
+	 * This is what makes the cart safe. add_to_carts freezes sub_total/total at
+	 * add time and checkoutSubmit() sums them verbatim, so a buyer-dependent
+	 * sell price meant a guest could be quoted one number and charged another
+	 * after logging in. There is now no second number to drift to.
+	 */
+	private function checkBuyerIndependentSell($fx)
+	{
+		$this->line("\n-- Sell price is buyer-independent --");
+		$R   = $fx['reseller'];
+		$pid = $fx['pricing_id'];
+
+		// Stack the deck: both cost rungs set, on top of the fixture's 10%
+		// profile discount. None of it may move the sell price by a cent.
+		$this->Pricing_model->saveCostOverride(1, $pid, 0,  array('price' => 55, 'transfer_price' => '', 'renewal_price' => 65));
+		$this->Pricing_model->saveCostOverride(1, $pid, $R, array('price' => 45, 'transfer_price' => '', 'renewal_price' => ''));
+
+		$m = $this->freshModel();
+		$buyers = array(0 => 'guest', $R => 'reseller', $fx['sub'] => 'sub-customer');
+
+		foreach ($buyers as $buyer => $label) {
+			$r = $m->resolve(1, $pid, $buyer);
+			$same = !$this->neq($r['price'], $fx['base_price'])
+				&& !$this->neq($r['transfer'], $fx['base_transfer'])
+				&& !$this->neq($r['renewal'], $fx['base_renewal']);
+			$same
+				? $this->ok("{$label} is quoted base retail on all three components")
+				: $this->no("{$label} was quoted {$r['price']}/{$r['transfer']}/{$r['renewal']}, expected "
+					. "{$fx['base_price']}/{$fx['base_transfer']}/{$fx['base_renewal']}");
+		}
+
+		// ...and the costs still differ, which is the whole point.
+		$this->eq($m->resolve(1, $pid, $R)['cost_price'], 45.00, "the reseller's cost is still the negotiated 45.00");
+		$this->eq($m->resolve(1, $pid, 0)['cost_price'], 0.00, "a guest has no cost basis at all");
+
+		// Now the full sweep, across all three item types, for every buyer.
+		//
+		// Via resolveMany(), which primes the whole set in one query per buyer.
+		// The dev database is REMOTE and a per-row resolve() here would be
+		// hundreds of round trips; checkResolveMany() separately proves the two
+		// paths agree, so this loses no coverage.
+		// The price columns are NOT optional here: resolveMany() normalises the
+		// rows the caller hands it, so selecting only `id` would make every base
+		// 0.00 and the buyers would agree on nothing at all.
+		$tables = array(
+			1 => "SELECT id, currency_id, price, transfer, renewal FROM dom_pricing WHERE status = 1",
+			2 => "SELECT id, currency_id, price FROM product_service_pricing WHERE status = 1",
+			3 => "SELECT id, currency_id, first_pay_amount, recurring_amount FROM software_pricing WHERE status = 1",
+		);
+		$names = array(1 => 'domain', 2 => 'hosting', 3 => 'software');
+
+		foreach ($tables as $itemType => $sql) {
+			$rows = $this->db->query($sql)->result_array();
+			if (empty($rows)) { $this->line("   (no {$names[$itemType]} pricing rows to sweep)"); continue; }
+
+			$ref  = $this->freshModel()->resolveMany($itemType, $rows, 0); // guest = the reference
+
+			$nonZero = 0;
+			foreach ($ref as $r) { if ((float) $r['price'] > 0) $nonZero++; }
+			if ($nonZero === 0) {
+				$this->no("{$names[$itemType]} reference prices are all 0.00 -- the sweep would pass vacuously");
+				continue;
+			}
+			$them = array(
+				'reseller'     => $this->freshModel()->resolveMany($itemType, $rows, $R),
+				'sub-customer' => $this->freshModel()->resolveMany($itemType, $rows, $fx['sub']),
+			);
+
+			$bad = 0;
+			foreach ($rows as $row) {
+				$id = (int) $row['id'];
+				if (empty($ref[$id])) continue;
+				foreach ($them as $label => $set) {
+					$r = isset($set[$id]) ? $set[$id] : array();
+					if (empty($r) || $this->neq($r['price'], $ref[$id]['price'])
+						|| $this->neq($r['transfer'], $ref[$id]['transfer'])
+						|| $this->neq($r['renewal'], $ref[$id]['renewal'])) {
+						$bad++;
+						if ($bad === 1) $this->line("      first divergence: {$names[$itemType]} pricing #{$id} for {$label}");
+					}
+				}
+			}
+			$bad === 0
+				? $this->ok("all " . count($rows) . " {$names[$itemType]} rows quote the same price to every buyer")
+				: $this->no("{$bad} {$names[$itemType]} quote(s) varied by buyer");
+		}
+
+		// Leave the fixture as we found it for the checks that follow.
+		$this->Pricing_model->saveCostOverride(1, $pid, $R, array('price' => '', 'transfer_price' => '', 'renewal_price' => ''));
+		$this->Pricing_model->saveCostOverride(1, $pid, 0,  array('price' => '', 'transfer_price' => '', 'renewal_price' => ''));
+	}
+
+	/**
+	 * A cost ABOVE retail must not drag the sell price up with it.
+	 *
+	 * This is the regression test for the deleted max(sell, cost) clamp. The
+	 * clamp existed to stop a reseller-set retail sitting under cost; with the
+	 * retail tier gone it would instead push one reseller's sub-customers above
+	 * the platform price -- buyer-dependence through the back door.
+	 */
+	private function checkCostAboveBaseDoesNotRaiseSell($fx)
+	{
+		$this->line("\n-- Cost above retail does not raise the sell price --");
+		$R   = $fx['reseller'];
+		$pid = $fx['pricing_id'];
+
+		$this->Pricing_model->saveCostOverride(1, $pid, $R, array('price' => 200, 'transfer_price' => '', 'renewal_price' => ''));
+		$m = $this->freshModel();
+
+		$this->eq($m->resolve(1, $pid, $R)['price'], $fx['base_price'], "reseller still quoted 100.00 on a 200.00 cost");
+		$this->eq($m->resolve(1, $pid, $fx['sub'])['price'], $fx['base_price'], "sub-customer still quoted 100.00");
+		$this->eq($m->resolve(1, $pid, $R)['cost_price'], 200.00, "...and the loss-making cost is recorded honestly");
+
+		$this->Pricing_model->saveCostOverride(1, $pid, $R, array('price' => '', 'transfer_price' => '', 'renewal_price' => ''));
+	}
+
+	/**
+	 * The global default discount -- rung 4, below the profile discount.
+	 *
+	 * The last assertion is the one that earns the free-text config field:
+	 * applyDiscount() reads any unrecognised discount_type as FIXED, so an
+	 * un-normalised typo would turn "10% off" into "$10 off" catalogue-wide.
+	 */
+	private function checkGlobalDiscount($fx)
+	{
+		$this->line("\n-- Global default reseller discount (sys_cnf RESELLER) --");
+		$R = $fx['reseller'];
+
+		$before = $this->db->query(
+			"SELECT cnf_key, cnf_val FROM sys_cnf WHERE cnf_group = 'RESELLER'"
+		)->result_array();
+
+		$set = function ($type, $value) {
+			$this->db->query("UPDATE sys_cnf SET cnf_val = ? WHERE cnf_key = 'reseller_default_discount_type'", array($type));
+			$this->db->query("UPDATE sys_cnf SET cnf_val = ? WHERE cnf_key = 'reseller_default_discount_value'", array($value));
+		};
+
+		// try/finally, not a tail restore: sys_cnf is REAL platform config, not a
+		// fixture table, and a throw halfway through would leave the live global
+		// reseller discount set to whatever this check last wrote.
+		try {
+
+		// A pricing row with no override anywhere, and a reseller with NO
+		// profile discount, so the global default is the only rung that can fire.
+		$src = $this->db->query(
+			"SELECT dom_extension_id, currency_id FROM dom_pricing WHERE id = ?", array($fx['pricing_id'])
+		)->row_array();
+		$period = self::FIXTURE_PERIOD_BASE + 30;
+		while ($this->db->query(
+			"SELECT id FROM dom_pricing WHERE dom_extension_id = ? AND currency_id = ? AND reg_period = ?",
+			array($src['dom_extension_id'], $src['currency_id'], $period)
+		)->num_rows() > 0) { $period++; }
+
+		$this->db->insert('dom_pricing', array(
+			'dom_extension_id' => $src['dom_extension_id'], 'currency_id' => $src['currency_id'],
+			'reg_period' => $period, 'price' => 100.00, 'transfer' => 100.00, 'renewal' => 100.00,
+			'status' => 1, 'inserted_on' => date('Y-m-d H:i:s'),
+		));
+		$pid = (int) $this->db->insert_id();
+
+		// discount_value 0 means "not set, fall through" -- not "0% off".
+		$this->db->query("UPDATE reseller_profiles SET discount_value = 0 WHERE company_id = ?", array($R));
+
+		$set('percent', '10');
+		$this->eq($this->freshModel()->costFor(1, $pid, $R)['price'], 90.00, "global 10% applies when nothing else is set");
+
+		$set('percent', '0');
+		$this->eq($this->freshModel()->costFor(1, $pid, $R)['price'], 100.00, "value 0 means unset -> cost is full retail");
+
+		// A garbage type must degrade to PERCENT, never to a fixed amount.
+		$set('percnt', '10');
+		$this->eq($this->freshModel()->costFor(1, $pid, $R)['price'], 90.00, "a typo'd type is normalised to percent, not \$10 off");
+
+		$set('fixed', '10');
+		$this->eq($this->freshModel()->costFor(1, $pid, $R)['price'], 90.00, "'fixed' 10 really is 10.00 off");
+
+		// Precedence: the profile discount beats the global default...
+		$set('percent', '10');
+		$this->db->query("UPDATE reseller_profiles SET discount_type = 'percent', discount_value = 20 WHERE company_id = ?", array($R));
+		$this->eq($this->freshModel()->costFor(1, $pid, $R)['price'], 80.00, "profile discount beats the global default");
+
+		// ...and a platform cost override beats them both.
+		$this->Pricing_model->saveCostOverride(1, $pid, 0, array('price' => 70, 'transfer_price' => '', 'renewal_price' => ''));
+		$this->eq($this->freshModel()->costFor(1, $pid, $R)['price'], 70.00, "platform cost override beats every discount");
+
+		// The sell price never moved through any of that.
+		$this->eq($this->freshModel()->resolve(1, $pid, $fx['sub'])['price'], 100.00, "...and the sub-customer was quoted 100.00 throughout");
+
+		} finally {
+			// Restore sys_cnf and the fixture profile.
+			foreach ($before as $row) {
+				$this->db->query("UPDATE sys_cnf SET cnf_val = ? WHERE cnf_key = ?", array($row['cnf_val'], $row['cnf_key']));
+			}
+			$this->db->query("UPDATE reseller_profiles SET discount_type = 'percent', discount_value = 10 WHERE company_id = ?", array($R));
+		}
+	}
+
 	/** Who is whose tenant, and who pays cost. */
 	private function checkOverrideLayering($fx)
 	{
@@ -308,7 +541,12 @@ class Pricingcheck extends WHMAZADMIN_Controller {
 		$self = $this->Pricing_model->resolve(1, $fx['pricing_id'], $R);
 		$this->eq($self['reseller_company_id'], $R, "reseller resolves to itself as tenant");
 		$this->eq($self['is_reseller_buyer'], true, "reseller is flagged a reseller buyer");
-		$this->eq($self['price'], $self['cost_price'], "reseller buying for itself pays cost");
+
+		// v2.1 inverted this. The reseller is QUOTED retail like everyone else;
+		// their cost is a separate number that only the wallet debit and the
+		// frozen order_*.cost_amount snapshot ever read.
+		$this->eq($self['price'], $fx['base_price'], "reseller buying for itself is QUOTED retail");
+		$this->eq($self['cost_price'], 90.00, "...while its cost is the discounted 90.00");
 
 		$sub = $this->Pricing_model->resolve(1, $fx['pricing_id'], $fx['sub']);
 		$this->eq($sub['reseller_company_id'], $R, "sub-customer resolves to its parent reseller");
@@ -372,91 +610,6 @@ class Pricingcheck extends WHMAZADMIN_Controller {
 			? $this->ok("a cleared cost can be re-entered without a duplicate-key error")
 			: $this->no("re-entering a cleared cost failed: " . $re['message']);
 		$this->Pricing_model->saveCostOverride(1, $pid, $R, array('price' => '', 'transfer_price' => '', 'renewal_price' => ''));
-	}
-
-	/** The floor rejects per component, server-side, with no form involved. */
-	private function checkFloor($fx)
-	{
-		$this->line("\n-- Price floor (server-side, per component) --");
-		$R   = $fx['reseller'];
-		$pid = $fx['pricing_id'];
-		// Cost is now platform-wide 70 / 70 / 85 from checkCostPrecedence.
-
-		$res = $this->Pricing_model->saveResellerRetail(1, $pid, $R, array(
-			'price' => 69, 'transfer_price' => '', 'renewal_price' => '',
-		));
-		empty($res['success'])
-			? $this->ok("register price below cost rejected: " . $res['message'])
-			: $this->no("register price below cost was ACCEPTED");
-
-		// The case a single blended floor waves through: register is healthy,
-		// renewal is not. Renewal repeats for the life of the domain.
-		$res = $this->Pricing_model->saveResellerRetail(1, $pid, $R, array(
-			'price' => 200, 'transfer_price' => 200, 'renewal_price' => 84,
-		));
-		empty($res['success'])
-			? $this->ok("renewal below cost rejected despite a healthy register price")
-			: $this->no("renewal below cost ACCEPTED -- per-component floor is broken");
-
-		// Blank renewal inherits `price`, so `price` must clear the RENEWAL floor
-		// (85), not just its own (70).
-		$res = $this->Pricing_model->saveResellerRetail(1, $pid, $R, array(
-			'price' => 80, 'transfer_price' => '', 'renewal_price' => '',
-		));
-		empty($res['success'])
-			? $this->ok("blank renewal forces price to clear the renewal floor too")
-			: $this->no("price 80 accepted while the inherited renewal floor is 85");
-
-		$res = $this->Pricing_model->saveResellerRetail(1, $pid, $R, array(
-			'price' => 'free', 'transfer_price' => '', 'renewal_price' => '',
-		));
-		empty($res['success'])
-			? $this->ok("non-numeric price rejected (not silently coerced to 0)")
-			: $this->no("non-numeric price was ACCEPTED");
-
-		$res = $this->Pricing_model->saveResellerRetail(1, $pid, $R, array(
-			'price' => 150, 'transfer_price' => 140, 'renewal_price' => 160,
-		));
-		!empty($res['success'])
-			? $this->ok("a price above every floor saves")
-			: $this->no("a valid price was rejected: " . $res['message']);
-	}
-
-	/** Raising a cost must pull stranded selling prices up with it. */
-	private function checkAutoLift($fx)
-	{
-		$this->line("\n-- Auto-lift on a cost rise --");
-		$R   = $fx['reseller'];
-		$pid = $fx['pricing_id'];
-		// Retail is 150 / 140 / 160 from checkFloor.
-
-		$res = $this->Pricing_model->saveCostOverride(1, $pid, 0, array(
-			'price' => 155, 'transfer_price' => 145, 'renewal_price' => 165,
-		));
-		!empty($res['lifted'][$R])
-			? $this->ok("cost rise reported " . count($res['lifted'][$R]) . " lifted component(s)")
-			: $this->no("cost rise did NOT lift the underwater selling price");
-
-		$now = $this->Pricing_model->resolve(1, $pid, $fx['sub']);
-		$this->eq($now['price'], 155.00, "register price lifted to the new cost");
-		$this->eq($now['transfer'], 145.00, "transfer price lifted independently");
-		$this->eq($now['renewal'], 165.00, "renewal price lifted independently");
-
-		$audits = $this->db->query(
-			"SELECT COUNT(*) AS c FROM price_override_audits
-			 WHERE owner_company_id = ? AND pricing_id = ? AND reason = 'auto_lift_floor'",
-			array($R, $pid)
-		)->row_array();
-		((int) $audits['c'] >= 3)
-			? $this->ok("{$audits['c']} audit rows written for the lift")
-			: $this->no("expected 3+ audit rows, found {$audits['c']}");
-
-		// Lowering a cost must NOT touch a price the reseller chose.
-		$this->Pricing_model->saveCostOverride(1, $pid, 0, array(
-			'price' => 50, 'transfer_price' => 50, 'renewal_price' => 50,
-		));
-		$after = $this->Pricing_model->resolve(1, $pid, $fx['sub']);
-		$this->eq($after['price'], 155.00, "lowering a cost leaves the reseller's price alone");
 	}
 
 	/** discount_type/discount_value finally do something -- both spellings. */
@@ -531,7 +684,11 @@ class Pricingcheck extends WHMAZADMIN_Controller {
 		$this->tick('resolved for sub');
 		$this->eq($sub['price'], 300.00, "unpriced item sells to the sub-customer at RETAIL, not cost");
 		$this->eq($sub['cost_price'], 100.00, "...while the cost basis is still the reseller's cost");
-		$this->eq($m->resolve(1, $pid3, $R)['price'], 100.00, "...and the reseller itself still pays cost");
+
+		// The pair below IS the v2.1 model in two lines: one price, two costs.
+		$selfR = $m->resolve(1, $pid3, $R);
+		$this->eq($selfR['price'], 300.00, "...and the reseller is quoted that same RETAIL price");
+		$this->eq($selfR['cost_price'], 100.00, "...with its cost carried alongside, not substituted");
 
 		// Deactivating the reseller must not hand their customers wholesale.
 		$this->tick('deactivating reseller');

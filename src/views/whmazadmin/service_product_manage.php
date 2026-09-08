@@ -213,8 +213,9 @@
 									<span style="display:inline-block;width:12px;height:12px;background:#fff8e1;border:1px solid #ccc;vertical-align:middle;"></span>
 									The shaded field under each price is the <strong>reseller cost</strong> &mdash; what resellers pay you.
 									The price above it is your public retail price and is what direct customers are charged.
-									Blank cost = resellers fall back to the discount on their profile, then to retail.
-									A reseller can never sell below their cost; raising a cost above one of their prices raises that price and emails them.
+									Blank cost = resellers fall back to the discount on their profile, then to the
+									global default reseller discount, and finally to retail. Resellers set no price of
+									their own; their margin is retail minus this cost.
 								</small>
 								<?php else: ?>
 								<p class="text-muted mb-0">No currencies or billing cycles configured yet.</p>

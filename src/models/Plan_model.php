@@ -444,15 +444,14 @@ class Plan_model extends CI_Model {
 	 * setting it to zero -- giving software away is never what an empty field
 	 * is meant to say.
 	 *
-	 * @return array [company_id => lifted components] for resellers whose
-	 *               selling price had to be raised to the new floor.
+	 * @return int cells written (diagnostic only; no caller reads it).
 	 */
 	function saveCostMatrix($productId, $costData)
 	{
-		$lifted = array();
+		$saved = 0;
 		$productId = (int) $productId;
 		if ($productId <= 0 || !is_array($costData)) {
-			return $lifted;
+			return $saved;
 		}
 		$this->load->model('Pricing_model');
 
@@ -468,17 +467,11 @@ class Plan_model extends CI_Model {
 				// currency/cycle, so there is nothing to attach a cost to.
 				if (empty($row)) continue;
 
-				$res = $this->Pricing_model->saveCostOverride(3, $row['id'], 0, array('price' => $cost));
-				if (!empty($res['lifted'])) {
-					foreach ($res['lifted'] as $companyId => $changes) {
-						$lifted[$companyId] = array_merge(
-							isset($lifted[$companyId]) ? $lifted[$companyId] : array(), $changes
-						);
-					}
-				}
+				$this->Pricing_model->saveCostOverride(3, $row['id'], 0, array('price' => $cost));
+				$saved++;
 			}
 		}
-		return $lifted;
+		return $saved;
 	}
 
 	// ─── admin: features (plan_features) ─────────────────────────────────

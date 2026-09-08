@@ -104,7 +104,7 @@ class Softwareproduct extends WHMAZADMIN_Controller {
 					// Reseller cost, applied AFTER retail: a brand-new cell has
 					// no software_pricing.id to key an override on until
 					// savePricingMatrix() has created it.
-					$lifted = $this->Plan_model->saveCostMatrix($productId, $this->input->post('cost'));
+					$this->Plan_model->saveCostMatrix($productId, $this->input->post('cost'));
 
 					// Features: parallel feature_key[] / feature_value[] arrays.
 					$keys   = (array) $this->input->post('feature_key');
@@ -119,16 +119,10 @@ class Softwareproduct extends WHMAZADMIN_Controller {
 					}
 					$this->Plan_model->saveFeatures($productId, $features);
 
-					$costMsg = '';
-					if (!empty($lifted)) {
-						$this->load->model('Pricing_model');
-						foreach ($lifted as $companyId => $changes) {
-							$this->Pricing_model->notifyLiftedResellers(array($companyId => $changes), 3, 0);
-						}
-						$costMsg = ' ' . count($lifted) . ' reseller selling price(s) were below the new cost and have been raised to it; those resellers have been emailed.';
-					}
-
-					$this->session->set_flashdata('admin_success', 'Software product has been saved successfully.' . $costMsg);
+					// A cost change needs no follow-up since v2.1: resellers set
+					// no selling price, so nothing can be stranded below the
+					// new cost and there is nobody to notify.
+					$this->session->set_flashdata('admin_success', 'Software product has been saved successfully.');
 					redirect('whmazadmin/softwareproduct/index');
 					return;
 				}

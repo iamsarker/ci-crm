@@ -122,15 +122,13 @@ class Service_product extends WHMAZADMIN_Controller {
 					// that was just written -- a brand-new currency/cycle cell
 					// has no product_service_pricing.id to key an override on
 					// until savePricingMatrix() has created it.
-					$lifted = array();
-
 					if ($pricingType === 'recurring') {
 						$pricingData = $this->input->post('pricing');
 						if (!empty($pricingData) && is_array($pricingData)) {
 							$this->Serviceproduct_model->savePricingMatrix($productId, $pricingData);
 						}
 						$this->Serviceproduct_model->deletePricingExcept($productId, $recurringCycleIds);
-						$lifted = $this->Serviceproduct_model->saveCostMatrix($productId, $this->input->post('cost'));
+						$this->Serviceproduct_model->saveCostMatrix($productId, $this->input->post('cost'));
 
 					} else if ($pricingType === 'onetime') {
 						$pricingData = $this->input->post('pricing');
@@ -139,7 +137,7 @@ class Service_product extends WHMAZADMIN_Controller {
 						}
 						$keepIds = $oneTimeCycleId ? array($oneTimeCycleId) : array();
 						$this->Serviceproduct_model->deletePricingExcept($productId, $keepIds);
-						$lifted = $this->Serviceproduct_model->saveCostMatrix($productId, $this->input->post('cost'));
+						$this->Serviceproduct_model->saveCostMatrix($productId, $this->input->post('cost'));
 
 					} else if ($pricingType === 'free') {
 						$currencies = $this->Serviceproduct_model->getCurrencies();
@@ -148,20 +146,10 @@ class Service_product extends WHMAZADMIN_Controller {
 						$this->Serviceproduct_model->deletePricingExcept($productId, $keepIds);
 					}
 
-					$costMsg = '';
-					if (!empty($lifted)) {
-						// Raising a cost above a reseller's selling price lifts
-						// that price to the new floor. Tell the admin here and
-						// the reseller by email -- a silent rewrite of a number
-						// they typed is what turns into a support ticket.
-						$this->load->model('Pricing_model');
-						foreach ($lifted as $companyId => $changes) {
-							$this->Pricing_model->notifyLiftedResellers(array($companyId => $changes), 2, 0);
-						}
-						$costMsg = ' ' . count($lifted) . ' reseller selling price(s) were below the new cost and have been raised to it; those resellers have been emailed.';
-					}
-
-					$this->session->set_flashdata('admin_success', 'Service product has been saved successfully.' . $costMsg);
+					// A cost change needs no follow-up since v2.1: resellers set
+					// no selling price, so there is nothing that can be left
+					// stranded below the new cost and nobody to notify.
+					$this->session->set_flashdata('admin_success', 'Service product has been saved successfully.');
 					redirect("whmazadmin/service_product/index");
 				}else {
 					$this->session->set_flashdata('admin_error', 'Something went wrong. Try again');

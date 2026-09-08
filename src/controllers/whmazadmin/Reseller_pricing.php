@@ -2,22 +2,25 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * Reseller Pricing — the one screen that serves both sides of the two-tier
- * pricing model (v2.0.0 Phase 2).
+ * Reseller Pricing — one screen, two audiences, ONE editable number.
  *
- *   Reseller admin  (admin_type = 1): edits their OWN selling prices. Their cost
- *                                     is shown read-only beside each field.
- *   Platform admin  (admin_type = 0): picks a reseller from a selector and gets
- *                                     the same grid, plus the ability to set
- *                                     that reseller's negotiated cost.
+ *   Reseller admin  (admin_type = 1): READ-ONLY. Per item they see the retail
+ *                                     price their customer pays, the cost they
+ *                                     pay the platform, and the margin between.
+ *                                     They cannot change any of it.
+ *   Platform admin  (admin_type = 0): the same grid for a chosen reseller, plus
+ *                                     the ability to set that reseller's
+ *                                     negotiated COST.
  *
- * One controller rather than two because the grid, the floor rule and the save
- * path are identical -- only who owns the row and which column is editable
- * differ. Two screens would be two places to keep the floor logic correct.
+ * v2.1 removed the reseller's selling price entirely. A reseller charges their
+ * client the platform's retail price and pays the platform less for it; the
+ * margin is settled through the wallet, not through a price the reseller sets.
+ * That is what makes the storefront price buyer-independent -- see the header
+ * of Pricing_model for why the cart depended on it.
  *
- * The floor itself is NOT enforced here: Pricing_model::saveResellerRetail()
- * owns it, server-side and per component, so a curl POST that skips this form
- * is checked by exactly the same code the form is.
+ * ⚠️ Do not add a write path for the reseller here. capabilities.php narrows
+ * this controller to index() for exactly that reason, and save_cost() refuses a
+ * reseller admin on its own account as well.
  */
 class Reseller_pricing extends WHMAZADMIN_Controller {
 
@@ -47,6 +50,12 @@ class Reseller_pricing extends WHMAZADMIN_Controller {
 		$data['is_owner']  = isResellerAdmin();
 		$data['resellers'] = $data['is_owner'] ? array() : $this->Pricing_model->resellerList();
 
+		// The global default discount is the bottom rung of the cost ladder and
+		// lives in sys_cnf, which has no dedicated screen. Surface it here --
+		// this is the page someone is on when they are reasoning about margins.
+		$this->load->model('Syscnf_model');
+		$data['global_discount'] = $this->Syscnf_model->getByGroup('RESELLER');
+
 		$resellerCompanyId = $this->_targetReseller();
 		$data['reseller_company_id'] = $resellerCompanyId;
 
@@ -56,52 +65,6 @@ class Reseller_pricing extends WHMAZADMIN_Controller {
 		}
 
 		$this->load->view('whmazadmin/reseller_pricing', $data);
-	}
-
-	/**
-	 * Save one row of the grid (AJAX).
-	 *
-	 * One row at a time rather than a whole-grid POST: the floor can reject a
-	 * single component, and a bulk save would have to either abort the whole
-	 * submission over one bad cell or partially apply it. Per-row keeps the
-	 * failure local and the message specific.
-	 */
-	public function save()
-	{
-		// Gate on the METHOD, not on $this->input->post(). csrf_verify() unsets
-		// the token from $_POST once it has checked it, so a request carrying
-		// only a token reads as an empty POST -- see CLAUDE.md, "Known Gotchas".
-		if (!$this->input->is_ajax_request() || $this->input->method(TRUE) !== 'POST') {
-			show_404();
-		}
-
-		$resellerCompanyId = $this->_targetReseller();
-		if ($resellerCompanyId <= 0) {
-			echo json_encode(buildFailedResponse('No reseller selected.'));
-			return;
-		}
-
-		$itemType  = $this->_itemType($this->input->post('type'));
-		$pricingId = (int) $this->input->post('pricing_id');
-		if ($pricingId <= 0) {
-			echo json_encode(buildFailedResponse('Invalid pricing row.'));
-			return;
-		}
-
-		// A reseller may only price items they actually sell -- which is all of
-		// them -- but the pricing row must exist, and saveResellerRetail()
-		// refuses if it does not.
-		$res = $this->Pricing_model->saveResellerRetail($itemType, $pricingId, $resellerCompanyId, array(
-			'price'          => $this->input->post('price'),
-			'transfer_price' => $this->input->post('transfer_price'),
-			'renewal_price'  => $this->input->post('renewal_price'),
-		));
-
-		if (empty($res['success'])) {
-			echo json_encode(buildFailedResponse($res['message']));
-			return;
-		}
-		echo json_encode(buildSuccessResponse(array('floor' => $res['floor']), $res['message']));
 	}
 
 	/**
@@ -142,22 +105,19 @@ class Reseller_pricing extends WHMAZADMIN_Controller {
 			return;
 		}
 
-		$msg = $res['message'];
-		if (!empty($res['lifted'])) {
-			$this->Pricing_model->notifyLiftedResellers($res['lifted'], $itemType, $pricingId);
-			$msg .= ' Their selling price was below the new cost and has been raised to it; they have been emailed.';
-		}
-		echo json_encode(buildSuccessResponse(array('lifted' => !empty($res['lifted'])), $msg));
+		// No follow-up needed since v2.1: the reseller sets no selling price, so
+		// a cost change cannot strand one below the new floor.
+		echo json_encode(buildSuccessResponse(array(), $res['message']));
 	}
 
 	// -----------------------------------------------------------------
 
 	/**
-	 * Whose prices this request is editing.
+	 * Whose numbers this request is looking at.
 	 *
 	 * A reseller admin is pinned to their own company and the request parameter
-	 * is ignored entirely -- otherwise ?reseller=<other id> would be a
-	 * cross-tenant write, and the capability hook cannot catch it because it
+	 * is ignored entirely -- otherwise ?reseller=<other id> would expose a
+	 * competitor's cost, and the capability hook cannot catch it because it
 	 * knows the controller and method but not which company an id names.
 	 */
 	private function _targetReseller()
@@ -178,17 +138,17 @@ class Reseller_pricing extends WHMAZADMIN_Controller {
 	}
 
 	/**
-	 * Every sellable pricing row for one item type, each carrying the
-	 * reseller's cost (the floor) and their current selling price.
+	 * Every sellable pricing row for one item type, each carrying the platform
+	 * retail price, this reseller's cost, and the margin between them.
 	 *
-	 * Costs are resolved through Pricing_model::costFor() rather than read
-	 * straight from price_overrides, so the profile-discount fallback is
-	 * included and the number shown is the same one the floor check will use.
+	 * Costs go through Pricing_model::costFor() rather than a raw
+	 * price_overrides read, so every rung of the ladder is included -- the
+	 * per-reseller override, the platform default, the profile discount and the
+	 * global default -- and the number shown is the one a real order would use.
 	 */
 	private function _grid($type, $resellerCompanyId)
 	{
 		$itemType = $this->_itemType($type);
-		$retail   = $this->Pricing_model->overridesFor($itemType, $resellerCompanyId, 2);
 
 		if ($itemType === self::T_DOMAIN) {
 			$base = $this->db->query(
@@ -232,7 +192,10 @@ class Reseller_pricing extends WHMAZADMIN_Controller {
 		foreach ($base as $row) {
 			$pid  = (int) $row['id'];
 			$cost = $this->Pricing_model->costFor($itemType, $pid, $resellerCompanyId);
-			$mine = isset($retail[$pid]) ? $retail[$pid] : array();
+
+			$basePrice    = (float) $row['price'];
+			$baseTransfer = (float) $row['transfer'];
+			$baseRenewal  = (float) $row['renewal'];
 
 			$out[] = array(
 				'pricing_id'      => $pid,
@@ -240,15 +203,23 @@ class Reseller_pricing extends WHMAZADMIN_Controller {
 				'sub'             => isset($row[$sub]) ? $row[$sub] : '',
 				'currency_code'   => $row['currency_code'],
 				'currency_symbol' => $row['currency_symbol'],
-				'base_price'      => (float) $row['price'],
-				'base_transfer'   => (float) $row['transfer'],
-				'base_renewal'    => (float) $row['renewal'],
+				'base_price'      => $basePrice,
+				'base_transfer'   => $baseTransfer,
+				'base_renewal'    => $baseRenewal,
 				'cost_price'      => $cost['price'],
 				'cost_transfer'   => $cost['transfer'],
 				'cost_renewal'    => $cost['renewal'],
-				'my_price'        => isset($mine['price'])          ? $mine['price']          : '',
-				'my_transfer'     => isset($mine['transfer_price']) ? $mine['transfer_price'] : '',
-				'my_renewal'      => isset($mine['renewal_price'])  ? $mine['renewal_price']  : '',
+
+				// Margin can be NEGATIVE, and is shown that way on purpose. The
+				// resolver no longer clamps sell up to cost, so a cost set above
+				// retail is a real loss the platform admin needs to see rather
+				// than have quietly corrected into a break-even.
+				'margin_price'    => round($basePrice    - $cost['price'],    2),
+				'margin_transfer' => round($baseTransfer - $cost['transfer'], 2),
+				'margin_renewal'  => round($baseRenewal  - $cost['renewal'],  2),
+				'margin_pct'      => $basePrice > 0
+					? round(($basePrice - $cost['price']) / $basePrice * 100, 2)
+					: 0.0,
 			);
 		}
 		return $out;

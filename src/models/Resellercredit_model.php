@@ -55,7 +55,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * caller passing a negative to debit() would otherwise silently top the wallet
  * up. Both reject a non-positive magnitude outright.
  *
- * @see reseller_v2_phase3_migration.sql
+ * @see reseller_v21_upgrade_migration.sql
  * @see Pricing_model  (Phase 2 — where cost_amount comes from)
  */
 class Resellercredit_model extends CI_Model

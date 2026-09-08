@@ -2,31 +2,42 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * Pricing_model — the single resolver for two-tier reseller pricing (v2.0.0 Phase 2).
+ * Pricing_model — the single resolver for reseller pricing.
  *
- * Before this file there was exactly one price per (product, currency, cycle):
- * whatever sat in dom_pricing / product_service_pricing / software_pricing.
- * Those three tables are still the only place a platform-retail price lives and
- * this model never writes to them. Everything reseller-specific is layered on
- * top from `price_overrides`.
+ * v2.0.0 Phase 2 introduced this file with a TWO-TIER model: the platform set
+ * a cost and the reseller set their own selling price for their sub-customers
+ * (price_overrides.audience = 2). v2.1 removed the second tier. A reseller now
+ * sets no price of any kind; they collect the platform's retail price from
+ * their client and pay the platform less for it.
  *
- * THE INVARIANT THAT MAKES THIS SAFE (step 2 of resolve()):
- *     a buyer whose company has no parent_company_id and is not itself a
- *     reseller never touches price_overrides at all -- sell = base, cost = 0.
- * Every direct customer's cart total is therefore bit-identical to pre-Phase-2
- * by construction, not by testing.
+ * THE INVARIANT THAT MAKES THIS SAFE — and it is now two invariants:
  *
- * Vocabulary, because three different words all sound like "price":
- *     base   -- the native table's number. Platform retail. Never overridden.
- *     cost   -- what a reseller pays the platform. audience = AUD_COST.
- *     sell   -- what THIS buyer is charged. For a reseller buying for
- *               themselves that is their cost; for a sub-customer it is the
- *               reseller's own price. audience = AUD_RETAIL.
+ *   1. SELL IS BUYER-INDEPENDENT. resolve() returns the native table's price
+ *      to every buyer: guest, direct customer, sub-customer, reseller. There
+ *      is no branch, and there must never be one again. add_to_carts stores
+ *      sub_total/total once at add time and checkoutSubmit() sums them
+ *      verbatim, so a buyer-dependent price meant a visitor could be quoted
+ *      one number as a guest and charged another after logging in, with
+ *      nothing in between to re-price the cart.
+ *
+ *   2. A buyer with no live reseller above them never touches price_overrides
+ *      at all — sell = base, cost = 0 (step 2 of resolveFromBase). Every
+ *      direct customer's cart total is bit-identical to pre-Phase-2 by
+ *      construction, not by testing.
+ *
+ * Vocabulary, because two different words both sound like "price":
+ *     base / sell -- the native table's number. Platform retail. What EVERY
+ *                    buyer is quoted and charged. Never overridden.
+ *     cost        -- what a reseller pays the platform. audience = AUD_COST.
+ *                    Feeds only the frozen order_*.cost_amount snapshot and
+ *                    the Phase 3 wallet debit; never quoted to anyone.
+ *
+ * The reseller's margin is the gap between the two, and it is settled through
+ * the wallet, not through the price the customer sees.
  *
  * Domains carry three components (register / transfer / renewal) and each is
- * resolved and floored independently -- a single blended price would let a
- * reseller set renewal below cost and bleed the platform on every renewal for
- * years, which is the one direction the money keeps flowing.
+ * costed independently -- a single blended cost would misprice renewals, which
+ * are the ones that repeat for the life of the domain.
  */
 class Pricing_model extends CI_Model
 {
@@ -37,11 +48,25 @@ class Pricing_model extends CI_Model
 
 	/** price_overrides.audience */
 	const AUD_COST   = 1; // what the reseller pays us
-	const AUD_RETAIL = 2; // what the reseller charges their customer
+
+	/**
+	 * RETIRED in v2.1. No code reads or writes this audience any more, and
+	 * reseller_v21_upgrade_migration.sql deletes every such row.
+	 * Kept only so the numeral in price_overrides.audience still has a name.
+	 * Do not resurrect it: a reseller-set selling price is exactly the
+	 * buyer-dependent price that broke the cart.
+	 */
+	const AUD_RETAIL = 2;
 
 	/** Request cache. Never persisted: a price change must land on the next request. */
 	private $resolveCache = array();
 	private $tenantCache  = array();
+
+	/**
+	 * The sys_cnf global discount, or false once looked up and found unset.
+	 * Deliberately NOT in $resolveCache, which is wiped on every override save.
+	 */
+	private $globalDiscountCache = null;
 
 	function __construct()
 	{
@@ -61,9 +86,13 @@ class Pricing_model extends CI_Model
 	 * @param int|null $companyId buying companies.id; null = the logged-in customer
 	 *
 	 * @return array {
-	 *     price, transfer, renewal   -- what this buyer pays (sell)
-	 *     cost_price, cost_transfer, cost_renewal -- what the reseller pays us; 0 for direct
-	 *     base_price, base_transfer, base_renewal -- platform retail, for UI comparison
+	 *     price, transfer, renewal   -- what this buyer pays. Since v2.1 these
+	 *                                   are ALWAYS equal to base_* -- the keys
+	 *                                   are kept so the ~20 call sites that
+	 *                                   overwrite them in place need no change.
+	 *     cost_price, cost_transfer, cost_renewal -- what the reseller pays us;
+	 *                                   0 for a direct customer. Wallet-facing.
+	 *     base_price, base_transfer, base_renewal -- platform retail
 	 *     currency_id, reseller_company_id, is_reseller_buyer, source
 	 * }
 	 * Empty array when the pricing row does not exist -- callers already treat
@@ -132,15 +161,12 @@ class Pricing_model extends CI_Model
 	/**
 	 * The actual decision, shared by resolve() and resolveMany().
 	 *
-	 * 1. base = the native pricing row.
-	 * 2. No reseller in the picture -> sell = base, cost = 0. Done.
-	 * 3. cost = per-reseller override ?? platform-wide reseller cost
-	 *           ?? reseller_profiles discount applied to base ?? base.
-	 * 4. Buyer IS the reseller -> they pay cost.
-	 * 5. Buyer is a sub-customer -> they pay the reseller's retail override,
-	 *    falling back to base (platform retail) when the reseller has not
-	 *    priced this item. Falling back to base and not to cost matters: an
-	 *    unpriced item must not be sold at the platform's wholesale number.
+	 * 1. sell = base. Unconditionally, before any branch. Every buyer -- guest,
+	 *    direct customer, sub-customer, reseller -- is quoted platform retail.
+	 * 2. No reseller in the picture -> cost = 0. Done, price_overrides untouched.
+	 * 3. cost = costLadder(): negotiated ?? platform default ?? profile discount
+	 *    ?? global discount ?? base. Feeds ONLY the frozen order_*.cost_amount
+	 *    snapshot and the wallet debit -- never what anyone is quoted.
 	 */
 	private function resolveFromBase($base, $itemType, $pricingId, $companyId)
 	{
@@ -156,11 +182,27 @@ class Pricing_model extends CI_Model
 			'is_reseller_buyer'   => (bool) $tenant['is_reseller'],
 		);
 
+		// --- Step 1: sell. No branches, by design. ---
+		//
+		// The sell price is buyer-INDEPENDENT and this is the whole point of
+		// v2.1. add_to_carts.sub_total/total are written once at add time and
+		// checkoutSubmit() sums them verbatim, so any buyer-dependent price
+		// meant a guest could add at one number and check out at another with
+		// nothing in between to re-price the cart. A cart cannot go stale about
+		// a number that never varies.
+		//
+		// ⚠️ Do NOT reintroduce a branch here -- not for the reseller, not for
+		// a sub-customer, not "just for display". The reseller's margin is the
+		// gap between this number and cost_*, taken from their wallet.
+		$out['price']    = (float) $base['price'];
+		$out['transfer'] = (float) $base['transfer'];
+		$out['renewal']  = (float) $base['renewal'];
+
 		// --- Step 2: the direct-customer short circuit. ---
+		// A buyer with no live reseller above them never reads price_overrides
+		// at all, which is what makes reseller pricing provably a no-op for
+		// every direct customer -- by construction, not by testing.
 		if ($R <= 0) {
-			$out['price']         = (float) $base['price'];
-			$out['transfer']      = (float) $base['transfer'];
-			$out['renewal']       = (float) $base['renewal'];
 			$out['cost_price']    = 0.0;
 			$out['cost_transfer'] = 0.0;
 			$out['cost_renewal']  = 0.0;
@@ -168,67 +210,19 @@ class Pricing_model extends CI_Model
 			return $out;
 		}
 
-		// --- Step 3: cost. ---
-		$costSource = 'cost_override_reseller';
-		$cost = $this->override($itemType, $pricingId, $R, self::AUD_COST);
-		if (empty($cost)) {
-			$costSource = 'cost_override_platform';
-			$cost = $this->override($itemType, $pricingId, 0, self::AUD_COST);
-		}
-		if (empty($cost)) {
-			// reseller_profiles.discount_type / discount_value have been stored
-			// since v1 and applied to precisely nothing. This is where they
-			// finally do work: every existing reseller gets a coherent cost on
-			// day one with no data entry at all.
-			$disc = $this->resellerDiscount($R);
-			if ($disc !== null) {
-				$costSource = 'profile_discount';
-				$cost = array(
-					'price'          => $this->applyDiscount($base['price'],    $disc),
-					'transfer_price' => $this->applyDiscount($base['transfer'], $disc),
-					'renewal_price'  => $this->applyDiscount($base['renewal'],  $disc),
-				);
-			}
-		}
-		if (empty($cost)) {
-			$costSource = 'base';
-			$cost = array('price' => $base['price'], 'transfer_price' => $base['transfer'], 'renewal_price' => $base['renewal']);
-		}
+		// --- Step 3: cost. Wallet-facing only; never quoted to anyone. ---
+		//
+		// Deliberately NOT clamped to base. If a cost ends up above retail the
+		// snapshot must record that honestly so the margin shows as negative on
+		// the admin grid; clamping sell up to meet it would push one reseller's
+		// sub-customers above the platform price and re-arm the exact
+		// buyer-dependence step 1 exists to remove.
+		$cost = $this->costLadder($itemType, $pricingId, $R, $base);
 
-		// A NULL transfer/renewal override means "same as price", not "free".
-		$out['cost_price']    = (float) $cost['price'];
-		$out['cost_transfer'] = $this->orFallback($cost['transfer_price'], $cost['price']);
-		$out['cost_renewal']  = $this->orFallback($cost['renewal_price'],  $cost['price']);
-
-		// --- Step 4: the reseller buying for themselves pays cost. ---
-		if (!empty($tenant['is_reseller'])) {
-			$out['price']    = $out['cost_price'];
-			$out['transfer'] = $out['cost_transfer'];
-			$out['renewal']  = $out['cost_renewal'];
-			$out['source']   = $costSource . '/self';
-			return $out;
-		}
-
-		// --- Step 5: the sub-customer pays the reseller's price. ---
-		$retail = $this->override($itemType, $pricingId, $R, self::AUD_RETAIL);
-		if (!empty($retail)) {
-			$out['price']    = (float) $retail['price'];
-			$out['transfer'] = $this->orFallback($retail['transfer_price'], $retail['price']);
-			$out['renewal']  = $this->orFallback($retail['renewal_price'],  $retail['price']);
-			$out['source']   = 'retail_override';
-		} else {
-			$out['price']    = (float) $base['price'];
-			$out['transfer'] = (float) $base['transfer'];
-			$out['renewal']  = (float) $base['renewal'];
-			$out['source']   = 'base_retail';
-		}
-
-		// The floor is enforced on save (saveResellerRetail), but a cost RAISE
-		// can strand an existing override underneath it between the raise and
-		// the auto-lift pass. Clamp on read too so no sale is ever below cost.
-		$out['price']    = max($out['price'],    $out['cost_price']);
-		$out['transfer'] = max($out['transfer'], $out['cost_transfer']);
-		$out['renewal']  = max($out['renewal'],  $out['cost_renewal']);
+		$out['cost_price']    = $cost['price'];
+		$out['cost_transfer'] = $cost['transfer'];
+		$out['cost_renewal']  = $cost['renewal'];
+		$out['source']        = $cost['source'] . (!empty($tenant['is_reseller']) ? '/self' : '');
 
 		return $out;
 	}
@@ -339,8 +333,9 @@ class Pricing_model extends CI_Model
 			 FROM price_overrides
 			 WHERE item_type = ? AND pricing_id IN ({$in})
 			   AND owner_company_id IN (" . implode(',', $owners) . ")
+			   AND audience = ?
 			   AND is_active = 1 AND status = 1",
-			array((int) $itemType)
+			array((int) $itemType, self::AUD_COST)
 		)->result_array();
 
 		$found = array();
@@ -357,14 +352,11 @@ class Pricing_model extends CI_Model
 		// Negative caching: without this every unpriced TLD still costs a query.
 		foreach ($pricingIds as $pid) {
 			foreach ($owners as $own) {
-				foreach (array(self::AUD_COST, self::AUD_RETAIL) as $aud) {
-					$ck = 'o:' . (int)$itemType . ':' . $pid . ':' . $own . ':' . $aud;
-					if (!isset($found[$ck])) $this->resolveCache[$ck] = array();
-				}
+				$ck = 'o:' . (int)$itemType . ':' . $pid . ':' . $own . ':' . self::AUD_COST;
+				if (!isset($found[$ck])) $this->resolveCache[$ck] = array();
 			}
 		}
 	}
-
 	// -----------------------------------------------------------------
 	// Tenancy
 	// -----------------------------------------------------------------
@@ -462,92 +454,11 @@ class Pricing_model extends CI_Model
 	// -----------------------------------------------------------------
 
 	/**
-	 * A reseller (or the platform admin acting for one) sets their selling price.
-	 *
-	 * The floor is enforced HERE, server-side and PER COMPONENT. Any JS hint on
-	 * the form is decoration -- this is the check that counts, and the reason it
-	 * is per component is that a blended floor lets a reseller price
-	 * registration above cost and renewal below it, which loses money quietly
-	 * for as long as the domain lives.
-	 *
-	 * @param array $prices ['price'=>, 'transfer_price'=>, 'renewal_price'=>]
-	 *                      blank/null components fall back to price on read.
-	 * @return array ['success'=>bool, 'message'=>string, 'floor'=>array]
-	 */
-	public function saveResellerRetail($itemType, $pricingId, $resellerCompanyId, $prices)
-	{
-		$itemType          = (int) $itemType;
-		$pricingId         = (int) $pricingId;
-		$resellerCompanyId = (int) $resellerCompanyId;
-
-		if ($resellerCompanyId <= 0) {
-			return array('success' => false, 'message' => 'A reseller must be selected.');
-		}
-		$base = $this->basePrice($itemType, $pricingId);
-		if (empty($base)) {
-			return array('success' => false, 'message' => 'That pricing row does not exist.');
-		}
-
-		// The floor is the reseller's own cost, resolved exactly the way a real
-		// purchase would resolve it -- profile-discount fallback included.
-		$floor = $this->costFor($itemType, $pricingId, $resellerCompanyId, $base);
-
-		$components = array(
-			'price'          => array('label' => 'Registration price', 'floor' => $floor['price']),
-			'transfer_price' => array('label' => 'Transfer price',     'floor' => $floor['transfer']),
-			'renewal_price'  => array('label' => 'Renewal price',      'floor' => $floor['renewal']),
-		);
-
-		$clean = array();
-		foreach ($components as $col => $meta) {
-			$raw = isset($prices[$col]) ? trim((string) $prices[$col]) : '';
-
-			if ($raw === '') {
-				// Only the registration price is mandatory; the other two are
-				// allowed to be blank and inherit it on read.
-				if ($col === 'price') {
-					return array('success' => false, 'message' => 'Registration price is required.');
-				}
-				$clean[$col] = null;
-				continue;
-			}
-			if (!is_numeric($raw) || (float) $raw < 0) {
-				return array('success' => false, 'message' => $meta['label'] . ' must be a positive number.');
-			}
-			if ((float) $raw < $meta['floor']) {
-				return array(
-					'success' => false,
-					'floor'   => $floor,
-					'message' => $meta['label'] . ' cannot be below your cost of ' . number_format($meta['floor'], 2) . '.',
-				);
-			}
-			$clean[$col] = round((float) $raw, 2);
-		}
-
-		// A blank transfer/renewal inherits `price`, so `price` alone has to
-		// clear all three floors or the inherited value lands underwater.
-		if ($clean['transfer_price'] === null && $clean['price'] < $floor['transfer']) {
-			return array('success' => false, 'floor' => $floor,
-				'message' => 'Leave transfer blank only if the registration price is at least your transfer cost of ' . number_format($floor['transfer'], 2) . '.');
-		}
-		if ($clean['renewal_price'] === null && $clean['price'] < $floor['renewal']) {
-			return array('success' => false, 'floor' => $floor,
-				'message' => 'Leave renewal blank only if the registration price is at least your renewal cost of ' . number_format($floor['renewal'], 2) . '.');
-		}
-
-		$this->upsertOverride($itemType, $pricingId, $resellerCompanyId, self::AUD_RETAIL, $clean);
-		$this->resolveCache = array();
-
-		return array('success' => true, 'message' => 'Price saved.', 'floor' => $floor);
-	}
-
-	/**
 	 * The platform sets a reseller cost. owner_company_id 0 = the default cost
 	 * every reseller inherits; a company id = one negotiated deal.
 	 *
-	 * Raising a cost is the dangerous direction: existing retail overrides that
-	 * were legal yesterday are now below the floor. Auto-lift them here rather
-	 * than leaving underwater prices live.
+	 * ONLY platform staff reach this (Reseller_pricing::save_cost() and the
+	 * three pricing admin screens). A reseller sets no price of any kind.
 	 */
 	public function saveCostOverride($itemType, $pricingId, $ownerCompanyId, $prices)
 	{
@@ -569,7 +480,7 @@ class Pricing_model extends CI_Model
 				if ($col === 'price') {
 					$this->deleteOverride($itemType, $pricingId, $ownerCompanyId, self::AUD_COST);
 					$this->resolveCache = array();
-					return array('success' => true, 'message' => 'Cost cleared.', 'lifted' => array());
+					return array('success' => true, 'message' => 'Cost cleared.');
 				}
 				$clean[$col] = null;
 				continue;
@@ -583,143 +494,136 @@ class Pricing_model extends CI_Model
 		$this->upsertOverride($itemType, $pricingId, $ownerCompanyId, self::AUD_COST, $clean);
 		$this->resolveCache = array();
 
-		$lifted = $this->liftUnderwaterRetail($itemType, $pricingId, $ownerCompanyId);
-
-		return array('success' => true, 'message' => 'Cost saved.', 'lifted' => $lifted);
-	}
-
-	/**
-	 * Pull every retail override for this pricing row up to its new floor.
-	 *
-	 * Scope: when the platform-wide cost (owner 0) moves, every reseller who
-	 * does not have their own negotiated cost is affected; when one reseller's
-	 * cost moves, only they are. Each lifted component writes an audit row, and
-	 * the caller is handed the affected resellers so it can email them.
-	 */
-	public function liftUnderwaterRetail($itemType, $pricingId, $changedOwnerCompanyId)
-	{
-		$itemType  = (int) $itemType;
-		$pricingId = (int) $pricingId;
-
-		$base = $this->basePrice($itemType, $pricingId);
-		if (empty($base)) return array();
-
-		if ((int) $changedOwnerCompanyId > 0) {
-			$targets = array((int) $changedOwnerCompanyId);
-		} else {
-			$rows = $this->db->query(
-				"SELECT owner_company_id FROM price_overrides
-				 WHERE item_type = ? AND pricing_id = ? AND audience = ? AND is_active = 1 AND status = 1
-				   AND owner_company_id > 0",
-				array($itemType, $pricingId, self::AUD_RETAIL)
-			)->result_array();
-			$targets = array_map('intval', array_column($rows, 'owner_company_id'));
-		}
-
-		$lifted = array();
-		foreach ($targets as $companyId) {
-			$retail = $this->override($itemType, $pricingId, $companyId, self::AUD_RETAIL);
-			if (empty($retail)) continue;
-
-			$floor  = $this->costFor($itemType, $pricingId, $companyId, $base);
-			$update = array();
-			$trail  = array();
-
-			$map = array(
-				'transfer_price' => $floor['transfer'],
-				'renewal_price'  => $floor['renewal'],
-			);
-			foreach ($map as $col => $f) {
-				// A NULL component inherits `price`, so it is lifted THROUGH
-				// that column rather than by materialising a value the reseller
-				// never set. Collected below into $needed.
-				if ($retail[$col] === null || $retail[$col] === '') continue;
-				if ((float) $retail[$col] >= $f) continue;
-
-				$update[$col] = round($f, 2);
-				$trail[]      = array('component' => $col, 'old' => (float) $retail[$col], 'new' => round($f, 2));
-			}
-
-			// `price` must clear its own floor AND the floor of every component
-			// that inherits from it. Computed in one place, after the explicit
-			// components are settled -- lifting price first and then checking
-			// the inherited floors against the OLD price is how an inherited
-			// renewal ends up below cost when the renewal floor is the highest
-			// of the three.
-			$needed = max((float) $retail['price'], $floor['price']);
-			foreach ($map as $col => $f) {
-				$inherits = ($retail[$col] === null || $retail[$col] === '') && !isset($update[$col]);
-				if ($inherits && $needed < $f) $needed = $f;
-			}
-			if ($needed > (float) $retail['price']) {
-				$trail[]         = array('component' => 'price', 'old' => (float) $retail['price'], 'new' => round($needed, 2));
-				$update['price'] = round($needed, 2);
-			}
-
-			if (empty($update)) continue;
-
-			$this->db->where(array(
-				'item_type' => $itemType, 'pricing_id' => $pricingId,
-				'owner_company_id' => $companyId, 'audience' => self::AUD_RETAIL,
-			));
-			$this->db->update('price_overrides', array_merge($update, array(
-				'updated_on' => getDateTime(), 'updated_by' => getAdminId(),
-			)));
-
-			$overrideId = $this->overrideId($itemType, $pricingId, $companyId, self::AUD_RETAIL);
-			foreach ($trail as $t) {
-				$this->db->insert('price_override_audits', array(
-					'price_override_id' => $overrideId,
-					'owner_company_id'  => $companyId,
-					'item_type'         => $itemType,
-					'pricing_id'        => $pricingId,
-					'component'         => $t['component'],
-					'old_value'         => $t['old'],
-					'new_value'         => $t['new'],
-					'reason'            => 'auto_lift_floor',
-					'note'              => 'Lifted to cost floor after a platform cost change.',
-					'inserted_on'       => getDateTime(),
-					'inserted_by'       => getAdminId(),
-				));
-			}
-			$lifted[$companyId] = $trail;
-		}
-
-		$this->resolveCache = array();
-		return $lifted;
+		return array('success' => true, 'message' => 'Cost saved.');
 	}
 
 	/**
 	 * Cost as resolve() would compute it, without needing a buyer.
-	 * Shared by the floor check and the auto-lift so they can never disagree.
+	 *
+	 * A thin wrapper over costLadder() so the floor check, the admin grid and
+	 * the resolver can never drift apart -- before v2.1 the ladder was written
+	 * out twice and adding a rung meant remembering to edit both.
 	 */
 	public function costFor($itemType, $pricingId, $resellerCompanyId, $base = null)
 	{
 		if ($base === null) $base = $this->basePrice($itemType, $pricingId);
 		if (empty($base)) return array('price' => 0.0, 'transfer' => 0.0, 'renewal' => 0.0);
 
-		$cost = $this->override($itemType, $pricingId, (int) $resellerCompanyId, self::AUD_COST);
-		if (empty($cost)) $cost = $this->override($itemType, $pricingId, 0, self::AUD_COST);
+		$cost = $this->costLadder($itemType, $pricingId, (int) $resellerCompanyId, $base);
+		unset($cost['source']);
+		return $cost;
+	}
+
+	/**
+	 * What reseller R pays the platform for this item. THE cost ladder --
+	 * every caller goes through here.
+	 *
+	 *   1. price_overrides(owner = R, audience = COST)  negotiated cost
+	 *   2. price_overrides(owner = 0, audience = COST)  platform default cost
+	 *   3. reseller_profiles.discount_type/value        per-reseller blanket
+	 *   4. sys_cnf RESELLER                             global blanket
+	 *   5. the native pricing row                       no discount at all
+	 *
+	 * Rungs 3 and 4 are why a brand-new reseller has a coherent cost on day
+	 * one with zero per-item data entry: set one percentage and every product
+	 * in the catalogue is priced.
+	 *
+	 * @return array price/transfer/renewal/source. A NULL transfer or renewal
+	 *               on an override means "same as price", never "free".
+	 */
+	private function costLadder($itemType, $pricingId, $R, $base)
+	{
+		$source = 'cost_override_reseller';
+		$cost = $this->override($itemType, $pricingId, (int) $R, self::AUD_COST);
 
 		if (empty($cost)) {
-			$disc = $this->resellerDiscount($resellerCompanyId);
+			$source = 'cost_override_platform';
+			$cost = $this->override($itemType, $pricingId, 0, self::AUD_COST);
+		}
+		if (empty($cost)) {
+			$disc = $this->resellerDiscount($R);
 			if ($disc !== null) {
-				$cost = array(
-					'price'          => $this->applyDiscount($base['price'],    $disc),
-					'transfer_price' => $this->applyDiscount($base['transfer'], $disc),
-					'renewal_price'  => $this->applyDiscount($base['renewal'],  $disc),
-				);
+				$source = 'profile_discount';
+				$cost = $this->discountedBase($base, $disc);
 			}
 		}
 		if (empty($cost)) {
-			$cost = array('price' => $base['price'], 'transfer_price' => $base['transfer'], 'renewal_price' => $base['renewal']);
+			$disc = $this->globalDiscount();
+			if ($disc !== null) {
+				$source = 'global_discount';
+				$cost = $this->discountedBase($base, $disc);
+			}
+		}
+		if (empty($cost)) {
+			$source = 'base';
+			$cost = array(
+				'price'          => $base['price'],
+				'transfer_price' => $base['transfer'],
+				'renewal_price'  => $base['renewal'],
+			);
 		}
 
 		return array(
 			'price'    => (float) $cost['price'],
 			'transfer' => $this->orFallback($cost['transfer_price'], $cost['price']),
 			'renewal'  => $this->orFallback($cost['renewal_price'],  $cost['price']),
+			'source'   => $source,
 		);
+	}
+
+	/** A discount applied to all three components of a base row. */
+	private function discountedBase($base, $disc)
+	{
+		return array(
+			'price'          => $this->applyDiscount($base['price'],    $disc),
+			'transfer_price' => $this->applyDiscount($base['transfer'], $disc),
+			'renewal_price'  => $this->applyDiscount($base['renewal'],  $disc),
+		);
+	}
+
+	/**
+	 * The platform-wide default reseller discount (sys_cnf group RESELLER).
+	 *
+	 * Rung 4 of the ladder: "give every reseller 10% off everything" without
+	 * touching a single reseller profile or pricing row.
+	 *
+	 * Cached in its own property rather than $resolveCache, which is wiped on
+	 * every override save -- this value cannot change mid-request.
+	 *
+	 * @return array|null discount_type/discount_value, or null when unset.
+	 */
+	private function globalDiscount()
+	{
+		if ($this->globalDiscountCache !== null) {
+			return ($this->globalDiscountCache === false) ? null : $this->globalDiscountCache;
+		}
+
+		$rows = $this->db->query(
+			"SELECT cnf_key, cnf_val FROM sys_cnf WHERE cnf_group = 'RESELLER'"
+		)->result_array();
+
+		$cnf = array();
+		foreach ($rows as $r) $cnf[$r['cnf_key']] = $r['cnf_val'];
+
+		$value = isset($cnf['reseller_default_discount_value'])
+			? (float) $cnf['reseller_default_discount_value'] : 0.0;
+
+		// <= 0 means "not set, fall through to base", NOT "0% off".
+		if ($value <= 0) {
+			$this->globalDiscountCache = false;
+			return null;
+		}
+
+		// ⚠️ NORMALISE. This is a free-text config field, and applyDiscount()
+		// reads ANY unrecognised string as a fixed amount -- so a typo of
+		// 'percnt' would silently turn "10% off" into "$10 off" on every item
+		// in the catalogue. Whitelist fixed; everything else is a percentage.
+		$type = isset($cnf['reseller_default_discount_type'])
+			? strtolower(trim($cnf['reseller_default_discount_type'])) : 'percent';
+		$type = ($type === 'fixed' || $type === 'flat') ? 'fixed' : 'percent';
+
+		$this->globalDiscountCache = array('discount_type' => $type, 'discount_value' => $value);
+		return $this->globalDiscountCache;
 	}
 
 	private function upsertOverride($itemType, $pricingId, $ownerCompanyId, $audience, $prices)
@@ -760,16 +664,6 @@ class Pricing_model extends CI_Model
 		);
 	}
 
-	private function overrideId($itemType, $pricingId, $ownerCompanyId, $audience)
-	{
-		$row = $this->db->query(
-			"SELECT id FROM price_overrides
-			 WHERE item_type = ? AND pricing_id = ? AND owner_company_id = ? AND audience = ? LIMIT 1",
-			array((int) $itemType, (int) $pricingId, (int) $ownerCompanyId, (int) $audience)
-		)->row_array();
-		return !empty($row) ? (int) $row['id'] : 0;
-	}
-
 	// -----------------------------------------------------------------
 	// Admin reads
 	// -----------------------------------------------------------------
@@ -788,138 +682,20 @@ class Pricing_model extends CI_Model
 		return $out;
 	}
 
-	// -----------------------------------------------------------------
-	// Notification
-	// -----------------------------------------------------------------
-
 	/**
-	 * Tell resellers their price moved without them touching it.
+	 * Is this company a LIVE reseller buying in its own name?
 	 *
-	 * An auto-lift silently rewrites a number the reseller typed, so it cannot
-	 * be left to a report. Best-effort by design: a dead SMTP server must never
-	 * roll back a cost change the platform admin already committed, so every
-	 * failure is logged and swallowed.
-	 *
-	 * @param array $lifted [company_id => [ ['component','old','new'], ... ]]
-	 *                      exactly what liftUnderwaterRetail() returns.
-	 * @return int emails sent
+	 * ⚠️ NOT the same as companies.is_reseller, and the difference is a money
+	 * bug. tenantFor() runs the result through resellerIsLive(), so a
+	 * SUSPENDED reseller answers false here while the raw column still says 1.
+	 * Callers that bill a reseller at cost must use this one: keyed on the raw
+	 * column, a suspended reseller resolves to R = 0, cost_* = 0.00, and could
+	 * self-issue a 0.00 invoice and be provisioned for free.
 	 */
-	public function notifyLiftedResellers($lifted, $itemType, $pricingId)
+	public function isResellerBuyer($companyId)
 	{
-		if (empty($lifted)) return 0;
-
-		$label    = $this->pricingLabel($itemType, $pricingId);
-		$settings = $this->db->query("SELECT * FROM app_settings LIMIT 1")->row_array();
-		$siteName = !empty($settings['company_name']) ? $settings['company_name'] : 'Our Company';
-		$template = $this->db->query(
-			"SELECT subject, body FROM email_templates WHERE template_key = ? AND status = 1 LIMIT 1",
-			array('reseller_price_lifted')
-		)->row_array();
-
-		$sent = 0;
-		foreach ($lifted as $companyId => $changes) {
-			$co = $this->db->query(
-				"SELECT name, email, first_name, last_name FROM companies WHERE id = ? LIMIT 1",
-				array((int) $companyId)
-			)->row_array();
-			if (empty($co) || empty($co['email'])) continue;
-
-			$rows = '';
-			foreach ($changes as $c) {
-				$rows .= '<tr><td>' . htmlspecialchars($this->componentLabel($c['component']))
-					  . '</td><td>' . number_format((float) $c['old'], 2)
-					  . '</td><td><strong>' . number_format((float) $c['new'], 2) . '</strong></td></tr>';
-			}
-			$table = '<table border="1" cellpadding="6" cellspacing="0"><tr>'
-				   . '<th>Component</th><th>Was</th><th>Now</th></tr>' . $rows . '</table>';
-
-			$name = trim(($co['first_name'] ?? '') . ' ' . ($co['last_name'] ?? ''));
-			if ($name === '') $name = $co['name'];
-
-			$placeholders = array(
-				'{reseller_name}' => $name,
-				'{item_name}'     => $label,
-				'{price_changes}' => $table,
-				'{site_name}'     => $siteName,
-				'{company_name}'  => $siteName,
-				'{site_url}'      => base_url(),
-			);
-
-			if (!empty($template)) {
-				$subject = strtr($template['subject'], $placeholders);
-				$body    = strtr($template['body'], $placeholders);
-			} else {
-				// Fallback so the notice still goes out on installs that have
-				// not seeded the template -- the same guard sendVerificationEmail
-				// uses, and for the same reason: a missing row must not turn
-				// into silence about a price change.
-				$subject = 'Your selling price for ' . $label . ' was adjusted';
-				$body = '<p>Dear ' . htmlspecialchars($name) . ',</p>'
-					. '<p>Our cost for <strong>' . htmlspecialchars($label) . '</strong> has increased, and your '
-					. 'selling price was below the new cost. It has been raised to the minimum so you are not '
-					. 'selling at a loss:</p>' . $table
-					. '<p>You can set a higher price at any time from your portal.</p>'
-					. '<p>Regards,<br>' . htmlspecialchars($siteName) . '</p>';
-			}
-
-			try {
-				$from     = $settings['smtp_user'] ?? ($settings['site_email'] ?? null);
-				if (sendHtmlEmail($co['email'], $subject, $body, $from, $siteName)) $sent++;
-			} catch (Exception $e) {
-				log_message('error', 'notifyLiftedResellers: ' . $e->getMessage());
-			}
-		}
-		return $sent;
-	}
-
-	private function componentLabel($column)
-	{
-		$map = array(
-			'price'          => 'Registration / first term',
-			'transfer_price' => 'Transfer',
-			'renewal_price'  => 'Renewal',
-		);
-		return isset($map[$column]) ? $map[$column] : $column;
-	}
-
-	/** Human name for a pricing row, for emails and audit notes. */
-	public function pricingLabel($itemType, $pricingId)
-	{
-		$itemType  = (int) $itemType;
-		$pricingId = (int) $pricingId;
-
-		if ($itemType == self::ITEM_DOMAIN) {
-			$r = $this->db->query(
-				"SELECT de.extension, dp.reg_period, c.code
-				 FROM dom_pricing dp
-				 JOIN dom_extensions de ON de.id = dp.dom_extension_id
-				 LEFT JOIN currencies c ON c.id = dp.currency_id
-				 WHERE dp.id = ? LIMIT 1", array($pricingId))->row_array();
-			if (empty($r)) return 'domain pricing #' . $pricingId;
-			return $r['extension'] . ' (' . (int) $r['reg_period'] . 'yr, ' . $r['code'] . ')';
-		}
-
-		if ($itemType == self::ITEM_SERVICE) {
-			$r = $this->db->query(
-				"SELECT ps.product_name, bc.cycle_name, c.code
-				 FROM product_service_pricing psp
-				 JOIN product_services ps ON ps.id = psp.product_service_id
-				 LEFT JOIN billing_cycle bc ON bc.id = psp.billing_cycle_id
-				 LEFT JOIN currencies c ON c.id = psp.currency_id
-				 WHERE psp.id = ? LIMIT 1", array($pricingId))->row_array();
-			if (empty($r)) return 'hosting pricing #' . $pricingId;
-			return $r['product_name'] . ' (' . $r['cycle_name'] . ', ' . $r['code'] . ')';
-		}
-
-		$r = $this->db->query(
-			"SELECT p.name, bc.cycle_name, c.code
-			 FROM software_pricing sp
-			 JOIN plans p ON p.id = sp.product_id
-			 LEFT JOIN billing_cycle bc ON bc.id = sp.billing_cycle_id
-			 LEFT JOIN currencies c ON c.id = sp.currency_id
-			 WHERE sp.id = ? LIMIT 1", array($pricingId))->row_array();
-		if (empty($r)) return 'software pricing #' . $pricingId;
-		return $r['name'] . ' (' . $r['cycle_name'] . ', ' . $r['code'] . ')';
+		$t = $this->tenantFor((int) $companyId);
+		return !empty($t['is_reseller']);
 	}
 
 	/** Every live reseller, for the platform admin's reseller selector. */

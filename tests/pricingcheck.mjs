@@ -77,10 +77,19 @@ async function leftovers(cfg) {
       (SELECT COUNT(*) FROM companies WHERE email LIKE '${FIXTURE_EMAIL}'),
       (SELECT COUNT(*) FROM dom_pricing WHERE reg_period >= ${FIXTURE_PERIOD}),
       (SELECT COUNT(*) FROM price_overrides),
-      (SELECT COUNT(*) FROM price_override_audits);
+      (SELECT COUNT(*) FROM price_override_audits),
+      (SELECT COUNT(*) FROM price_overrides WHERE audience = 2),
+      (SELECT cnf_val FROM sys_cnf WHERE cnf_key = 'reseller_default_discount_value');
   `);
-  const [companies, pricing, overrides, audits] = out.split(/\s+/).map(Number);
-  return { companies, pricing, overrides, audits };
+  // checkGlobalDiscount() writes to sys_cnf, which is REAL platform config and
+  // not a fixture table. Its own try/finally restores it, but a hard kill (the
+  // timeout below) bypasses that -- so the value is checked here too.
+  const [companies, pricing, overrides, audits, retail, discount] = out.split(/\s+/);
+  return {
+    companies: Number(companies), pricing: Number(pricing),
+    overrides: Number(overrides), audits: Number(audits),
+    retail: Number(retail), discount,
+  };
 }
 
 const bold = (s) => `\x1b[1m${s}\x1b[0m`;
@@ -89,7 +98,7 @@ const green = (s) => `\x1b[32m${s}\x1b[0m`;
 
 async function main() {
   const cfg = env();
-  console.log(bold(`\nPhase 2 pricing verification — ${cfg.db} @ ${cfg.host}\n`));
+  console.log(bold(`\nv2.1 reseller pricing verification — ${cfg.db} @ ${cfg.host}\n`));
 
   console.log('· purging fixture rows from any earlier run…');
   await purge(cfg);
@@ -97,6 +106,11 @@ async function main() {
   const before = await leftovers(cfg);
   if (before.companies || before.pricing) {
     console.log(red(`  purge failed: ${before.companies} companies, ${before.pricing} pricing rows remain`));
+    process.exit(2);
+  }
+  if (before.retail > 0) {
+    console.log(red(`  ${before.retail} price_overrides row(s) still have audience = 2.`));
+    console.log(red('  Run reseller_v21_upgrade_migration.sql first.'));
     process.exit(2);
   }
   console.log(`  clean. price_overrides=${before.overrides} audits=${before.audits} (pre-existing)\n`);
@@ -129,10 +143,12 @@ async function main() {
   console.log('\n· verifying the database was left clean…');
   const after = await leftovers(cfg);
   const dirty = after.companies || after.pricing
-    || after.overrides !== before.overrides || after.audits !== before.audits;
+    || after.overrides !== before.overrides || after.audits !== before.audits
+    || after.discount !== before.discount;
   if (dirty) {
     console.log(red(`  LEAKED: companies=${after.companies} pricing=${after.pricing} `
-      + `overrides ${before.overrides}->${after.overrides} audits ${before.audits}->${after.audits}`));
+      + `overrides ${before.overrides}->${after.overrides} audits ${before.audits}->${after.audits} `
+      + `sys_cnf discount ${before.discount}->${after.discount}`));
     await purge(cfg);
     console.log('  (purged)');
   } else {
