@@ -61,6 +61,12 @@ $route['billing'] = FALSE;
 $route['billing/(:any)/(:any)/(:any)'] = 'invoicing/$1/$2/$3';
 $route['billing/(:any)/(:any)'] = 'invoicing/$1/$2';
 $route['billing/(:any)'] = 'invoicing/$1';
+// Admin invoice deep links that were emailed / stored as in-app notifications
+// before the generators were corrected. They named `invoice/view`, but the
+// controller method has always been `view_invoice`, so every one of them 404'd.
+// New links carry the real method; this keeps the ones already in circulation
+// (and the notification rows already sitting in `app_notifications`) working.
+$route['whmazadmin/invoice/view/(:num)/(:any)'] = 'whmazadmin/invoice/view_invoice/$1/$2';
 $route['change-currency/(:any)/(:any)'] = 'auth/change_currency/$1/$2';
 $route['domain-search'] = 'cart/domain_search';
 $route['domain-suggestion'] = 'cart/get_domain_suggestions';

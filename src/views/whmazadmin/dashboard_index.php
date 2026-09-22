@@ -95,7 +95,7 @@
 							</div>
 							<div class="pd-l-15 flex-grow-1">
 								<p class="item-title mg-b-0">
-									<a href="{{baseurl}}whmazadmin/order/view_order/{{obj.order_uuid}}">Order #{{obj.order_no}}</a>
+									<a href="{{baseurl}}whmazadmin/order/view/{{obj.order_uuid}}">Order #{{obj.order_no}}</a>
 								</p>
 								<span class="item-subtitle">{{obj.currency_code}} {{obj.total_amount}}</span>
 							</div>

@@ -524,7 +524,7 @@ class Payment_model extends CI_Model
             '{payment_date}' => date('F j, Y g:i A', strtotime($transaction['completed_at'] ?: $transaction['initiated_at'])),
             '{company_name}' => $appSettings->company_name,
             '{site_name}' => $appSettings->company_name,
-            '{admin_invoice_url}' => base_url() . 'whmazadmin/invoice/view/' . $invoice['company_id'] . '/' . $invoice['invoice_uuid']
+            '{admin_invoice_url}' => base_url() . 'whmazadmin/invoice/view_invoice/' . $invoice['company_id'] . '/' . $invoice['invoice_uuid']
         );
 
         // Send customer email
@@ -562,7 +562,7 @@ class Payment_model extends CI_Model
                 'payment',
                 'Payment received: ' . $amountLabel,
                 'Invoice #' . $invoice['invoice_no'] . ' paid by ' . $customerLabel . ' via ' . $gatewayName . '.',
-                base_url() . 'whmazadmin/invoice/view/' . $invoice['company_id'] . '/' . $invoice['invoice_uuid'],
+                base_url() . 'whmazadmin/invoice/view_invoice/' . $invoice['company_id'] . '/' . $invoice['invoice_uuid'],
                 'fa-money-bill-wave'
             );
         }

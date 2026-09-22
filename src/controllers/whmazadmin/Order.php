@@ -522,6 +522,36 @@ class Order extends WHMAZADMIN_Controller
 	// =========================================
 
 	/**
+	 * Open an order from a uuid-addressed link.
+	 *
+	 * Order confirmation emails and the admin in-app "new order" notification
+	 * both link here with orders.order_uuid, and the dashboard's recent-order
+	 * list has only the uuid too. The real page is manage(), which is keyed on
+	 * the encoded id — so resolve the uuid and hand off to it.
+	 *
+	 * @param string $order_uuid orders.order_uuid
+	 */
+	public function view($order_uuid = null)
+	{
+		if (empty($order_uuid)) {
+			$this->session->set_flashdata('admin_error', 'Order ID is required');
+			redirect('whmazadmin/order/index');
+		}
+
+		// SECURITY: the uuid arrives in the URL, so scope it before it is
+		// turned into an id that manage() would then trust.
+		$this->guardRecordBy('orders', 'order_uuid', $order_uuid);
+
+		$orderId = $this->Order_model->getIdByUuid($order_uuid);
+		if (empty($orderId)) {
+			$this->session->set_flashdata('admin_error', 'Order not found');
+			redirect('whmazadmin/order/index');
+		}
+
+		redirect('whmazadmin/order/manage/' . safe_encode($orderId));
+	}
+
+	/**
 	 * Order management page
 	 * @param string $id_val Encoded order ID
 	 */

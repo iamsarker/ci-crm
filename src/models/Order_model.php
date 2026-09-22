@@ -387,7 +387,7 @@ class Order_model extends CI_Model{
 			'{site_name}' => $appSettings->company_name,
 			'{invoice_url}' => base_url() . 'invoicing/pay/' . $invoice['invoice_uuid'],
 			'{admin_order_url}' => base_url() . 'whmazadmin/order/view/' . $order['order_uuid'],
-			'{admin_invoice_url}' => base_url() . 'whmazadmin/invoice/view/' . $order['company_id'] . '/' . $invoice['invoice_uuid']
+			'{admin_invoice_url}' => base_url() . 'whmazadmin/invoice/view_invoice/' . $order['company_id'] . '/' . $invoice['invoice_uuid']
 		);
 
 		// Send customer email
@@ -516,6 +516,30 @@ class Order_model extends CI_Model{
 	// =========================================
 	// Order Management Methods
 	// =========================================
+
+	/**
+	 * Resolve an order uuid to its primary key.
+	 *
+	 * Admin deep links in emails and in-app notifications carry the uuid
+	 * (the id is never put in a mailed URL), while the management page is
+	 * addressed by encoded id — so something has to bridge the two.
+	 *
+	 * @param  string $uuid orders.order_uuid
+	 * @return int          Order id, or 0 when no such order exists
+	 */
+	function getIdByUuid($uuid)
+	{
+		if (empty($uuid)) {
+			return 0;
+		}
+
+		$row = $this->db->query(
+			"SELECT id FROM orders WHERE order_uuid = ? LIMIT 1",
+			array($uuid)
+		)->row_array();
+
+		return !empty($row) ? (int)$row['id'] : 0;
+	}
 
 	/**
 	 * Get order with all domain and service items
